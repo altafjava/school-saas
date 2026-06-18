@@ -65,7 +65,7 @@ class StudentTenantIsolationIntegrationTest extends SchoolIntegrationTestBase {
         String studentCode = "STU-" + UUID.randomUUID().toString().substring(0, 8);
         Student enrolled = studentService.enroll(
                 studentCode, "Alice", "Smith", "alice@a.edu", LocalDate.of(2010, 5, 15));
-        String publicId = enrolled.getPublicId();
+        String publicId = enrolled.getPublicId().toString();
 
         // When — switch to tenant B and list students
         TenantContext.setTenant(tenantBId, null);
@@ -84,7 +84,7 @@ class StudentTenantIsolationIntegrationTest extends SchoolIntegrationTestBase {
         Student enrolled = studentService.enroll(
                 "STU-" + UUID.randomUUID().toString().substring(0, 8),
                 "Bob", "Jones", "bob@a.edu", LocalDate.of(2011, 3, 20));
-        String publicId = enrolled.getPublicId();
+        String publicId = enrolled.getPublicId().toString();
 
         // When/Then — tenant B cannot fetch tenant A's student by publicId
         TenantContext.setTenant(tenantBId, null);

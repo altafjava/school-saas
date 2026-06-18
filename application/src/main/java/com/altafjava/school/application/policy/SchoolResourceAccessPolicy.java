@@ -1,5 +1,6 @@
 package com.altafjava.school.application.policy;
 
+import java.util.UUID;
 import org.springframework.stereotype.Component;
 import com.altafjava.platform.core.security.ResourceAccessPolicy;
 import com.altafjava.school.domain.classroom.repository.ClassroomRepository;
@@ -28,8 +29,13 @@ public class SchoolResourceAccessPolicy implements ResourceAccessPolicy {
     }
 
     private boolean isTeacherAssignedToClassroom(String userId, String classroomPublicId, Long tenantId) {
-        return classroomRepository.findByPublicIdAndTenantId(classroomPublicId, tenantId)
-                .map(classroom -> userId.equals(String.valueOf(classroom.getClassTeacherId())))
-                .orElse(false);
+        try {
+            UUID classroomUuid = UUID.fromString(classroomPublicId);
+            return classroomRepository.findByPublicIdAndTenantId(classroomUuid, tenantId)
+                    .map(classroom -> userId.equals(String.valueOf(classroom.getClassTeacherId())))
+                    .orElse(false);
+        } catch (IllegalArgumentException e) {
+            return false;
+        }
     }
 }

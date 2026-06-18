@@ -78,7 +78,7 @@ class SchoolResourceAccessPolicyIntegrationTest extends SchoolIntegrationTestBas
                 "Grade 5", "A", "2024-25", teacher.getId()));
 
         boolean allowed = schoolResourceAccessPolicy.isAllowed(
-                String.valueOf(teacher.getId()), testTenantId, "CLASSROOM", classroom.getPublicId(), "READ");
+                String.valueOf(teacher.getId()), testTenantId, "CLASSROOM", classroom.getPublicId().toString(), "READ");
         assertTrue(allowed, "Teacher must be allowed to READ their own classroom");
     }
 
@@ -95,7 +95,7 @@ class SchoolResourceAccessPolicyIntegrationTest extends SchoolIntegrationTestBas
                 "Grade 6", "B", "2024-25", teacher1.getId()));
 
         boolean allowed = schoolResourceAccessPolicy.isAllowed(
-                String.valueOf(teacher2.getId()), testTenantId, "CLASSROOM", classroom.getPublicId(), "READ");
+                String.valueOf(teacher2.getId()), testTenantId, "CLASSROOM", classroom.getPublicId().toString(), "READ");
         assertFalse(allowed, "Teacher2 must be denied READ access to teacher1's classroom");
     }
 

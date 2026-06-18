@@ -1,6 +1,7 @@
 package com.altafjava.school.application.service;
 
 import java.time.LocalDate;
+import java.util.UUID;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -27,7 +28,7 @@ public class StudentService {
     @Transactional(readOnly = true)
     public Student findByPublicId(String publicId) {
         Long tenantId = TenantContext.getCurrentTenantId();
-        return studentRepository.findByPublicIdAndTenantId(publicId, tenantId)
+        return studentRepository.findByPublicIdAndTenantId(UUID.fromString(publicId), tenantId)
                 .orElseThrow(() -> new ResourceNotFoundException("Student not found: " + publicId));
     }
 

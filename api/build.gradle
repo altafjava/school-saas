@@ -4,8 +4,13 @@ plugins {
 
 dependencies {
     api project(':application')
-    // Platform api — exposes Spring Web, MapStruct, validation, OpenAPI
+    // Platform api — exposes Spring Web, validation, OpenAPI
     api 'com.altafjava.platform:api'
+
+    // Spring Security and MapStruct are implementation-scoped in the platform's api module
+    // so they are not transitively visible — declare them explicitly here
+    implementation libs.spring.boot.starter.security
+    implementation libs.mapstruct
 
     annotationProcessor libs.mapstruct.processor
     annotationProcessor libs.lombok.mapstruct.binding
@@ -17,8 +22,4 @@ sourceSets {
             srcDir 'build/generated/sources/annotationProcessor/java/main'
         }
     }
-}
-
-tasks.named('sourcesJar').configure {
-    dependsOn(tasks.named('compileJava'))
 }

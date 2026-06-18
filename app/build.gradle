@@ -16,6 +16,12 @@ dependencies {
     testImplementation libs.rest.assured
     testImplementation libs.json.path
 
+    // Explicit test deps for classes used in TestRedisConfig/TestPaymentConfig.
+    // These are runtime in the platform starter but not compile-visible to school tests.
+    testImplementation libs.redisson.spring.boot.starter
+    testImplementation libs.spring.boot.starter.data.redis
+    testImplementation libs.bucket4j.core
+
     testImplementation platform(libs.testcontainers.bom)
     testImplementation libs.testcontainers.core
     testImplementation libs.testcontainers.junit.jupiter
