@@ -1,0 +1,24 @@
+plugins {
+    id 'java-library'
+}
+
+dependencies {
+    api project(':application')
+    // Platform api — exposes Spring Web, MapStruct, validation, OpenAPI
+    api 'com.altafjava.platform:api'
+
+    annotationProcessor libs.mapstruct.processor
+    annotationProcessor libs.lombok.mapstruct.binding
+}
+
+sourceSets {
+    main {
+        java {
+            srcDir 'build/generated/sources/annotationProcessor/java/main'
+        }
+    }
+}
+
+tasks.named('sourcesJar').configure {
+    dependsOn(tasks.named('compileJava'))
+}

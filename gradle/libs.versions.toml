@@ -1,0 +1,104 @@
+[versions]
+jakarta-persistence = "3.1.0"
+junit-jupiter = "5.10.1"
+rest-assured = "5.4.0"
+testcontainers = "1.20.1"
+resilience4j = "2.2.0"
+shedlock = "5.10.0"
+mapstruct = "1.5.5.Final"
+lombok-mapstruct-binding = "0.2.0"
+springdoc = "2.3.0"
+swagger-annotations = "2.2.19"
+jjwt = "0.12.3"
+redisson = "3.27.0"
+aws-java-sdk = "2.25.11"
+caffeine = "3.1.8"
+gatling = "3.10.3"
+sentry = "7.3.0"
+
+[libraries]
+spring-boot-starter-cache = { module = "org.springframework.boot:spring-boot-starter-cache" }
+caffeine = { module = "com.github.ben-manes.caffeine:caffeine", version.ref = "caffeine" }
+aws-java-sdk-bom = { module = "software.amazon.awssdk:bom", version.ref = "aws-java-sdk" }
+aws-s3 = { module = "software.amazon.awssdk:s3" }
+redisson-hibernate = { module = "org.redisson:redisson-hibernate-6", version.ref = "redisson" }
+redisson-spring-boot-starter = { module = "org.redisson:redisson-spring-boot-starter", version.ref = "redisson" }
+mapstruct = { module = "org.mapstruct:mapstruct", version.ref = "mapstruct" }
+mapstruct-processor = { module = "org.mapstruct:mapstruct-processor", version.ref = "mapstruct" }
+lombok-mapstruct-binding = { module = "org.projectlombok:lombok-mapstruct-binding", version.ref = "lombok-mapstruct-binding" }
+jjwt-api = { module = "io.jsonwebtoken:jjwt-api", version.ref = "jjwt" }
+jjwt-impl = { module = "io.jsonwebtoken:jjwt-impl", version.ref = "jjwt" }
+jjwt-jackson = { module = "io.jsonwebtoken:jjwt-jackson", version.ref = "jjwt" }
+spring-boot-starter-web = { module = "org.springframework.boot:spring-boot-starter-web" }
+spring-boot-starter-data-jpa = { module = "org.springframework.boot:spring-boot-starter-data-jpa" }
+spring-boot-starter-security = { module = "org.springframework.boot:spring-boot-starter-security" }
+spring-boot-starter-validation = { module = "org.springframework.boot:spring-boot-starter-validation" }
+spring-boot-starter-data-redis = { module = "org.springframework.boot:spring-boot-starter-data-redis" }
+spring-boot-starter-data-elasticsearch = { module = "org.springframework.boot:spring-boot-starter-data-elasticsearch" }
+spring-boot-starter-actuator = { module = "org.springframework.boot:spring-boot-starter-actuator" }
+spring-boot-starter-test = { module = "org.springframework.boot:spring-boot-starter-test" }
+spring-boot-starter-quartz = { module = "org.springframework.boot:spring-boot-starter-quartz" }
+spring-boot-starter-amqp = { module = "org.springframework.boot:spring-boot-starter-amqp" }
+micrometer-registry-prometheus = { module = "io.micrometer:micrometer-registry-prometheus" }
+micrometer-tracing-bridge-brave = { module = "io.micrometer:micrometer-tracing-bridge-brave" }
+zipkin-reporter-brave = { module = "io.zipkin.reporter2:zipkin-reporter-brave" }
+logstash-logback-encoder = { module = "net.logstash.logback:logstash-logback-encoder", version = "7.4" }
+sentry-spring-boot-starter = { module = "io.sentry:sentry-spring-boot-starter-jakarta", version.ref = "sentry" }
+sentry-logback = { module = "io.sentry:sentry-logback", version.ref = "sentry" }
+spring-security-test = { module = "org.springframework.security:spring-security-test" }
+mariadb-java-client = { module = "org.mariadb.jdbc:mariadb-java-client" }
+postgresql = { module = "org.postgresql:postgresql" }
+liquibase-core = { module = "org.liquibase:liquibase-core" }
+lombok = { module = "org.projectlombok:lombok" }
+junit-jupiter-api = { module = "org.junit.jupiter:junit-jupiter-api", version.ref = "junit-jupiter" }
+junit-jupiter-engine = { module = "org.junit.jupiter:junit-jupiter-engine", version.ref = "junit-jupiter" }
+jakarta-persistence-api = { module = "jakarta.persistence:jakarta.persistence-api", version.ref = "jakarta-persistence" }
+hibernate-core = { module = "org.hibernate.orm:hibernate-core", version = "6.4.1.Final" }
+hibernate-jcache = { module = "org.hibernate.orm:hibernate-jcache", version = "6.4.1.Final" }
+
+# Rest Assured
+rest-assured = { module = "io.rest-assured:rest-assured", version.ref = "rest-assured" }
+json-path = { module = "io.rest-assured:json-path", version.ref = "rest-assured" }
+json-schema-validator = { module = "io.rest-assured:json-schema-validator", version.ref = "rest-assured" }
+
+# Testcontainers
+testcontainers-bom = { module = "org.testcontainers:testcontainers-bom", version.ref = "testcontainers" }
+testcontainers-core = { module = "org.testcontainers:testcontainers" }
+testcontainers-junit-jupiter = { module = "org.testcontainers:junit-jupiter" }
+testcontainers-mariadb = { module = "org.testcontainers:mariadb" }
+testcontainers-rabbitmq = { module = "org.testcontainers:rabbitmq" }
+
+# Stripe
+stripe-java = { module = "com.stripe:stripe-java", version = "24.13.0" }
+
+# PDF
+openpdf = { module = "com.github.librepdf:openpdf", version = "1.3.39" }
+
+# Excel
+poi-ooxml = { module = "org.apache.poi:poi-ooxml", version = "5.2.5" }
+
+# Resilience
+resilience4j-spring-boot3 = { module = "io.github.resilience4j:resilience4j-spring-boot3", version.ref = "resilience4j" }
+
+# ShedLock
+shedlock-spring = { module = "net.javacrumbs.shedlock:shedlock-spring", version.ref = "shedlock" }
+shedlock-provider-redis-spring = { module = "net.javacrumbs.shedlock:shedlock-provider-redis-spring", version.ref = "shedlock" }
+
+# SpringDoc OpenAPI
+springdoc-openapi-starter-webmvc-ui = { module = "org.springdoc:springdoc-openapi-starter-webmvc-ui", version.ref = "springdoc" }
+swagger-annotations = { module = "io.swagger.core.v3:swagger-annotations", version.ref = "swagger-annotations" }
+
+# Bucket4j
+bucket4j-core = { module = "com.bucket4j:bucket4j-core", version = "8.10.1" }
+bucket4j-redis = { module = "com.bucket4j:bucket4j-redis", version = "8.10.1" }
+
+# OWASP Java Encoder
+owasp-java-encoder = { module = "org.owasp.encoder:encoder", version = "1.2.3" }
+
+# Gatling
+gatling-app = { module = "io.gatling:gatling-app", version.ref = "gatling" }
+gatling-http-java = { module = "io.gatling:gatling-http-java", version.ref = "gatling" }
+
+[plugins]
+gatling = { id = "io.gatling.gradle", version.ref = "gatling" }
+

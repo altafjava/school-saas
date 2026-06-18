@@ -1,0 +1,35 @@
+plugins {
+    id 'org.springframework.boot'
+    id 'io.spring.dependency-management'
+    id 'java-library'
+}
+
+dependencies {
+    implementation project(':api')
+
+    // Single platform dependency — the starter wires everything via auto-configuration
+    implementation 'com.altafjava.platform:spring-boot-starter'
+
+    // Test infrastructure
+    testImplementation libs.spring.boot.starter.test
+    testImplementation libs.spring.security.test
+    testImplementation libs.rest.assured
+    testImplementation libs.json.path
+
+    testImplementation platform(libs.testcontainers.bom)
+    testImplementation libs.testcontainers.core
+    testImplementation libs.testcontainers.junit.jupiter
+    testImplementation libs.testcontainers.mariadb
+    testImplementation libs.testcontainers.rabbitmq
+}
+
+tasks.named('test') {
+    useJUnitPlatform()
+    systemProperty 'user.timezone', 'UTC'
+    systemProperty 'spring.profiles.active', System.getProperty('spring.profiles.active') ?: 'test'
+    testLogging {
+        events "passed", "skipped", "failed"
+        showStandardStreams = true
+        exceptionFormat "full"
+    }
+}

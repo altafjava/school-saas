@@ -1,0 +1,17 @@
+.gradle/
+build/
+.idea/
+*.iml
+*.ipr
+*.iws
+.classpath
+.project
+.settings/
+.factorypath
+out/
+*.class
+*.jar
+!gradle/wrapper/gradle-wrapper.jar
+.env
+.env.local
+*.log

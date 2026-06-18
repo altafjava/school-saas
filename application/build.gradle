@@ -1,0 +1,9 @@
+plugins {
+    id 'java-library'
+}
+
+dependencies {
+    api project(':domain')
+    // Platform application — exposes JobExecutionStrategy, events, EventPublisher
+    api 'com.altafjava.platform:application'
+}

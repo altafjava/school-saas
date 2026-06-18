@@ -1,0 +1,55 @@
+spring:
+  main:
+    allow-bean-definition-overriding: true
+  liquibase:
+    enabled: true
+  data:
+    redis:
+      host: 127.0.0.1
+      port: 6379
+  autoconfigure:
+    exclude: org.springframework.boot.autoconfigure.amqp.RabbitAutoConfiguration
+  datasource:
+    driver-class-name: org.mariadb.jdbc.Driver
+    url: jdbc:mariadb://localhost:3306/school_test?createDatabaseIfNotExist=true
+    username: root
+    password: mysql
+    hikari:
+      maximum-pool-size: 10
+      minimum-idle: 2
+      connection-timeout: 30000
+
+logging:
+  level:
+    com.altafjava.school: DEBUG
+    com.altafjava.platform: DEBUG
+    org.springframework.security: DEBUG
+
+management:
+  health:
+    redis:
+      enabled: false
+    elasticsearch:
+      enabled: false
+
+stripe:
+  api:
+    key: sk_test_dummy_key_for_testing
+
+tenant:
+  resolution:
+    base-domain: school.local
+
+application:
+  storage:
+    bucket-name: test-bucket
+    region: us-east-1
+    access-key: test-access-key
+    secret-key: test-secret-key
+    endpoint: http://localhost:4566
+
+scheduler:
+  cluster:
+    instance-id: TEST_NODE
+  thread-pool:
+    thread-count: 2

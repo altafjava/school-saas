@@ -1,0 +1,8 @@
+plugins {
+    id 'java-library'
+}
+
+dependencies {
+    // Platform core — exposes TenantEntity, BaseEntity, @Pii, TenantContext, etc.
+    api 'com.altafjava.platform:core'
+}

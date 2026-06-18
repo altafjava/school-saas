@@ -1,0 +1,14 @@
+spring:
+  application:
+    name: school-management
+  profiles:
+    default: dev
+  main:
+    allow-circular-references: false
+  jackson:
+    default-property-inclusion: non_null
+    serialization:
+      write_dates_as_timestamps: false
+
+server:
+  port: 8080
