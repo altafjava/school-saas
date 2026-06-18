@@ -62,16 +62,30 @@ class StudentCrudE2ETest extends SchoolIntegrationTestBase {
 
 	@Test
 	void login_withPlatformAuthEndpoint_returnsJwt() {
-		given()
-				.header("X-Tenant-ID", tenantId)
-				.contentType(ContentType.JSON)
-				.body("{\"email\":\"" + adminEmail + "\",\"password\":\"" + adminPassword + "\"}")
-				.when()
-				.post("/api/v1/auth/login")
-				.then()
-				.statusCode(HttpStatus.OK.value())
-				.body("data.accessToken", notNullValue())
-				.body("data.refreshToken", notNullValue());
+		long deadline = System.currentTimeMillis() + 10_000;
+		while (true) {
+			io.restassured.response.Response response = given()
+					.header("X-Tenant-ID", tenantId)
+					.contentType(ContentType.JSON)
+					.body("{\"email\":\"" + adminEmail + "\",\"password\":\"" + adminPassword + "\"}")
+					.when()
+					.post("/api/v1/auth/login");
+			if (response.statusCode() == HttpStatus.OK.value()) {
+				response.then()
+						.body("data.accessToken", notNullValue())
+						.body("data.refreshToken", notNullValue());
+				return;
+			}
+			if (System.currentTimeMillis() >= deadline) {
+				response.then().statusCode(HttpStatus.OK.value());
+			}
+			try {
+				Thread.sleep(200);
+			} catch (InterruptedException e) {
+				Thread.currentThread().interrupt();
+				break;
+			}
+		}
 	}
 
 	@Test
@@ -128,14 +142,27 @@ class StudentCrudE2ETest extends SchoolIntegrationTestBase {
 	}
 
 	private String login() {
-		return given()
-				.header("X-Tenant-ID", tenantId)
-				.contentType(ContentType.JSON)
-				.body("{\"email\":\"" + adminEmail + "\",\"password\":\"" + adminPassword + "\"}")
-				.when()
-				.post("/api/v1/auth/login")
-				.then()
-				.statusCode(HttpStatus.OK.value())
-				.extract().path("data.accessToken");
+		long deadline = System.currentTimeMillis() + 10_000;
+		while (true) {
+			io.restassured.response.Response response = given()
+					.header("X-Tenant-ID", tenantId)
+					.contentType(ContentType.JSON)
+					.body("{\"email\":\"" + adminEmail + "\",\"password\":\"" + adminPassword + "\"}")
+					.when()
+					.post("/api/v1/auth/login");
+			if (response.statusCode() == HttpStatus.OK.value()) {
+				return response.then().extract().path("data.accessToken");
+			}
+			if (System.currentTimeMillis() >= deadline) {
+				response.then().statusCode(HttpStatus.OK.value()); // force assertion failure with details
+			}
+			try {
+				Thread.sleep(200);
+			} catch (InterruptedException e) {
+				Thread.currentThread().interrupt();
+				break;
+			}
+		}
+		throw new IllegalStateException("login timed out");
 	}
 }

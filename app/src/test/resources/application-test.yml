@@ -3,12 +3,16 @@ spring:
     allow-bean-definition-overriding: true
   liquibase:
     enabled: true
+    change-log: classpath:db/changelog/db.changelog-master.xml
+    contexts: shared
   data:
     redis:
       host: 127.0.0.1
       port: 6379
   autoconfigure:
     exclude: org.springframework.boot.autoconfigure.amqp.RabbitAutoConfiguration
+  rabbitmq:
+    enabled: false
   datasource:
     driver-class-name: org.mariadb.jdbc.Driver
     url: jdbc:mariadb://localhost:3306/school_test?createDatabaseIfNotExist=true

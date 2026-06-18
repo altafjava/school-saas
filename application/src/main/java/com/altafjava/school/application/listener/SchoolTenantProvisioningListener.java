@@ -31,7 +31,7 @@ public class SchoolTenantProvisioningListener {
 	}
 
 	@Async
-	@Transactional
+	@Transactional(propagation = org.springframework.transaction.annotation.Propagation.REQUIRES_NEW)
 	@TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
 	public void onTenantCreated(TenantCreatedEvent event) {
 		log.info("action=school-tenant-provisioning tenantId={} tenantType={}", event.tenantId(), event.tenantType());

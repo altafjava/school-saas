@@ -32,7 +32,7 @@ class DomainMigrationOrderIntegrationTest extends SchoolIntegrationTestBase {
 		Set<String> tables = loadTableNames();
 		// Core platform tables — must exist before domain tables
 		assertTrue(tables.contains("tenants"), "Platform table 'tenants' must exist");
-		assertTrue(tables.contains("subscription_plans"), "Platform table 'subscription_plans' must exist");
+		assertTrue(tables.contains("plans"), "Platform table 'plans' must exist");
 		assertTrue(tables.contains("audit_logs"), "Platform table 'audit_logs' must exist");
 	}
 

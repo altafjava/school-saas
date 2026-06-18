@@ -14,7 +14,7 @@ import com.altafjava.platform.domain.scheduler.model.JobExecutionResult;
  * Reminds teachers in each tenant to mark attendance for the day.
  * TenantContext is set by the platform scheduler before execute() is called.
  */
-@Component
+@Component("schoolDailyAttendanceReminderJob")
 @ScheduledJob(name = "DailyAttendanceReminder", group = "school", description = "Reminds teachers to mark attendance", cronExpression = "0 0 7 * * ?", tenantScoped = true, retryEnabled = true, maxRetries = 2)
 public class DailyAttendanceReminderJob implements JobExecutionStrategy {
 
