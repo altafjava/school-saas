@@ -6,5 +6,6 @@
                             http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.20.xsd">
 
     <include file="db/domain/changesets/001-school-tables.xml"/>
+    <include file="db/domain/changesets/002-school-extended-tables.xml"/>
 
 </databaseChangeLog>

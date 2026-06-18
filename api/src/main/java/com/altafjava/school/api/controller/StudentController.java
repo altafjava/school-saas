@@ -23,39 +23,39 @@ import com.altafjava.school.domain.student.model.Student;
 @RequestMapping("/api/v1/students")
 public class StudentController {
 
-    private final StudentService studentService;
-    private final StudentMapper studentMapper;
+	private final StudentService studentService;
+	private final StudentMapper studentMapper;
 
-    public StudentController(StudentService studentService, StudentMapper studentMapper) {
-        this.studentService = studentService;
-        this.studentMapper = studentMapper;
-    }
+	public StudentController(StudentService studentService, StudentMapper studentMapper) {
+		this.studentService = studentService;
+		this.studentMapper = studentMapper;
+	}
 
-    @GetMapping
-    @PreAuthorize("hasAnyRole('TENANT_ADMIN', 'TEACHER')")
-    public Page<StudentResponse> list(
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "20") int size) {
-        return studentService.listStudents(PageRequest.of(page, Math.min(size, 100)))
-                .map(studentMapper::toResponse);
-    }
+	@GetMapping
+	@PreAuthorize("hasAnyRole('TENANT_ADMIN', 'TEACHER')")
+	public Page<StudentResponse> list(
+			@RequestParam(defaultValue = "0") int page,
+			@RequestParam(defaultValue = "20") int size) {
+		return studentService.listStudents(PageRequest.of(page, Math.min(size, 100)))
+				.map(studentMapper::toResponse);
+	}
 
-    @GetMapping("/{publicId}")
-    @PreAuthorize("hasAnyRole('TENANT_ADMIN', 'TEACHER')")
-    public StudentResponse get(@PathVariable String publicId) {
-        return studentMapper.toResponse(studentService.findByPublicId(publicId));
-    }
+	@GetMapping("/{publicId}")
+	@PreAuthorize("hasAnyRole('TENANT_ADMIN', 'TEACHER')")
+	public StudentResponse get(@PathVariable String publicId) {
+		return studentMapper.toResponse(studentService.findByPublicId(publicId));
+	}
 
-    @PostMapping
-    @ResponseStatus(HttpStatus.CREATED)
-    @PreAuthorize("hasRole('TENANT_ADMIN')")
-    public StudentResponse enroll(@Valid @RequestBody CreateStudentRequest request) {
-        Student student = studentService.enroll(
-                request.studentCode(),
-                request.firstName(),
-                request.lastName(),
-                request.email(),
-                request.dateOfBirth());
-        return studentMapper.toResponse(student);
-    }
+	@PostMapping
+	@ResponseStatus(HttpStatus.CREATED)
+	@PreAuthorize("hasRole('TENANT_ADMIN')")
+	public StudentResponse enroll(@Valid @RequestBody CreateStudentRequest request) {
+		Student student = studentService.enroll(
+				request.studentCode(),
+				request.firstName(),
+				request.lastName(),
+				request.email(),
+				request.dateOfBirth());
+		return studentMapper.toResponse(student);
+	}
 }

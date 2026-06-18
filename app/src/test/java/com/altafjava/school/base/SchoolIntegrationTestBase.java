@@ -24,23 +24,23 @@ import com.altafjava.school.SchoolTestApplication;
 @Testcontainers
 public abstract class SchoolIntegrationTestBase {
 
-    @Container
-    static final MariaDBContainer<?> mariaDB = new MariaDBContainer<>("mariadb:11.2.2")
-            .withDatabaseName("school_test")
-            .withUsername("root")
-            .withPassword("mysql")
-            .withReuse(true);
+	@Container
+	static final MariaDBContainer<?> mariaDB = new MariaDBContainer<>("mariadb:11.2.2")
+			.withDatabaseName("school_test")
+			.withUsername("root")
+			.withPassword("mysql")
+			.withReuse(true);
 
-    @DynamicPropertySource
-    static void configureDataSource(DynamicPropertyRegistry registry) {
-        registry.add("spring.datasource.url", mariaDB::getJdbcUrl);
-        registry.add("spring.datasource.username", mariaDB::getUsername);
-        registry.add("spring.datasource.password", mariaDB::getPassword);
-        registry.add("spring.datasource.driver-class-name", () -> "org.mariadb.jdbc.Driver");
-        // Redis not started — tests use in-memory mocks via TestRedisConfig
-        registry.add("spring.data.redis.host", () -> "localhost");
-        registry.add("spring.data.redis.port", () -> "6379");
-        // Disable Quartz clustering for tests
-        registry.add("spring.quartz.properties.org.quartz.jobStore.isClustered", () -> "false");
-    }
+	@DynamicPropertySource
+	static void configureDataSource(DynamicPropertyRegistry registry) {
+		registry.add("spring.datasource.url", mariaDB::getJdbcUrl);
+		registry.add("spring.datasource.username", mariaDB::getUsername);
+		registry.add("spring.datasource.password", mariaDB::getPassword);
+		registry.add("spring.datasource.driver-class-name", () -> "org.mariadb.jdbc.Driver");
+		// Redis not started — tests use in-memory mocks via TestRedisConfig
+		registry.add("spring.data.redis.host", () -> "localhost");
+		registry.add("spring.data.redis.port", () -> "6379");
+		// Disable Quartz clustering for tests
+		registry.add("spring.quartz.properties.org.quartz.jobStore.isClustered", () -> "false");
+	}
 }

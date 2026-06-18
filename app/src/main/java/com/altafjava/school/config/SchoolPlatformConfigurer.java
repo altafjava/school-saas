@@ -13,39 +13,39 @@ import com.altafjava.platform.core.PlatformConfigurer;
 @Component
 public class SchoolPlatformConfigurer implements PlatformConfigurer {
 
-    @Override
-    public String platformName() {
-        return "School Management Platform";
-    }
+	@Override
+	public String platformName() {
+		return "School Management Platform";
+	}
 
-    @Override
-    public String platformVersion() {
-        return "1.0.0";
-    }
+	@Override
+	public String platformVersion() {
+		return "1.0.0";
+	}
 
-    @Override
-    public Duration accessTokenExpiry() {
-        return Duration.ofHours(8);
-    }
+	@Override
+	public Duration accessTokenExpiry() {
+		return Duration.ofHours(8);
+	}
 
-    @Override
-    public Duration refreshTokenExpiry() {
-        return Duration.ofDays(7);
-    }
+	@Override
+	public Duration refreshTokenExpiry() {
+		return Duration.ofDays(7);
+	}
 
-    @Override
-    public Set<String> enabledNotificationChannels() {
-        return Set.of("EMAIL", "IN_APP", "SMS");
-    }
+	@Override
+	public Set<String> enabledNotificationChannels() {
+		return Set.of("EMAIL", "IN_APP", "SMS");
+	}
 
-    @Override
-    public int maxTenantsPerInstance() {
-        return 50;
-    }
+	@Override
+	public int maxTenantsPerInstance() {
+		return 50;
+	}
 
-    @Override
-    public List<String> domainTenantChangelogPaths() {
-        // Run school domain migrations against every new SCHEMA-mode tenant schema
-        return List.of("db/domain/changelog-master.xml");
-    }
+	@Override
+	public List<String> domainTenantChangelogPaths() {
+		// Run school domain migrations against every new SCHEMA-mode tenant schema
+		return List.of("db/domain/changelog-master.xml");
+	}
 }

@@ -15,38 +15,30 @@ import com.altafjava.platform.domain.scheduler.model.JobExecutionResult;
  * TenantContext is set by the platform scheduler before execute() is called.
  */
 @Component
-@ScheduledJob(
-        name = "DailyAttendanceReminder",
-        group = "school",
-        description = "Reminds teachers to mark attendance",
-        cronExpression = "0 0 7 * * ?",
-        tenantScoped = true,
-        retryEnabled = true,
-        maxRetries = 2
-)
+@ScheduledJob(name = "DailyAttendanceReminder", group = "school", description = "Reminds teachers to mark attendance", cronExpression = "0 0 7 * * ?", tenantScoped = true, retryEnabled = true, maxRetries = 2)
 public class DailyAttendanceReminderJob implements JobExecutionStrategy {
 
-    private static final Logger log = LoggerFactory.getLogger(DailyAttendanceReminderJob.class);
+	private static final Logger log = LoggerFactory.getLogger(DailyAttendanceReminderJob.class);
 
-    @Override
-    public String jobName() {
-        return "DailyAttendanceReminder";
-    }
+	@Override
+	public String jobName() {
+		return "DailyAttendanceReminder";
+	}
 
-    @Override
-    public String jobGroup() {
-        return "school";
-    }
+	@Override
+	public String jobGroup() {
+		return "school";
+	}
 
-    @Override
-    public boolean isTenantScoped() {
-        return true;
-    }
+	@Override
+	public boolean isTenantScoped() {
+		return true;
+	}
 
-    @Override
-    public JobExecutionResult execute(JobExecutionContext ctx) {
-        log.info("action=attendance-reminder tenantId={} executionId={}", ctx.tenantId(), ctx.executionId());
-        // Phase 5 scope: platform wiring verification — notification dispatch added in later iterations
-        return new JobExecutionResult.Success(Map.of("remindedCount", 0), null);
-    }
+	@Override
+	public JobExecutionResult execute(JobExecutionContext ctx) {
+		log.info("action=attendance-reminder tenantId={} executionId={}", ctx.tenantId(), ctx.executionId());
+		// Phase 5 scope: platform wiring verification — notification dispatch added in later iterations
+		return new JobExecutionResult.Success(Map.of("remindedCount", 0), null);
+	}
 }

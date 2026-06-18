@@ -1,0 +1,414 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                            http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.20.xsd">
+
+    <changeSet id="school-004-academic-years" author="school">
+        <createTable tableName="academic_years">
+            <column name="id" type="BIGINT" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="public_id" type="VARCHAR(36)">
+                <constraints nullable="false" unique="true"/>
+            </column>
+            <column name="version" type="BIGINT" defaultValueNumeric="0">
+                <constraints nullable="false"/>
+            </column>
+            <column name="tenant_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="name" type="VARCHAR(50)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="start_date" type="DATE">
+                <constraints nullable="false"/>
+            </column>
+            <column name="end_date" type="DATE">
+                <constraints nullable="false"/>
+            </column>
+            <column name="is_current" type="BOOLEAN" defaultValueBoolean="false">
+                <constraints nullable="false"/>
+            </column>
+            <column name="deleted" type="BOOLEAN" defaultValueBoolean="false">
+                <constraints nullable="false"/>
+            </column>
+            <column name="deleted_at" type="TIMESTAMP"/>
+            <column name="deleted_by" type="VARCHAR(100)"/>
+            <column name="created_at" type="TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="updated_at" type="TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_by" type="VARCHAR(100)"/>
+            <column name="updated_by" type="VARCHAR(100)"/>
+        </createTable>
+
+        <addForeignKeyConstraint
+                constraintName="fk_academic_years_tenant_id"
+                baseTableName="academic_years" baseColumnNames="tenant_id"
+                referencedTableName="tenants" referencedColumnNames="id"/>
+
+        <createIndex indexName="idx_academic_years_tenant_id" tableName="academic_years">
+            <column name="tenant_id"/>
+        </createIndex>
+        <createIndex indexName="idx_academic_years_deleted" tableName="academic_years">
+            <column name="deleted"/>
+        </createIndex>
+        <createIndex indexName="idx_academic_years_is_current" tableName="academic_years">
+            <column name="is_current"/>
+        </createIndex>
+        <createIndex indexName="uq_academic_years_name_tenant" tableName="academic_years" unique="true">
+            <column name="name"/>
+            <column name="tenant_id"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet id="school-005-exams" author="school">
+        <createTable tableName="exams">
+            <column name="id" type="BIGINT" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="public_id" type="VARCHAR(36)">
+                <constraints nullable="false" unique="true"/>
+            </column>
+            <column name="version" type="BIGINT" defaultValueNumeric="0">
+                <constraints nullable="false"/>
+            </column>
+            <column name="tenant_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="title" type="VARCHAR(200)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="subject" type="VARCHAR(100)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="classroom_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="scheduled_at" type="TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="max_marks" type="DECIMAL(10,2)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="deleted" type="BOOLEAN" defaultValueBoolean="false">
+                <constraints nullable="false"/>
+            </column>
+            <column name="deleted_at" type="TIMESTAMP"/>
+            <column name="deleted_by" type="VARCHAR(100)"/>
+            <column name="created_at" type="TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="updated_at" type="TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_by" type="VARCHAR(100)"/>
+            <column name="updated_by" type="VARCHAR(100)"/>
+        </createTable>
+
+        <addForeignKeyConstraint
+                constraintName="fk_exams_tenant_id"
+                baseTableName="exams" baseColumnNames="tenant_id"
+                referencedTableName="tenants" referencedColumnNames="id"/>
+        <addForeignKeyConstraint
+                constraintName="fk_exams_classroom_id"
+                baseTableName="exams" baseColumnNames="classroom_id"
+                referencedTableName="classrooms" referencedColumnNames="id"/>
+
+        <createIndex indexName="idx_exams_tenant_id" tableName="exams">
+            <column name="tenant_id"/>
+        </createIndex>
+        <createIndex indexName="idx_exams_deleted" tableName="exams">
+            <column name="deleted"/>
+        </createIndex>
+        <createIndex indexName="idx_exams_scheduled_at" tableName="exams">
+            <column name="scheduled_at"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet id="school-006-attendance" author="school">
+        <createTable tableName="attendance">
+            <column name="id" type="BIGINT" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="public_id" type="VARCHAR(36)">
+                <constraints nullable="false" unique="true"/>
+            </column>
+            <column name="version" type="BIGINT" defaultValueNumeric="0">
+                <constraints nullable="false"/>
+            </column>
+            <column name="tenant_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="student_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="classroom_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="attendance_date" type="DATE">
+                <constraints nullable="false"/>
+            </column>
+            <column name="status" type="VARCHAR(20)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="marked_by" type="VARCHAR(100)"/>
+            <column name="deleted" type="BOOLEAN" defaultValueBoolean="false">
+                <constraints nullable="false"/>
+            </column>
+            <column name="deleted_at" type="TIMESTAMP"/>
+            <column name="deleted_by" type="VARCHAR(100)"/>
+            <column name="created_at" type="TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="updated_at" type="TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_by" type="VARCHAR(100)"/>
+            <column name="updated_by" type="VARCHAR(100)"/>
+        </createTable>
+
+        <addForeignKeyConstraint
+                constraintName="fk_attendance_tenant_id"
+                baseTableName="attendance" baseColumnNames="tenant_id"
+                referencedTableName="tenants" referencedColumnNames="id"/>
+        <addForeignKeyConstraint
+                constraintName="fk_attendance_student_id"
+                baseTableName="attendance" baseColumnNames="student_id"
+                referencedTableName="students" referencedColumnNames="id"/>
+        <addForeignKeyConstraint
+                constraintName="fk_attendance_classroom_id"
+                baseTableName="attendance" baseColumnNames="classroom_id"
+                referencedTableName="classrooms" referencedColumnNames="id"/>
+
+        <createIndex indexName="idx_attendance_tenant_id" tableName="attendance">
+            <column name="tenant_id"/>
+        </createIndex>
+        <createIndex indexName="idx_attendance_deleted" tableName="attendance">
+            <column name="deleted"/>
+        </createIndex>
+        <createIndex indexName="idx_attendance_student_date" tableName="attendance">
+            <column name="student_id"/>
+            <column name="attendance_date"/>
+        </createIndex>
+        <createIndex indexName="idx_attendance_classroom_date" tableName="attendance">
+            <column name="classroom_id"/>
+            <column name="attendance_date"/>
+        </createIndex>
+        <!-- Prevent duplicate attendance records for a student in a classroom on the same day -->
+        <createIndex indexName="uq_attendance_student_classroom_date_tenant" tableName="attendance" unique="true">
+            <column name="student_id"/>
+            <column name="classroom_id"/>
+            <column name="attendance_date"/>
+            <column name="tenant_id"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet id="school-007-grades" author="school">
+        <createTable tableName="grades">
+            <column name="id" type="BIGINT" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="public_id" type="VARCHAR(36)">
+                <constraints nullable="false" unique="true"/>
+            </column>
+            <column name="version" type="BIGINT" defaultValueNumeric="0">
+                <constraints nullable="false"/>
+            </column>
+            <column name="tenant_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="student_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="subject" type="VARCHAR(100)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="exam_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="marks" type="DECIMAL(10,2)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="grade_letter" type="VARCHAR(5)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="graded_by" type="VARCHAR(100)"/>
+            <column name="deleted" type="BOOLEAN" defaultValueBoolean="false">
+                <constraints nullable="false"/>
+            </column>
+            <column name="deleted_at" type="TIMESTAMP"/>
+            <column name="deleted_by" type="VARCHAR(100)"/>
+            <column name="created_at" type="TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="updated_at" type="TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_by" type="VARCHAR(100)"/>
+            <column name="updated_by" type="VARCHAR(100)"/>
+        </createTable>
+
+        <addForeignKeyConstraint
+                constraintName="fk_grades_tenant_id"
+                baseTableName="grades" baseColumnNames="tenant_id"
+                referencedTableName="tenants" referencedColumnNames="id"/>
+        <addForeignKeyConstraint
+                constraintName="fk_grades_student_id"
+                baseTableName="grades" baseColumnNames="student_id"
+                referencedTableName="students" referencedColumnNames="id"/>
+        <addForeignKeyConstraint
+                constraintName="fk_grades_exam_id"
+                baseTableName="grades" baseColumnNames="exam_id"
+                referencedTableName="exams" referencedColumnNames="id"/>
+
+        <createIndex indexName="idx_grades_tenant_id" tableName="grades">
+            <column name="tenant_id"/>
+        </createIndex>
+        <createIndex indexName="idx_grades_deleted" tableName="grades">
+            <column name="deleted"/>
+        </createIndex>
+        <createIndex indexName="idx_grades_student_id" tableName="grades">
+            <column name="student_id"/>
+        </createIndex>
+        <!-- One grade record per student per exam -->
+        <createIndex indexName="uq_grades_student_exam_tenant" tableName="grades" unique="true">
+            <column name="student_id"/>
+            <column name="exam_id"/>
+            <column name="tenant_id"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet id="school-008-fee-structures" author="school">
+        <createTable tableName="fee_structures">
+            <column name="id" type="BIGINT" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="public_id" type="VARCHAR(36)">
+                <constraints nullable="false" unique="true"/>
+            </column>
+            <column name="version" type="BIGINT" defaultValueNumeric="0">
+                <constraints nullable="false"/>
+            </column>
+            <column name="tenant_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="name" type="VARCHAR(200)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="amount" type="DECIMAL(12,2)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="frequency" type="VARCHAR(20)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="plan_type" type="VARCHAR(100)"/>
+            <column name="deleted" type="BOOLEAN" defaultValueBoolean="false">
+                <constraints nullable="false"/>
+            </column>
+            <column name="deleted_at" type="TIMESTAMP"/>
+            <column name="deleted_by" type="VARCHAR(100)"/>
+            <column name="created_at" type="TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="updated_at" type="TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_by" type="VARCHAR(100)"/>
+            <column name="updated_by" type="VARCHAR(100)"/>
+        </createTable>
+
+        <addForeignKeyConstraint
+                constraintName="fk_fee_structures_tenant_id"
+                baseTableName="fee_structures" baseColumnNames="tenant_id"
+                referencedTableName="tenants" referencedColumnNames="id"/>
+
+        <createIndex indexName="idx_fee_structures_tenant_id" tableName="fee_structures">
+            <column name="tenant_id"/>
+        </createIndex>
+        <createIndex indexName="idx_fee_structures_deleted" tableName="fee_structures">
+            <column name="deleted"/>
+        </createIndex>
+        <createIndex indexName="uq_fee_structures_name_tenant" tableName="fee_structures" unique="true">
+            <column name="name"/>
+            <column name="tenant_id"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet id="school-009-fee-payments" author="school">
+        <createTable tableName="fee_payments">
+            <column name="id" type="BIGINT" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="public_id" type="VARCHAR(36)">
+                <constraints nullable="false" unique="true"/>
+            </column>
+            <column name="version" type="BIGINT" defaultValueNumeric="0">
+                <constraints nullable="false"/>
+            </column>
+            <column name="tenant_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="student_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="fee_structure_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="paid_amount" type="DECIMAL(12,2)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="paid_at" type="TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="receipt_number" type="VARCHAR(100)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="deleted" type="BOOLEAN" defaultValueBoolean="false">
+                <constraints nullable="false"/>
+            </column>
+            <column name="deleted_at" type="TIMESTAMP"/>
+            <column name="deleted_by" type="VARCHAR(100)"/>
+            <column name="created_at" type="TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="updated_at" type="TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_by" type="VARCHAR(100)"/>
+            <column name="updated_by" type="VARCHAR(100)"/>
+        </createTable>
+
+        <addForeignKeyConstraint
+                constraintName="fk_fee_payments_tenant_id"
+                baseTableName="fee_payments" baseColumnNames="tenant_id"
+                referencedTableName="tenants" referencedColumnNames="id"/>
+        <addForeignKeyConstraint
+                constraintName="fk_fee_payments_student_id"
+                baseTableName="fee_payments" baseColumnNames="student_id"
+                referencedTableName="students" referencedColumnNames="id"/>
+        <addForeignKeyConstraint
+                constraintName="fk_fee_payments_fee_structure_id"
+                baseTableName="fee_payments" baseColumnNames="fee_structure_id"
+                referencedTableName="fee_structures" referencedColumnNames="id"/>
+
+        <createIndex indexName="idx_fee_payments_tenant_id" tableName="fee_payments">
+            <column name="tenant_id"/>
+        </createIndex>
+        <createIndex indexName="idx_fee_payments_deleted" tableName="fee_payments">
+            <column name="deleted"/>
+        </createIndex>
+        <createIndex indexName="idx_fee_payments_student_id" tableName="fee_payments">
+            <column name="student_id"/>
+        </createIndex>
+        <createIndex indexName="uq_fee_payments_receipt_tenant" tableName="fee_payments" unique="true">
+            <column name="receipt_number"/>
+            <column name="tenant_id"/>
+        </createIndex>
+    </changeSet>
+
+</databaseChangeLog>

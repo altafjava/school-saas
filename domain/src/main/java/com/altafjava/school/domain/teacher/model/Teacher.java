@@ -21,32 +21,32 @@ import lombok.experimental.SuperBuilder;
 @NoArgsConstructor
 public class Teacher extends SoftDeletableEntity {
 
-    @Column(name = "employee_code", nullable = false, length = 50)
-    private String employeeCode;
+	@Column(name = "employee_code", nullable = false, length = 50)
+	private String employeeCode;
 
-    @Pii
-    @Column(name = "first_name", nullable = false, length = 100)
-    private String firstName;
+	@Pii
+	@Column(name = "first_name", nullable = false, length = 100)
+	private String firstName;
 
-    @Pii
-    @Column(name = "last_name", nullable = false, length = 100)
-    private String lastName;
+	@Pii
+	@Column(name = "last_name", nullable = false, length = 100)
+	private String lastName;
 
-    @Pii
-    @Column(name = "email", nullable = false, length = 255)
-    private String email;
+	@Pii
+	@Column(name = "email", nullable = false, length = 255)
+	private String email;
 
-    @Column(name = "join_date")
-    private LocalDate joinDate;
+	@Column(name = "join_date")
+	private LocalDate joinDate;
 
-    public static Teacher create(String employeeCode, String firstName, String lastName,
-            String email, LocalDate joinDate) {
-        return Teacher.builder()
-                .employeeCode(employeeCode)
-                .firstName(firstName)
-                .lastName(lastName)
-                .email(email)
-                .joinDate(joinDate)
-                .build();
-    }
+	public static Teacher create(String employeeCode, String firstName, String lastName,
+			String email, LocalDate joinDate) {
+		return Teacher.builder()
+				.employeeCode(employeeCode)
+				.firstName(firstName)
+				.lastName(lastName)
+				.email(email)
+				.joinDate(joinDate)
+				.build();
+	}
 }

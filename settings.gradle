@@ -3,7 +3,7 @@ include 'domain', 'application', 'api', 'app'
 
 // Composite build — resolves com.altafjava.platform:* from the local platform project.
 // Remove this line and add the published artifact to app/build.gradle when moving to a released version.
-includeBuild '../school-management-saas'
+includeBuild '../platform-saas'
 
 dependencyResolutionManagement {
     repositories {

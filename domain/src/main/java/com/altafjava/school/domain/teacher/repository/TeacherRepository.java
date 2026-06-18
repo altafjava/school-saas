@@ -9,9 +9,9 @@ import com.altafjava.school.domain.teacher.model.Teacher;
 
 public interface TeacherRepository extends JpaRepository<Teacher, Long> {
 
-    Page<Teacher> findAllByTenantId(Long tenantId, Pageable pageable);
+	Page<Teacher> findAllByTenantId(Long tenantId, Pageable pageable);
 
-    Optional<Teacher> findByPublicIdAndTenantId(UUID publicId, Long tenantId);
+	Optional<Teacher> findByPublicIdAndTenantId(UUID publicId, Long tenantId);
 
-    boolean existsByEmployeeCodeAndTenantId(String employeeCode, Long tenantId);
+	boolean existsByEmployeeCodeAndTenantId(String employeeCode, Long tenantId);
 }

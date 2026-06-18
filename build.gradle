@@ -1,6 +1,7 @@
 plugins {
     id 'org.springframework.boot' version '3.2.2' apply false
     id 'io.spring.dependency-management' version '1.1.4' apply false
+    id 'com.diffplug.spotless' version '6.25.0' apply false
 }
 
 allprojects {
@@ -14,6 +15,7 @@ allprojects {
 subprojects {
     apply plugin: 'java-library'
     apply plugin: 'io.spring.dependency-management'
+    apply plugin: 'com.diffplug.spotless'
 
     // Override Testcontainers version managed by Spring Boot
     ext['testcontainers.version'] = libs.versions.testcontainers.get()
@@ -50,5 +52,18 @@ subprojects {
     tasks.withType(JavaCompile).configureEach {
         options.encoding = 'UTF-8'
         options.compilerArgs << "-parameters"
+    }
+
+    spotless {
+        java {
+            targetExclude('**/build/**')
+            eclipse('4.29').configFile(
+                rootProject.file('config/spotless/eclipse-formatter.xml')
+            )
+            importOrder('\\#|java|javax|jakarta|org|com|com.altafjava.school|')
+            removeUnusedImports()
+            trimTrailingWhitespace()
+            endWithNewline()
+        }
     }
 }

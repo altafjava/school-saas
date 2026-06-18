@@ -29,80 +29,81 @@ import com.altafjava.school.domain.teacher.repository.TeacherRepository;
  *
  * Phase 5 validation: ResourceAccessPolicy SPI is discovered and invoked by the platform.
  */
-@Import({TestRedisConfig.class, TestPaymentConfig.class})
+@Import({ TestRedisConfig.class, TestPaymentConfig.class })
 class SchoolResourceAccessPolicyIntegrationTest extends SchoolIntegrationTestBase {
 
-    @Autowired
-    private SchoolResourceAccessPolicy schoolResourceAccessPolicy;
+	@Autowired
+	private SchoolResourceAccessPolicy schoolResourceAccessPolicy;
 
-    @Autowired
-    private TeacherRepository teacherRepository;
+	@Autowired
+	private TeacherRepository teacherRepository;
 
-    @Autowired
-    private ClassroomRepository classroomRepository;
+	@Autowired
+	private ClassroomRepository classroomRepository;
 
-    @Autowired
-    private TenantOnboardingService onboardingService;
+	@Autowired
+	private TenantOnboardingService onboardingService;
 
-    private Long testTenantId;
+	private Long testTenantId;
 
-    @BeforeEach
-    void createTenantContext() {
-        TenantContext.clear();
-        String suffix = UUID.randomUUID().toString().substring(0, 8);
-        Tenant tenant = onboardingService.registerTenant(new RegisterTenantCommand(
-                "Policy Test School", "policy-" + suffix, 1L,
-                "admin@policy.test", "Password123!", "USD"));
-        testTenantId = tenant.getId();
-        TenantContext.setCurrentTenant(testTenantId, tenant.getPublicId(), "policy-" + suffix, TenantType.SHARED);
-    }
+	@BeforeEach
+	void createTenantContext() {
+		TenantContext.clear();
+		String suffix = UUID.randomUUID().toString().substring(0, 8);
+		Tenant tenant = onboardingService.registerTenant(new RegisterTenantCommand(
+				"Policy Test School", "policy-" + suffix, 1L,
+				"admin@policy.test", "Password123!", "USD"));
+		testTenantId = tenant.getId();
+		TenantContext.setCurrentTenant(testTenantId, tenant.getPublicId(), "policy-" + suffix, TenantType.SHARED);
+	}
 
-    @AfterEach
-    void clearContext() {
-        TenantContext.clear();
-    }
+	@AfterEach
+	void clearContext() {
+		TenantContext.clear();
+	}
 
-    @Test
-    void schoolResourceAccessPolicy_isRegisteredAsSpringBean() {
-        assertNotNull(schoolResourceAccessPolicy,
-                "SchoolResourceAccessPolicy must be discovered as a Spring bean via @Component");
-    }
+	@Test
+	void schoolResourceAccessPolicy_isRegisteredAsSpringBean() {
+		assertNotNull(schoolResourceAccessPolicy,
+				"SchoolResourceAccessPolicy must be discovered as a Spring bean via @Component");
+	}
 
-    @Test
-    void teacher_canAccessOwnClassroom() {
-        Teacher teacher = teacherRepository.save(Teacher.create(
-                "EMP-" + UUID.randomUUID().toString().substring(0, 6),
-                "Ms", "Johnson", "johnson@test.edu", null));
-        Classroom classroom = classroomRepository.save(Classroom.create(
-                "CLS-" + UUID.randomUUID().toString().substring(0, 6),
-                "Grade 5", "A", "2024-25", teacher.getId()));
+	@Test
+	void teacher_canAccessOwnClassroom() {
+		Teacher teacher = teacherRepository.save(Teacher.create(
+				"EMP-" + UUID.randomUUID().toString().substring(0, 6),
+				"Ms", "Johnson", "johnson@test.edu", null));
+		Classroom classroom = classroomRepository.save(Classroom.create(
+				"CLS-" + UUID.randomUUID().toString().substring(0, 6),
+				"Grade 5", "A", "2024-25", teacher.getId()));
 
-        boolean allowed = schoolResourceAccessPolicy.isAllowed(
-                String.valueOf(teacher.getId()), testTenantId, "CLASSROOM", classroom.getPublicId().toString(), "READ");
-        assertTrue(allowed, "Teacher must be allowed to READ their own classroom");
-    }
+		boolean allowed = schoolResourceAccessPolicy.isAllowed(
+				String.valueOf(teacher.getId()), testTenantId, "CLASSROOM", classroom.getPublicId().toString(), "READ");
+		assertTrue(allowed, "Teacher must be allowed to READ their own classroom");
+	}
 
-    @Test
-    void teacher_cannotAccessAnotherTeachersClassroom() {
-        Teacher teacher1 = teacherRepository.save(Teacher.create(
-                "EMP-" + UUID.randomUUID().toString().substring(0, 6),
-                "Mr", "Smith", "smith@test.edu", null));
-        Teacher teacher2 = teacherRepository.save(Teacher.create(
-                "EMP-" + UUID.randomUUID().toString().substring(0, 6),
-                "Mrs", "Lee", "lee@test.edu", null));
-        Classroom classroom = classroomRepository.save(Classroom.create(
-                "CLS-" + UUID.randomUUID().toString().substring(0, 6),
-                "Grade 6", "B", "2024-25", teacher1.getId()));
+	@Test
+	void teacher_cannotAccessAnotherTeachersClassroom() {
+		Teacher teacher1 = teacherRepository.save(Teacher.create(
+				"EMP-" + UUID.randomUUID().toString().substring(0, 6),
+				"Mr", "Smith", "smith@test.edu", null));
+		Teacher teacher2 = teacherRepository.save(Teacher.create(
+				"EMP-" + UUID.randomUUID().toString().substring(0, 6),
+				"Mrs", "Lee", "lee@test.edu", null));
+		Classroom classroom = classroomRepository.save(Classroom.create(
+				"CLS-" + UUID.randomUUID().toString().substring(0, 6),
+				"Grade 6", "B", "2024-25", teacher1.getId()));
 
-        boolean allowed = schoolResourceAccessPolicy.isAllowed(
-                String.valueOf(teacher2.getId()), testTenantId, "CLASSROOM", classroom.getPublicId().toString(), "READ");
-        assertFalse(allowed, "Teacher2 must be denied READ access to teacher1's classroom");
-    }
+		boolean allowed = schoolResourceAccessPolicy.isAllowed(
+				String.valueOf(teacher2.getId()), testTenantId, "CLASSROOM", classroom.getPublicId().toString(),
+				"READ");
+		assertFalse(allowed, "Teacher2 must be denied READ access to teacher1's classroom");
+	}
 
-    @Test
-    void nonClassroomResources_areAllowedByDefault() {
-        boolean allowed = schoolResourceAccessPolicy.isAllowed(
-                "any-user", testTenantId, "STUDENT", "any-public-id", "READ");
-        assertTrue(allowed, "Resource types not managed by the school policy must default to allowed");
-    }
+	@Test
+	void nonClassroomResources_areAllowedByDefault() {
+		boolean allowed = schoolResourceAccessPolicy.isAllowed(
+				"any-user", testTenantId, "STUDENT", "any-public-id", "READ");
+		assertTrue(allowed, "Resource types not managed by the school policy must default to allowed");
+	}
 }

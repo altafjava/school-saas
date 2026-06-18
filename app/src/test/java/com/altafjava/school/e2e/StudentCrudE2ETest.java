@@ -32,110 +32,110 @@ import io.restassured.http.ContentType;
  * Phase 5 validation: auth + JWT + school domain controller work end-to-end
  * with zero school-specific auth code.
  */
-@Import({TestRedisConfig.class, TestPaymentConfig.class})
+@Import({ TestRedisConfig.class, TestPaymentConfig.class })
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class StudentCrudE2ETest extends SchoolIntegrationTestBase {
 
-    @LocalServerPort
-    int port;
+	@LocalServerPort
+	int port;
 
-    @Autowired
-    private TenantOnboardingService onboardingService;
+	@Autowired
+	private TenantOnboardingService onboardingService;
 
-    private Long tenantId;
-    private String adminEmail;
-    private String adminPassword;
+	private Long tenantId;
+	private String adminEmail;
+	private String adminPassword;
 
-    @BeforeEach
-    void setup() {
-        RestAssured.port = port;
-        RestAssured.basePath = "";
+	@BeforeEach
+	void setup() {
+		RestAssured.port = port;
+		RestAssured.basePath = "";
 
-        String suffix = UUID.randomUUID().toString().substring(0, 8);
-        adminEmail = "admin-" + suffix + "@school.test";
-        adminPassword = "Password123!";
+		String suffix = UUID.randomUUID().toString().substring(0, 8);
+		adminEmail = "admin-" + suffix + "@school.test";
+		adminPassword = "Password123!";
 
-        Tenant tenant = onboardingService.registerTenant(new RegisterTenantCommand(
-                "E2E Test School", "e2e-" + suffix, 1L, adminEmail, adminPassword, "USD"));
-        tenantId = tenant.getId();
-    }
+		Tenant tenant = onboardingService.registerTenant(new RegisterTenantCommand(
+				"E2E Test School", "e2e-" + suffix, 1L, adminEmail, adminPassword, "USD"));
+		tenantId = tenant.getId();
+	}
 
-    @Test
-    void login_withPlatformAuthEndpoint_returnsJwt() {
-        given()
-                .header("X-Tenant-ID", tenantId)
-                .contentType(ContentType.JSON)
-                .body("{\"email\":\"" + adminEmail + "\",\"password\":\"" + adminPassword + "\"}")
-        .when()
-                .post("/api/v1/auth/login")
-        .then()
-                .statusCode(HttpStatus.OK.value())
-                .body("data.accessToken", notNullValue())
-                .body("data.refreshToken", notNullValue());
-    }
+	@Test
+	void login_withPlatformAuthEndpoint_returnsJwt() {
+		given()
+				.header("X-Tenant-ID", tenantId)
+				.contentType(ContentType.JSON)
+				.body("{\"email\":\"" + adminEmail + "\",\"password\":\"" + adminPassword + "\"}")
+				.when()
+				.post("/api/v1/auth/login")
+				.then()
+				.statusCode(HttpStatus.OK.value())
+				.body("data.accessToken", notNullValue())
+				.body("data.refreshToken", notNullValue());
+	}
 
-    @Test
-    void listStudents_withValidJwt_returnsEmptyPage() {
-        String accessToken = login();
+	@Test
+	void listStudents_withValidJwt_returnsEmptyPage() {
+		String accessToken = login();
 
-        given()
-                .header("X-Tenant-ID", tenantId)
-                .header("Authorization", "Bearer " + accessToken)
-                .contentType(ContentType.JSON)
-        .when()
-                .get("/api/v1/students")
-        .then()
-                .statusCode(HttpStatus.OK.value())
-                .body("content", hasSize(0));
-    }
+		given()
+				.header("X-Tenant-ID", tenantId)
+				.header("Authorization", "Bearer " + accessToken)
+				.contentType(ContentType.JSON)
+				.when()
+				.get("/api/v1/students")
+				.then()
+				.statusCode(HttpStatus.OK.value())
+				.body("content", hasSize(0));
+	}
 
-    @Test
-    void enrollStudent_withTenantAdminRole_returns201() {
-        String accessToken = login();
+	@Test
+	void enrollStudent_withTenantAdminRole_returns201() {
+		String accessToken = login();
 
-        given()
-                .header("X-Tenant-ID", tenantId)
-                .header("Authorization", "Bearer " + accessToken)
-                .contentType(ContentType.JSON)
-                .body("""
-                        {
-                          "studentCode": "STU-001",
-                          "firstName": "Alice",
-                          "lastName": "Smith",
-                          "email": "alice@school.test",
-                          "dateOfBirth": "2010-05-15"
-                        }
-                        """)
-        .when()
-                .post("/api/v1/students")
-        .then()
-                .statusCode(HttpStatus.CREATED.value())
-                .body("publicId", notNullValue())
-                .body("studentCode", equalTo("STU-001"))
-                .body("firstName", equalTo("Alice"))
-                .body("enrollmentStatus", equalTo("ACTIVE"));
-    }
+		given()
+				.header("X-Tenant-ID", tenantId)
+				.header("Authorization", "Bearer " + accessToken)
+				.contentType(ContentType.JSON)
+				.body("""
+						{
+						  "studentCode": "STU-001",
+						  "firstName": "Alice",
+						  "lastName": "Smith",
+						  "email": "alice@school.test",
+						  "dateOfBirth": "2010-05-15"
+						}
+						""")
+				.when()
+				.post("/api/v1/students")
+				.then()
+				.statusCode(HttpStatus.CREATED.value())
+				.body("publicId", notNullValue())
+				.body("studentCode", equalTo("STU-001"))
+				.body("firstName", equalTo("Alice"))
+				.body("enrollmentStatus", equalTo("ACTIVE"));
+	}
 
-    @Test
-    void listStudents_withoutJwt_returns401() {
-        given()
-                .header("X-Tenant-ID", tenantId)
-                .contentType(ContentType.JSON)
-        .when()
-                .get("/api/v1/students")
-        .then()
-                .statusCode(HttpStatus.UNAUTHORIZED.value());
-    }
+	@Test
+	void listStudents_withoutJwt_returns401() {
+		given()
+				.header("X-Tenant-ID", tenantId)
+				.contentType(ContentType.JSON)
+				.when()
+				.get("/api/v1/students")
+				.then()
+				.statusCode(HttpStatus.UNAUTHORIZED.value());
+	}
 
-    private String login() {
-        return given()
-                .header("X-Tenant-ID", tenantId)
-                .contentType(ContentType.JSON)
-                .body("{\"email\":\"" + adminEmail + "\",\"password\":\"" + adminPassword + "\"}")
-        .when()
-                .post("/api/v1/auth/login")
-        .then()
-                .statusCode(HttpStatus.OK.value())
-                .extract().path("data.accessToken");
-    }
+	private String login() {
+		return given()
+				.header("X-Tenant-ID", tenantId)
+				.contentType(ContentType.JSON)
+				.body("{\"email\":\"" + adminEmail + "\",\"password\":\"" + adminPassword + "\"}")
+				.when()
+				.post("/api/v1/auth/login")
+				.then()
+				.statusCode(HttpStatus.OK.value())
+				.extract().path("data.accessToken");
+	}
 }

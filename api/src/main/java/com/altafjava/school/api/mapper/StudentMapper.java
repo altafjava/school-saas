@@ -9,7 +9,7 @@ import com.altafjava.school.domain.student.model.Student;
 @Mapper(componentModel = "spring", unmappedTargetPolicy = ReportingPolicy.ERROR)
 public interface StudentMapper {
 
-    @Mapping(target = "publicId", expression = "java(student.getPublicId().toString())")
-    @Mapping(target = "enrollmentStatus", expression = "java(student.getEnrollmentStatus().name())")
-    StudentResponse toResponse(Student student);
+	@Mapping(target = "publicId", expression = "java(student.getPublicId().toString())")
+	@Mapping(target = "enrollmentStatus", expression = "java(student.getEnrollmentStatus().name())")
+	StudentResponse toResponse(Student student);
 }

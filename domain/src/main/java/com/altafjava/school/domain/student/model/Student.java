@@ -23,37 +23,37 @@ import lombok.experimental.SuperBuilder;
 @NoArgsConstructor
 public class Student extends SoftDeletableEntity {
 
-    @Pii
-    @Column(name = "first_name", nullable = false, length = 100)
-    private String firstName;
+	@Pii
+	@Column(name = "first_name", nullable = false, length = 100)
+	private String firstName;
 
-    @Pii
-    @Column(name = "last_name", nullable = false, length = 100)
-    private String lastName;
+	@Pii
+	@Column(name = "last_name", nullable = false, length = 100)
+	private String lastName;
 
-    @Pii
-    @Column(name = "email", length = 255)
-    private String email;
+	@Pii
+	@Column(name = "email", length = 255)
+	private String email;
 
-    @Column(name = "student_code", nullable = false, length = 50)
-    private String studentCode;
+	@Column(name = "student_code", nullable = false, length = 50)
+	private String studentCode;
 
-    @Column(name = "date_of_birth")
-    private LocalDate dateOfBirth;
+	@Column(name = "date_of_birth")
+	private LocalDate dateOfBirth;
 
-    @Enumerated(EnumType.STRING)
-    @Column(name = "enrollment_status", nullable = false, length = 30)
-    private EnrollmentStatus enrollmentStatus;
+	@Enumerated(EnumType.STRING)
+	@Column(name = "enrollment_status", nullable = false, length = 30)
+	private EnrollmentStatus enrollmentStatus;
 
-    public static Student create(String studentCode, String firstName, String lastName,
-            String email, LocalDate dateOfBirth) {
-        return Student.builder()
-                .studentCode(studentCode)
-                .firstName(firstName)
-                .lastName(lastName)
-                .email(email)
-                .dateOfBirth(dateOfBirth)
-                .enrollmentStatus(EnrollmentStatus.ACTIVE)
-                .build();
-    }
+	public static Student create(String studentCode, String firstName, String lastName,
+			String email, LocalDate dateOfBirth) {
+		return Student.builder()
+				.studentCode(studentCode)
+				.firstName(firstName)
+				.lastName(lastName)
+				.email(email)
+				.dateOfBirth(dateOfBirth)
+				.enrollmentStatus(EnrollmentStatus.ACTIVE)
+				.build();
+	}
 }

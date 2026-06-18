@@ -19,30 +19,30 @@ import lombok.experimental.SuperBuilder;
 @NoArgsConstructor
 public class Classroom extends SoftDeletableEntity {
 
-    @Column(name = "class_code", nullable = false, length = 50)
-    private String classCode;
+	@Column(name = "class_code", nullable = false, length = 50)
+	private String classCode;
 
-    @Column(name = "grade", nullable = false, length = 20)
-    private String grade;
+	@Column(name = "grade", nullable = false, length = 20)
+	private String grade;
 
-    @Column(name = "section", nullable = false, length = 10)
-    private String section;
+	@Column(name = "section", nullable = false, length = 10)
+	private String section;
 
-    @Column(name = "academic_year", nullable = false, length = 20)
-    private String academicYear;
+	@Column(name = "academic_year", nullable = false, length = 20)
+	private String academicYear;
 
-    // FK to teachers.id — stored as Long to avoid cross-entity coupling in domain layer
-    @Column(name = "class_teacher_id")
-    private Long classTeacherId;
+	// FK to teachers.id — stored as Long to avoid cross-entity coupling in domain layer
+	@Column(name = "class_teacher_id")
+	private Long classTeacherId;
 
-    public static Classroom create(String classCode, String grade, String section,
-            String academicYear, Long classTeacherId) {
-        return Classroom.builder()
-                .classCode(classCode)
-                .grade(grade)
-                .section(section)
-                .academicYear(academicYear)
-                .classTeacherId(classTeacherId)
-                .build();
-    }
+	public static Classroom create(String classCode, String grade, String section,
+			String academicYear, Long classTeacherId) {
+		return Classroom.builder()
+				.classCode(classCode)
+				.grade(grade)
+				.section(section)
+				.academicYear(academicYear)
+				.classTeacherId(classTeacherId)
+				.build();
+	}
 }
