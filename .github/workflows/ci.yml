@@ -63,13 +63,13 @@ jobs:
       - name: Compile
         env:
           GITHUB_ACTOR: ${{ github.actor }}
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PLATFORM_SAAS_TOKEN: ${{ secrets.PLATFORM_SAAS_TOKEN }}
         run: ./gradlew compileJava compileTestJava
 
       - name: Test
         env:
           GITHUB_ACTOR: ${{ github.actor }}
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PLATFORM_SAAS_TOKEN: ${{ secrets.PLATFORM_SAAS_TOKEN }}
           SPRING_PROFILES_ACTIVE: test
           STRIPE_API_KEY: sk_test_dummy_key_for_ci
         run: ./gradlew test
@@ -101,18 +101,22 @@ jobs:
     steps:
       - uses: actions/checkout@v5
 
-      - name: Create PR develop → main (if none exists)
+      - name: Create or update PR → main
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          EXISTING=$(gh pr list --base main --head develop --state open --json number --jq '.[0].number')
+          BRANCH="${{ github.ref_name }}"
+          SUBJECT=$(printf '%s' "${{ github.event.head_commit.message }}" | head -1)
+          TITLE="${BRANCH} → main: ${SUBJECT}"
+          EXISTING=$(gh pr list --base main --head "${BRANCH}" --state open --json number --jq '.[0].number')
           if [ -n "$EXISTING" ]; then
-            echo "PR #$EXISTING already open — skipping."
+            gh pr edit "$EXISTING" --title "$TITLE"
+            echo "Updated PR #$EXISTING title to: $TITLE"
           else
             gh pr create \
               --base main \
-              --head develop \
-              --title "develop → main" \
-              --body "Automated PR: all CI checks passed on \`develop\`."
-            echo "PR created."
+              --head "${BRANCH}" \
+              --title "$TITLE" \
+              --body "Automated PR: all CI checks passed on \`${BRANCH}\`."
+            echo "PR created: $TITLE"
           fi
