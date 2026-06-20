@@ -15,6 +15,28 @@ Gradle does not need to be installed — the repo ships with `./gradlew`.
 
 ---
 
+## Platform Dependency
+
+This project consumes the platform as a published artifact — it does **not** reference the platform source directly.
+
+| Environment | How the artifact is resolved |
+|-------------|------------------------------|
+| Local development | `~/.m2` (local Maven cache) — publish from platform-saas first |
+| CI / CD | GitHub Packages — resolved automatically using `GITHUB_ACTOR` + `GITHUB_TOKEN` |
+
+**One-time local setup** — run this once in the `platform-saas` directory whenever the platform version changes:
+
+```bash
+cd ../platform-saas
+./gradlew publishToMavenLocal
+```
+
+After that, `./gradlew build` in this project resolves `com.altafjava.platform:*:1.0.0-SNAPSHOT` from your local Maven cache automatically.
+
+> If you see `Could not find com.altafjava.platform:platform-bom:…`, the platform has not been published locally yet. Run `publishToMavenLocal` in `platform-saas` and retry.
+
+---
+
 ## Local Development Setup
 
 ### 1. Start all infrastructure

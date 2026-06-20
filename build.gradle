@@ -8,6 +8,7 @@ allprojects {
     group = 'com.altafjava.school'
     version = '0.0.1-SNAPSHOT'
     repositories {
+        mavenLocal()    // resolves com.altafjava.platform:* published via platform-saas publishToMavenLocal
         mavenCentral()
     }
 }
@@ -44,6 +45,9 @@ subprojects {
     dependencyManagement {
         imports {
             mavenBom "org.springframework.boot:spring-boot-dependencies:3.2.2"
+            // Platform BOM — aligns all com.altafjava.platform:* versions across every school module.
+            // Upgrade the platform by changing this single version string.
+            mavenBom "com.altafjava.platform:platform-bom:1.0.0-SNAPSHOT"
         }
     }
 

@@ -7,7 +7,8 @@ plugins {
 dependencies {
     implementation project(':api')
 
-    // Single platform dependency — the starter wires everything via auto-configuration
+    // Single platform dependency — the starter wires everything via auto-configuration.
+    // Version is managed by the platform-bom imported in the root build.gradle.
     implementation 'com.altafjava.platform:spring-boot-starter'
 
     // Test infrastructure
