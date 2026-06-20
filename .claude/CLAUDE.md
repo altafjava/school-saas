@@ -403,6 +403,7 @@ After every edit, run ./gradlew compileJava compileTestJava and fix all warnings
 13. Use `FetchType.EAGER` on any association
 14. Use `EnumType.ORDINAL`
 15. Create an abstraction, utility, or pattern not required by the current task (YAGNI)
+16. Run `git commit` or `git push` (or any destructive git command) — never commit or push to the repository without explicit instruction from the user
 
 ---
 
