@@ -63,13 +63,13 @@ jobs:
       - name: Compile
         env:
           GITHUB_ACTOR: ${{ github.actor }}
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PLATFORM_SAAS_TOKEN: ${{ secrets.PLATFORM_SAAS_TOKEN }}
         run: ./gradlew compileJava compileTestJava
 
       - name: Test
         env:
           GITHUB_ACTOR: ${{ github.actor }}
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PLATFORM_SAAS_TOKEN: ${{ secrets.PLATFORM_SAAS_TOKEN }}
           SPRING_PROFILES_ACTIVE: test
           STRIPE_API_KEY: sk_test_dummy_key_for_ci
         run: ./gradlew test
