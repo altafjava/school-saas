@@ -3,7 +3,7 @@ package com.altafjava.school;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
-@SpringBootApplication(scanBasePackages = { "com.altafjava.school", "com.altafjava.platform" })
+@SpringBootApplication
 public class SchoolApplication {
 
 	public static void main(String[] args) {

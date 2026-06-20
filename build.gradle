@@ -8,8 +8,18 @@ allprojects {
     group = 'com.altafjava.school'
     version = '0.0.1-SNAPSHOT'
     repositories {
-        mavenLocal()    // resolves com.altafjava.platform:* published via platform-saas publishToMavenLocal
+        mavenLocal()    // local dev: platform artifact published via platform-saas publishToMavenLocal
         mavenCentral()
+        // CI: platform artifact resolved from GitHub Packages using workflow-provided env vars.
+        // GITHUB_ACTOR and GITHUB_TOKEN are injected automatically by GitHub Actions.
+        maven {
+            name = 'GitHubPackages'
+            url = uri('https://maven.pkg.github.com/altafjava/platform-saas')
+            credentials {
+                username = System.getenv('GITHUB_ACTOR') ?: ''
+                password = System.getenv('GITHUB_TOKEN') ?: ''
+            }
+        }
     }
 }
 
