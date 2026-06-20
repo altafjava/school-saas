@@ -14,8 +14,23 @@ allprojects {
 
 subprojects {
     apply plugin: 'java-library'
+    apply plugin: 'eclipse'
     apply plugin: 'io.spring.dependency-management'
     apply plugin: 'com.diffplug.spotless'
+
+    // Prefix every Eclipse project name with "school-" to avoid name collisions with
+    // platform-saas modules (domain, api, application) when both are imported as a Gradle
+    // composite build. Buildship must see stable, unique names before writing classpath
+    // entries; if it auto-renames later the references break ("missing required Java project").
+    // gradleModuleName is captured here because inside the eclipse { project { } } closure
+    // the delegate is EclipseProject, whose .name property shadows the Gradle project name
+    // and returns the composite-qualified name (e.g. "school-saas-domain") instead of "domain".
+    def gradleModuleName = project.name
+    eclipse {
+        project {
+            name = "school-${gradleModuleName}"
+        }
+    }
 
     // Prefix all school module JARs with "school-" to avoid filename collisions
     // with platform-saas modules of the same name (domain, application, api) in BOOT-INF/lib.

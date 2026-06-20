@@ -1,5 +1,6 @@
 package com.altafjava.school.integration;
 
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import java.time.LocalDate;
@@ -65,7 +66,7 @@ class StudentTenantIsolationIntegrationTest extends SchoolIntegrationTestBase {
 		String studentCode = "STU-" + UUID.randomUUID().toString().substring(0, 8);
 		Student enrolled = studentService.enroll(
 				studentCode, "Alice", "Smith", "alice@a.edu", LocalDate.of(2010, 5, 15));
-		String publicId = enrolled.getPublicId().toString();
+		UUID publicId = enrolled.getPublicId();
 
 		// When — switch to tenant B and list students
 		TenantContext.setTenant(tenantBId, null);
@@ -74,7 +75,8 @@ class StudentTenantIsolationIntegrationTest extends SchoolIntegrationTestBase {
 		// Then — tenant B must not see tenant A's student
 		boolean found = tenantBStudents.getContent().stream()
 				.anyMatch(s -> s.getPublicId().equals(publicId));
-		assertTrue(!found, "Tenant B must not see students enrolled under tenant A");
+
+		assertFalse(found, "Tenant B must not see students enrolled under tenant A");
 	}
 
 	@Test

@@ -1,4 +1,4 @@
-rootProject.name = 'school-management'
+rootProject.name = 'school-saas'
 include 'domain', 'application', 'api', 'app'
 
 // Composite build — resolves com.altafjava.platform:* from the local platform project.

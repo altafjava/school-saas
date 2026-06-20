@@ -1,14 +1,7 @@
 spring:
   application:
-    name: school-management
+    name: school-saas
   profiles:
-    default: dev
-  main:
-    allow-circular-references: false
-  jackson:
-    default-property-inclusion: non_null
-    serialization:
-      write_dates_as_timestamps: false
-
-server:
-  port: 8080
+    active: dev
+  config:
+    import: "classpath:platform-defaults.yml"

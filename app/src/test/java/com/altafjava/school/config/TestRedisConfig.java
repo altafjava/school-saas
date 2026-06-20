@@ -40,8 +40,8 @@ public class TestRedisConfig {
 		BucketProxy bucket = Mockito.mock(BucketProxy.class);
 		ConsumptionProbe probe = Mockito.mock(ConsumptionProbe.class);
 		Mockito.when(proxyManager.builder()).thenReturn(bucketBuilder);
-		Mockito.when(bucketBuilder.build(Mockito.anyString(), Mockito.any(BucketConfiguration.class)))
-				.thenReturn(bucket);
+		Mockito.when(bucketBuilder.build(Mockito.anyString(),
+				Mockito.<java.util.function.Supplier<BucketConfiguration>>any())).thenReturn(bucket);
 		Mockito.when(bucket.tryConsumeAndReturnRemaining(Mockito.anyLong())).thenReturn(probe);
 		Mockito.when(probe.isConsumed()).thenReturn(true);
 		Mockito.when(probe.getRemainingTokens()).thenReturn(99L);
