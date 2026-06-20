@@ -1,12 +1,17 @@
 rootProject.name = 'school-saas'
 include 'domain', 'application', 'api', 'app'
 
-// Composite build — resolves com.altafjava.platform:* from the local platform project.
-// Remove this line and add the published artifact to app/build.gradle when moving to a released version.
-includeBuild '../platform-saas'
-
 dependencyResolutionManagement {
     repositories {
+        mavenLocal()        // resolves com.altafjava.platform:* published via ./gradlew publishToMavenLocal
         mavenCentral()
+        maven {
+            name = 'GitHubPackages'
+            url = uri('https://maven.pkg.github.com/altafjava/platform-saas')
+            credentials {
+                username = settings.providers.environmentVariable('GITHUB_ACTOR').orNull
+                password = settings.providers.environmentVariable('GITHUB_TOKEN').orNull
+            }
+        }
     }
 }
