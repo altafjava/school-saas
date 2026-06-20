@@ -380,6 +380,12 @@ Before any change that touches data access:
 
 ---
 
+## Post-Edit Quality Gate
+
+After every edit, run ./gradlew compileJava compileTestJava and fix all warnings before completing the task. No warning is acceptable, regardless of type.
+
+---
+
 ## What Claude Code Must Never Do
 
 1. Put business logic in a controller
