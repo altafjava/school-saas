@@ -1,1 +1,0 @@
-{{schoolName}}: {{studentName}} was marked {{attendanceStatus}} on {{attendanceDate}} in {{classroomName}}. Contact school if this is an error.

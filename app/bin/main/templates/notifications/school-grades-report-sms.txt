@@ -1,1 +1,0 @@
-{{schoolName}}: Grade report for {{studentName}} — {{subject}}: {{marks}}/{{maxMarks}} ({{gradeLetter}}). Exam: {{examTitle}}.
