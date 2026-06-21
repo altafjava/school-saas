@@ -10,9 +10,9 @@ dependencyResolutionManagement {
             url = uri('https://maven.pkg.github.com/altafjava/platform-saas')
             credentials {
                 username = settings.providers.environmentVariable('GITHUB_ACTOR').orNull
-                password = settings.providers.environmentVariable('PLATFORM_SAAS_TOKEN').orElse(
-                    settings.providers.environmentVariable('GITHUB_TOKEN').orNull
-                ).orNull
+                password = settings.providers.environmentVariable('PLATFORM_SAAS_TOKEN')
+                    .orElse(settings.providers.environmentVariable('GITHUB_TOKEN'))
+                    .orNull
             }
         }
     }

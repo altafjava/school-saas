@@ -33,7 +33,13 @@ cd ../platform-saas
 
 After that, `./gradlew build` in this project resolves `com.altafjava.platform:*:1.0.0-SNAPSHOT` from your local Maven cache automatically.
 
-> If you see `Could not find com.altafjava.platform:platform-bom:…`, the platform has not been published locally yet. Run `publishToMavenLocal` in `platform-saas` and retry.
+> **Re-publish whenever platform source changes.** This project reads the artifact from `~/.m2` — it will not pick up platform code changes until `publishToMavenLocal` is re-run in `platform-saas`.
+
+| Symptom | Cause | Fix |
+|---------|-------|-----|
+| `Could not find com.altafjava.platform:platform-bom:…` | Never published locally | Run `publishToMavenLocal` in `platform-saas` |
+| App starts with old behaviour after a platform change | Stale artifact in `~/.m2` | Re-run `publishToMavenLocal` in `platform-saas` |
+| Bean conflict / startup error after platform update | Old JAR still cached | Re-run `publishToMavenLocal` then restart the app |
 
 ---
 
@@ -118,6 +124,31 @@ Tests use TestContainers and spin up their own isolated MariaDB and RabbitMQ con
 ```bash
 ./gradlew test
 ```
+
+---
+
+## Load Testing
+
+With the app and all Docker containers running, Gatling load tests can be executed against this app from the `platform-saas` directory.
+
+Quick start — auth load test with local-safe parameters:
+
+```bash
+# 1. Register a tenant (one-time) — planId is a number (2=Basic), not a plan name string
+curl -X POST http://localhost:8080/api/v1/tenants/register \
+  -H "Content-Type: application/json" \
+  -d '{"name":"Demo School","subdomain":"demo","planId":2,"adminEmail":"admin@demo.com","adminPassword":"Admin@123!","currency":"USD"}'
+
+# 2. Run a simulation (from platform-saas/)
+cd ../platform-saas
+./gradlew :spring-boot-starter:gatlingRun \
+  -DsimulationClass=com.altafjava.platform.performance.AuthLoadSimulation \
+  -DbaseUrl=http://localhost:8080 \
+  -DtargetUsers=20 \
+  -DrampSeconds=30
+```
+
+For all 5 simulations, token acquisition, report reading, and resilience scenario testing, see **[LOAD_TESTING.md](LOAD_TESTING.md)**.
 
 ---
 

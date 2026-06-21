@@ -1,0 +1,1 @@
+{{schoolName}}: Fee reminder for {{studentName}}. {{feeName}}: {{currency}} {{amount}} due on {{dueDate}} ({{daysUntilDue}} day(s) remaining).
