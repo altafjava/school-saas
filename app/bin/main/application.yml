@@ -1,0 +1,7 @@
+spring:
+  application:
+    name: school-saas
+  profiles:
+    active: dev
+  config:
+    import: "classpath:platform-defaults.yml"
