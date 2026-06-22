@@ -18,6 +18,7 @@ import org.springframework.data.redis.connection.RedisConnectionFactory;
 import org.springframework.data.redis.connection.RedisKeyCommands;
 import org.springframework.data.redis.connection.RedisServerCommands;
 import org.springframework.data.redis.connection.RedisStringCommands;
+import org.springframework.data.redis.listener.RedisMessageListenerContainer;
 import com.altafjava.platform.application.security.TokenBlacklist;
 import com.altafjava.platform.domain.subscription.model.MetricType;
 import com.altafjava.platform.domain.subscription.service.UsageTrackingService;
@@ -75,6 +76,13 @@ public class TestRedisConfig {
 		Mockito.when(client.getRateLimiter(Mockito.anyString())).thenReturn(rateLimiter);
 		Mockito.when(rateLimiter.tryAcquire(Mockito.anyLong())).thenReturn(true);
 		return client;
+	}
+
+	@Bean("sseNotificationListenerContainer")
+	public RedisMessageListenerContainer sseNotificationListenerContainer(RedisConnectionFactory connectionFactory) {
+		RedisMessageListenerContainer container = new RedisMessageListenerContainer();
+		container.setConnectionFactory(connectionFactory);
+		return container;
 	}
 
 	@Bean
