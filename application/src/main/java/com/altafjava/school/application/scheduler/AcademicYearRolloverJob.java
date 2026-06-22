@@ -2,8 +2,6 @@ package com.altafjava.school.application.scheduler;
 
 import java.time.LocalDate;
 import java.util.Map;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 import com.altafjava.platform.application.scheduler.annotation.ScheduledJob;
@@ -13,16 +11,16 @@ import com.altafjava.platform.domain.scheduler.model.JobExecutionContext;
 import com.altafjava.platform.domain.scheduler.model.JobExecutionResult;
 import com.altafjava.school.domain.academicyear.model.AcademicYear;
 import com.altafjava.school.domain.academicyear.repository.AcademicYearRepository;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * Runs on April 1st at 00:00 tenant-local time (start of new academic year).
  * Creates the new academic year and marks the previous one as non-current.
  */
+@Slf4j
 @Component
 @ScheduledJob(name = "AcademicYearRollover", group = "school", description = "Rolls over to the new academic year on April 1st", cronExpression = "0 0 0 1 4 ?", tenantScoped = true, retryEnabled = true, maxRetries = 2)
 public class AcademicYearRolloverJob implements JobExecutionStrategy {
-
-	private static final Logger log = LoggerFactory.getLogger(AcademicYearRolloverJob.class);
 
 	private final AcademicYearRepository academicYearRepository;
 

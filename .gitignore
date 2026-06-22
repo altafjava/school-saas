@@ -1,17 +1,27 @@
+# Build outputs
 .gradle/
 build/
-.idea/
-*.iml
-*.ipr
-*.iws
-.classpath
-.project
-.settings/
-.factorypath
+bin/
 out/
 *.class
 *.jar
 !gradle/wrapper/gradle-wrapper.jar
+
+# IDE — IntelliJ IDEA
+.idea/
+*.iml
+*.ipr
+*.iws
+
+# IDE — Eclipse / VS Code Java extension (Eclipse JDT)
+.classpath
+.project
+.settings/
+.factorypath
+
+# Environment
 .env
 .env.local
+
+# Logs
 *.log

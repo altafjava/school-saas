@@ -1,8 +1,6 @@
 package com.altafjava.school.application.listener;
 
 import java.time.LocalDate;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
@@ -12,6 +10,7 @@ import com.altafjava.platform.application.event.events.TenantCreatedEvent;
 import com.altafjava.platform.core.tenant.TenantContext;
 import com.altafjava.school.domain.academicyear.model.AcademicYear;
 import com.altafjava.school.domain.academicyear.repository.AcademicYearRepository;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * Reacts to a new tenant being provisioned by the platform.
@@ -19,10 +18,9 @@ import com.altafjava.school.domain.academicyear.repository.AcademicYearRepositor
  *
  * Runs asynchronously — TenantContext is propagated automatically via the platform's TaskDecorator.
  */
+@Slf4j
 @Component
 public class SchoolTenantProvisioningListener {
-
-	private static final Logger log = LoggerFactory.getLogger(SchoolTenantProvisioningListener.class);
 
 	private final AcademicYearRepository academicYearRepository;
 
