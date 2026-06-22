@@ -1,7 +1,7 @@
 package com.altafjava.school.integration;
 
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 import java.time.LocalDate;
 import java.util.UUID;
 import org.junit.jupiter.api.AfterEach;
@@ -46,20 +46,22 @@ class AttendanceTenantIsolationIntegrationTest extends SchoolIntegrationTestBase
 	@Autowired
 	private TenantOnboardingService onboardingService;
 
-	private Long tenantAId;
-	private Long tenantBId;
+	private Tenant tenantA;
+	private Tenant tenantB;
 
 	@BeforeEach
 	void createTenants() {
 		TenantContext.clear();
 		String suffix = UUID.randomUUID().toString().substring(0, 8);
-		Tenant tenantA = onboardingService.registerTenant(new RegisterTenantCommand(
+		tenantA = onboardingService.registerTenant(new RegisterTenantCommand(
 				"School A", "att-a-" + suffix, 1L, "admin@att-a.test", "Password123!", "USD"));
-		Tenant tenantB = onboardingService.registerTenant(new RegisterTenantCommand(
+		tenantB = onboardingService.registerTenant(new RegisterTenantCommand(
 				"School B", "att-b-" + suffix, 1L, "admin@att-b.test", "Password123!", "USD"));
-		tenantAId = tenantA.getId();
-		tenantBId = tenantB.getId();
 		TenantContext.clear();
+	}
+
+	private void activateTenant(Tenant tenant) {
+		TenantContext.setCurrentTenant(tenant.getId(), tenant.getPublicId(), tenant.getSubdomain(), tenant.getType());
 	}
 
 	@AfterEach
@@ -70,7 +72,7 @@ class AttendanceTenantIsolationIntegrationTest extends SchoolIntegrationTestBase
 	@Test
 	void attendanceMarkedUnderTenantA_isNotVisibleToTenantB() {
 		// Given — create classroom and student under tenant A, mark attendance
-		TenantContext.setTenant(tenantAId, null);
+		activateTenant(tenantA);
 		String classCode = "CLS-" + UUID.randomUUID().toString().substring(0, 6);
 		var classroom = classroomService.create(classCode, "Grade 5", "A", "2024-25", null);
 		String studentCode = "STU-" + UUID.randomUUID().toString().substring(0, 6);
@@ -79,19 +81,19 @@ class AttendanceTenantIsolationIntegrationTest extends SchoolIntegrationTestBase
 				AttendanceStatus.PRESENT, "teacher-a");
 
 		// When — tenant B lists attendance
-		TenantContext.setTenant(tenantBId, null);
+		activateTenant(tenantB);
 		Page<Attendance> tenantBAttendance = attendanceService.listAttendance(PageRequest.of(0, 100));
 
 		// Then — tenant B must not see tenant A's records
 		boolean found = tenantBAttendance.getContent().stream()
-				.anyMatch(a -> tenantAId.equals(a.getTenantId()));
-		assertTrue(!found, "Tenant B must not see attendance records created under tenant A");
+				.anyMatch(a -> tenantA.getId().equals(a.getTenantId()));
+		assertFalse(found, "Tenant B must not see attendance records created under tenant A");
 	}
 
 	@Test
 	void attendancePublicId_notAccessibleAcrossTenants() {
 		// Given — mark attendance under tenant A
-		TenantContext.setTenant(tenantAId, null);
+		activateTenant(tenantA);
 		String classCode = "CLS-" + UUID.randomUUID().toString().substring(0, 6);
 		var classroom = classroomService.create(classCode, "Grade 6", "B", "2024-25", null);
 		Student student = studentService.enroll(
@@ -102,7 +104,7 @@ class AttendanceTenantIsolationIntegrationTest extends SchoolIntegrationTestBase
 		String publicId = attendance.getPublicId().toString();
 
 		// When/Then — tenant B cannot fetch tenant A's attendance record
-		TenantContext.setTenant(tenantBId, null);
+		activateTenant(tenantB);
 		assertThrows(ResourceNotFoundException.class,
 				() -> attendanceService.findByPublicId(publicId),
 				"Tenant B must receive ResourceNotFoundException for tenant A's attendance");
