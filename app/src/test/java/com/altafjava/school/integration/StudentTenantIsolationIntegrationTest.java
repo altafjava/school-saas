@@ -38,20 +38,22 @@ class StudentTenantIsolationIntegrationTest extends SchoolIntegrationTestBase {
 	@Autowired
 	private TenantOnboardingService onboardingService;
 
-	private Long tenantAId;
-	private Long tenantBId;
+	private Tenant tenantA;
+	private Tenant tenantB;
 
 	@BeforeEach
 	void createTenants() {
 		TenantContext.clear();
 		String suffix = UUID.randomUUID().toString().substring(0, 8);
-		Tenant tenantA = onboardingService.registerTenant(new RegisterTenantCommand(
+		tenantA = onboardingService.registerTenant(new RegisterTenantCommand(
 				"School A", "school-a-" + suffix, 1L, "admin@school-a.test", "Password123!", "USD"));
-		Tenant tenantB = onboardingService.registerTenant(new RegisterTenantCommand(
+		tenantB = onboardingService.registerTenant(new RegisterTenantCommand(
 				"School B", "school-b-" + suffix, 1L, "admin@school-b.test", "Password123!", "USD"));
-		tenantAId = tenantA.getId();
-		tenantBId = tenantB.getId();
 		TenantContext.clear();
+	}
+
+	private void activateTenant(Tenant tenant) {
+		TenantContext.setCurrentTenant(tenant.getId(), tenant.getPublicId(), tenant.getSubdomain(), tenant.getType());
 	}
 
 	@AfterEach
@@ -62,14 +64,14 @@ class StudentTenantIsolationIntegrationTest extends SchoolIntegrationTestBase {
 	@Test
 	void studentEnrolledUnderTenantA_isNotVisibleToTenantB() {
 		// Given — enroll a student under tenant A
-		TenantContext.setTenant(tenantAId, null);
+		activateTenant(tenantA);
 		String studentCode = "STU-" + UUID.randomUUID().toString().substring(0, 8);
 		Student enrolled = studentService.enroll(
 				studentCode, "Alice", "Smith", "alice@a.edu", LocalDate.of(2010, 5, 15));
 		UUID publicId = enrolled.getPublicId();
 
 		// When — switch to tenant B and list students
-		TenantContext.setTenant(tenantBId, null);
+		activateTenant(tenantB);
 		Page<Student> tenantBStudents = studentService.listStudents(PageRequest.of(0, 100));
 
 		// Then — tenant B must not see tenant A's student
@@ -82,14 +84,14 @@ class StudentTenantIsolationIntegrationTest extends SchoolIntegrationTestBase {
 	@Test
 	void studentPublicId_notAccessibleAcrossTenants() {
 		// Given — enroll under tenant A
-		TenantContext.setTenant(tenantAId, null);
+		activateTenant(tenantA);
 		Student enrolled = studentService.enroll(
 				"STU-" + UUID.randomUUID().toString().substring(0, 8),
 				"Bob", "Jones", "bob@a.edu", LocalDate.of(2011, 3, 20));
 		String publicId = enrolled.getPublicId().toString();
 
 		// When/Then — tenant B cannot fetch tenant A's student by publicId
-		TenantContext.setTenant(tenantBId, null);
+		activateTenant(tenantB);
 		assertThrows(ResourceNotFoundException.class,
 				() -> studentService.findByPublicId(publicId),
 				"Tenant B must receive ResourceNotFoundException for tenant A's student");
@@ -98,24 +100,24 @@ class StudentTenantIsolationIntegrationTest extends SchoolIntegrationTestBase {
 	@Test
 	void eachTenant_seesOnlyItsOwnEnrolledStudents() {
 		// Enroll one student in tenant A, one in tenant B
-		TenantContext.setTenant(tenantAId, null);
+		activateTenant(tenantA);
 		studentService.enroll("STU-A-" + UUID.randomUUID().toString().substring(0, 6),
 				"Carol", "White", "carol@a.edu", LocalDate.of(2009, 7, 1));
 
-		TenantContext.setTenant(tenantBId, null);
+		activateTenant(tenantB);
 		studentService.enroll("STU-B-" + UUID.randomUUID().toString().substring(0, 6),
 				"Dave", "Brown", "dave@b.edu", LocalDate.of(2010, 2, 14));
 
-		// Tenant A sees only its student
-		TenantContext.setTenant(tenantAId, null);
+		// Tenant A sees only its own students
+		activateTenant(tenantA);
 		Page<Student> studentsA = studentService.listStudents(PageRequest.of(0, 100));
-		assertTrue(studentsA.getContent().stream().allMatch(s -> tenantAId.equals(s.getTenantId())),
+		assertTrue(studentsA.getContent().stream().allMatch(s -> tenantA.getId().equals(s.getTenantId())),
 				"All students listed under tenant A must belong to tenant A");
 
-		// Tenant B sees only its student
-		TenantContext.setTenant(tenantBId, null);
+		// Tenant B sees only its own students
+		activateTenant(tenantB);
 		Page<Student> studentsB = studentService.listStudents(PageRequest.of(0, 100));
-		assertTrue(studentsB.getContent().stream().allMatch(s -> tenantBId.equals(s.getTenantId())),
+		assertTrue(studentsB.getContent().stream().allMatch(s -> tenantB.getId().equals(s.getTenantId())),
 				"All students listed under tenant B must belong to tenant B");
 	}
 }

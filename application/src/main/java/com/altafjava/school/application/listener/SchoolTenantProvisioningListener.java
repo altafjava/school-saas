@@ -7,7 +7,6 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.event.TransactionPhase;
 import org.springframework.transaction.event.TransactionalEventListener;
 import com.altafjava.platform.application.event.events.TenantCreatedEvent;
-import com.altafjava.platform.core.tenant.TenantContext;
 import com.altafjava.school.domain.academicyear.model.AcademicYear;
 import com.altafjava.school.domain.academicyear.repository.AcademicYearRepository;
 import lombok.extern.slf4j.Slf4j;
@@ -33,13 +32,9 @@ public class SchoolTenantProvisioningListener {
 	@TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
 	public void onTenantCreated(TenantCreatedEvent event) {
 		log.info("action=school-tenant-provisioning tenantId={} tenantType={}", event.tenantId(), event.tenantType());
-		TenantContext.setTenant(event.tenantId(), null);
-		try {
-			seedDefaultAcademicYear(event.tenantId());
-			log.info("action=school-tenant-provisioning-complete tenantId={}", event.tenantId());
-		} finally {
-			TenantContext.clear();
-		}
+		// TenantContext is propagated automatically by TenantAwareTaskDecorator — no manual set needed.
+		seedDefaultAcademicYear(event.tenantId());
+		log.info("action=school-tenant-provisioning-complete tenantId={}", event.tenantId());
 	}
 
 	private void seedDefaultAcademicYear(Long tenantId) {
