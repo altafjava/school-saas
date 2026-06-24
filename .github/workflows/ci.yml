@@ -2,9 +2,13 @@ name: CI — Compile & Test
 
 on:
   push:
-    branches: [ "main", "develop" ]
-  pull_request:
-    branches: [ "main", "develop" ]
+    branches: [ "develop" ]
+    paths:
+      - '**/*.java'
+      - '**/*.gradle'
+      - '**/gradle.properties'
+      - '**/gradle-wrapper.properties'
+      - '.github/workflows/**'
 
 permissions:
   contents: read
@@ -18,24 +22,7 @@ env:
 jobs:
   build-and-test:
     name: Compile & Test
-    runs-on: ubuntu-latest
-
-    # Tests connect to a real MariaDB at localhost:3306 (credentials from application-test.yml).
-    # Redis and RabbitMQ are mocked/excluded in the test profile — no containers needed for them.
-
-    services:
-      mariadb:
-        image: mariadb:11.2.2
-        env:
-          MARIADB_ROOT_PASSWORD: mysql
-          MARIADB_DATABASE: school_test
-        ports:
-          - 3306:3306
-        options: >-
-          --health-cmd="healthcheck.sh --su-mysql --connect --innodb_initialized"
-          --health-interval=10s
-          --health-timeout=5s
-          --health-retries=5
+    runs-on: self-hosted
 
     steps:
       - name: Checkout school-saas
@@ -49,14 +36,8 @@ jobs:
 
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v4
-
-      - name: Install MariaDB client
-        run: sudo apt-get update && sudo apt-get install -y mariadb-client
-
-      - name: Wait for MariaDB
-        run: |
-          timeout 60 bash -c 'until mysqladmin ping -h 127.0.0.1 -P 3306 -u root -pmysql --silent; do sleep 2; done'
-          echo "MariaDB ready!"
+        with:
+          cache-read-only: false
 
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
@@ -65,7 +46,7 @@ jobs:
         env:
           GITHUB_ACTOR: ${{ github.actor }}
           PLATFORM_SAAS_TOKEN: ${{ secrets.PLATFORM_SAAS_TOKEN }}
-        run: ./gradlew compileJava compileTestJava
+        run: ./gradlew compileJava compileTestJava --build-cache
 
       - name: Test
         env:
@@ -73,7 +54,7 @@ jobs:
           PLATFORM_SAAS_TOKEN: ${{ secrets.PLATFORM_SAAS_TOKEN }}
           SPRING_PROFILES_ACTIVE: test
           STRIPE_API_KEY: sk_test_dummy_key_for_ci
-        run: ./gradlew test
+        run: ./gradlew test --build-cache
 
       - name: Publish Test Report
         uses: mikepenz/action-junit-report@v5
@@ -93,7 +74,7 @@ jobs:
 
   auto-pr:
     name: Auto PR → main
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
     needs: build-and-test
     if: github.ref == 'refs/heads/develop' && github.event_name == 'push'
     permissions:
