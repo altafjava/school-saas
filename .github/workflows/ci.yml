@@ -12,12 +12,13 @@ permissions:
   pull-requests: write
   packages: read    # required to pull com.altafjava.platform:* from GitHub Packages
 
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
 jobs:
   build-and-test:
     name: Compile & Test
     runs-on: ubuntu-latest
-    env:
-      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
     # Tests connect to a real MariaDB at localhost:3306 (credentials from application-test.yml).
     # Redis and RabbitMQ are mocked/excluded in the test profile — no containers needed for them.
