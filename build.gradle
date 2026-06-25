@@ -35,6 +35,12 @@ subprojects {
 
     dependencyCheck {
         failBuildOnCVSS = 7.0
+        nvd {
+            // Key loaded from ~/.gradle/gradle.properties (nvdApiKey) or NVD_API_KEY env var in CI.
+            def key = findProperty('nvdApiKey') ?: System.getenv('NVD_API_KEY')
+            if (key) apiKey = key
+            delay = key ? 500 : 6000
+        }
     }
 
     // Prefix every Eclipse project name with "school-" to avoid name collisions with
