@@ -4,9 +4,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import org.mockito.Mockito;
-import org.redisson.api.RLock;
-import org.redisson.api.RRateLimiter;
-import org.redisson.api.RedissonClient;
 import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.cache.CacheManager;
 import org.springframework.cache.concurrent.ConcurrentMapCacheManager;
@@ -19,6 +16,7 @@ import org.springframework.data.redis.connection.RedisKeyCommands;
 import org.springframework.data.redis.connection.RedisServerCommands;
 import org.springframework.data.redis.connection.RedisStringCommands;
 import org.springframework.data.redis.listener.RedisMessageListenerContainer;
+import com.altafjava.platform.application.migration.MigrationLockService;
 import com.altafjava.platform.application.security.TokenBlacklist;
 import com.altafjava.platform.domain.subscription.model.MetricType;
 import com.altafjava.platform.domain.subscription.service.UsageTrackingService;
@@ -61,23 +59,6 @@ public class TestRedisConfig {
 		return factory;
 	}
 
-	@Bean
-	@Primary
-	public RedissonClient redissonClient() {
-		RedissonClient client = Mockito.mock(RedissonClient.class);
-		RLock lock = Mockito.mock(RLock.class);
-		Mockito.when(client.getLock(Mockito.anyString())).thenReturn(lock);
-		try {
-			Mockito.when(lock.tryLock(Mockito.anyLong(), Mockito.anyLong(), Mockito.any())).thenReturn(true);
-		} catch (InterruptedException e) {
-			Thread.currentThread().interrupt();
-		}
-		RRateLimiter rateLimiter = Mockito.mock(RRateLimiter.class);
-		Mockito.when(client.getRateLimiter(Mockito.anyString())).thenReturn(rateLimiter);
-		Mockito.when(rateLimiter.tryAcquire(Mockito.anyLong())).thenReturn(true);
-		return client;
-	}
-
 	@Bean("sseNotificationListenerContainer")
 	public RedisMessageListenerContainer sseNotificationListenerContainer(RedisConnectionFactory connectionFactory) {
 		RedisMessageListenerContainer container = new RedisMessageListenerContainer();
@@ -89,6 +70,15 @@ public class TestRedisConfig {
 	@Primary
 	public CacheManager cacheManager() {
 		return new ConcurrentMapCacheManager();
+	}
+
+	@Bean
+	@Primary
+	public MigrationLockService migrationLockService() {
+		return (tenantId, action) -> {
+			action.run();
+			return true;
+		};
 	}
 
 	@Bean
