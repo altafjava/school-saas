@@ -93,15 +93,15 @@ services:
 
   # ---------------------------------------------------------------------------
   # S3-compatible object storage (dev replacement for AWS S3)
-  # Console UI: http://localhost:9001  (minioadmin / minioadmin)
-  # API endpoint: http://localhost:9000
+  # Console UI: http://localhost:9002  (minioadmin / minioadmin)
+  # API endpoint: http://localhost:9003
   # ---------------------------------------------------------------------------
   minio:
     image: minio/minio:latest
     container_name: school_minio
     ports:
-      - "9000:9000"
-      - "9001:9001"
+      - "9003:9000"
+      - "9002:9001"
     environment:
       MINIO_ROOT_USER: minioadmin
       MINIO_ROOT_PASSWORD: minioadmin
@@ -150,13 +150,13 @@ services:
 
   # ---------------------------------------------------------------------------
   # Metrics dashboards
-  # UI: http://localhost:3000  (admin / admin)
+  # UI: http://localhost:3002  (admin / admin)
   # ---------------------------------------------------------------------------
   grafana:
     image: grafana/grafana-oss:10.3.1
     container_name: school_grafana
     ports:
-      - "3000:3000"
+      - "3002:3000"
     environment:
       GF_SECURITY_ADMIN_PASSWORD: admin
     volumes:

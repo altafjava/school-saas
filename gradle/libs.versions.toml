@@ -8,7 +8,6 @@ lombok-mapstruct-binding = "0.2.0"
 springdoc = "3.0.3"
 swagger-annotations = "2.2.19"
 jjwt = "0.12.3"
-redisson = "4.4.0"
 aws-java-sdk = "2.25.11"
 caffeine = "3.1.8"
 gatling = "3.10.3"
@@ -19,8 +18,6 @@ spring-boot-starter-cache = { module = "org.springframework.boot:spring-boot-sta
 caffeine = { module = "com.github.ben-manes.caffeine:caffeine", version.ref = "caffeine" }
 aws-java-sdk-bom = { module = "software.amazon.awssdk:bom", version.ref = "aws-java-sdk" }
 aws-s3 = { module = "software.amazon.awssdk:s3" }
-redisson-hibernate = { module = "org.redisson:redisson-hibernate-7", version.ref = "redisson" }
-redisson-spring-boot-starter = { module = "org.redisson:redisson-spring-boot-starter", version.ref = "redisson" }
 mapstruct = { module = "org.mapstruct:mapstruct", version.ref = "mapstruct" }
 mapstruct-processor = { module = "org.mapstruct:mapstruct-processor", version.ref = "mapstruct" }
 lombok-mapstruct-binding = { module = "org.projectlombok:lombok-mapstruct-binding", version.ref = "lombok-mapstruct-binding" }
