@@ -1,6 +1,7 @@
 plugins {
-    id 'org.springframework.boot' version '3.2.2' apply false
-    id 'io.spring.dependency-management' version '1.1.4' apply false
+    id 'org.springframework.boot' version '4.1.0' apply false
+    id 'io.spring.dependency-management' version '1.1.7' apply false
+    id 'org.owasp.dependencycheck' version '12.2.2' apply false
     id 'com.diffplug.spotless' version '6.25.0' apply false
 }
 
@@ -29,7 +30,12 @@ subprojects {
     apply plugin: 'java-library'
     apply plugin: 'eclipse'
     apply plugin: 'io.spring.dependency-management'
+    apply plugin: 'org.owasp.dependencycheck'
     apply plugin: 'com.diffplug.spotless'
+
+    dependencyCheck {
+        failBuildOnCVSS = 7.0
+    }
 
     // Prefix every Eclipse project name with "school-" to avoid name collisions with
     // platform-saas modules (domain, api, application) when both are imported as a Gradle
@@ -56,7 +62,7 @@ subprojects {
 
     dependencyManagement {
         imports {
-            mavenBom "org.springframework.boot:spring-boot-dependencies:3.2.2"
+            mavenBom "org.springframework.boot:spring-boot-dependencies:4.1.0"
             // Platform BOM — aligns all com.altafjava.platform:* versions across every school module.
             // Upgrade the platform by changing this single version string.
             mavenBom "com.altafjava.platform:platform-bom:1.0.0-SNAPSHOT"

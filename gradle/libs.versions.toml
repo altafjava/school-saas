@@ -1,27 +1,25 @@
 [versions]
-jakarta-persistence = "3.1.0"
-junit-jupiter = "5.10.1"
 rest-assured = "5.4.0"
-testcontainers = "1.20.1"
-resilience4j = "2.2.0"
-shedlock = "5.10.0"
-mapstruct = "1.5.5.Final"
+testcontainers = "2.0.1"
+resilience4j = "2.4.0"
+shedlock = "7.7.0"
+mapstruct = "1.6.3"
 lombok-mapstruct-binding = "0.2.0"
-springdoc = "2.3.0"
+springdoc = "3.0.3"
 swagger-annotations = "2.2.19"
 jjwt = "0.12.3"
-redisson = "3.27.0"
+redisson = "4.4.0"
 aws-java-sdk = "2.25.11"
 caffeine = "3.1.8"
 gatling = "3.10.3"
-sentry = "7.3.0"
+sentry = "8.28.0"
 
 [libraries]
 spring-boot-starter-cache = { module = "org.springframework.boot:spring-boot-starter-cache" }
 caffeine = { module = "com.github.ben-manes.caffeine:caffeine", version.ref = "caffeine" }
 aws-java-sdk-bom = { module = "software.amazon.awssdk:bom", version.ref = "aws-java-sdk" }
 aws-s3 = { module = "software.amazon.awssdk:s3" }
-redisson-hibernate = { module = "org.redisson:redisson-hibernate-6", version.ref = "redisson" }
+redisson-hibernate = { module = "org.redisson:redisson-hibernate-7", version.ref = "redisson" }
 redisson-spring-boot-starter = { module = "org.redisson:redisson-spring-boot-starter", version.ref = "redisson" }
 mapstruct = { module = "org.mapstruct:mapstruct", version.ref = "mapstruct" }
 mapstruct-processor = { module = "org.mapstruct:mapstruct-processor", version.ref = "mapstruct" }
@@ -42,19 +40,20 @@ spring-boot-starter-amqp = { module = "org.springframework.boot:spring-boot-star
 micrometer-registry-prometheus = { module = "io.micrometer:micrometer-registry-prometheus" }
 micrometer-tracing-bridge-brave = { module = "io.micrometer:micrometer-tracing-bridge-brave" }
 zipkin-reporter-brave = { module = "io.zipkin.reporter2:zipkin-reporter-brave" }
-logstash-logback-encoder = { module = "net.logstash.logback:logstash-logback-encoder", version = "7.4" }
-sentry-spring-boot-starter = { module = "io.sentry:sentry-spring-boot-starter-jakarta", version.ref = "sentry" }
+logstash-logback-encoder = { module = "net.logstash.logback:logstash-logback-encoder", version = "8.0" }
+sentry-spring-boot-starter = { module = "io.sentry:sentry-spring-boot-4-starter", version.ref = "sentry" }
 sentry-logback = { module = "io.sentry:sentry-logback", version.ref = "sentry" }
 spring-security-test = { module = "org.springframework.security:spring-security-test" }
 mariadb-java-client = { module = "org.mariadb.jdbc:mariadb-java-client" }
 postgresql = { module = "org.postgresql:postgresql" }
 liquibase-core = { module = "org.liquibase:liquibase-core" }
 lombok = { module = "org.projectlombok:lombok" }
-junit-jupiter-api = { module = "org.junit.jupiter:junit-jupiter-api", version.ref = "junit-jupiter" }
-junit-jupiter-engine = { module = "org.junit.jupiter:junit-jupiter-engine", version.ref = "junit-jupiter" }
-jakarta-persistence-api = { module = "jakarta.persistence:jakarta.persistence-api", version.ref = "jakarta-persistence" }
-hibernate-core = { module = "org.hibernate.orm:hibernate-core", version = "6.4.1.Final" }
-hibernate-jcache = { module = "org.hibernate.orm:hibernate-jcache", version = "6.4.1.Final" }
+junit-jupiter-api = { module = "org.junit.jupiter:junit-jupiter-api" }
+junit-jupiter-engine = { module = "org.junit.jupiter:junit-jupiter-engine" }
+junit-platform-launcher = { module = "org.junit.platform:junit-platform-launcher" }
+jakarta-persistence-api = { module = "jakarta.persistence:jakarta.persistence-api" }
+hibernate-core = { module = "org.hibernate.orm:hibernate-core" }
+hibernate-jcache = { module = "org.hibernate.orm:hibernate-jcache" }
 
 # Rest Assured
 rest-assured = { module = "io.rest-assured:rest-assured", version.ref = "rest-assured" }
@@ -64,9 +63,9 @@ json-schema-validator = { module = "io.rest-assured:json-schema-validator", vers
 # Testcontainers
 testcontainers-bom = { module = "org.testcontainers:testcontainers-bom", version.ref = "testcontainers" }
 testcontainers-core = { module = "org.testcontainers:testcontainers" }
-testcontainers-junit-jupiter = { module = "org.testcontainers:junit-jupiter" }
-testcontainers-mariadb = { module = "org.testcontainers:mariadb" }
-testcontainers-rabbitmq = { module = "org.testcontainers:rabbitmq" }
+testcontainers-junit-jupiter = { module = "org.testcontainers:testcontainers-junit-jupiter" }
+testcontainers-mariadb = { module = "org.testcontainers:testcontainers-mariadb" }
+testcontainers-rabbitmq = { module = "org.testcontainers:testcontainers-rabbitmq" }
 
 # Stripe
 stripe-java = { module = "com.stripe:stripe-java", version = "24.13.0" }
@@ -78,7 +77,7 @@ openpdf = { module = "com.github.librepdf:openpdf", version = "1.3.39" }
 poi-ooxml = { module = "org.apache.poi:poi-ooxml", version = "5.2.5" }
 
 # Resilience
-resilience4j-spring-boot3 = { module = "io.github.resilience4j:resilience4j-spring-boot3", version.ref = "resilience4j" }
+resilience4j-spring-boot4 = { module = "io.github.resilience4j:resilience4j-spring-boot4", version.ref = "resilience4j" }
 
 # ShedLock
 shedlock-spring = { module = "net.javacrumbs.shedlock:shedlock-spring", version.ref = "shedlock" }
@@ -101,4 +100,3 @@ gatling-http-java = { module = "io.gatling:gatling-http-java", version.ref = "ga
 
 [plugins]
 gatling = { id = "io.gatling.gradle", version.ref = "gatling" }
-
