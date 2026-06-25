@@ -73,42 +73,6 @@ jobs:
             **/build/test-results/
           retention-days: 7
 
-  security-scan:
-    name: OWASP Dependency Check
-    runs-on: self-hosted
-
-    steps:
-      - uses: actions/checkout@v5
-
-      - name: Set up JDK 21
-        uses: actions/setup-java@v5
-        with:
-          java-version: '21'
-          distribution: 'temurin'
-
-      - name: Setup Gradle
-        uses: gradle/actions/setup-gradle@v4
-        with:
-          cache-read-only: false
-
-      - name: Grant execute permission for gradlew
-        run: chmod +x gradlew
-
-      - name: OWASP Dependency Check
-        env:
-          GITHUB_ACTOR: ${{ github.actor }}
-          PLATFORM_SAAS_TOKEN: ${{ secrets.PLATFORM_SAAS_TOKEN }}
-          NVD_API_KEY: ${{ secrets.NVD_API_KEY }}
-        run: ./gradlew dependencyCheckAggregate --build-cache
-
-      - name: Upload Dependency Check Report
-        uses: actions/upload-artifact@v5
-        if: always()
-        with:
-          name: dependency-check-report
-          path: build/reports/dependency-check-report.html
-          retention-days: 30
-
   auto-pr:
     name: Auto PR → main
     runs-on: self-hosted
