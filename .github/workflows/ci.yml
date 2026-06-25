@@ -3,13 +3,11 @@ name: CI — Compile & Test
 on:
   push:
     branches: [ "develop" ]
-    paths:
-      - '**/*.java'
-      - '**/*.gradle'
-      - '**/*.toml'
-      - '**/gradle.properties'
-      - '**/gradle-wrapper.properties'
-      - '.github/workflows/**'
+    paths-ignore:
+      - '**/*.md'
+      - 'docs/**'
+      - '.gitignore'
+      - 'LICENSE'
 
 permissions:
   contents: read
