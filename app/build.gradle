@@ -28,6 +28,19 @@ dependencies {
     testImplementation libs.testcontainers.junit.jupiter
     testImplementation libs.testcontainers.mariadb
     testImplementation libs.testcontainers.rabbitmq
+
+    testRuntimeOnly libs.junit.platform.launcher
+}
+
+// REST Assured 5.x requires Groovy 4.x; Spring Boot 4.x BOM manages Groovy 5.x.
+// Force Groovy 4.x back so REST Assured's internal Groovy closures work correctly.
+configurations.all {
+    resolutionStrategy.eachDependency { details ->
+        if (details.requested.group == 'org.apache.groovy') {
+            details.useVersion('4.0.21')
+            details.because('REST Assured 5.x is incompatible with Groovy 5.x')
+        }
+    }
 }
 
 tasks.named('test') {

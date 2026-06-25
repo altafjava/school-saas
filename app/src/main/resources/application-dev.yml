@@ -2,7 +2,7 @@ spring:
   datasource:
     url: jdbc:mariadb://${DB_HOST:localhost}:${DB_PORT:3306}/${DB_NAME:school_saas}
     username: ${DB_USERNAME:root}
-    password: ${DB_PASSWORD:mysql}
+    password: ${DB_PASSWORD:root}
     driver-class-name: org.mariadb.jdbc.Driver
     hikari:
       pool-name: school-saas-dev-pool

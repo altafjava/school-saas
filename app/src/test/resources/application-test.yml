@@ -17,7 +17,7 @@ spring:
     driver-class-name: org.mariadb.jdbc.Driver
     url: jdbc:mariadb://localhost:3306/school_test?createDatabaseIfNotExist=true
     username: root
-    password: mysql
+    password: root
     hikari:
       maximum-pool-size: 10
       minimum-idle: 2
