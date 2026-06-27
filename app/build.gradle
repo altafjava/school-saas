@@ -2,6 +2,19 @@ plugins {
     id 'org.springframework.boot'
     id 'io.spring.dependency-management'
     id 'java-library'
+    alias(libs.plugins.gatling)
+}
+
+// Gatling brings in Scala support which causes Eclipse to prompt for the Scala IDE plugin.
+// This project uses Gatling's Java API — no Scala IDE needed.
+eclipse {
+    project.file.whenMerged { project ->
+        project.natures.removeAll { it.contains('scala') }
+        project.buildCommands.removeAll { it.name.contains('scala') }
+    }
+    classpath.file.whenMerged { classpath ->
+        classpath.entries.removeAll { it.path?.contains('scala') }
+    }
 }
 
 dependencies {
@@ -29,6 +42,10 @@ dependencies {
     testImplementation libs.testcontainers.rabbitmq
 
     testRuntimeOnly libs.junit.platform.launcher
+
+    // Gatling Load Testing
+    gatlingImplementation libs.gatling.app
+    gatlingImplementation libs.gatling.http.java
 }
 
 // REST Assured 5.x requires Groovy 4.x; Spring Boot 4.x BOM manages Groovy 5.x.
@@ -46,7 +63,7 @@ tasks.named('test') {
     useJUnitPlatform()
     systemProperty 'user.timezone', 'UTC'
     systemProperty 'spring.profiles.active', System.getProperty('spring.profiles.active') ?: 'test'
-testLogging {
+    testLogging {
         events "passed", "skipped", "failed"
         showStandardStreams = true
         exceptionFormat "full"

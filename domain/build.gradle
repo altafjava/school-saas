@@ -1,8 +1,30 @@
 plugins {
     id 'java-library'
+    alias(libs.plugins.pitest)
 }
 
 dependencies {
     // Platform core — exposes TenantEntity, BaseEntity, @Pii, TenantContext, etc.
     api 'com.altafjava.platform:core'
+    testImplementation libs.junit.jupiter.api
+    testRuntimeOnly libs.junit.jupiter.engine
+    testImplementation libs.pitest.junit5.plugin
+}
+
+// PIT mutation testing — scoped to school domain business logic.
+// Run with: ./gradlew :domain:pitest
+// Targets enrollment rules, grade calculations, fee validations, attendance logic —
+// the richest domain invariants that pure unit tests must protect.
+pitest {
+    targetClasses = ['com.altafjava.school.domain.*']
+    targetTests = ['com.altafjava.school.domain.*']
+    junit5PluginVersion = libs.versions.pitest.junit5.plugin.get()
+    mutationThreshold = 70
+    coverageThreshold = 70
+    excludedMethods = ['hashCode', 'equals', 'toString', 'canEqual']
+    outputFormats = ['HTML', 'XML']
+    threads = 4
+    avoidCallsTo = ['java.util.logging', 'org.slf4j', 'org.apache.log4j']
+    failWhenNoMutations = false
+    timestampedReports = false
 }
