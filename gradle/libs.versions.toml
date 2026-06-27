@@ -1,4 +1,6 @@
 [versions]
+pitest = "1.15.0"
+pitest-junit5-plugin = "1.2.1"
 rest-assured = "5.4.0"
 testcontainers = "2.0.1"
 resilience4j = "2.4.0"
@@ -95,5 +97,9 @@ owasp-java-encoder = { module = "org.owasp.encoder:encoder", version = "1.2.3" }
 gatling-app = { module = "io.gatling:gatling-app", version.ref = "gatling" }
 gatling-http-java = { module = "io.gatling:gatling-http-java", version.ref = "gatling" }
 
+# PIT Mutation Testing
+pitest-junit5-plugin = { module = "org.pitest:pitest-junit5-plugin", version.ref = "pitest-junit5-plugin" }
+
 [plugins]
 gatling = { id = "io.gatling.gradle", version.ref = "gatling" }
+pitest = { id = "info.solidsoft.pitest", version.ref = "pitest" }

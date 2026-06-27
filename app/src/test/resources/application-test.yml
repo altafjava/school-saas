@@ -23,6 +23,16 @@ spring:
       minimum-idle: 2
       connection-timeout: 30000
 
+scheduler:
+  datasource:
+    url: jdbc:mariadb://localhost:3306/school_test
+    username: root
+    password: root
+  cluster:
+    instance-id: TEST_NODE
+  thread-pool:
+    thread-count: 2
+
 logging:
   level:
     com.altafjava.school: DEBUG
@@ -39,9 +49,16 @@ management:
 app:
   security:
     jwt:
-      secret: 404E635266556A586E3272357538782F413F4428472B4B6250645367566B5970
+      private-key: MIIEvgIBADANBgkqhkiG9w0BAQEFAASCBKgwggSkAgEAAoIBAQDKi5c8PfmZMQoWsnKjOlL+Ive3+Wt9uoNEQ1FCSyyIWwpeRRYbyauylxvzYuyvHuLlFP8p6XlcQdYqDIhZ8OOXEWpFZTVaUJbLuovBWPqMo9nMrgfQhbHs9sWbCKy2QTRGNUkaEvVx1sHULBtgdITQGFGdyCFbdeqP0W1jdhuqpfLb28syUoR2aiu/t9CBg5zhxBYHLAHok32oM2hQ6tOi6ffMoDfI8geSOAFrv6cCAdDOmg2Jx2ASMsmTcyEtK0AGRx88vOqBoR3g4P4KhcfV35H5Q1Cg6fcAsJcUYftzca0vEqEoBRwLV59u+V+CFMzBbj2uEpDjtWV1OG8AARbdAgMBAAECggEAFMUgwpg2Xru1JaOx9sQV26K5VV/Z4oA8UsU2cX5k+Cyh0Q3zmPDizwMI5jn4PHMF4Gj5S5J6E/haXmB/oP1/UTADfk9FG9hUxlqAV1jpBIAO5xrXiU4Uc1DQ7beDgoMIOcTgFLDqA3z6zmehfRAlyHMd93ic1xSt84aN2Zu0dZi059FeGGkctPUtSM205zXzJURnTd+q08GRF1F3q3zwFvqhIvJPX+wA/hgt5nMV+7sm2WtpaOPIIST92Skq1PeaIscvM1HVPbjnjjKCdrGWuPEeo8TSr1oAYyUo40FF8ImKY3LfrhrwQVigU0IBs82Jo8iMefPYpm9RAnVhGV6hHwKBgQD9sSoAoyyQkKQ52RqV62qulamRzE338nzZYv0NIYev/Xrz+iJWSH79iSwMk0XqAz8NqF6VvyonQ9oUUG72Uz0Meoe5z+1eBtEtnMId/c/9X8w02oV7YvaZnnHZqO19AiBgWVVIT44M4gXWFPP+CltfL5k37YRoEu6P1t95MH7YXwKBgQDMY072vFsk8FkpsBqyhf1qIJ6F5TyYfKdmDQE3vefoSEoUdzlvhTwOWuaWhh7Lko3eMTZGWuagDu11i+LummA1Pt1u0I3uqSpIe/Yq1hpIJV0lR+bcOa1cY0WThXdOKvFPYzRwI86tVErPIIble/GFcP1B18eFzrOx9B3lTp1KQwKBgQCBXjLZGFzFa70Tcs7H3MEOPmu2WcT4x8M65+u7InobGNv2Rnv0HAwGJkk8MG3ao8UnpdB19IH+e+9dpJaxLklXb7R+4LVe2YMaC3JB8Qh7YLq1ySmAfjrao53TLP3OXaM8/tEqiscZcrkfLpgt2AI4TAGKL6jxmZXl6+ER39UPaQKBgE3FJ+G4sBGxJqw3JyFw3IlKWidmn5UCMYwiPKliKGD5SL7a0s79ammn6v+xjvw1CqhWH2nL4t9abr6AeNwDf8Ii5ozo7Gi4k687A+MuzpdPKE8sOcroY2+5EltcuJXUvzdO70AQT+8iGMkRfmLJs4/r+2HXYkMm8LcwxUNgk3cTAoGBALL3JwHQvXOz6lJ2QW6jQsE5IxB9roUzE03CQ/r1ylLG3XlI8ZeZ0tg+b0HEQIvr6bHJvUybKR9My2S9JNJxzfqFg7FwnW/DV0w3fDgXQITZIqtRptLvxEvyATrEcs3cqKi+12d1EtjSsUUlx7x73aLUO3fj2pPCWwP4oam0B9yY
+      public-key: MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAyouXPD35mTEKFrJyozpS/iL3t/lrfbqDRENRQkssiFsKXkUWG8mrspcb82Lsrx7i5RT/Kel5XEHWKgyIWfDjlxFqRWU1WlCWy7qLwVj6jKPZzK4H0IWx7PbFmwistkE0RjVJGhL1cdbB1CwbYHSE0BhRncghW3Xqj9FtY3YbqqXy29vLMlKEdmorv7fQgYOc4cQWBywB6JN9qDNoUOrToun3zKA3yPIHkjgBa7+nAgHQzpoNicdgEjLJk3MhLStABkcfPLzqgaEd4OD+CoXH1d+R+UNQoOn3ALCXFGH7c3GtLxKhKAUcC1efbvlfghTMwW49rhKQ47VldThvAAEW3QIDAQAB
+      key-id: platform-key-1
       expiration: 900000
       refresh-expiration: 604800000
+
+platform:
+  security:
+    encryption:
+      key: 12345678901234567890123456789012
 
 stripe:
   api:
@@ -58,9 +75,3 @@ application:
     access-key: test-access-key
     secret-key: test-secret-key
     endpoint: http://localhost:4566
-
-scheduler:
-  cluster:
-    instance-id: TEST_NODE
-  thread-pool:
-    thread-count: 2
