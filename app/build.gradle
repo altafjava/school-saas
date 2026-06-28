@@ -15,6 +15,44 @@ eclipse {
     classpath.file.whenMerged { classpath ->
         classpath.entries.removeAll { it.path?.contains('scala') }
     }
+    // Add Gradle's processResources output as a class-folder classpath entry.
+    // Eclipse populates bin/main lazily (only after its incremental builder runs).
+    // On a fresh import, bin/main is empty — resources in build/resources/main (written by
+    // processResources during ./gradlew eclipse) are available immediately so the app
+    // can start in Eclipse without requiring a prior Eclipse build step.
+    classpath.file.withXml { provider ->
+        def cp = provider.asNode()
+        def buildResPath = 'build/resources/main'
+        def children = cp.children()
+        boolean alreadyPresent = children.any { it.name() == 'classpathentry' && it.@path == buildResPath }
+        if (!alreadyPresent) {
+            // Insert before the Gradle classpath container so project resources take
+            // precedence over dependency JARs at runtime.
+            int containerIdx = children.findIndexOf {
+                it.name() == 'classpathentry' &&
+                it.@kind == 'con' &&
+                it.@path?.contains('gradleclasspathcontainer')
+            }
+            def entry = new groovy.util.Node(null, 'classpathentry', [kind: 'lib', path: buildResPath])
+            if (containerIdx >= 0) {
+                children.add(containerIdx, entry)
+            } else {
+                children.add(entry)
+            }
+        }
+    }
+}
+
+// Ensure resources are processed into build/resources/main before the .classpath is written,
+// so the class-folder entry above is populated on the first ./gradlew eclipse run.
+tasks.named('eclipse').configure {
+    dependsOn 'processResources'
+    doFirst {
+        layout.buildDirectory.dir('classes/java/main').get().asFile.mkdirs()
+        layout.buildDirectory.dir('classes/java/test').get().asFile.mkdirs()
+        layout.buildDirectory.dir('resources/main').get().asFile.mkdirs()
+        layout.buildDirectory.dir('resources/test').get().asFile.mkdirs()
+    }
 }
 
 dependencies {
