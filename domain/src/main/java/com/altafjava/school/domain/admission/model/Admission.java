@@ -15,14 +15,12 @@ import com.altafjava.platform.core.model.SoftDeletableEntity;
 import com.altafjava.platform.core.security.annotation.Pii;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
 import lombok.experimental.SuperBuilder;
 
 @Entity
 @Table(name = "admissions")
 @SQLRestriction("deleted = false")
 @Getter
-@Setter
 @SuperBuilder
 @NoArgsConstructor
 public class Admission extends SoftDeletableEntity {
@@ -106,15 +104,28 @@ public class Admission extends SoftDeletableEntity {
 	}
 
 	public void markUnderReview() {
+		if (this.status != AdmissionStatus.SUBMITTED) {
+			throw new BusinessException(
+					"Admission must be SUBMITTED to move under review, was " + this.status);
+		}
 		this.status = AdmissionStatus.UNDER_REVIEW;
 	}
 
 	public void approve() {
+		requireDecidable();
 		this.status = AdmissionStatus.APPROVED;
 	}
 
 	public void reject() {
+		requireDecidable();
 		this.status = AdmissionStatus.REJECTED;
+	}
+
+	/** SUBMITTED and UNDER_REVIEW are the only states without a final decision recorded yet. */
+	private void requireDecidable() {
+		if (this.status != AdmissionStatus.SUBMITTED && this.status != AdmissionStatus.UNDER_REVIEW) {
+			throw new BusinessException("Admission already has a final decision, status=" + this.status);
+		}
 	}
 
 	public void beginEnrollmentSaga(UUID sagaId) {
@@ -130,6 +141,9 @@ public class Admission extends SoftDeletableEntity {
 	}
 
 	public void markEnrolled() {
+		if (this.status != AdmissionStatus.APPROVED) {
+			throw new BusinessException("Admission must be APPROVED to enroll, was " + this.status);
+		}
 		this.status = AdmissionStatus.ENROLLED;
 	}
 

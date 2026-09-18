@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                            http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-5.0.xsd">
+
+    <!-- uq_scl_student_academic_year (school-023) enforces "one classroom link per student per
+         academic year" over every row regardless of the deleted flag — since softDelete() never
+         physically removes a row, withdrawing a student and re-enrolling them (even in a
+         different classroom) for the same academic year hits this constraint against their own
+         withdrawn row. MariaDB has no partial/filtered unique index, so the fix is a generated
+         column that is NULL whenever the row is soft-deleted; MySQL/MariaDB unique indexes treat
+         multiple NULLs as distinct, so any number of withdrawn links no longer collide with each
+         other or with the one active link the constraint is actually meant to guard. -->
+    <changeSet id="school-095-classroom-link-soft-delete-unique-fix" author="school">
+        <dropIndex indexName="uq_scl_student_academic_year" tableName="student_classroom_links"/>
+        <sql>
+            ALTER TABLE student_classroom_links
+            ADD COLUMN active_academic_year_id BIGINT
+            GENERATED ALWAYS AS (CASE WHEN deleted = FALSE THEN academic_year_id ELSE NULL END) VIRTUAL
+        </sql>
+        <createIndex indexName="uq_scl_student_active_academic_year" tableName="student_classroom_links"
+                     unique="true">
+            <column name="student_id"/>
+            <column name="active_academic_year_id"/>
+        </createIndex>
+    </changeSet>
+
+</databaseChangeLog>

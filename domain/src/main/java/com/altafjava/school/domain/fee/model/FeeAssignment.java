@@ -6,19 +6,20 @@ import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
+import jakarta.persistence.PrePersist;
+import jakarta.persistence.PreUpdate;
 import jakarta.persistence.Table;
 import org.hibernate.annotations.SQLRestriction;
+import com.altafjava.platform.core.exception.BusinessException;
 import com.altafjava.platform.core.model.SoftDeletableEntity;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
 import lombok.experimental.SuperBuilder;
 
 @Entity
 @Table(name = "fee_assignments")
 @SQLRestriction("deleted = false")
 @Getter
-@Setter
 @SuperBuilder
 @NoArgsConstructor
 public class FeeAssignment extends SoftDeletableEntity {
@@ -73,5 +74,23 @@ public class FeeAssignment extends SoftDeletableEntity {
 		this.dueDate = dueDate;
 		this.graceDays = graceDays;
 		this.lateFeePercentage = lateFeePercentage;
+	}
+
+	/**
+	 * Enforced at persist time rather than only in {@link #forStudent}/{@link #forClassroom} so a
+	 * mismatched {@code scope}/FK combination can never reach the database regardless of how the
+	 * entity was constructed (e.g. directly via the builder).
+	 */
+	@PrePersist
+	@PreUpdate
+	private void validateScope() {
+		boolean hasStudent = studentId != null;
+		boolean hasClassroom = classroomId != null;
+		if (scope == FeeAssignmentScope.STUDENT && (!hasStudent || hasClassroom)) {
+			throw new BusinessException("STUDENT-scoped fee assignment must set studentId and not classroomId");
+		}
+		if (scope == FeeAssignmentScope.CLASSROOM && (!hasClassroom || hasStudent)) {
+			throw new BusinessException("CLASSROOM-scoped fee assignment must set classroomId and not studentId");
+		}
 	}
 }

@@ -37,12 +37,36 @@ class AdmissionTest {
 	}
 
 	@Test
+	void markUnderReview_fromNonSubmitted_throwsBusinessException() {
+		Admission admission = submitted();
+		admission.markUnderReview();
+
+		assertThrows(BusinessException.class, admission::markUnderReview);
+	}
+
+	@Test
 	void approve_transitionsStatus() {
 		Admission admission = submitted();
 
 		admission.approve();
 
 		assertEquals(AdmissionStatus.APPROVED, admission.getStatus());
+	}
+
+	@Test
+	void approve_afterAlreadyApproved_throwsBusinessException() {
+		Admission admission = submitted();
+		admission.approve();
+
+		assertThrows(BusinessException.class, admission::approve);
+	}
+
+	@Test
+	void approve_afterRejected_throwsBusinessException() {
+		Admission admission = submitted();
+		admission.reject();
+
+		assertThrows(BusinessException.class, admission::approve);
 	}
 
 	@Test
@@ -55,8 +79,18 @@ class AdmissionTest {
 	}
 
 	@Test
+	void reject_afterAlreadyEnrolled_throwsBusinessException() {
+		Admission admission = submitted();
+		admission.approve();
+		admission.markEnrolled();
+
+		assertThrows(BusinessException.class, admission::reject);
+	}
+
+	@Test
 	void enrollmentLifecycle_tracksSagaAndCreatedRecords() {
 		Admission admission = submitted();
+		admission.approve();
 		UUID sagaId = UUID.randomUUID();
 
 		admission.beginEnrollmentSaga(sagaId);
@@ -71,8 +105,16 @@ class AdmissionTest {
 	}
 
 	@Test
+	void markEnrolled_fromNonApproved_throwsBusinessException() {
+		Admission admission = submitted();
+
+		assertThrows(BusinessException.class, admission::markEnrolled);
+	}
+
+	@Test
 	void revertEnrollment_clearsTrackingFieldsAndRestoresApprovedStatus() {
 		Admission admission = submitted();
+		admission.approve();
 		admission.beginEnrollmentSaga(UUID.randomUUID());
 		admission.recordEnrolledStudent(10L);
 		admission.recordEnrolledGuardian(20L);

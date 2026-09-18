@@ -4,6 +4,7 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
 import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
@@ -143,7 +144,18 @@ public class ClassroomService {
 		}
 		StudentClassroomLink link = StudentClassroomLink.create(student.getId(), classroom.getId(),
 				academicYear.getId(), LocalDate.now());
-		StudentClassroomLink saved = studentClassroomLinkRepository.save(link);
+		StudentClassroomLink saved;
+		try {
+			saved = studentClassroomLinkRepository.save(link);
+		} catch (DataIntegrityViolationException e) {
+			// The pre-check above is a fast-path convenience, not the real guard — the
+			// uq_scl_student_active_academic_year DB constraint (051-classroom-link-soft-delete-
+			// unique-fix.xml) is what actually prevents two concurrent enrollments for the same
+			// student/academic year from both passing the check and both inserting a row.
+			throw new BusinessException(
+					"Student " + studentPublicId + " is already enrolled in a classroom for academic year "
+							+ academicYearPublicId);
+		}
 		eventPublisher.publish(new StudentEnrolledInClassroomEvent(tenantId, student.getId(), classroom.getId(),
 				academicYear.getId()));
 		return saved;

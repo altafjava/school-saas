@@ -10,6 +10,7 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import java.time.Instant;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
@@ -75,11 +76,20 @@ class AdmissionEnrollmentSagaTest {
 	}
 
 	private Admission admissionWithId(long id) {
-		Admission admission = Admission.submit("Alice", "Smith", LocalDate.of(2015, 1, 1), "Bob", "Smith",
-				"bob@family.test", "555-1234", "Grade 3");
+		Admission admission = Admission.builder()
+				.applicantFirstName("Alice")
+				.applicantLastName("Smith")
+				.applicantDateOfBirth(LocalDate.of(2015, 1, 1))
+				.guardianFirstName("Bob")
+				.guardianLastName("Smith")
+				.guardianEmail("bob@family.test")
+				.guardianPhone("555-1234")
+				.appliedGrade("Grade 3")
+				.status(AdmissionStatus.APPROVED)
+				.submittedAt(Instant.now())
+				.build();
 		admission.setId(id);
 		admission.setPublicId(UUID.randomUUID());
-		admission.setStatus(AdmissionStatus.APPROVED);
 		return admission;
 	}
 
