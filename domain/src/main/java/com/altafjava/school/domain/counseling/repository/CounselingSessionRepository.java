@@ -1,5 +1,6 @@
 package com.altafjava.school.domain.counseling.repository;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import org.springframework.data.domain.Page;
@@ -12,6 +13,9 @@ public interface CounselingSessionRepository extends JpaRepository<CounselingSes
 	Page<CounselingSession> findAllByTenantId(Long tenantId, Pageable pageable);
 
 	Page<CounselingSession> findAllByStudentIdAndTenantId(Long studentId, Long tenantId, Pageable pageable);
+
+	/** Unpaged variant for GDPR/DPDP erasure and export, which must cover every matching row. */
+	List<CounselingSession> findAllByStudentIdAndTenantId(Long studentId, Long tenantId);
 
 	Optional<CounselingSession> findByPublicIdAndTenantId(UUID publicId, Long tenantId);
 
