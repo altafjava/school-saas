@@ -60,4 +60,9 @@ public class CounselingSession extends SoftDeletableEntity {
 		this.notes = notes;
 		this.followUpRequired = followUpRequired;
 	}
+
+	/** Clears counseling notes for a GDPR/DPDP erasure request. */
+	public void erasePii() {
+		this.notes = null;
+	}
 }

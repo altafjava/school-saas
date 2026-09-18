@@ -2,6 +2,7 @@ package com.altafjava.school.domain.health.model;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import java.time.LocalDateTime;
 import org.junit.jupiter.api.Test;
@@ -30,5 +31,17 @@ class MedicalIncidentTest {
 		incident.markGuardianNotified();
 
 		assertTrue(incident.isGuardianNotified());
+	}
+
+	@Test
+	void erasePii_tombstonesDescriptionAndClearsTreatment() {
+		MedicalIncident incident = MedicalIncident.record(1L, LocalDateTime.of(2026, 5, 1, 10, 30), "Fell during PE",
+				"Ice pack applied", 99L);
+
+		incident.erasePii();
+
+		assertEquals("[erased]", incident.getDescription());
+		assertNull(incident.getTreatmentGiven());
+		assertEquals(1L, incident.getStudentId(), "studentId must survive erasure to keep the row addressable");
 	}
 }

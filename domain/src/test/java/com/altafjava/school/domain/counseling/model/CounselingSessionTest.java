@@ -2,6 +2,7 @@ package com.altafjava.school.domain.counseling.model;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import java.time.LocalDate;
 import org.junit.jupiter.api.Test;
@@ -29,5 +30,16 @@ class CounselingSessionTest {
 
 		assertEquals("Follow-up complete, no further action", session.getNotes());
 		assertFalse(session.isFollowUpRequired());
+	}
+
+	@Test
+	void erasePii_clearsNotes() {
+		CounselingSession session = CounselingSession.schedule(1L, 2L, LocalDate.of(2026, 5, 1),
+				"Discussed exam anxiety", true);
+
+		session.erasePii();
+
+		assertNull(session.getNotes());
+		assertEquals(1L, session.getStudentId(), "studentId must survive erasure to keep the row addressable");
 	}
 }

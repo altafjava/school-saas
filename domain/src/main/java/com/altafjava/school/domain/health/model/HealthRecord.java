@@ -61,4 +61,12 @@ public class HealthRecord extends SoftDeletableEntity {
 		this.conditions = conditions;
 		this.immunizations = immunizations;
 	}
+
+	/** Clears PHI-grade fields for a GDPR/DPDP erasure request — see {@code Student#erasePii}. */
+	public void erasePii() {
+		this.bloodGroup = null;
+		this.allergies = null;
+		this.conditions = null;
+		this.immunizations = null;
+	}
 }

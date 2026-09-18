@@ -8,6 +8,7 @@ import jakarta.persistence.Enumerated;
 import jakarta.persistence.Table;
 import org.hibernate.annotations.SQLRestriction;
 import com.altafjava.platform.core.model.SoftDeletableEntity;
+import com.altafjava.platform.core.security.annotation.Pii;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -35,9 +36,11 @@ public class DisciplineIncident extends SoftDeletableEntity {
 	@Column(name = "severity", nullable = false, length = 20)
 	private IncidentSeverity severity;
 
+	@Pii
 	@Column(name = "description", nullable = false, length = 1000)
 	private String description;
 
+	@Pii
 	@Column(name = "action_taken", length = 1000)
 	private String actionTaken;
 
@@ -62,5 +65,11 @@ public class DisciplineIncident extends SoftDeletableEntity {
 
 	public void markGuardianNotified() {
 		this.guardianNotified = true;
+	}
+
+	/** Clears narrative fields identifying the student's behavior for a GDPR/DPDP erasure request. */
+	public void erasePii() {
+		this.description = "[erased]";
+		this.actionTaken = null;
 	}
 }

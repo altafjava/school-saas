@@ -56,4 +56,10 @@ public class MedicalIncident extends SoftDeletableEntity {
 	public void markGuardianNotified() {
 		this.guardianNotified = true;
 	}
+
+	/** Clears PHI-grade narrative fields for a GDPR/DPDP erasure request. */
+	public void erasePii() {
+		this.description = "[erased]";
+		this.treatmentGiven = null;
+	}
 }
