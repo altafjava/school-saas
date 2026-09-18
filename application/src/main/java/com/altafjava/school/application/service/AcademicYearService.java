@@ -52,7 +52,7 @@ public class AcademicYearService {
 	 */
 	private void unsetExistingCurrentYear(Long tenantId) {
 		academicYearRepository.findByCurrentTrueAndTenantId(tenantId).ifPresent(existingCurrent -> {
-			existingCurrent.setCurrent(false);
+			existingCurrent.markNotCurrent();
 			academicYearRepository.save(existingCurrent);
 		});
 	}

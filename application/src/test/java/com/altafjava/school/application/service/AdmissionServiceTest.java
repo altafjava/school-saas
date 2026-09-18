@@ -10,6 +10,7 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import java.math.BigDecimal;
+import java.time.Instant;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
@@ -61,11 +62,20 @@ class AdmissionServiceTest {
 	}
 
 	private Admission admissionWithId(long id, UUID publicId, AdmissionStatus status) {
-		Admission admission = Admission.submit("Alice", "Smith", LocalDate.of(2015, 1, 1), "Bob", "Smith",
-				"bob@family.test", "555-1234", "Grade 3");
+		Admission admission = Admission.builder()
+				.applicantFirstName("Alice")
+				.applicantLastName("Smith")
+				.applicantDateOfBirth(LocalDate.of(2015, 1, 1))
+				.guardianFirstName("Bob")
+				.guardianLastName("Smith")
+				.guardianEmail("bob@family.test")
+				.guardianPhone("555-1234")
+				.appliedGrade("Grade 3")
+				.status(status)
+				.submittedAt(Instant.now())
+				.build();
 		admission.setId(id);
 		admission.setPublicId(publicId);
-		admission.setStatus(status);
 		return admission;
 	}
 
@@ -245,8 +255,7 @@ class AdmissionServiceTest {
 
 	private Admission admissionWithScore(long id, UUID publicId, BigDecimal score) {
 		Admission admission = admissionWithId(id, publicId, AdmissionStatus.UNDER_REVIEW);
-		admission.setEntranceTestScore(score);
-		admission.setEntranceTestMaxScore(BigDecimal.valueOf(100));
+		admission.recordEntranceTestScore(score, BigDecimal.valueOf(100));
 		return admission;
 	}
 }

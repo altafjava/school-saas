@@ -136,4 +136,44 @@ class ClassroomCapacityIntegrationTest extends SchoolIntegrationTestBase {
 		classroomService.enrollStudent(classroomB.getPublicId().toString(), studentB1.getPublicId().toString(),
 				academicYearPublicIdB);
 	}
+
+	@Test
+	void enrollStudent_afterWithdrawal_succeedsInADifferentClassroom_sameAcademicYear() {
+		// Regression: uq_scl_student_academic_year enforced uniqueness over every row regardless
+		// of the soft-delete flag, so withdrawing a student and re-enrolling them (even into a
+		// different classroom) for the same academic year hit a DB constraint violation against
+		// their own withdrawn row. See 051-classroom-link-soft-delete-unique-fix.xml.
+		activateTenant(tenantA);
+		String academicYearPublicId = createAcademicYear("2024-25");
+		Classroom classroomX = classroomService.create("CLS-CAP-7", "Grade 5", "A", academicYearPublicId, null);
+		Classroom classroomY = classroomService.create("CLS-CAP-8", "Grade 5", "B", academicYearPublicId, null);
+		Student student = studentService.enroll("STU-CAP-7", "Grace", "Ho", "grace@cap-a.test",
+				LocalDate.of(2010, 7, 7));
+
+		classroomService.enrollStudent(classroomX.getPublicId().toString(), student.getPublicId().toString(),
+				academicYearPublicId);
+		classroomService.withdrawStudentFromClassroom(classroomX.getPublicId().toString(),
+				student.getPublicId().toString());
+
+		classroomService.enrollStudent(classroomY.getPublicId().toString(), student.getPublicId().toString(),
+				academicYearPublicId);
+	}
+
+	@Test
+	void enrollStudent_whileAlreadyActivelyEnrolled_isRejected() {
+		activateTenant(tenantA);
+		String academicYearPublicId = createAcademicYear("2024-25");
+		Classroom classroomX = classroomService.create("CLS-CAP-9", "Grade 5", "A", academicYearPublicId, null);
+		Classroom classroomY = classroomService.create("CLS-CAP-10", "Grade 5", "B", academicYearPublicId, null);
+		Student student = studentService.enroll("STU-CAP-8", "Henry", "Ito", "henry@cap-a.test",
+				LocalDate.of(2010, 8, 8));
+
+		classroomService.enrollStudent(classroomX.getPublicId().toString(), student.getPublicId().toString(),
+				academicYearPublicId);
+
+		assertThrows(BusinessException.class,
+				() -> classroomService.enrollStudent(classroomY.getPublicId().toString(),
+						student.getPublicId().toString(), academicYearPublicId),
+				"A student already actively enrolled for this academic year must not be enrolled again");
+	}
 }

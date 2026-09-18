@@ -10,14 +10,12 @@ import org.hibernate.annotations.SQLRestriction;
 import com.altafjava.platform.core.model.SoftDeletableEntity;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
 import lombok.experimental.SuperBuilder;
 
 @Entity
 @Table(name = "fee_structures")
 @SQLRestriction("deleted = false")
 @Getter
-@Setter
 @SuperBuilder
 @NoArgsConstructor
 public class FeeStructure extends SoftDeletableEntity {

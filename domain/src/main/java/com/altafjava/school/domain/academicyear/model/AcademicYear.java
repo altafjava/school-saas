@@ -8,14 +8,12 @@ import org.hibernate.annotations.SQLRestriction;
 import com.altafjava.platform.core.model.SoftDeletableEntity;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
 import lombok.experimental.SuperBuilder;
 
 @Entity
 @Table(name = "academic_years")
 @SQLRestriction("deleted = false")
 @Getter
-@Setter
 @SuperBuilder
 @NoArgsConstructor
 public class AcademicYear extends SoftDeletableEntity {
@@ -39,5 +37,10 @@ public class AcademicYear extends SoftDeletableEntity {
 				.endDate(endDate)
 				.current(current)
 				.build();
+	}
+
+	/** At most one academic year is current per tenant — see AcademicYearService. */
+	public void markNotCurrent() {
+		this.current = false;
 	}
 }

@@ -55,5 +55,6 @@
     <include file="db/domain/changesets/048-pay-component-definitions.xml"/>
     <include file="db/domain/changesets/049-exam-type-definitions.xml"/>
     <include file="db/domain/changesets/050-retention-and-guardian-consent.xml"/>
+    <include file="db/domain/changesets/051-classroom-link-soft-delete-unique-fix.xml"/>
 
 </databaseChangeLog>

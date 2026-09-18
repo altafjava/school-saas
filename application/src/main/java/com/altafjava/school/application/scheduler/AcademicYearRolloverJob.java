@@ -54,7 +54,7 @@ public class AcademicYearRolloverJob implements JobExecutionStrategy {
 
 		academicYearRepository.findByCurrentTrueAndTenantId(tenantId)
 				.ifPresent(current -> {
-					current.setCurrent(false);
+					current.markNotCurrent();
 					academicYearRepository.save(current);
 					log.info("action=academic-year-deactivated tenantId={} year={}", tenantId, current.getName());
 				});
