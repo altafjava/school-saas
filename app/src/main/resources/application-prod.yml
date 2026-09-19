@@ -31,6 +31,10 @@ scheduler:
     username: ${DB_USERNAME}
     password: ${DB_PASSWORD}
     driver-class-name: org.mariadb.jdbc.Driver
+  thread-pool:
+    thread-count: 20
+  cluster:
+    instance-id: AUTO
 
 tenant:
   resolution:
@@ -67,12 +71,6 @@ platform:
   security:
     encryption:
       key: ${PLATFORM_ENCRYPTION_KEY}
-
-scheduler:
-  thread-pool:
-    thread-count: 20
-  cluster:
-    instance-id: AUTO
 
 # API docs are disabled in production — Swagger exposes the full API surface.
 springdoc:
