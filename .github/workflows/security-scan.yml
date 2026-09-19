@@ -33,10 +33,6 @@ jobs:
 
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v4
-        with:
-          # Self-hosted runner: local ~/.gradle already persists between jobs — see ci.yml's
-          # matching comment for why the remote GitHub Actions cache is skipped here.
-          cache-disabled: true
 
       - name: Resolve NVD cache week key
         id: cache-date
@@ -60,7 +56,10 @@ jobs:
           GITHUB_ACTOR: ${{ github.actor }}
           PLATFORM_SAAS_TOKEN: ${{ secrets.PLATFORM_SAAS_TOKEN }}
           NVD_API_KEY: ${{ secrets.NVD_API_KEY }}
-        run: ./gradlew dependencyCheckAggregate --build-cache
+        # dependencyCheckAggregate is now applied at the root only (scans every subproject in
+        # one pass) and analyzes each subproject's own built jar as part of that pass, so the
+        # jars must exist first.
+        run: ./gradlew assemble dependencyCheckAggregate --build-cache
 
       - name: Upload Dependency Check Report
         uses: actions/upload-artifact@v5
