@@ -26,6 +26,7 @@ import com.altafjava.platform.domain.tenant.model.Tenant;
 import com.altafjava.school.application.service.AcademicYearService;
 import com.altafjava.school.application.service.AttendanceService;
 import com.altafjava.school.application.service.ClassroomService;
+import com.altafjava.school.application.service.FeeAssignmentService;
 import com.altafjava.school.application.service.FeePaymentService;
 import com.altafjava.school.application.service.FeeStructureService;
 import com.altafjava.school.application.service.StudentService;
@@ -88,6 +89,9 @@ class OrganizationRollupE2ETest extends SchoolIntegrationTestBase {
 	private FeeStructureService feeStructureService;
 
 	@Autowired
+	private FeeAssignmentService feeAssignmentService;
+
+	@Autowired
 	private FeePaymentService feePaymentService;
 
 	private Tenant campusA;
@@ -136,6 +140,10 @@ class OrganizationRollupE2ETest extends SchoolIntegrationTestBase {
 		FeeStructure feeStructure = feeStructureService.create(
 				"Tuition-" + UUID.randomUUID().toString().substring(0, 6), feeAmount, FeeFrequency.MONTHLY,
 				"Standard");
+		// A FeeStructure only counts toward a student's total once a FeeAssignment actually
+		// applies it — classroom-scoped here since every student enrolled below joins this one
+		// classroom.
+		feeAssignmentService.assign(feeStructure.getPublicId().toString(), null, classroom.getPublicId().toString());
 		for (int i = 0; i < studentCount; i++) {
 			Student student = studentService.enroll("STU-" + UUID.randomUUID().toString().substring(0, 8),
 					"First" + i, "Last" + i,

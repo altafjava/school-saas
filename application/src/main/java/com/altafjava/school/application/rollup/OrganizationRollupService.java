@@ -3,8 +3,12 @@ package com.altafjava.school.application.rollup;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
+import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
+import java.util.stream.Collectors;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import com.altafjava.platform.application.organization.OrganizationService;
@@ -17,7 +21,11 @@ import com.altafjava.platform.domain.organization.model.Organization;
 import com.altafjava.platform.domain.tenant.model.Tenant;
 import com.altafjava.school.domain.attendance.model.AttendanceStatus;
 import com.altafjava.school.domain.attendance.repository.AttendanceRepository;
+import com.altafjava.school.domain.classroom.model.StudentClassroomLink;
+import com.altafjava.school.domain.classroom.repository.StudentClassroomLinkRepository;
+import com.altafjava.school.domain.fee.model.FeeAssignment;
 import com.altafjava.school.domain.fee.model.FeeStructure;
+import com.altafjava.school.domain.fee.repository.FeeAssignmentRepository;
 import com.altafjava.school.domain.fee.repository.FeePaymentRepository;
 import com.altafjava.school.domain.fee.repository.FeeStructureRepository;
 import com.altafjava.school.domain.rollup.model.AttendanceRollup;
@@ -25,6 +33,7 @@ import com.altafjava.school.domain.rollup.model.CampusRollup;
 import com.altafjava.school.domain.rollup.model.FeeRollup;
 import com.altafjava.school.domain.rollup.model.OrganizationRollupReport;
 import com.altafjava.school.domain.student.model.EnrollmentStatus;
+import com.altafjava.school.domain.student.model.Student;
 import com.altafjava.school.domain.student.repository.StudentRepository;
 
 /**
@@ -54,6 +63,8 @@ public class OrganizationRollupService {
 	private final AttendanceRepository attendanceRepository;
 	private final FeeStructureRepository feeStructureRepository;
 	private final FeePaymentRepository feePaymentRepository;
+	private final FeeAssignmentRepository feeAssignmentRepository;
+	private final StudentClassroomLinkRepository studentClassroomLinkRepository;
 	private final TenantFilterSwitcher tenantFilterSwitcher;
 
 	public OrganizationRollupService(OrganizationService organizationService,
@@ -61,12 +72,16 @@ public class OrganizationRollupService {
 			AttendanceRepository attendanceRepository,
 			FeeStructureRepository feeStructureRepository,
 			FeePaymentRepository feePaymentRepository,
+			FeeAssignmentRepository feeAssignmentRepository,
+			StudentClassroomLinkRepository studentClassroomLinkRepository,
 			TenantFilterSwitcher tenantFilterSwitcher) {
 		this.organizationService = organizationService;
 		this.studentRepository = studentRepository;
 		this.attendanceRepository = attendanceRepository;
 		this.feeStructureRepository = feeStructureRepository;
 		this.feePaymentRepository = feePaymentRepository;
+		this.feeAssignmentRepository = feeAssignmentRepository;
+		this.studentClassroomLinkRepository = studentClassroomLinkRepository;
 		this.tenantFilterSwitcher = tenantFilterSwitcher;
 	}
 
@@ -106,11 +121,11 @@ public class OrganizationRollupService {
 
 	private CampusRollup computeCampusRollup(Tenant campus, LocalDate periodStart, LocalDate periodEnd) {
 		Long tenantId = campus.getId();
-		long activeStudentCount = studentRepository.countByEnrollmentStatusAndTenantId(EnrollmentStatus.ACTIVE,
-				tenantId);
+		List<Student> activeStudents = studentRepository.findAllByEnrollmentStatusAndTenantId(
+				EnrollmentStatus.ACTIVE, tenantId);
 		AttendanceRollup attendance = buildAttendanceRollup(tenantId, periodStart, periodEnd);
-		FeeRollup fees = buildFeeRollup(tenantId, activeStudentCount);
-		return new CampusRollup(campus.getPublicId(), campus.getName(), activeStudentCount, attendance, fees);
+		FeeRollup fees = buildFeeRollup(tenantId, activeStudents);
+		return new CampusRollup(campus.getPublicId(), campus.getName(), activeStudents.size(), attendance, fees);
 	}
 
 	private AttendanceRollup buildAttendanceRollup(Long tenantId, LocalDate periodStart, LocalDate periodEnd) {
@@ -127,15 +142,51 @@ public class OrganizationRollupService {
 	}
 
 	// Fee balance is a snapshot as of now (matching FeeBalanceCalculator/StudentController's own
-	// fee-balance endpoint), not scoped to the report's attendance period — every FeeStructure
-	// applies to every student (documented assumption, see FeeBalanceCalculator), so total due for
-	// a campus is its active student count times the sum of its fee structure amounts.
-	private FeeRollup buildFeeRollup(Long tenantId, long activeStudentCount) {
-		BigDecimal feeStructureTotal = feeStructureRepository.findAllByTenantId(tenantId).stream()
-				.map(FeeStructure::getAmount)
-				.reduce(BigDecimal.ZERO, BigDecimal::add);
-		BigDecimal totalDue = feeStructureTotal.multiply(BigDecimal.valueOf(activeStudentCount));
+	// fee-balance endpoint), not scoped to the report's attendance period. A FeeStructure only
+	// counts toward a student's total if a FeeAssignment actually applies it to them — either
+	// directly (STUDENT scope) or via their current classroom (CLASSROOM scope) — same resolution
+	// FeePaymentService uses per-student, batched here across the whole campus instead of one
+	// query per student.
+	private FeeRollup buildFeeRollup(Long tenantId, List<Student> activeStudents) {
+		List<Long> studentIds = activeStudents.stream().map(Student::getId).toList();
+		Map<Long, Long> currentClassroomIdByStudentId = resolveCurrentClassroomIds(tenantId, studentIds);
+		List<Long> classroomIds = currentClassroomIdByStudentId.values().stream().distinct().toList();
+
+		Map<Long, List<FeeAssignment>> studentScopedByStudentId = studentIds.isEmpty() ? Map.of()
+				: feeAssignmentRepository.findByTenantIdAndStudentIdIn(tenantId, studentIds).stream()
+						.collect(Collectors.groupingBy(FeeAssignment::getStudentId));
+		Map<Long, List<FeeAssignment>> classroomScopedByClassroomId = classroomIds.isEmpty() ? Map.of()
+				: feeAssignmentRepository.findByTenantIdAndClassroomIdIn(tenantId, classroomIds).stream()
+						.collect(Collectors.groupingBy(FeeAssignment::getClassroomId));
+		Map<Long, BigDecimal> feeStructureAmountById = feeStructureRepository.findAllByTenantId(tenantId).stream()
+				.collect(Collectors.toMap(FeeStructure::getId, FeeStructure::getAmount));
+
+		BigDecimal totalDue = BigDecimal.ZERO;
+		for (Long studentId : studentIds) {
+			List<FeeAssignment> applicable = new ArrayList<>(
+					studentScopedByStudentId.getOrDefault(studentId, List.of()));
+			Long classroomId = currentClassroomIdByStudentId.get(studentId);
+			if (classroomId != null) {
+				applicable.addAll(classroomScopedByClassroomId.getOrDefault(classroomId, List.of()));
+			}
+			for (FeeAssignment assignment : applicable) {
+				totalDue = totalDue.add(
+						feeStructureAmountById.getOrDefault(assignment.getFeeStructureId(), BigDecimal.ZERO));
+			}
+		}
+
 		BigDecimal totalPaid = feePaymentRepository.sumPaidAmountByTenantId(tenantId);
 		return FeeRollup.of(totalDue, totalPaid);
+	}
+
+	private Map<Long, Long> resolveCurrentClassroomIds(Long tenantId, List<Long> studentIds) {
+		if (studentIds.isEmpty()) {
+			return Map.of();
+		}
+		return studentClassroomLinkRepository.findByStudentIdIn(tenantId, studentIds).stream()
+				.collect(Collectors.groupingBy(StudentClassroomLink::getStudentId,
+						Collectors.collectingAndThen(
+								Collectors.maxBy(Comparator.comparing(StudentClassroomLink::getEnrolledAt)),
+								maxLink -> maxLink.map(StudentClassroomLink::getClassroomId).orElse(null))));
 	}
 }
