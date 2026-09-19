@@ -1,11 +1,27 @@
 plugins {
     id 'org.springframework.boot' version '4.1.0' apply false
     id 'io.spring.dependency-management' version '1.1.7' apply false
-    id 'org.owasp.dependencycheck' version '12.2.2' apply false
+    id 'org.owasp.dependencycheck' version '12.2.2'
     id 'com.diffplug.spotless' version '6.25.0' apply false
     id 'com.github.spotbugs' version '6.5.10' apply false
     alias(libs.plugins.pitest) apply false
     alias(libs.plugins.gatling) apply false
+}
+
+// Applied once at the root only: the plugin's own dependencyCheckAggregate task already
+// walks every subproject's resolved dependencies in one pass. Applying it per-subproject as
+// well (as this used to) makes org.gradle.parallel=true run several independent
+// dependencyCheckAggregate tasks concurrently, and they all race for the same local NVD
+// database file — the losing subproject fails with "Unable to continue dependency-check
+// analysis" while another succeeds moments earlier.
+dependencyCheck {
+    failBuildOnCVSS = 7.0
+    nvd {
+        // Key loaded from ~/.gradle/gradle.properties (nvdApiKey) or NVD_API_KEY env var in CI.
+        def key = findProperty('nvdApiKey') ?: System.getenv('NVD_API_KEY')
+        if (key) apiKey = key
+        delay = key ? 500 : 6000
+    }
 }
 
 allprojects {
@@ -39,7 +55,6 @@ subprojects {
     apply plugin: 'java-library'
     apply plugin: 'eclipse'
     apply plugin: 'io.spring.dependency-management'
-    apply plugin: 'org.owasp.dependencycheck'
     apply plugin: 'com.diffplug.spotless'
     apply plugin: 'com.github.spotbugs'
 
@@ -54,16 +69,6 @@ subprojects {
         reports {
             html.required = true
             xml.required = true
-        }
-    }
-
-    dependencyCheck {
-        failBuildOnCVSS = 7.0
-        nvd {
-            // Key loaded from ~/.gradle/gradle.properties (nvdApiKey) or NVD_API_KEY env var in CI.
-            def key = findProperty('nvdApiKey') ?: System.getenv('NVD_API_KEY')
-            if (key) apiKey = key
-            delay = key ? 500 : 6000
         }
     }
 
