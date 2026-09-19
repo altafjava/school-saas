@@ -32,6 +32,8 @@ security:
   cors:
     # Local dev frontend origins (Vite/CRA default ports). platform-saas ships no default.
     allowed-origins: http://localhost:3000,http://localhost:5173
+  swagger:
+    public: true
 
 app:
   security:
@@ -54,10 +56,6 @@ platform:
       key: 12345678901234567890123456789012
 
 ADMIN_INITIAL_PASSWORD: Admin@Dev123!
-
-security:
-  swagger:
-    public: true
 
 springdoc:
   swagger-ui:
