@@ -1,16 +1,16 @@
 {
   "openapi" : "3.1.0",
   "info" : {
-    "title" : "School Management System — API",
-    "description" : "## Enterprise School Management SaaS API\n\n### Authentication\nClick **Authorize**, enter system admin credentials to log in.\nSwagger will inject the Bearer token automatically on all requests.\n\n### Multi-Tenancy\nSet `X-Tenant-ID` to the tenant slug for tenant-scoped endpoints.\nLeave it blank for system admin (`/api/v1/admin/...`) endpoints.\n\n### Versioning\nAPI is versioned via URL path: `/api/v1/...`\n\n### Rate Limiting\nRate limits apply per tenant. See response headers for limits.\n",
+    "title" : "Platform API",
+    "description" : "## Enterprise Multi-Tenant SaaS Platform API\n\n### Authentication\nClick **Authorize**, enter system admin credentials to log in.\nSwagger will inject the Bearer token automatically on all requests.\n\n### Multi-Tenancy\nSet `X-Tenant-ID` to the tenant slug for tenant-scoped endpoints.\nLeave it blank for system admin (`/api/v1/admin/...`) endpoints.\n\n### Versioning\nAPI is versioned via URL path: `/api/v1/...`\n\n### Rate Limiting\nRate limits apply per tenant. See response headers for limits.\n",
     "contact" : {
       "name" : "Engineering Team",
-      "url" : "https://docs.school.com",
-      "email" : "api-support@school.com"
+      "url" : "https://docs.platform.example.com",
+      "email" : "api-support@platform.example.com"
     },
     "license" : {
       "name" : "Proprietary",
-      "url" : "https://school.com/terms"
+      "url" : "https://platform.example.com/terms"
     },
     "version" : "v1.0.0"
   },
@@ -4448,7 +4448,7 @@
             "content" : {
               "*/*" : {
                 "schema" : {
-                  "$ref" : "#/components/schemas/ApiResponseListUserResponse"
+                  "$ref" : "#/components/schemas/ApiResponseUserBulkImportResponse"
                 }
               }
             }
@@ -6001,8 +6001,7 @@
           "content" : {
             "application/json" : {
               "schema" : {
-                "type" : "object",
-                "additionalProperties" : { }
+                "$ref" : "#/components/schemas/SaveSearchRequest"
               }
             }
           },
@@ -13522,10 +13521,7 @@
           "content" : {
             "application/json" : {
               "schema" : {
-                "type" : "object",
-                "additionalProperties" : {
-                  "type" : "string"
-                }
+                "$ref" : "#/components/schemas/WarmUpCacheRequest"
               }
             }
           },
@@ -13667,10 +13663,7 @@
           "content" : {
             "application/json" : {
               "schema" : {
-                "type" : "object",
-                "additionalProperties" : {
-                  "type" : "string"
-                }
+                "$ref" : "#/components/schemas/ValidateCouponRequest"
               }
             }
           },
@@ -13704,10 +13697,7 @@
           "content" : {
             "application/json" : {
               "schema" : {
-                "type" : "object",
-                "additionalProperties" : {
-                  "type" : "string"
-                }
+                "$ref" : "#/components/schemas/ApplyCouponRequest"
               }
             }
           },
@@ -13817,13 +13807,32 @@
         "tags" : [ "AdminCampaign Management" ],
         "summary" : "getCampaigns",
         "operationId" : "admincampaign_getCampaigns",
+        "parameters" : [ {
+          "name" : "page",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int32",
+            "default" : 0
+          }
+        }, {
+          "name" : "size",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int32",
+            "default" : 20
+          }
+        } ],
         "responses" : {
           "200" : {
             "description" : "OK",
             "content" : {
               "*/*" : {
                 "schema" : {
-                  "$ref" : "#/components/schemas/ApiResponseListCampaignResponse"
+                  "$ref" : "#/components/schemas/ApiResponsePageCampaignResponse"
                 }
               }
             }
@@ -24123,6 +24132,25 @@
         "summary" : "Get Active Impersonation Sessions",
         "description" : "Retrieves all active impersonation sessions.",
         "operationId" : "getActiveSessions",
+        "parameters" : [ {
+          "name" : "page",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int32",
+            "default" : 0
+          }
+        }, {
+          "name" : "size",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int32",
+            "default" : 20
+          }
+        } ],
         "responses" : {
           "200" : {
             "description" : "Sessions retrieved successfully",
@@ -24552,6 +24580,24 @@
             "type" : "string",
             "format" : "uuid"
           }
+        }, {
+          "name" : "page",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int32",
+            "default" : 0
+          }
+        }, {
+          "name" : "size",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int32",
+            "default" : 20
+          }
         } ],
         "responses" : {
           "200" : {
@@ -24559,7 +24605,7 @@
             "content" : {
               "*/*" : {
                 "schema" : {
-                  "$ref" : "#/components/schemas/ApiResponseListSagaLogResponse"
+                  "$ref" : "#/components/schemas/ApiResponsePageSagaLogResponse"
                 }
               }
             }
@@ -26540,10 +26586,7 @@
           "content" : {
             "application/json" : {
               "schema" : {
-                "type" : "object",
-                "additionalProperties" : {
-                  "type" : "string"
-                }
+                "$ref" : "#/components/schemas/RemoveCouponRequest"
               }
             }
           },
@@ -26803,9 +26846,11 @@
         "type" : "object",
         "properties" : {
           "role" : {
-            "type" : "string"
+            "type" : "string",
+            "minLength" : 1
           }
-        }
+        },
+        "required" : [ "role" ]
       },
       "ApiResponseUserResponse" : {
         "type" : "object",
@@ -28393,7 +28438,7 @@
             "format" : "email",
             "default" : "",
             "description" : "User email address",
-            "example" : "user@school.com",
+            "example" : "user@example.com",
             "minLength" : 1
           },
           "password" : {
@@ -28421,7 +28466,7 @@
             "type" : "array",
             "default" : "",
             "description" : "Roles to assign to the user",
-            "example" : [ "TEACHER" ],
+            "example" : [ "MEMBER" ],
             "items" : {
               "type" : "string"
             },
@@ -28473,12 +28518,15 @@
             "items" : {
               "type" : "integer",
               "format" : "int64"
-            }
+            },
+            "minItems" : 1
           },
           "role" : {
-            "type" : "string"
+            "type" : "string",
+            "minLength" : 1
           }
-        }
+        },
+        "required" : [ "role", "userIds" ]
       },
       "BulkInviteRequest" : {
         "type" : "object",
@@ -28486,13 +28534,18 @@
           "emails" : {
             "type" : "array",
             "items" : {
-              "type" : "string"
-            }
+              "type" : "string",
+              "format" : "email",
+              "minLength" : 1
+            },
+            "minItems" : 1
           },
           "role" : {
-            "type" : "string"
+            "type" : "string",
+            "minLength" : 1
           }
-        }
+        },
+        "required" : [ "emails", "role" ]
       },
       "ApiResponseListMapStringString" : {
         "type" : "object",
@@ -28525,6 +28578,79 @@
             "items" : {
               "type" : "integer",
               "format" : "int64"
+            },
+            "minItems" : 1
+          }
+        },
+        "required" : [ "userIds" ]
+      },
+      "ApiResponseUserBulkImportResponse" : {
+        "type" : "object",
+        "properties" : {
+          "success" : {
+            "type" : "boolean"
+          },
+          "data" : {
+            "$ref" : "#/components/schemas/UserBulkImportResponse"
+          },
+          "error" : {
+            "$ref" : "#/components/schemas/Error"
+          },
+          "meta" : {
+            "$ref" : "#/components/schemas/Meta"
+          }
+        }
+      },
+      "RowFailure" : {
+        "type" : "object",
+        "properties" : {
+          "rowNumber" : {
+            "type" : "integer",
+            "format" : "int32",
+            "default" : "",
+            "description" : "1-based row number in the uploaded file, header row is row 1"
+          },
+          "email" : {
+            "type" : "string",
+            "default" : "",
+            "description" : "Email from the failed row, or a placeholder if unreadable"
+          },
+          "reason" : {
+            "type" : "string",
+            "default" : "",
+            "description" : "Reason the row failed"
+          }
+        }
+      },
+      "UserBulkImportResponse" : {
+        "type" : "object",
+        "default" : null,
+        "description" : "Outcome of a bulk user-invite CSV import — per-row failures are reported rather than failing the whole file",
+        "properties" : {
+          "totalRows" : {
+            "type" : "integer",
+            "format" : "int32",
+            "default" : "",
+            "description" : "Number of data rows read from the file"
+          },
+          "successCount" : {
+            "type" : "integer",
+            "format" : "int32",
+            "default" : "",
+            "description" : "Number of rows processed successfully"
+          },
+          "failureCount" : {
+            "type" : "integer",
+            "format" : "int32",
+            "default" : "",
+            "description" : "Number of rows that failed"
+          },
+          "failures" : {
+            "type" : "array",
+            "default" : "",
+            "description" : "Details for each failed row",
+            "items" : {
+              "$ref" : "#/components/schemas/RowFailure"
             }
           }
         }
@@ -28818,8 +28944,8 @@
           "name" : {
             "type" : "string",
             "default" : "",
-            "description" : "Name of the tenant/school",
-            "example" : "Springfield High School",
+            "description" : "Name of the tenant",
+            "example" : "Acme Corporation",
             "maxLength" : 50,
             "minLength" : 3
           },
@@ -28827,7 +28953,7 @@
             "type" : "string",
             "default" : "",
             "description" : "Unique subdomain for the tenant",
-            "example" : "springfield-high",
+            "example" : "acme-corp",
             "maxLength" : 63,
             "minLength" : 3,
             "pattern" : "^[a-z0-9-]+$"
@@ -28844,7 +28970,7 @@
             "format" : "email",
             "default" : "",
             "description" : "Email address of the tenant administrator",
-            "example" : "admin@springfield.edu",
+            "example" : "admin@acme-corp.example.com",
             "minLength" : 1
           },
           "adminPassword" : {
@@ -28892,7 +29018,7 @@
             "type" : "string",
             "default" : "",
             "description" : "Street address line 1",
-            "example" : "123 School Lane"
+            "example" : "123 Main Street"
           },
           "line2" : {
             "type" : "string",
@@ -28904,25 +29030,26 @@
             "type" : "string",
             "default" : "",
             "description" : "City",
-            "example" : "Springfield"
+            "example" : "Metropolis"
           },
           "state" : {
             "type" : "string",
             "default" : "",
             "description" : "State or province (optional)",
-            "example" : "IL"
+            "example" : "NY"
           },
           "postalCode" : {
             "type" : "string",
             "default" : "",
             "description" : "Postal / ZIP code",
-            "example" : "62701"
+            "example" : "10001"
           },
           "countryCode" : {
             "type" : "string",
             "default" : "",
             "description" : "ISO 3166-1 alpha-2 country code",
-            "example" : "US"
+            "example" : "US",
+            "pattern" : "[A-Z]{2}"
           }
         }
       },
@@ -28941,13 +29068,13 @@
             "type" : "string",
             "default" : "",
             "description" : "Name of the tenant",
-            "example" : "Springfield High School"
+            "example" : "Acme Corporation"
           },
           "subdomain" : {
             "type" : "string",
             "default" : "",
             "description" : "Subdomain of the tenant",
-            "example" : "springfield-high"
+            "example" : "acme-corp"
           },
           "type" : {
             "type" : "string",
@@ -28960,7 +29087,7 @@
             "type" : "string",
             "default" : "",
             "description" : "Database schema name",
-            "example" : "tenant_springfield_high"
+            "example" : "tenant_acme_corp"
           },
           "status" : {
             "type" : "string",
@@ -28991,7 +29118,7 @@
             "type" : "string",
             "default" : "",
             "description" : "Billing email address",
-            "example" : "billing@springfield.edu"
+            "example" : "billing@acme-corp.example.com"
           },
           "billingAddress" : {
             "$ref" : "#/components/schemas/BillingAddressDto",
@@ -29422,7 +29549,7 @@
             "type" : "string",
             "default" : "",
             "description" : "User email address",
-            "example" : "user@school.com"
+            "example" : "user@example.com"
           },
           "password" : {
             "type" : "string",
@@ -30179,6 +30306,42 @@
             "type" : "string"
           }
         }
+      },
+      "SaveSearchRequest" : {
+        "type" : "object",
+        "default" : null,
+        "description" : "Request to save a search query and its filters for later reuse",
+        "properties" : {
+          "name" : {
+            "type" : "string",
+            "default" : "",
+            "description" : "Display name for the saved search",
+            "example" : "Active Users",
+            "minLength" : 1
+          },
+          "entityType" : {
+            "type" : "string",
+            "default" : "",
+            "description" : "Entity type this search targets",
+            "example" : "users",
+            "minLength" : 1
+          },
+          "query" : {
+            "type" : "string",
+            "default" : "",
+            "description" : "Free-text search query",
+            "example" : "*"
+          },
+          "filters" : {
+            "type" : "object",
+            "additionalProperties" : {
+              "type" : "string"
+            },
+            "default" : "",
+            "description" : "Filters applied by this search"
+          }
+        },
+        "required" : [ "entityType", "name" ]
       },
       "CreateSalaryStructureRequest" : {
         "type" : "object",
@@ -31030,7 +31193,7 @@
             "type" : "string",
             "default" : "",
             "description" : "Display name of the organization",
-            "example" : "Springfield Education Group",
+            "example" : "Acme Corp Holdings",
             "maxLength" : 255,
             "minLength" : 2
           },
@@ -31038,7 +31201,7 @@
             "type" : "string",
             "default" : "",
             "description" : "Unique URL-safe identifier",
-            "example" : "springfield-edu",
+            "example" : "acme-corp-holdings",
             "maxLength" : 63,
             "minLength" : 2,
             "pattern" : "^[a-z0-9-]+$"
@@ -31048,7 +31211,7 @@
             "format" : "email",
             "default" : "",
             "description" : "Primary contact email",
-            "example" : "contact@springfield-edu.com",
+            "example" : "contact@acme-corp-holdings.example.com",
             "minLength" : 1
           },
           "billingEmail" : {
@@ -31056,7 +31219,7 @@
             "format" : "email",
             "default" : "",
             "description" : "Billing contact email",
-            "example" : "billing@springfield-edu.com"
+            "example" : "billing@acme-corp-holdings.example.com"
           },
           "maxTenants" : {
             "type" : "integer",
@@ -34371,7 +34534,7 @@
             "format" : "email",
             "default" : "",
             "description" : "User email address",
-            "example" : "user@school.com",
+            "example" : "user@example.com",
             "minLength" : 1
           },
           "password" : {
@@ -35502,8 +35665,11 @@
             "description" : "Set of tags",
             "example" : [ "VIP", "BETA" ],
             "items" : {
-              "type" : "string"
+              "type" : "string",
+              "minLength" : 1
             },
+            "maxItems" : 20,
+            "minItems" : 0,
             "uniqueItems" : true
           }
         }
@@ -35605,21 +35771,24 @@
             "format" : "int32",
             "default" : "",
             "description" : "Maximum allowed users",
-            "example" : 200
+            "example" : 200,
+            "minimum" : 1
           },
           "maxStorageMb" : {
             "type" : "integer",
             "format" : "int64",
             "default" : "",
             "description" : "Maximum allowed storage in MB",
-            "example" : 50000
+            "example" : 50000,
+            "minimum" : 0
           },
           "maxApiCalls" : {
             "type" : "integer",
             "format" : "int64",
             "default" : "",
             "description" : "Maximum allowed API calls per month",
-            "example" : 1000000
+            "example" : 1000000,
+            "minimum" : 0
           }
         }
       },
@@ -35783,30 +35952,37 @@
           "tenantIds" : {
             "type" : "array",
             "items" : {
-              "type" : "string"
-            }
+              "type" : "string",
+              "minLength" : 1
+            },
+            "minItems" : 1
           },
           "batchSize" : {
             "type" : "integer",
             "format" : "int32"
           }
-        }
+        },
+        "required" : [ "tenantIds" ]
       },
       "SkipMigrationRequest" : {
         "type" : "object",
         "properties" : {
           "reason" : {
-            "type" : "string"
+            "type" : "string",
+            "minLength" : 1
           }
-        }
+        },
+        "required" : [ "reason" ]
       },
       "RollbackRequest" : {
         "type" : "object",
         "properties" : {
           "confirmationToken" : {
-            "type" : "string"
+            "type" : "string",
+            "minLength" : 1
           }
-        }
+        },
+        "required" : [ "confirmationToken" ]
       },
       "ApiResponseReportResponse" : {
         "type" : "object",
@@ -35837,16 +36013,19 @@
         "type" : "object",
         "properties" : {
           "tenantId" : {
-            "type" : "string"
+            "type" : "string",
+            "minLength" : 1
           },
           "targetVersion" : {
-            "type" : "string"
+            "type" : "string",
+            "minLength" : 1
           },
           "priority" : {
             "type" : "string",
             "enum" : [ "HIGH", "NORMAL", "LOW" ]
           }
-        }
+        },
+        "required" : [ "targetVersion", "tenantId" ]
       },
       "ApiResponseDryRunResponse" : {
         "type" : "object",
@@ -36008,6 +36187,21 @@
           }
         }
       },
+      "WarmUpCacheRequest" : {
+        "type" : "object",
+        "default" : null,
+        "description" : "Request to pre-warm the cache for a tenant",
+        "properties" : {
+          "tenantId" : {
+            "type" : "string",
+            "default" : "",
+            "description" : "Tenant slug or identifier",
+            "example" : "acme-corp",
+            "minLength" : 1
+          }
+        },
+        "required" : [ "tenantId" ]
+      },
       "ApiResponseString" : {
         "type" : "object",
         "properties" : {
@@ -36086,6 +36280,20 @@
           }
         }
       },
+      "ValidateCouponRequest" : {
+        "type" : "object",
+        "properties" : {
+          "code" : {
+            "type" : "string",
+            "minLength" : 1
+          },
+          "planId" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        },
+        "required" : [ "code" ]
+      },
       "ApiResponseCouponResponse" : {
         "type" : "object",
         "properties" : {
@@ -36156,6 +36364,20 @@
             "format" : "date-time"
           }
         }
+      },
+      "ApplyCouponRequest" : {
+        "type" : "object",
+        "properties" : {
+          "code" : {
+            "type" : "string",
+            "minLength" : 1
+          },
+          "subscriptionId" : {
+            "type" : "string",
+            "format" : "uuid"
+          }
+        },
+        "required" : [ "code", "subscriptionId" ]
       },
       "CreateCouponRequest" : {
         "type" : "object",
@@ -36471,7 +36693,8 @@
           "roles" : {
             "type" : "array",
             "items" : {
-              "type" : "string"
+              "type" : "string",
+              "minLength" : 1
             },
             "uniqueItems" : true
           }
@@ -36517,7 +36740,7 @@
             "type" : "string",
             "default" : "",
             "description" : "New name of the tenant",
-            "example" : "Springfield High School"
+            "example" : "Acme Corporation"
           },
           "planId" : {
             "type" : "string",
@@ -36533,9 +36756,10 @@
           },
           "billingEmail" : {
             "type" : "string",
+            "format" : "email",
             "default" : "",
             "description" : "Billing email address",
-            "example" : "billing@springfield.edu"
+            "example" : "billing@acme-corp.example.com"
           },
           "billingAddress" : {
             "$ref" : "#/components/schemas/BillingAddressDto",
@@ -36558,7 +36782,8 @@
             "type" : "string",
             "default" : "",
             "description" : "Currency code",
-            "example" : "USD"
+            "example" : "USD",
+            "pattern" : "[A-Z]{3}"
           },
           "dataResidencyRegion" : {
             "type" : "string",
@@ -37655,7 +37880,9 @@
             "type" : "string",
             "default" : "",
             "description" : "Description of the feature flag",
-            "example" : "Updated description"
+            "example" : "Updated description",
+            "maxLength" : 500,
+            "minLength" : 0
           },
           "enabled" : {
             "type" : "boolean",
@@ -37667,7 +37894,9 @@
             "type" : "string",
             "default" : "",
             "description" : "JSON rules for targeting",
-            "example" : { }
+            "example" : { },
+            "maxLength" : 10000,
+            "minLength" : 0
           }
         }
       },
@@ -43171,17 +43400,14 @@
           }
         }
       },
-      "ApiResponseListSagaLogResponse" : {
+      "ApiResponsePageSagaLogResponse" : {
         "type" : "object",
         "properties" : {
           "success" : {
             "type" : "boolean"
           },
           "data" : {
-            "type" : "array",
-            "items" : {
-              "$ref" : "#/components/schemas/SagaLogResponse"
-            }
+            "$ref" : "#/components/schemas/PageSagaLogResponse"
           },
           "error" : {
             "$ref" : "#/components/schemas/Error"
@@ -43203,6 +43429,29 @@
           "executedAt" : {
             "type" : "string",
             "format" : "date-time"
+          }
+        }
+      },
+      "PageSagaLogResponse" : {
+        "type" : "object",
+        "properties" : {
+          "content" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/SagaLogResponse"
+            }
+          },
+          "pageNumber" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "pageSize" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "totalElements" : {
+            "type" : "integer",
+            "format" : "int64"
           }
         }
       },
@@ -44092,23 +44341,43 @@
           }
         }
       },
-      "ApiResponseListCampaignResponse" : {
+      "ApiResponsePageCampaignResponse" : {
         "type" : "object",
         "properties" : {
           "success" : {
             "type" : "boolean"
           },
           "data" : {
-            "type" : "array",
-            "items" : {
-              "$ref" : "#/components/schemas/CampaignResponse"
-            }
+            "$ref" : "#/components/schemas/PageCampaignResponse"
           },
           "error" : {
             "$ref" : "#/components/schemas/Error"
           },
           "meta" : {
             "$ref" : "#/components/schemas/Meta"
+          }
+        }
+      },
+      "PageCampaignResponse" : {
+        "type" : "object",
+        "properties" : {
+          "content" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/CampaignResponse"
+            }
+          },
+          "pageNumber" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "pageSize" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "totalElements" : {
+            "type" : "integer",
+            "format" : "int64"
           }
         }
       },
@@ -44384,6 +44653,16 @@
             "$ref" : "#/components/schemas/Meta"
           }
         }
+      },
+      "RemoveCouponRequest" : {
+        "type" : "object",
+        "properties" : {
+          "subscriptionId" : {
+            "type" : "string",
+            "format" : "uuid"
+          }
+        },
+        "required" : [ "subscriptionId" ]
       }
     },
     "securitySchemes" : {
@@ -44400,7 +44679,7 @@
       },
       "tenantHeader" : {
         "type" : "apiKey",
-        "description" : "Tenant slug — e.g., greenwood-school. Not required for system admin (/api/v1/admin/...) endpoints.",
+        "description" : "Tenant slug — e.g., acme-corp. Not required for system admin (/api/v1/admin/...) endpoints.",
         "name" : "X-Tenant-ID",
         "in" : "header"
       }

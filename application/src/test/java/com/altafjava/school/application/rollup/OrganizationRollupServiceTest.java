@@ -26,13 +26,18 @@ import com.altafjava.platform.domain.organization.model.Organization;
 import com.altafjava.platform.domain.tenant.model.Tenant;
 import com.altafjava.school.domain.attendance.model.AttendanceStatus;
 import com.altafjava.school.domain.attendance.repository.AttendanceRepository;
+import com.altafjava.school.domain.classroom.model.StudentClassroomLink;
+import com.altafjava.school.domain.classroom.repository.StudentClassroomLinkRepository;
+import com.altafjava.school.domain.fee.model.FeeAssignment;
 import com.altafjava.school.domain.fee.model.FeeFrequency;
 import com.altafjava.school.domain.fee.model.FeeStructure;
+import com.altafjava.school.domain.fee.repository.FeeAssignmentRepository;
 import com.altafjava.school.domain.fee.repository.FeePaymentRepository;
 import com.altafjava.school.domain.fee.repository.FeeStructureRepository;
 import com.altafjava.school.domain.rollup.model.AttendanceRollup;
 import com.altafjava.school.domain.rollup.model.OrganizationRollupReport;
 import com.altafjava.school.domain.student.model.EnrollmentStatus;
+import com.altafjava.school.domain.student.model.Student;
 import com.altafjava.school.domain.student.repository.StudentRepository;
 
 @ExtendWith(MockitoExtension.class)
@@ -49,6 +54,10 @@ class OrganizationRollupServiceTest {
 	@Mock
 	private FeePaymentRepository feePaymentRepository;
 	@Mock
+	private FeeAssignmentRepository feeAssignmentRepository;
+	@Mock
+	private StudentClassroomLinkRepository studentClassroomLinkRepository;
+	@Mock
 	private TenantFilterSwitcher tenantFilterSwitcher;
 
 	private OrganizationRollupService rollupService;
@@ -62,7 +71,8 @@ class OrganizationRollupServiceTest {
 		lenient().when(tenantFilterSwitcher.runWithTenantFilter(any(), any()))
 				.thenAnswer(invocation -> ((Supplier<?>) invocation.getArgument(1)).get());
 		rollupService = new OrganizationRollupService(organizationService, studentRepository, attendanceRepository,
-				feeStructureRepository, feePaymentRepository, tenantFilterSwitcher);
+				feeStructureRepository, feePaymentRepository, feeAssignmentRepository, studentClassroomLinkRepository,
+				tenantFilterSwitcher);
 	}
 
 	private Organization organization() {
@@ -81,6 +91,18 @@ class OrganizationRollupServiceTest {
 				.type(TenantType.SHARED)
 				.organizationId(10L)
 				.build();
+	}
+
+	private Student studentWithId(long id) {
+		Student student = Student.create("STU-" + id, "First", "Last", null, null);
+		student.setId(id);
+		return student;
+	}
+
+	private FeeStructure feeStructureWithId(long id, BigDecimal amount) {
+		FeeStructure structure = FeeStructure.create("Fee-" + id, amount, FeeFrequency.MONTHLY, "Standard");
+		structure.setId(id);
+		return structure;
 	}
 
 	private void mockAttendance(Long tenantId, long present, long absent, long late, long excused) {
@@ -103,33 +125,51 @@ class OrganizationRollupServiceTest {
 		when(organizationService.findTenantsInOrganization(organizationPublicId))
 				.thenReturn(List.of(campusA, campusB));
 
-		when(studentRepository.countByEnrollmentStatusAndTenantId(EnrollmentStatus.ACTIVE, 1L)).thenReturn(100L);
-		when(studentRepository.countByEnrollmentStatusAndTenantId(EnrollmentStatus.ACTIVE, 2L)).thenReturn(50L);
+		// Campus A: two students in two different classrooms. A CLASSROOM-scoped fee applies only
+		// to student 101's classroom; a STUDENT-scoped fee applies only to student 102 directly —
+		// proving the total is NOT simply (sum of every fee structure) x (student count), which
+		// would double-charge student 101 for the transport fee and student 102 for tuition.
+		Student student101 = studentWithId(101L);
+		Student student102 = studentWithId(102L);
+		when(studentRepository.findAllByEnrollmentStatusAndTenantId(EnrollmentStatus.ACTIVE, 1L))
+				.thenReturn(List.of(student101, student102));
+		when(studentClassroomLinkRepository.findByStudentIdIn(1L, List.of(101L, 102L))).thenReturn(List.of(
+				StudentClassroomLink.create(101L, 501L, 1L, LocalDate.of(2025, 6, 1)),
+				StudentClassroomLink.create(102L, 502L, 1L, LocalDate.of(2025, 6, 1))));
+		FeeStructure tuitionA = feeStructureWithId(1L, BigDecimal.valueOf(100));
+		FeeStructure transportA = feeStructureWithId(2L, BigDecimal.valueOf(50));
+		when(feeStructureRepository.findAllByTenantId(1L)).thenReturn(List.of(tuitionA, transportA));
+		when(feeAssignmentRepository.findByTenantIdAndStudentIdIn(1L, List.of(101L, 102L)))
+				.thenReturn(List.of(FeeAssignment.forStudent(2L, 102L)));
+		when(feeAssignmentRepository.findByTenantIdAndClassroomIdIn(eq(1L), any()))
+				.thenReturn(List.of(FeeAssignment.forClassroom(1L, 501L)));
+		when(feePaymentRepository.sumPaidAmountByTenantId(1L)).thenReturn(BigDecimal.valueOf(90));
+
+		// Campus B: one student, one STUDENT-scoped fee.
+		Student student201 = studentWithId(201L);
+		when(studentRepository.findAllByEnrollmentStatusAndTenantId(EnrollmentStatus.ACTIVE, 2L))
+				.thenReturn(List.of(student201));
+		when(studentClassroomLinkRepository.findByStudentIdIn(2L, List.of(201L))).thenReturn(List.of(
+				StudentClassroomLink.create(201L, 601L, 1L, LocalDate.of(2025, 6, 1))));
+		FeeStructure tuitionB = feeStructureWithId(3L, BigDecimal.valueOf(200));
+		when(feeStructureRepository.findAllByTenantId(2L)).thenReturn(List.of(tuitionB));
+		when(feeAssignmentRepository.findByTenantIdAndStudentIdIn(2L, List.of(201L)))
+				.thenReturn(List.of(FeeAssignment.forStudent(3L, 201L)));
+		when(feePaymentRepository.sumPaidAmountByTenantId(2L)).thenReturn(BigDecimal.valueOf(200));
 
 		mockAttendance(1L, 90, 5, 3, 2);
 		mockAttendance(2L, 40, 5, 5, 0);
-
-		when(feeStructureRepository.findAllByTenantId(1L))
-				.thenReturn(List
-						.of(FeeStructure.create("Tuition", BigDecimal.valueOf(100), FeeFrequency.MONTHLY, "Standard")));
-		when(feeStructureRepository.findAllByTenantId(2L))
-				.thenReturn(List
-						.of(FeeStructure.create("Tuition", BigDecimal.valueOf(100), FeeFrequency.MONTHLY, "Standard")));
-		when(feePaymentRepository.sumPaidAmountByTenantId(1L)).thenReturn(BigDecimal.valueOf(6000));
-		when(feePaymentRepository.sumPaidAmountByTenantId(2L)).thenReturn(BigDecimal.valueOf(5500));
 
 		OrganizationRollupReport report = rollupService.generate(organizationPublicId.toString(), periodStart,
 				periodEnd);
 
 		assertEquals(2, report.campuses().size());
-		assertEquals(150, report.totals().activeStudentCount());
+		assertEquals(3, report.totals().activeStudentCount());
 		assertEquals(new AttendanceRollup(130, 10, 8, 2), report.totals().attendance());
-		// campusA due = 100 students * 100 = 10000, campusB due = 50 * 100 = 5000 -> total 15000
-		assertEquals(BigDecimal.valueOf(15000), report.totals().fees().totalDue());
-		assertEquals(BigDecimal.valueOf(11500), report.totals().fees().totalPaid());
-		// campusA: due 10000, paid 6000 -> outstanding 4000; campusB: due 5000, paid 5500 ->
-		// overpaid 500, clipped at zero before summing (see OrganizationRollupReportTest).
-		assertEquals(BigDecimal.valueOf(4000), report.totals().fees().outstandingBalance());
+		// Campus A due = 100 (student 101, classroom-scoped tuition) + 50 (student 102,
+		// student-scoped transport) = 150, NOT (100+50) x 2 = 300. Campus B due = 200. Total 350.
+		assertEquals(BigDecimal.valueOf(350), report.totals().fees().totalDue());
+		assertEquals(BigDecimal.valueOf(290), report.totals().fees().totalPaid());
 	}
 
 	@Test

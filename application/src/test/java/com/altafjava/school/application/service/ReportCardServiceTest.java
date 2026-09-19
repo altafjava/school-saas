@@ -39,6 +39,8 @@ import com.altafjava.school.application.reportcard.ReportCardLine;
 import com.altafjava.school.application.reportcard.ReportCardPdfGenerator;
 import com.altafjava.school.application.security.StudentDataAccessGuard;
 import com.altafjava.school.domain.attendance.repository.AttendanceRepository;
+import com.altafjava.school.domain.classroom.model.Classroom;
+import com.altafjava.school.domain.classroom.model.StudentClassroomLink;
 import com.altafjava.school.domain.classroom.repository.ClassroomRepository;
 import com.altafjava.school.domain.classroom.repository.StudentClassroomLinkRepository;
 import com.altafjava.school.domain.exam.model.Exam;
@@ -231,6 +233,7 @@ class ReportCardServiceTest {
 
 		assertTrue(existing.isDeleted());
 		verify(reportCardRepository, times(2)).save(any(ReportCard.class));
+		verify(storageService).deleteFile("old-key.pdf");
 	}
 
 	@Test
@@ -301,5 +304,50 @@ class ReportCardServiceTest {
 		ArgumentCaptor<String> uploadedKeyCaptor = ArgumentCaptor.forClass(String.class);
 		verify(storageService).uploadFile(uploadedKeyCaptor.capture(), any(byte[].class), eq("application/pdf"));
 		verify(storageService).deleteFile(uploadedKeyCaptor.getValue());
+	}
+
+	@Test
+	void generate_twoClassmatesWithSharedRankCache_computesClassroomRankingOnlyOnce() {
+		Term term = termWithId(10L, LocalDate.of(2026, 1, 1), LocalDate.of(2026, 3, 31));
+		Student student1 = studentWithId(1L);
+		Student student2 = studentWithId(2L);
+		Classroom classroom = Classroom.create("5A", "5", "A", 1L, "2026", null);
+		classroom.setId(20L);
+		StudentClassroomLink link1 = StudentClassroomLink.create(1L, 20L, 1L, LocalDate.of(2025, 6, 1));
+		StudentClassroomLink link2 = StudentClassroomLink.create(2L, 20L, 1L, LocalDate.of(2025, 6, 1));
+		Exam exam = examAt(50L, LocalDateTime.of(2026, 2, 1, 9, 0));
+		Grade gradeStudent1 = Grade.create(1L, 5L, 50L, BigDecimal.valueOf(90), "A", "teacher");
+		gradeStudent1.setId(100L);
+		Grade gradeStudent2 = Grade.create(2L, 5L, 50L, BigDecimal.valueOf(70), "B", "teacher");
+		gradeStudent2.setId(101L);
+
+		when(studentRepository.findByIdAndTenantId(1L, 1L)).thenReturn(Optional.of(student1));
+		when(studentRepository.findByIdAndTenantId(2L, 1L)).thenReturn(Optional.of(student2));
+		when(termRepository.findByIdAndTenantId(10L, 1L)).thenReturn(Optional.of(term));
+		when(gradeRepository.findByStudentId(1L, 1L)).thenReturn(List.of(gradeStudent1));
+		when(gradeRepository.findByStudentId(1L, 2L)).thenReturn(List.of(gradeStudent2));
+		when(examRepository.findAllByIdInAndTenantId(List.of(50L), 1L)).thenReturn(List.of(exam));
+		when(pdfGenerator.generate(any(), eq(term), any(), anyString(), any(), any(), any()))
+				.thenReturn("pdf-bytes".getBytes());
+		when(reportCardRepository.findByStudentIdAndTermIdAndTenantId(any(), eq(10L), eq(1L)))
+				.thenReturn(Optional.empty());
+		when(reportCardRepository.save(any(ReportCard.class))).thenAnswer(inv -> inv.getArgument(0));
+		when(studentClassroomLinkRepository.findByStudentId(1L, 1L)).thenReturn(List.of(link1));
+		when(studentClassroomLinkRepository.findByStudentId(1L, 2L)).thenReturn(List.of(link2));
+		when(classroomRepository.findByIdAndTenantId(20L, 1L)).thenReturn(Optional.of(classroom));
+		when(studentClassroomLinkRepository.findAllByClassroomId(1L, 20L)).thenReturn(List.of(link1, link2));
+		when(gradeRepository.findByStudentIdInAndTenantId(List.of(1L, 2L), 1L))
+				.thenReturn(List.of(gradeStudent1, gradeStudent2));
+
+		java.util.Map<Long, Integer> classroomRankCache = new java.util.HashMap<>();
+		reportCardService.generate(1L, 10L, null, null, classroomRankCache);
+		reportCardService.generate(2L, 10L, null, null, classroomRankCache);
+
+		// The expensive per-classroom lookups run once — the second student's rank comes from the
+		// shared cache the first student's generation populated, not a repeat query.
+		verify(studentClassroomLinkRepository, times(1)).findAllByClassroomId(1L, 20L);
+		verify(gradeRepository, times(1)).findByStudentIdInAndTenantId(List.of(1L, 2L), 1L);
+		assertEquals(1, classroomRankCache.get(1L));
+		assertEquals(2, classroomRankCache.get(2L));
 	}
 }

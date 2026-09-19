@@ -171,6 +171,17 @@ public class ReportCardService {
 	 * persisted.
 	 */
 	public ReportCard generate(Long studentId, Long termId, String teacherRemarks, String principalRemarks) {
+		return generate(studentId, termId, teacherRemarks, principalRemarks, null);
+	}
+
+	/**
+	 * Same as {@link #generate(Long, Long, String, String)}, but lets a caller generating for many
+	 * students in one run (see {@code ReportCardGenerationJob}) share one classroom-rank cache
+	 * across all of them — the expensive part of ranking (loading every classmate's grades and
+	 * computing percentages) then runs once per classroom instead of once per student.
+	 */
+	public ReportCard generate(Long studentId, Long termId, String teacherRemarks, String principalRemarks,
+			Map<Long, Integer> classroomRankCache) {
 		Long tenantId = TenantContext.getCurrentTenantId();
 		Student student = studentRepository.findByIdAndTenantId(studentId, tenantId)
 				.orElseThrow(() -> new ResourceNotFoundException("Student not found: " + studentId));
@@ -182,7 +193,8 @@ public class ReportCardService {
 				.map(Tenant::getName)
 				.orElse("");
 		byte[] logoBytes = tenantBrandingService.getLogoBytes(tenantId).orElse(null);
-		ReportCardExtras extras = buildExtras(tenantId, student, term, teacherRemarks, principalRemarks);
+		ReportCardExtras extras = buildExtras(tenantId, student, term, teacherRemarks, principalRemarks,
+				classroomRankCache);
 
 		byte[] pdf = pdfGenerator.generate(student, term, lines, tenantName, logoBytes,
 				tenantFormattingService.resolveLocale(tenantId), extras);
@@ -206,21 +218,38 @@ public class ReportCardService {
 		}
 	}
 
+	// The S3 object of any report card this regeneration replaces is deleted here, after the DB
+	// transaction commits — never inside it, for the same reason the new upload happens before
+	// the transaction rather than inside it (see this class's Javadoc). Left uncleaned, every
+	// regeneration for the same student+term would leak its predecessor's PDF in storage forever.
 	private ReportCard persistReportCard(Long tenantId, Long studentId, Long termId, String storageKey,
 			String teacherRemarks, String principalRemarks) {
-		return transactionTemplate.execute(status -> {
+		String[] previousStorageKey = new String[1];
+		ReportCard saved = transactionTemplate.execute(status -> {
 			reportCardRepository.findByStudentIdAndTermIdAndTenantId(studentId, termId, tenantId)
 					.ifPresent(existing -> {
+						previousStorageKey[0] = existing.getStorageKey();
 						existing.softDelete("report-card-regeneration");
 						reportCardRepository.save(existing);
 					});
 
 			ReportCard reportCard = ReportCard.create(studentId, termId, storageKey);
 			reportCard.addRemarks(teacherRemarks, principalRemarks);
-			ReportCard saved = reportCardRepository.save(reportCard);
-			eventPublisher.publish(new ReportCardGeneratedEvent(tenantId, studentId, termId, saved.getId()));
-			return saved;
+			ReportCard result = reportCardRepository.save(reportCard);
+			eventPublisher.publish(new ReportCardGeneratedEvent(tenantId, studentId, termId, result.getId()));
+			return result;
 		});
+
+		if (previousStorageKey[0] != null) {
+			try {
+				storageService.deleteFile(previousStorageKey[0]);
+			} catch (RuntimeException ex) {
+				log.error(
+						"action=report-card-previous-version-cleanup-failed tenantId={} studentId={} termId={} storageKey={}",
+						tenantId, studentId, termId, previousStorageKey[0], ex);
+			}
+		}
+		return saved;
 	}
 
 	/**
@@ -229,12 +258,13 @@ public class ReportCardService {
 	 * unconditionally rather than threading the template's flags through every helper here too.
 	 */
 	private ReportCardExtras buildExtras(Long tenantId, Student student, Term term, String teacherRemarks,
-			String principalRemarks) {
+			String principalRemarks, Map<Long, Integer> classroomRankCache) {
 		ReportCardTemplate template = reportCardTemplateRepository.findByTenantId(tenantId)
 				.orElseGet(ReportCardTemplate::createDefault);
 		Optional<Classroom> classroom = resolveCurrentClassroom(tenantId, student.getId());
 		AttendancePercentage attendancePercentage = calculateAttendancePercentage(tenantId, student.getId(), term);
-		Integer rank = classroom.map(c -> computeRank(tenantId, c.getId(), term, student.getId())).orElse(null);
+		Integer rank = classroom.map(c -> computeRank(tenantId, c.getId(), term, student.getId(), classroomRankCache))
+				.orElse(null);
 		List<CustomFieldValue> competencyValues = customFieldValueService
 				.getAllValues(CustomFieldEntityType.STUDENT, student.getId());
 		return new ReportCardExtras(template.isShowAttendanceSummary(), template.isShowRemarks(),
@@ -275,8 +305,20 @@ public class ReportCardService {
 	 * term-scoped total-marks-over-total-max percentage {@link #buildReportLines} computes for the
 	 * report card itself — batched across the whole classroom (one grades query, one exam-batch
 	 * lookup) rather than one query per classmate.
+	 *
+	 * <p>
+	 * When {@code classroomRankCache} is non-null (see {@code ReportCardGenerationJob}, which
+	 * shares one cache across every student it generates for in a run), the first student in a
+	 * given classroom populates every classmate's rank into it, so every subsequent classmate is
+	 * an O(1) map lookup instead of repeating this whole classroom's worth of queries again — the
+	 * difference between O(n) and O(n²) DB work across a classroom of n students.
 	 */
-	private Integer computeRank(Long tenantId, Long classroomId, Term term, Long studentId) {
+	private Integer computeRank(Long tenantId, Long classroomId, Term term, Long studentId,
+			Map<Long, Integer> classroomRankCache) {
+		if (classroomRankCache != null && classroomRankCache.containsKey(studentId)) {
+			return classroomRankCache.get(studentId);
+		}
+
 		List<Long> classmateIds = studentClassroomLinkRepository.findAllByClassroomId(tenantId, classroomId).stream()
 				.map(StudentClassroomLink::getStudentId)
 				.distinct()
@@ -303,6 +345,14 @@ public class ReportCardService {
 				percentageByStudentId.put(classmateId,
 						totalMarks.multiply(BigDecimal.valueOf(100)).divide(totalMax, 4, RoundingMode.HALF_UP));
 			}
+		}
+
+		if (classroomRankCache != null) {
+			for (Long classmateId : percentageByStudentId.keySet()) {
+				classroomRankCache.put(classmateId,
+						reportCardRankCalculator.rankOf(classmateId, percentageByStudentId));
+			}
+			return classroomRankCache.get(studentId);
 		}
 		return percentageByStudentId.containsKey(studentId)
 				? reportCardRankCalculator.rankOf(studentId, percentageByStudentId)
