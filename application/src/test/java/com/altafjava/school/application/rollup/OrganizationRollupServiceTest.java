@@ -68,7 +68,7 @@ class OrganizationRollupServiceTest {
 
 	@BeforeEach
 	void setUp() {
-		lenient().when(tenantFilterSwitcher.runWithTenantFilter(any(), any()))
+		lenient().when(tenantFilterSwitcher.runWithTenantFilter(any(), any(Supplier.class)))
 				.thenAnswer(invocation -> ((Supplier<?>) invocation.getArgument(1)).get());
 		rollupService = new OrganizationRollupService(organizationService, studentRepository, attendanceRepository,
 				feeStructureRepository, feePaymentRepository, feeAssignmentRepository, studentClassroomLinkRepository,

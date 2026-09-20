@@ -12,6 +12,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import com.altafjava.platform.application.service.ActivityLogService;
 import com.altafjava.platform.core.exception.ResourceNotFoundException;
 import com.altafjava.platform.core.tenant.TenantContext;
 import com.altafjava.platform.core.tenant.TenantType;
@@ -29,12 +30,13 @@ class HealthRecordServiceTest {
 	private HealthRecordRepository healthRecordRepository;
 	@Mock
 	private StudentRepository studentRepository;
+	private final ActivityLogService activityLogService = new NoOpActivityLogService();
 
 	private HealthRecordService healthRecordService;
 
 	@BeforeEach
 	void setUp() {
-		healthRecordService = new HealthRecordService(healthRecordRepository, studentRepository);
+		healthRecordService = new HealthRecordService(healthRecordRepository, studentRepository, activityLogService);
 		TenantContext.ForTesting.setCurrentTenant(1L, null, null, TenantType.SHARED);
 	}
 

@@ -19,6 +19,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
+import com.altafjava.platform.application.service.ActivityLogService;
 import com.altafjava.platform.core.exception.BusinessException;
 import com.altafjava.platform.core.exception.ResourceNotFoundException;
 import com.altafjava.platform.core.security.AuthenticatedUser;
@@ -43,13 +44,14 @@ class CounselingReferralServiceTest {
 	private CounselingSessionRepository counselingSessionRepository;
 	@Mock
 	private StudentRepository studentRepository;
+	private final ActivityLogService activityLogService = new NoOpActivityLogService();
 
 	private CounselingReferralService counselingReferralService;
 
 	@BeforeEach
 	void setUp() {
 		counselingReferralService = new CounselingReferralService(counselingReferralRepository,
-				counselingSessionRepository, studentRepository);
+				counselingSessionRepository, studentRepository, activityLogService);
 		TenantContext.ForTesting.setCurrentTenant(1L, null, null, TenantType.SHARED);
 	}
 

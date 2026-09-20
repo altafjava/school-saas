@@ -28242,12 +28242,15 @@
         "type" : "object",
         "properties" : {
           "url" : {
-            "type" : "string"
+            "type" : "string",
+            "minLength" : 1
           },
           "events" : {
-            "type" : "string"
+            "type" : "string",
+            "minLength" : 1
           }
-        }
+        },
+        "required" : [ "events", "url" ]
       },
       "ApiResponseWebhookResponse" : {
         "type" : "object",
@@ -32363,22 +32366,27 @@
             "format" : "int64"
           },
           "entityType" : {
-            "type" : "string"
+            "type" : "string",
+            "minLength" : 1
           },
           "entityId" : {
-            "type" : "string"
+            "type" : "string",
+            "minLength" : 1
           },
           "filename" : {
-            "type" : "string"
+            "type" : "string",
+            "minLength" : 1
           },
           "size" : {
             "type" : "integer",
             "format" : "int64"
           },
           "mimeType" : {
-            "type" : "string"
+            "type" : "string",
+            "minLength" : 1
           }
-        }
+        },
+        "required" : [ "entityId", "entityType", "filename", "mimeType" ]
       },
       "UploadResponse" : {
         "type" : "object",

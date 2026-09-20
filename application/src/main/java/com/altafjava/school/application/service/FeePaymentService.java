@@ -18,6 +18,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import com.altafjava.platform.application.service.NumberSequenceService;
+import com.altafjava.platform.core.audit.AuditAction;
+import com.altafjava.platform.core.audit.annotation.Audited;
 import com.altafjava.platform.core.exception.ResourceNotFoundException;
 import com.altafjava.platform.core.tenant.TenantContext;
 import com.altafjava.platform.domain.numbering.model.ResetPeriod;
@@ -211,6 +213,7 @@ public class FeePaymentService {
 	}
 
 	@Transactional
+	@Audited(action = AuditAction.CREATE, resourceType = "FeePayment", details = "Fee payment recorded")
 	public FeePayment record(Long studentId, Long feeStructureId, BigDecimal paidAmount,
 			LocalDateTime paidAt, String receiptNumber) {
 		Long tenantId = TenantContext.getCurrentTenantId();
