@@ -8,6 +8,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import com.altafjava.platform.application.service.ActivityLogService;
 import com.altafjava.platform.core.exception.BusinessException;
 import com.altafjava.platform.core.exception.ResourceNotFoundException;
 import com.altafjava.platform.core.security.AuthenticatedUser;
@@ -25,12 +26,15 @@ public class CounselingReferralService {
 	private final CounselingReferralRepository counselingReferralRepository;
 	private final CounselingSessionRepository counselingSessionRepository;
 	private final StudentRepository studentRepository;
+	private final ActivityLogService activityLogService;
 
 	public CounselingReferralService(CounselingReferralRepository counselingReferralRepository,
-			CounselingSessionRepository counselingSessionRepository, StudentRepository studentRepository) {
+			CounselingSessionRepository counselingSessionRepository, StudentRepository studentRepository,
+			ActivityLogService activityLogService) {
 		this.counselingReferralRepository = counselingReferralRepository;
 		this.counselingSessionRepository = counselingSessionRepository;
 		this.studentRepository = studentRepository;
+		this.activityLogService = activityLogService;
 	}
 
 	@Transactional(readOnly = true)
@@ -58,7 +62,17 @@ public class CounselingReferralService {
 				.orElseThrow(() -> new ResourceNotFoundException("Student not found: " + studentPublicId));
 
 		CounselingReferral referral = CounselingReferral.refer(student.getId(), resolveCurrentUserId(), reason);
-		return counselingReferralRepository.save(referral);
+		CounselingReferral saved = counselingReferralRepository.save(referral);
+		// reason is deliberately excluded from the audit trail — confidential referral content.
+		logAction(tenantId, "CREATE", String.valueOf(saved.getId()), "Counseling referral created");
+		return saved;
+	}
+
+	private void logAction(Long tenantId, String action, String resourceId, String details) {
+		Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+		String actorId = authentication != null ? authentication.getName() : "system";
+		activityLogService.log(tenantId, action, "CounselingReferral", resourceId, actorId, null, null, details,
+				null, null);
 	}
 
 	@Transactional
@@ -74,21 +88,27 @@ public class CounselingReferralService {
 		}
 
 		referral.scheduleWithSession(session.getId());
-		return counselingReferralRepository.save(referral);
+		CounselingReferral saved = counselingReferralRepository.save(referral);
+		logAction(tenantId, "UPDATE", publicId, "Counseling referral scheduled with session");
+		return saved;
 	}
 
 	@Transactional
 	public CounselingReferral complete(String publicId) {
 		CounselingReferral referral = findByPublicId(publicId);
 		referral.complete();
-		return counselingReferralRepository.save(referral);
+		CounselingReferral saved = counselingReferralRepository.save(referral);
+		logAction(TenantContext.getCurrentTenantId(), "UPDATE", publicId, "Counseling referral completed");
+		return saved;
 	}
 
 	@Transactional
 	public CounselingReferral decline(String publicId) {
 		CounselingReferral referral = findByPublicId(publicId);
 		referral.decline();
-		return counselingReferralRepository.save(referral);
+		CounselingReferral saved = counselingReferralRepository.save(referral);
+		logAction(TenantContext.getCurrentTenantId(), "UPDATE", publicId, "Counseling referral declined");
+		return saved;
 	}
 
 	private CounselingReferral findByPublicId(String publicId) {

@@ -14,6 +14,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import com.altafjava.platform.application.service.ActivityLogService;
 import com.altafjava.platform.core.exception.ResourceNotFoundException;
 import com.altafjava.platform.core.tenant.TenantContext;
 import com.altafjava.platform.core.tenant.TenantType;
@@ -36,13 +37,14 @@ class CounselingSessionServiceTest {
 	private StudentRepository studentRepository;
 	@Mock
 	private TeacherRepository teacherRepository;
+	private final ActivityLogService activityLogService = new NoOpActivityLogService();
 
 	private CounselingSessionService counselingSessionService;
 
 	@BeforeEach
 	void setUp() {
 		counselingSessionService = new CounselingSessionService(counselingSessionRepository, studentRepository,
-				teacherRepository);
+				teacherRepository, activityLogService);
 		TenantContext.ForTesting.setCurrentTenant(1L, null, null, TenantType.SHARED);
 	}
 

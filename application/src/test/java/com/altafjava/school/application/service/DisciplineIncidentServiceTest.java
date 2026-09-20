@@ -22,6 +22,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import com.altafjava.platform.application.dto.notification.SendNotificationCommand;
+import com.altafjava.platform.application.service.ActivityLogService;
 import com.altafjava.platform.application.service.NotificationService;
 import com.altafjava.platform.core.security.AuthenticatedUser;
 import com.altafjava.platform.core.tenant.TenantContext;
@@ -53,13 +54,14 @@ class DisciplineIncidentServiceTest {
 	private NotificationService notificationService;
 	@Mock
 	private StudentDataAccessGuard studentDataAccessGuard;
+	private final ActivityLogService activityLogService = new NoOpActivityLogService();
 
 	private DisciplineIncidentService disciplineIncidentService;
 
 	@BeforeEach
 	void setUp() {
 		disciplineIncidentService = new DisciplineIncidentService(disciplineIncidentRepository, studentRepository,
-				teacherRepository, recipientResolver, notificationService, studentDataAccessGuard);
+				teacherRepository, recipientResolver, notificationService, studentDataAccessGuard, activityLogService);
 		TenantContext.ForTesting.setCurrentTenant(1L, null, null, TenantType.SHARED);
 	}
 

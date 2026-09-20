@@ -11,6 +11,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import com.altafjava.platform.application.dto.notification.SendNotificationCommand;
+import com.altafjava.platform.application.service.ActivityLogService;
 import com.altafjava.platform.application.service.NotificationService;
 import com.altafjava.platform.core.exception.ResourceNotFoundException;
 import com.altafjava.platform.core.security.AuthenticatedUser;
@@ -41,14 +42,16 @@ public class MedicalIncidentService {
 	private final StudentRepository studentRepository;
 	private final StudentNotificationRecipientResolver recipientResolver;
 	private final NotificationService notificationService;
+	private final ActivityLogService activityLogService;
 
 	public MedicalIncidentService(MedicalIncidentRepository medicalIncidentRepository,
 			StudentRepository studentRepository, StudentNotificationRecipientResolver recipientResolver,
-			NotificationService notificationService) {
+			NotificationService notificationService, ActivityLogService activityLogService) {
 		this.medicalIncidentRepository = medicalIncidentRepository;
 		this.studentRepository = studentRepository;
 		this.recipientResolver = recipientResolver;
 		this.notificationService = notificationService;
+		this.activityLogService = activityLogService;
 	}
 
 	@Transactional(readOnly = true)
@@ -76,6 +79,9 @@ public class MedicalIncidentService {
 				recordedByUserId);
 		MedicalIncident saved = medicalIncidentRepository.save(incident);
 		notifyGuardian(tenantId, student, saved);
+		// description/treatmentGiven are deliberately excluded from the audit trail — medical PII.
+		activityLogService.log(tenantId, "CREATE", "MedicalIncident", String.valueOf(saved.getId()),
+				String.valueOf(recordedByUserId), null, null, "Medical incident recorded", null, null);
 		return saved;
 	}
 

@@ -8,6 +8,8 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import com.altafjava.platform.core.audit.AuditAction;
+import com.altafjava.platform.core.audit.annotation.Audited;
 import com.altafjava.platform.core.exception.BusinessException;
 import com.altafjava.platform.core.exception.ResourceNotFoundException;
 import com.altafjava.platform.core.tenant.TenantContext;
@@ -74,6 +76,7 @@ public class PayslipService {
 	 * the job already holds {@link Teacher} entities from a tenant-wide scan.
 	 */
 	@Transactional
+	@Audited(action = AuditAction.CREATE, resourceType = "Payslip", details = "Payslip generated")
 	public Payslip generate(Long teacherId, YearMonth payMonth) {
 		Long tenantId = TenantContext.getCurrentTenantId();
 		if (payslipRepository.existsByTeacherIdAndPayYearAndPayMonthAndTenantId(teacherId, payMonth.getYear(),
@@ -94,6 +97,7 @@ public class PayslipService {
 	}
 
 	@Transactional
+	@Audited(action = AuditAction.UPDATE, resourceType = "Payslip", details = "Payslip finalized")
 	public Payslip finalizePayslip(String publicId) {
 		Payslip payslip = findByPublicId(publicId);
 		payslip.finalizePayslip();
@@ -101,6 +105,7 @@ public class PayslipService {
 	}
 
 	@Transactional
+	@Audited(action = AuditAction.UPDATE, resourceType = "Payslip", details = "Payslip marked disbursed")
 	public Payslip markDisbursed(String publicId) {
 		Payslip payslip = findByPublicId(publicId);
 		payslip.markDisbursed();

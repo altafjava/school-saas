@@ -1,0 +1,553 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                            http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-5.0.xsd">
+
+    <!--
+        Generalizes 051's fix (student_classroom_links) across every other unique index in this
+        schema that has the same soft-delete interaction bug: a plain UNIQUE constraint counts
+        soft-deleted rows too, so withdrawing/removing a row and later creating a new one with the
+        same natural key collides with the old, soft-deleted row. Each changeset below adds one
+        generated column — the same value as one of the original key's columns, but NULL whenever
+        the row is soft-deleted — and rebuilds the unique index on that column instead. MariaDB (and
+        SQL generally) never treats two NULLs as equal in a unique index, so any number of
+        soft-deleted rows can coexist; only the single live row per key is still enforced unique.
+        Nulling any one column of a composite key is sufficient to fix the whole index, since a NULL
+        in any position removes that row from uniqueness comparison entirely — the other columns are
+        kept unchanged for indexing/lookup value.
+
+        Tables confirmed NOT affected and intentionally excluded: guardian_consent_records
+        (GuardianConsentRecord extends TenantEntity directly, not SoftDeletableEntity — an
+        immutable GDPR/DPDP consent record by design).
+    -->
+
+    <changeSet id="school-096-payslips-soft-delete-unique-fix" author="school">
+        <dropIndex indexName="uq_payslips_teacher_year_month" tableName="payslips"/>
+        <sql>
+            ALTER TABLE payslips
+            ADD COLUMN active_pay_month INT
+            GENERATED ALWAYS AS (CASE WHEN deleted = FALSE THEN pay_month ELSE NULL END) STORED;
+        </sql>
+        <createIndex indexName="uq_payslips_teacher_year_active_month" tableName="payslips" unique="true">
+            <column name="teacher_id"/>
+            <column name="pay_year"/>
+            <column name="active_pay_month"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet id="school-097-departments-soft-delete-unique-fix" author="school">
+        <dropIndex indexName="uq_departments_tenant_code" tableName="departments"/>
+        <sql>
+            ALTER TABLE departments
+            ADD COLUMN active_code VARCHAR(50)
+            GENERATED ALWAYS AS (CASE WHEN deleted = FALSE THEN code ELSE NULL END) STORED;
+        </sql>
+        <createIndex indexName="uq_departments_tenant_active_code" tableName="departments" unique="true">
+            <column name="tenant_id"/>
+            <column name="active_code"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet id="school-098-leave-types-soft-delete-unique-fix" author="school">
+        <dropIndex indexName="uq_leave_types_tenant_name" tableName="leave_types"/>
+        <sql>
+            ALTER TABLE leave_types
+            ADD COLUMN active_name VARCHAR(100)
+            GENERATED ALWAYS AS (CASE WHEN deleted = FALSE THEN name ELSE NULL END) STORED;
+        </sql>
+        <createIndex indexName="uq_leave_types_tenant_active_name" tableName="leave_types" unique="true">
+            <column name="tenant_id"/>
+            <column name="active_name"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet id="school-099-leave-balances-soft-delete-unique-fix" author="school">
+        <dropIndex indexName="uq_leave_balances_teacher_type_year" tableName="leave_balances"/>
+        <sql>
+            ALTER TABLE leave_balances
+            ADD COLUMN active_academic_year_id BIGINT
+            GENERATED ALWAYS AS (CASE WHEN deleted = FALSE THEN academic_year_id ELSE NULL END) STORED;
+        </sql>
+        <createIndex indexName="uq_leave_balances_teacher_type_active_year" tableName="leave_balances" unique="true">
+            <column name="teacher_id"/>
+            <column name="leave_type_id"/>
+            <column name="active_academic_year_id"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet id="school-100-period-attendance-soft-delete-unique-fix" author="school">
+        <dropIndex indexName="uq_period_attendance_student_entry_date_tenant" tableName="period_attendance"/>
+        <sql>
+            ALTER TABLE period_attendance
+            ADD COLUMN active_attendance_date DATE
+            GENERATED ALWAYS AS (CASE WHEN deleted = FALSE THEN attendance_date ELSE NULL END) STORED;
+        </sql>
+        <createIndex indexName="uq_period_attendance_student_entry_active_date_tenant" tableName="period_attendance"
+                     unique="true">
+            <column name="student_id"/>
+            <column name="timetable_entry_id"/>
+            <column name="active_attendance_date"/>
+            <column name="tenant_id"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet id="school-101-vehicles-soft-delete-unique-fix" author="school">
+        <dropIndex indexName="uq_vehicles_tenant_registration" tableName="vehicles"/>
+        <sql>
+            ALTER TABLE vehicles
+            ADD COLUMN active_registration_number VARCHAR(50)
+            GENERATED ALWAYS AS (CASE WHEN deleted = FALSE THEN registration_number ELSE NULL END) STORED;
+        </sql>
+        <createIndex indexName="uq_vehicles_tenant_active_registration" tableName="vehicles" unique="true">
+            <column name="tenant_id"/>
+            <column name="active_registration_number"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet id="school-102-routes-soft-delete-unique-fix" author="school">
+        <dropIndex indexName="uq_routes_tenant_code" tableName="routes"/>
+        <sql>
+            ALTER TABLE routes
+            ADD COLUMN active_code VARCHAR(50)
+            GENERATED ALWAYS AS (CASE WHEN deleted = FALSE THEN code ELSE NULL END) STORED;
+        </sql>
+        <createIndex indexName="uq_routes_tenant_active_code" tableName="routes" unique="true">
+            <column name="tenant_id"/>
+            <column name="active_code"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet id="school-103-submissions-soft-delete-unique-fix" author="school">
+        <dropIndex indexName="uq_submission_tenant_assignment_student" tableName="submissions"/>
+        <sql>
+            ALTER TABLE submissions
+            ADD COLUMN active_student_id BIGINT
+            GENERATED ALWAYS AS (CASE WHEN deleted = FALSE THEN student_id ELSE NULL END) STORED;
+        </sql>
+        <createIndex indexName="uq_submission_tenant_assignment_active_student" tableName="submissions" unique="true">
+            <column name="tenant_id"/>
+            <column name="assignment_id"/>
+            <column name="active_student_id"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet id="school-104-academic-years-soft-delete-unique-fix" author="school">
+        <dropIndex indexName="uq_academic_years_name_tenant" tableName="academic_years"/>
+        <sql>
+            ALTER TABLE academic_years
+            ADD COLUMN active_name VARCHAR(50)
+            GENERATED ALWAYS AS (CASE WHEN deleted = FALSE THEN name ELSE NULL END) STORED;
+        </sql>
+        <createIndex indexName="uq_academic_years_active_name_tenant" tableName="academic_years" unique="true">
+            <column name="active_name"/>
+            <column name="tenant_id"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet id="school-105-subjects-soft-delete-unique-fix" author="school">
+        <dropIndex indexName="uq_subjects_code_tenant" tableName="subjects"/>
+        <sql>
+            ALTER TABLE subjects
+            ADD COLUMN active_code VARCHAR(20)
+            GENERATED ALWAYS AS (CASE WHEN deleted = FALSE THEN code ELSE NULL END) STORED;
+        </sql>
+        <createIndex indexName="uq_subjects_active_code_tenant" tableName="subjects" unique="true">
+            <column name="active_code"/>
+            <column name="tenant_id"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet id="school-106-attendance-soft-delete-unique-fix" author="school">
+        <dropIndex indexName="uq_attendance_student_classroom_date_tenant" tableName="attendance"/>
+        <sql>
+            ALTER TABLE attendance
+            ADD COLUMN active_attendance_date DATE
+            GENERATED ALWAYS AS (CASE WHEN deleted = FALSE THEN attendance_date ELSE NULL END) STORED;
+        </sql>
+        <createIndex indexName="uq_attendance_student_classroom_active_date_tenant" tableName="attendance"
+                     unique="true">
+            <column name="student_id"/>
+            <column name="classroom_id"/>
+            <column name="active_attendance_date"/>
+            <column name="tenant_id"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet id="school-107-grades-soft-delete-unique-fix" author="school">
+        <dropIndex indexName="uq_grades_student_exam_tenant" tableName="grades"/>
+        <sql>
+            ALTER TABLE grades
+            ADD COLUMN active_exam_id BIGINT
+            GENERATED ALWAYS AS (CASE WHEN deleted = FALSE THEN exam_id ELSE NULL END) STORED;
+        </sql>
+        <createIndex indexName="uq_grades_student_active_exam_tenant" tableName="grades" unique="true">
+            <column name="student_id"/>
+            <column name="active_exam_id"/>
+            <column name="tenant_id"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet id="school-108-fee-structures-soft-delete-unique-fix" author="school">
+        <dropIndex indexName="uq_fee_structures_name_tenant" tableName="fee_structures"/>
+        <sql>
+            ALTER TABLE fee_structures
+            ADD COLUMN active_name VARCHAR(200)
+            GENERATED ALWAYS AS (CASE WHEN deleted = FALSE THEN name ELSE NULL END) STORED;
+        </sql>
+        <createIndex indexName="uq_fee_structures_active_name_tenant" tableName="fee_structures" unique="true">
+            <column name="active_name"/>
+            <column name="tenant_id"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet id="school-109-fee-payments-receipt-soft-delete-unique-fix" author="school">
+        <dropIndex indexName="uq_fee_payments_receipt_tenant" tableName="fee_payments"/>
+        <sql>
+            ALTER TABLE fee_payments
+            ADD COLUMN active_receipt_number VARCHAR(100)
+            GENERATED ALWAYS AS (CASE WHEN deleted = FALSE THEN receipt_number ELSE NULL END) STORED;
+        </sql>
+        <createIndex indexName="uq_fee_payments_active_receipt_tenant" tableName="fee_payments" unique="true">
+            <column name="active_receipt_number"/>
+            <column name="tenant_id"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet id="school-110-exam-type-definitions-soft-delete-unique-fix" author="school">
+        <dropIndex indexName="uq_exam_type_definitions_tenant_code" tableName="exam_type_definitions"/>
+        <sql>
+            ALTER TABLE exam_type_definitions
+            ADD COLUMN active_code VARCHAR(50)
+            GENERATED ALWAYS AS (CASE WHEN deleted = FALSE THEN code ELSE NULL END) STORED;
+        </sql>
+        <createIndex indexName="uq_exam_type_definitions_tenant_active_code" tableName="exam_type_definitions"
+                     unique="true">
+            <column name="tenant_id"/>
+            <column name="active_code"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet id="school-111-alumni-profiles-soft-delete-unique-fix" author="school">
+        <dropIndex indexName="uq_alumni_profiles_student" tableName="alumni_profiles"/>
+        <sql>
+            ALTER TABLE alumni_profiles
+            ADD COLUMN active_student_id BIGINT
+            GENERATED ALWAYS AS (CASE WHEN deleted = FALSE THEN student_id ELSE NULL END) STORED;
+        </sql>
+        <createIndex indexName="uq_alumni_profiles_active_student" tableName="alumni_profiles" unique="true">
+            <column name="tenant_id"/>
+            <column name="active_student_id"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet id="school-112-book-copies-soft-delete-unique-fix" author="school">
+        <dropIndex indexName="uq_book_copies_tenant_book_code" tableName="book_copies"/>
+        <sql>
+            ALTER TABLE book_copies
+            ADD COLUMN active_copy_code VARCHAR(50)
+            GENERATED ALWAYS AS (CASE WHEN deleted = FALSE THEN copy_code ELSE NULL END) STORED;
+        </sql>
+        <createIndex indexName="uq_book_copies_tenant_book_active_code" tableName="book_copies" unique="true">
+            <column name="tenant_id"/>
+            <column name="book_id"/>
+            <column name="active_copy_code"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet id="school-113-boards-soft-delete-unique-fix" author="school">
+        <dropIndex indexName="uq_boards_tenant_code" tableName="boards"/>
+        <sql>
+            ALTER TABLE boards
+            ADD COLUMN active_code VARCHAR(50)
+            GENERATED ALWAYS AS (CASE WHEN deleted = FALSE THEN code ELSE NULL END) STORED;
+        </sql>
+        <createIndex indexName="uq_boards_tenant_active_code" tableName="boards" unique="true">
+            <column name="tenant_id"/>
+            <column name="active_code"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet id="school-114-grading-scales-soft-delete-unique-fix" author="school">
+        <dropIndex indexName="uq_grading_scales_tenant_name" tableName="grading_scales"/>
+        <sql>
+            ALTER TABLE grading_scales
+            ADD COLUMN active_name VARCHAR(100)
+            GENERATED ALWAYS AS (CASE WHEN deleted = FALSE THEN name ELSE NULL END) STORED;
+        </sql>
+        <createIndex indexName="uq_grading_scales_tenant_active_name" tableName="grading_scales" unique="true">
+            <column name="tenant_id"/>
+            <column name="active_name"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet id="school-115-curricula-soft-delete-unique-fix" author="school">
+        <dropIndex indexName="uq_curricula_tenant_code" tableName="curricula"/>
+        <sql>
+            ALTER TABLE curricula
+            ADD COLUMN active_code VARCHAR(50)
+            GENERATED ALWAYS AS (CASE WHEN deleted = FALSE THEN code ELSE NULL END) STORED;
+        </sql>
+        <createIndex indexName="uq_curricula_tenant_active_code" tableName="curricula" unique="true">
+            <column name="tenant_id"/>
+            <column name="active_code"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet id="school-116-assets-soft-delete-unique-fix" author="school">
+        <dropIndex indexName="uq_assets_tenant_code" tableName="assets"/>
+        <sql>
+            ALTER TABLE assets
+            ADD COLUMN active_asset_code VARCHAR(50)
+            GENERATED ALWAYS AS (CASE WHEN deleted = FALSE THEN asset_code ELSE NULL END) STORED;
+        </sql>
+        <createIndex indexName="uq_assets_tenant_active_code" tableName="assets" unique="true">
+            <column name="tenant_id"/>
+            <column name="active_asset_code"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet id="school-117-certificate-issuances-soft-delete-unique-fix" author="school">
+        <dropIndex indexName="uq_certificate_issuances_verification_code" tableName="certificate_issuances"/>
+        <sql>
+            ALTER TABLE certificate_issuances
+            ADD COLUMN active_verification_code VARCHAR(32)
+            GENERATED ALWAYS AS (CASE WHEN deleted = FALSE THEN verification_code ELSE NULL END) STORED;
+        </sql>
+        <createIndex indexName="uq_certificate_issuances_active_verification_code" tableName="certificate_issuances"
+                     unique="true">
+            <column name="tenant_id"/>
+            <column name="active_verification_code"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet id="school-118-terms-soft-delete-unique-fix" author="school">
+        <dropIndex indexName="uq_terms_name_academic_year_tenant" tableName="terms"/>
+        <sql>
+            ALTER TABLE terms
+            ADD COLUMN active_name VARCHAR(50)
+            GENERATED ALWAYS AS (CASE WHEN deleted = FALSE THEN name ELSE NULL END) STORED;
+        </sql>
+        <createIndex indexName="uq_terms_active_name_academic_year_tenant" tableName="terms" unique="true">
+            <column name="active_name"/>
+            <column name="academic_year_id"/>
+            <column name="tenant_id"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet id="school-119-periods-soft-delete-unique-fix" author="school">
+        <dropIndex indexName="uq_periods_name_tenant" tableName="periods"/>
+        <sql>
+            ALTER TABLE periods
+            ADD COLUMN active_name VARCHAR(50)
+            GENERATED ALWAYS AS (CASE WHEN deleted = FALSE THEN name ELSE NULL END) STORED;
+        </sql>
+        <createIndex indexName="uq_periods_active_name_tenant" tableName="periods" unique="true">
+            <column name="active_name"/>
+            <column name="tenant_id"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet id="school-120-timetable-classroom-soft-delete-unique-fix" author="school">
+        <dropIndex indexName="uq_timetable_classroom_period_day" tableName="timetable_entries"/>
+        <sql>
+            ALTER TABLE timetable_entries
+            ADD COLUMN active_classroom_id BIGINT
+            GENERATED ALWAYS AS (CASE WHEN deleted = FALSE THEN classroom_id ELSE NULL END) STORED;
+        </sql>
+        <createIndex indexName="uq_timetable_active_classroom_period_day" tableName="timetable_entries"
+                     unique="true">
+            <column name="tenant_id"/>
+            <column name="day_of_week"/>
+            <column name="period_id"/>
+            <column name="active_classroom_id"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet id="school-121-timetable-teacher-soft-delete-unique-fix" author="school">
+        <dropIndex indexName="uq_timetable_teacher_period_day" tableName="timetable_entries"/>
+        <sql>
+            ALTER TABLE timetable_entries
+            ADD COLUMN active_teacher_id BIGINT
+            GENERATED ALWAYS AS (CASE WHEN deleted = FALSE THEN teacher_id ELSE NULL END) STORED;
+        </sql>
+        <createIndex indexName="uq_timetable_active_teacher_period_day" tableName="timetable_entries" unique="true">
+            <column name="tenant_id"/>
+            <column name="day_of_week"/>
+            <column name="period_id"/>
+            <column name="active_teacher_id"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet id="school-122-report-card-templates-soft-delete-unique-fix" author="school">
+        <!-- Single-column key (one active template per tenant) — same pattern as platform-saas's
+             subscriptions fix (035-addon-purchase-race-fixes.xml), not a composite key.
+             uq_report_card_templates_tenant_id is also the only index covering the
+             fk_report_card_templates_tenant_id foreign key (044-report-card-template-remarks.xml
+             never added a separate plain index, since the unique one already covered it) — a plain
+             index is added first so MariaDB still has one to back the FK once the unique index is
+             dropped. -->
+        <createIndex indexName="idx_report_card_templates_tenant_id" tableName="report_card_templates">
+            <column name="tenant_id"/>
+        </createIndex>
+        <dropIndex indexName="uq_report_card_templates_tenant_id" tableName="report_card_templates"/>
+        <sql>
+            ALTER TABLE report_card_templates
+            ADD COLUMN active_tenant_key BIGINT
+            GENERATED ALWAYS AS (CASE WHEN deleted = FALSE THEN tenant_id ELSE NULL END) STORED;
+        </sql>
+        <createIndex indexName="uq_report_card_templates_active_tenant" tableName="report_card_templates"
+                     unique="true">
+            <column name="active_tenant_key"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet id="school-123-fee-payments-gateway-soft-delete-unique-fix" author="school">
+        <dropIndex indexName="uq_fee_payments_tenant_gateway_ref" tableName="fee_payments"/>
+        <sql>
+            ALTER TABLE fee_payments
+            ADD COLUMN active_gateway_charge_reference VARCHAR(255)
+            GENERATED ALWAYS AS (CASE WHEN deleted = FALSE THEN gateway_charge_reference ELSE NULL END) STORED;
+        </sql>
+        <createIndex indexName="uq_fee_payments_tenant_active_gateway_ref" tableName="fee_payments" unique="true">
+            <column name="tenant_id"/>
+            <column name="active_gateway_charge_reference"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet id="school-124-teachers-soft-delete-unique-fix" author="school">
+        <dropIndex indexName="uq_teachers_employee_code_tenant" tableName="teachers"/>
+        <sql>
+            ALTER TABLE teachers
+            ADD COLUMN active_employee_code VARCHAR(50)
+            GENERATED ALWAYS AS (CASE WHEN deleted = FALSE THEN employee_code ELSE NULL END) STORED;
+        </sql>
+        <createIndex indexName="uq_teachers_active_employee_code_tenant" tableName="teachers" unique="true">
+            <column name="active_employee_code"/>
+            <column name="tenant_id"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet id="school-125-classrooms-soft-delete-unique-fix" author="school">
+        <dropIndex indexName="uq_classrooms_code_tenant" tableName="classrooms"/>
+        <sql>
+            ALTER TABLE classrooms
+            ADD COLUMN active_class_code VARCHAR(50)
+            GENERATED ALWAYS AS (CASE WHEN deleted = FALSE THEN class_code ELSE NULL END) STORED;
+        </sql>
+        <createIndex indexName="uq_classrooms_active_code_tenant" tableName="classrooms" unique="true">
+            <column name="active_class_code"/>
+            <column name="tenant_id"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet id="school-126-students-soft-delete-unique-fix" author="school">
+        <dropIndex indexName="uq_students_code_tenant" tableName="students"/>
+        <sql>
+            ALTER TABLE students
+            ADD COLUMN active_student_code VARCHAR(50)
+            GENERATED ALWAYS AS (CASE WHEN deleted = FALSE THEN student_code ELSE NULL END) STORED;
+        </sql>
+        <createIndex indexName="uq_students_active_code_tenant" tableName="students" unique="true">
+            <column name="active_student_code"/>
+            <column name="tenant_id"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet id="school-127-fee-assignments-student-soft-delete-unique-fix" author="school">
+        <dropIndex indexName="uq_fa_fee_structure_student" tableName="fee_assignments"/>
+        <sql>
+            ALTER TABLE fee_assignments
+            ADD COLUMN active_student_id BIGINT
+            GENERATED ALWAYS AS (CASE WHEN deleted = FALSE THEN student_id ELSE NULL END) STORED;
+        </sql>
+        <createIndex indexName="uq_fa_fee_structure_active_student" tableName="fee_assignments" unique="true">
+            <column name="fee_structure_id"/>
+            <column name="active_student_id"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet id="school-128-fee-assignments-classroom-soft-delete-unique-fix" author="school">
+        <dropIndex indexName="uq_fa_fee_structure_classroom" tableName="fee_assignments"/>
+        <sql>
+            ALTER TABLE fee_assignments
+            ADD COLUMN active_classroom_id BIGINT
+            GENERATED ALWAYS AS (CASE WHEN deleted = FALSE THEN classroom_id ELSE NULL END) STORED;
+        </sql>
+        <createIndex indexName="uq_fa_fee_structure_active_classroom" tableName="fee_assignments" unique="true">
+            <column name="fee_structure_id"/>
+            <column name="active_classroom_id"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet id="school-129-pay-component-definitions-soft-delete-unique-fix" author="school">
+        <dropIndex indexName="uq_pay_component_definitions_tenant_code" tableName="pay_component_definitions"/>
+        <sql>
+            ALTER TABLE pay_component_definitions
+            ADD COLUMN active_code VARCHAR(50)
+            GENERATED ALWAYS AS (CASE WHEN deleted = FALSE THEN code ELSE NULL END) STORED;
+        </sql>
+        <createIndex indexName="uq_pay_component_definitions_tenant_active_code" tableName="pay_component_definitions"
+                     unique="true">
+            <column name="tenant_id"/>
+            <column name="active_code"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet id="school-130-health-records-soft-delete-unique-fix" author="school">
+        <dropIndex indexName="uq_health_records_student" tableName="health_records"/>
+        <sql>
+            ALTER TABLE health_records
+            ADD COLUMN active_student_id BIGINT
+            GENERATED ALWAYS AS (CASE WHEN deleted = FALSE THEN student_id ELSE NULL END) STORED;
+        </sql>
+        <createIndex indexName="uq_health_records_active_student" tableName="health_records" unique="true">
+            <column name="tenant_id"/>
+            <column name="active_student_id"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet id="school-131-report-cards-soft-delete-unique-fix" author="school">
+        <dropIndex indexName="uq_report_cards_student_term_tenant" tableName="report_cards"/>
+        <sql>
+            ALTER TABLE report_cards
+            ADD COLUMN active_term_id BIGINT
+            GENERATED ALWAYS AS (CASE WHEN deleted = FALSE THEN term_id ELSE NULL END) STORED;
+        </sql>
+        <createIndex indexName="uq_report_cards_student_active_term_tenant" tableName="report_cards" unique="true">
+            <column name="student_id"/>
+            <column name="active_term_id"/>
+            <column name="tenant_id"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet id="school-132-custom-field-definitions-soft-delete-unique-fix" author="school">
+        <dropIndex indexName="uq_custom_field_definitions_key" tableName="custom_field_definitions"/>
+        <sql>
+            ALTER TABLE custom_field_definitions
+            ADD COLUMN active_field_key VARCHAR(100)
+            GENERATED ALWAYS AS (CASE WHEN deleted = FALSE THEN field_key ELSE NULL END) STORED;
+        </sql>
+        <createIndex indexName="uq_custom_field_definitions_active_key" tableName="custom_field_definitions"
+                     unique="true">
+            <column name="tenant_id"/>
+            <column name="entity_type"/>
+            <column name="active_field_key"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet id="school-133-student-guardian-links-soft-delete-unique-fix" author="school">
+        <dropIndex indexName="uq_sgl_student_guardian" tableName="student_guardian_links"/>
+        <sql>
+            ALTER TABLE student_guardian_links
+            ADD COLUMN active_guardian_id BIGINT
+            GENERATED ALWAYS AS (CASE WHEN deleted = FALSE THEN guardian_id ELSE NULL END) STORED;
+        </sql>
+        <createIndex indexName="uq_sgl_student_active_guardian" tableName="student_guardian_links" unique="true">
+            <column name="student_id"/>
+            <column name="active_guardian_id"/>
+        </createIndex>
+    </changeSet>
+
+</databaseChangeLog>

@@ -25,6 +25,7 @@ import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import com.altafjava.platform.application.dto.notification.SendNotificationCommand;
+import com.altafjava.platform.application.service.ActivityLogService;
 import com.altafjava.platform.application.service.NotificationService;
 import com.altafjava.platform.core.security.AuthenticatedUser;
 import com.altafjava.platform.core.tenant.TenantContext;
@@ -49,13 +50,14 @@ class MedicalIncidentServiceTest {
 	private StudentNotificationRecipientResolver recipientResolver;
 	@Mock
 	private NotificationService notificationService;
+	private final ActivityLogService activityLogService = new NoOpActivityLogService();
 
 	private MedicalIncidentService medicalIncidentService;
 
 	@BeforeEach
 	void setUp() {
 		medicalIncidentService = new MedicalIncidentService(medicalIncidentRepository, studentRepository,
-				recipientResolver, notificationService);
+				recipientResolver, notificationService, activityLogService);
 		TenantContext.ForTesting.setCurrentTenant(1L, null, null, TenantType.SHARED);
 	}
 

@@ -11,6 +11,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import com.altafjava.platform.application.dto.notification.SendNotificationCommand;
+import com.altafjava.platform.application.service.ActivityLogService;
 import com.altafjava.platform.application.service.NotificationService;
 import com.altafjava.platform.core.exception.ResourceNotFoundException;
 import com.altafjava.platform.core.security.AuthenticatedUser;
@@ -36,17 +37,19 @@ public class DisciplineIncidentService {
 	private final StudentNotificationRecipientResolver recipientResolver;
 	private final NotificationService notificationService;
 	private final StudentDataAccessGuard studentDataAccessGuard;
+	private final ActivityLogService activityLogService;
 
 	public DisciplineIncidentService(DisciplineIncidentRepository disciplineIncidentRepository,
 			StudentRepository studentRepository, TeacherRepository teacherRepository,
 			StudentNotificationRecipientResolver recipientResolver, NotificationService notificationService,
-			StudentDataAccessGuard studentDataAccessGuard) {
+			StudentDataAccessGuard studentDataAccessGuard, ActivityLogService activityLogService) {
 		this.disciplineIncidentRepository = disciplineIncidentRepository;
 		this.studentRepository = studentRepository;
 		this.teacherRepository = teacherRepository;
 		this.recipientResolver = recipientResolver;
 		this.notificationService = notificationService;
 		this.studentDataAccessGuard = studentDataAccessGuard;
+		this.activityLogService = activityLogService;
 	}
 
 	@Transactional(readOnly = true)
@@ -75,6 +78,10 @@ public class DisciplineIncidentService {
 				incidentDate, severity, description);
 		DisciplineIncident saved = disciplineIncidentRepository.save(incident);
 		notifyGuardian(tenantId, student, saved);
+		// severity is a classification, not the incident's free-text (Pii) description/actionTaken
+		// — safe to record; the content itself is deliberately excluded from the audit trail.
+		logAction(tenantId, "CREATE", String.valueOf(saved.getId()),
+				"Discipline incident recorded, severity=" + severity);
 		return saved;
 	}
 
@@ -85,7 +92,16 @@ public class DisciplineIncidentService {
 				tenantId)
 				.orElseThrow(() -> new ResourceNotFoundException("Discipline incident not found: " + publicId));
 		incident.recordAction(actionTaken);
-		return disciplineIncidentRepository.save(incident);
+		DisciplineIncident saved = disciplineIncidentRepository.save(incident);
+		logAction(tenantId, "UPDATE", publicId, "Discipline incident action recorded");
+		return saved;
+	}
+
+	private void logAction(Long tenantId, String action, String resourceId, String details) {
+		Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+		String actorId = authentication != null ? authentication.getName() : "system";
+		activityLogService.log(tenantId, action, "DisciplineIncident", resourceId, actorId, null, null, details,
+				null, null);
 	}
 
 	private void notifyGuardian(Long tenantId, Student student, DisciplineIncident incident) {

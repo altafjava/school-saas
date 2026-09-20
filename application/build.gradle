@@ -58,4 +58,9 @@ dependencies {
     testRuntimeOnly libs.junit.platform.launcher
     testImplementation libs.mockito.core
     testImplementation libs.mockito.junit.jupiter
+    // jakarta.servlet-api is compileOnly in the platform's application module (a servlet container
+    // provides it at runtime), so it's absent from the published POM. NoOpActivityLogService (audit
+    // test fixture) extends ActivityLogService, whose private getClientIp(HttpServletRequest)
+    // otherwise fails JUnit's test-discovery reflection with NoClassDefFoundError.
+    testImplementation 'jakarta.servlet:jakarta.servlet-api:6.1.0'
 }
