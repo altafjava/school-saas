@@ -18,6 +18,7 @@ import com.altafjava.school.api.dto.request.AddressRequest;
 import com.altafjava.school.api.dto.request.CreateTeacherRequest;
 import com.altafjava.school.api.dto.request.SetTeacherProbationRequest;
 import com.altafjava.school.api.dto.request.UpdatePhoneRequest;
+import com.altafjava.school.api.dto.request.UpdatePhotoRequest;
 import com.altafjava.school.api.dto.request.UpdateTeacherContactDetailsRequest;
 import com.altafjava.school.api.dto.request.UpdateTeacherHrDetailsRequest;
 import com.altafjava.school.api.dto.response.TeacherResponse;
@@ -111,6 +112,15 @@ public class TeacherController implements TeacherApi {
 			@Valid @RequestBody AddressRequest request) {
 		return ApiResponse.success(
 				teacherMapper.toResponse(teacherService.updateAddress(publicId, addressMapper.toDomain(request))));
+	}
+
+	@Override
+	@PatchMapping("/{publicId}/photo")
+	@PreAuthorize("@permissionAuthorizationService.hasPermission('TEACHER_MANAGE')")
+	public ApiResponse<TeacherResponse> updatePhoto(@PathVariable String publicId,
+			@Valid @RequestBody UpdatePhotoRequest request) {
+		return ApiResponse
+				.success(teacherMapper.toResponse(teacherService.updatePhoto(publicId, request.filePublicId())));
 	}
 
 	@Override

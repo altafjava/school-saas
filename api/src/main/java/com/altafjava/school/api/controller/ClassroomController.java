@@ -16,12 +16,14 @@ import org.springframework.web.bind.annotation.RestController;
 import com.altafjava.platform.api.dto.response.ApiResponse;
 import com.altafjava.school.api.controller.api.ClassroomApi;
 import com.altafjava.school.api.dto.request.AssignClassroomCurriculumRequest;
+import com.altafjava.school.api.dto.request.AssignRollNumberRequest;
 import com.altafjava.school.api.dto.request.CreateClassroomRequest;
 import com.altafjava.school.api.dto.request.EnrollStudentInClassroomRequest;
 import com.altafjava.school.api.dto.request.MoveClassroomAcademicYearRequest;
 import com.altafjava.school.api.dto.request.ReassignClassTeacherRequest;
 import com.altafjava.school.api.dto.request.UpdateClassroomCapacityRequest;
 import com.altafjava.school.api.dto.response.ClassroomResponse;
+import com.altafjava.school.api.dto.response.RollNumberResponse;
 import com.altafjava.school.api.dto.response.StudentClassroomLinkResponse;
 import com.altafjava.school.api.dto.response.StudentResponse;
 import com.altafjava.school.api.dto.response.TimetableEntryResponse;
@@ -162,5 +164,14 @@ public class ClassroomController implements ClassroomApi {
 	public ApiResponse<Void> withdrawStudent(@PathVariable String publicId, @PathVariable String studentPublicId) {
 		classroomService.withdrawStudentFromClassroom(publicId, studentPublicId);
 		return ApiResponse.success(null);
+	}
+
+	@Override
+	@PatchMapping("/{publicId}/students/{studentPublicId}/roll-number")
+	@PreAuthorize("@permissionAuthorizationService.hasPermission('CLASSROOM_WRITE')")
+	public ApiResponse<RollNumberResponse> assignRollNumber(@PathVariable String publicId,
+			@PathVariable String studentPublicId, @Valid @RequestBody AssignRollNumberRequest request) {
+		var link = classroomService.assignRollNumber(publicId, studentPublicId, request.rollNumber());
+		return ApiResponse.success(new RollNumberResponse(studentPublicId, publicId, link.getRollNumber()));
 	}
 }

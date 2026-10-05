@@ -177,6 +177,30 @@ public class ClassroomService {
 		studentClassroomLinkRepository.save(link);
 	}
 
+	@Transactional
+	public StudentClassroomLink assignRollNumber(String classroomPublicId, String studentPublicId,
+			String rollNumber) {
+		Long tenantId = TenantContext.getCurrentTenantId();
+		Classroom classroom = classroomRepository
+				.findByPublicIdAndTenantId(UUID.fromString(classroomPublicId), tenantId)
+				.orElseThrow(() -> new ResourceNotFoundException("Classroom not found: " + classroomPublicId));
+		Student student = studentRepository.findByPublicIdAndTenantId(UUID.fromString(studentPublicId), tenantId)
+				.orElseThrow(() -> new ResourceNotFoundException("Student not found: " + studentPublicId));
+		StudentClassroomLink link = studentClassroomLinkRepository
+				.findByStudentIdAndClassroomId(tenantId, student.getId(), classroom.getId())
+				.orElseThrow(() -> new ResourceNotFoundException(
+						"Student " + studentPublicId + " is not enrolled in classroom " + classroomPublicId));
+		link.assignRollNumber(rollNumber);
+		try {
+			return studentClassroomLinkRepository.save(link);
+		} catch (DataIntegrityViolationException e) {
+			// uq_scl_classroom_year_active_roll_number (054-photo-and-roll-number.xml) is the real
+			// guard against two students in the same classroom/academic year sharing a roll number.
+			throw new BusinessException(
+					"Roll number " + rollNumber + " is already assigned in classroom " + classroomPublicId);
+		}
+	}
+
 	@Transactional(readOnly = true)
 	public Page<Student> listRoster(String classroomPublicId, Pageable pageable) {
 		Long tenantId = TenantContext.getCurrentTenantId();

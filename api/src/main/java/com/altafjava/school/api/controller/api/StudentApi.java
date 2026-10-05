@@ -12,6 +12,7 @@ import com.altafjava.platform.api.dto.response.ApiResponse;
 import com.altafjava.school.api.dto.request.AddressRequest;
 import com.altafjava.school.api.dto.request.CreateStudentRequest;
 import com.altafjava.school.api.dto.request.UpdatePhoneRequest;
+import com.altafjava.school.api.dto.request.UpdatePhotoRequest;
 import com.altafjava.school.api.dto.request.UpdateStudentContactDetailsRequest;
 import com.altafjava.school.api.dto.response.AttendancePercentageResponse;
 import com.altafjava.school.api.dto.response.AttendanceResponse;
@@ -66,6 +67,10 @@ public interface StudentApi {
 	@Operation(summary = "Update address", operationId = "student_updateAddress")
 	public ApiResponse<StudentResponse> updateAddress(@PathVariable String publicId,
 			@Valid @RequestBody AddressRequest request);
+
+	@Operation(summary = "Update photo", operationId = "student_updatePhoto")
+	public ApiResponse<StudentResponse> updatePhoto(@PathVariable String publicId,
+			@Valid @RequestBody UpdatePhotoRequest request);
 
 	@Operation(summary = "Grades", operationId = "student_grades")
 	public ApiResponse<com.altafjava.platform.core.model.Page<GradeResponse>> grades(@PathVariable String publicId,

@@ -1,6 +1,7 @@
 package com.altafjava.school.application.service;
 
 import java.time.LocalDate;
+import java.util.Optional;
 import java.util.UUID;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -117,6 +118,13 @@ public class StudentService {
 	public Student updateAddress(String publicId, Address address) {
 		Student student = findByPublicId(publicId);
 		student.updateAddress(address);
+		return studentRepository.save(student);
+	}
+
+	@Transactional
+	public Student updatePhoto(String publicId, String filePublicId) {
+		Student student = findByPublicId(publicId);
+		student.updatePhoto(Optional.ofNullable(filePublicId).map(UUID::fromString).orElse(null));
 		return studentRepository.save(student);
 	}
 }

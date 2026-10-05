@@ -186,6 +186,32 @@ class StudentServiceTest {
 	}
 
 	@Test
+	void updatePhoto_withFilePublicId_setsPhotoReference() {
+		UUID publicId = UUID.randomUUID();
+		UUID filePublicId = UUID.randomUUID();
+		Student student = Student.create("STU-008", "Hank", "Iron", "hank@school.test", LocalDate.of(2010, 7, 7));
+		when(studentRepository.findByPublicIdAndTenantId(publicId, 1L)).thenReturn(Optional.of(student));
+		when(studentRepository.save(any(Student.class))).thenAnswer(inv -> inv.getArgument(0));
+
+		Student updated = studentService.updatePhoto(publicId.toString(), filePublicId.toString());
+
+		assertEquals(filePublicId, updated.getPhotoFilePublicId());
+	}
+
+	@Test
+	void updatePhoto_withNull_clearsPhotoReference() {
+		UUID publicId = UUID.randomUUID();
+		Student student = Student.create("STU-009", "Ida", "Jones", "ida@school.test", LocalDate.of(2010, 8, 8));
+		student.updatePhoto(UUID.randomUUID());
+		when(studentRepository.findByPublicIdAndTenantId(publicId, 1L)).thenReturn(Optional.of(student));
+		when(studentRepository.save(any(Student.class))).thenAnswer(inv -> inv.getArgument(0));
+
+		Student updated = studentService.updatePhoto(publicId.toString(), null);
+
+		assertEquals(null, updated.getPhotoFilePublicId());
+	}
+
+	@Test
 	void listStudents_withStatusFilter_delegatesToStatusFilteredQuery() {
 		when(studentRepository.findAllByTenantIdAndEnrollmentStatus(1L, EnrollmentStatus.ACTIVE,
 				org.springframework.data.domain.PageRequest.of(0, 20)))

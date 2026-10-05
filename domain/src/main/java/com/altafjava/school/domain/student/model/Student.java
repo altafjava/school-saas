@@ -2,6 +2,7 @@ package com.altafjava.school.domain.student.model;
 
 import java.time.Instant;
 import java.time.LocalDate;
+import java.util.UUID;
 import jakarta.persistence.Column;
 import jakarta.persistence.Embedded;
 import jakarta.persistence.Entity;
@@ -65,6 +66,13 @@ public class Student extends SoftDeletableEntity {
 	@Embedded
 	private Address address;
 
+	// FK to platform file_metadata.public_id — the UUID publicId (never the internal surrogate
+	// Long id, per the platform's own DTO/identifier convention), nullable, set only once a photo
+	// is uploaded via platform's FileStorageService (quota/virus-scan/ownership controls apply,
+	// same as any other platform file).
+	@Column(name = "photo_file_public_id")
+	private UUID photoFilePublicId;
+
 	public static Student create(String studentCode, String firstName, String lastName,
 			String email, LocalDate dateOfBirth) {
 		return Student.builder()
@@ -124,6 +132,10 @@ public class Student extends SoftDeletableEntity {
 		this.address = Address.copyOf(address);
 	}
 
+	public void updatePhoto(UUID photoFilePublicId) {
+		this.photoFilePublicId = photoFilePublicId;
+	}
+
 	// GDPR/DPDP erasure (see DomainPiiHandler) — mirrors the platform's own User tombstone
 	// strategy: firstName/lastName can't go null (NOT NULL columns) so they get an opaque
 	// placeholder, everything else PII-bearing is cleared. studentCode/dateOfBirth are left
@@ -134,5 +146,6 @@ public class Student extends SoftDeletableEntity {
 		this.email = null;
 		this.phone = null;
 		this.address = null;
+		this.photoFilePublicId = null;
 	}
 }

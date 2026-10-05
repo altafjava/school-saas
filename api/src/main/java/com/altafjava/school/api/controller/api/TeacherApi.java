@@ -9,6 +9,7 @@ import com.altafjava.school.api.dto.request.AddressRequest;
 import com.altafjava.school.api.dto.request.CreateTeacherRequest;
 import com.altafjava.school.api.dto.request.SetTeacherProbationRequest;
 import com.altafjava.school.api.dto.request.UpdatePhoneRequest;
+import com.altafjava.school.api.dto.request.UpdatePhotoRequest;
 import com.altafjava.school.api.dto.request.UpdateTeacherContactDetailsRequest;
 import com.altafjava.school.api.dto.request.UpdateTeacherHrDetailsRequest;
 import com.altafjava.school.api.dto.response.TeacherResponse;
@@ -47,6 +48,10 @@ public interface TeacherApi {
 	@Operation(summary = "Update address", operationId = "teacher_updateAddress")
 	public ApiResponse<TeacherResponse> updateAddress(@PathVariable String publicId,
 			@Valid @RequestBody AddressRequest request);
+
+	@Operation(summary = "Update photo", operationId = "teacher_updatePhoto")
+	public ApiResponse<TeacherResponse> updatePhoto(@PathVariable String publicId,
+			@Valid @RequestBody UpdatePhotoRequest request);
 
 	@Operation(summary = "Set probation period", operationId = "teacher_setProbationPeriod")
 	public ApiResponse<TeacherResponse> setProbationPeriod(@PathVariable String publicId,

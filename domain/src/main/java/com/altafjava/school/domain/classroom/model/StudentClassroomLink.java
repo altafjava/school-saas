@@ -33,6 +33,13 @@ public class StudentClassroomLink extends SoftDeletableEntity {
 	@Column(name = "enrolled_at", nullable = false)
 	private LocalDate enrolledAt;
 
+	// Roll number is per-classroom-per-academic-year, not a property of the student themselves —
+	// it belongs here, not on Student, since a student's roll number can (and typically does)
+	// change every time they move to a new classroom/academic year. Nullable: assigned separately
+	// from enrollment, not always known at link-creation time.
+	@Column(name = "roll_number", length = 20)
+	private String rollNumber;
+
 	public static StudentClassroomLink create(Long studentId, Long classroomId, Long academicYearId,
 			LocalDate enrolledAt) {
 		return StudentClassroomLink.builder()
@@ -41,5 +48,9 @@ public class StudentClassroomLink extends SoftDeletableEntity {
 				.academicYearId(academicYearId)
 				.enrolledAt(enrolledAt)
 				.build();
+	}
+
+	public void assignRollNumber(String rollNumber) {
+		this.rollNumber = rollNumber;
 	}
 }

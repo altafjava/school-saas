@@ -10,5 +10,6 @@ import com.altafjava.school.domain.teacher.model.Teacher;
 public interface TeacherMapper {
 
 	@Mapping(target = "publicId", expression = "java(teacher.getPublicId().toString())")
+	@Mapping(target = "photoFilePublicId", expression = "java(teacher.getPhotoFilePublicId() != null ? teacher.getPhotoFilePublicId().toString() : null)")
 	TeacherResponse toResponse(Teacher teacher);
 }

@@ -16,6 +16,6 @@ public interface StudentClassroomLinkMapper {
 	default StudentClassroomLinkResponse toResponse(StudentClassroomLink link, String studentPublicId,
 			String classroomPublicId, String academicYearPublicId) {
 		return new StudentClassroomLinkResponse(link.getPublicId().toString(), studentPublicId, classroomPublicId,
-				academicYearPublicId, link.getEnrolledAt());
+				academicYearPublicId, link.getEnrolledAt(), link.getRollNumber());
 	}
 }

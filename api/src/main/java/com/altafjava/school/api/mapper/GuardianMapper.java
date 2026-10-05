@@ -10,5 +10,6 @@ import com.altafjava.school.domain.guardian.model.Guardian;
 public interface GuardianMapper {
 
 	@Mapping(target = "publicId", expression = "java(guardian.getPublicId().toString())")
+	@Mapping(target = "photoFilePublicId", expression = "java(guardian.getPhotoFilePublicId() != null ? guardian.getPhotoFilePublicId().toString() : null)")
 	GuardianResponse toResponse(Guardian guardian);
 }

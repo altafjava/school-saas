@@ -1,6 +1,7 @@
 package com.altafjava.school.domain.teacher.model;
 
 import java.time.LocalDate;
+import java.util.UUID;
 import jakarta.persistence.Column;
 import jakarta.persistence.Embedded;
 import jakarta.persistence.Entity;
@@ -71,6 +72,11 @@ public class Teacher extends SoftDeletableEntity {
 	@Column(name = "probation_end_date")
 	private LocalDate probationEndDate;
 
+	// FK to platform file_metadata.public_id — see Student.photoFilePublicId's Javadoc for why the
+	// UUID publicId, not the internal surrogate id.
+	@Column(name = "photo_file_public_id")
+	private UUID photoFilePublicId;
+
 	public static Teacher create(String employeeCode, String firstName, String lastName,
 			String email, LocalDate joinDate) {
 		return Teacher.builder()
@@ -114,5 +120,9 @@ public class Teacher extends SoftDeletableEntity {
 
 	public boolean isOnProbation(LocalDate asOf) {
 		return probationEndDate != null && asOf.isBefore(probationEndDate);
+	}
+
+	public void updatePhoto(UUID photoFilePublicId) {
+		this.photoFilePublicId = photoFilePublicId;
 	}
 }

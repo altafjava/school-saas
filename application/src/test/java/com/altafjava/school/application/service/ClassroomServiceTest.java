@@ -249,6 +249,43 @@ class ClassroomServiceTest {
 	}
 
 	@Test
+	void assignRollNumber_enrolled_setsRollNumberOnLink() {
+		UUID classroomPublicId = UUID.randomUUID();
+		UUID studentPublicId = UUID.randomUUID();
+		Classroom classroom = classroomWithPublicId(classroomPublicId, 1L);
+		Student student = Student.create("STU-1", "Alice", "Smith", "alice@school.test", LocalDate.of(2010, 1, 1));
+		student.setId(3L);
+		StudentClassroomLink link = StudentClassroomLink.create(3L, 1L, 10L, LocalDate.now());
+		when(classroomRepository.findByPublicIdAndTenantId(classroomPublicId, 1L)).thenReturn(Optional.of(classroom));
+		when(studentRepository.findByPublicIdAndTenantId(studentPublicId, 1L)).thenReturn(Optional.of(student));
+		when(studentClassroomLinkRepository.findByStudentIdAndClassroomId(1L, 3L, 1L))
+				.thenReturn(Optional.of(link));
+		when(studentClassroomLinkRepository.save(any(StudentClassroomLink.class)))
+				.thenAnswer(inv -> inv.getArgument(0));
+
+		StudentClassroomLink result = classroomService.assignRollNumber(classroomPublicId.toString(),
+				studentPublicId.toString(), "12");
+
+		assertEquals("12", result.getRollNumber());
+	}
+
+	@Test
+	void assignRollNumber_notEnrolled_throwsResourceNotFound() {
+		UUID classroomPublicId = UUID.randomUUID();
+		UUID studentPublicId = UUID.randomUUID();
+		Classroom classroom = classroomWithPublicId(classroomPublicId, 1L);
+		Student student = Student.create("STU-1", "Alice", "Smith", "alice@school.test", LocalDate.of(2010, 1, 1));
+		student.setId(3L);
+		when(classroomRepository.findByPublicIdAndTenantId(classroomPublicId, 1L)).thenReturn(Optional.of(classroom));
+		when(studentRepository.findByPublicIdAndTenantId(studentPublicId, 1L)).thenReturn(Optional.of(student));
+		when(studentClassroomLinkRepository.findByStudentIdAndClassroomId(1L, 3L, 1L))
+				.thenReturn(Optional.empty());
+
+		assertThrows(ResourceNotFoundException.class, () -> classroomService.assignRollNumber(
+				classroomPublicId.toString(), studentPublicId.toString(), "12"));
+	}
+
+	@Test
 	void listRoster_returnsEnrolledStudents() {
 		UUID classroomPublicId = UUID.randomUUID();
 		Classroom classroom = classroomWithPublicId(classroomPublicId, 1L);

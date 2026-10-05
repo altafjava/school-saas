@@ -21,6 +21,7 @@ import com.altafjava.school.api.dto.request.CreateGuardianRequest;
 import com.altafjava.school.api.dto.request.GrantGuardianConsentRequest;
 import com.altafjava.school.api.dto.request.LinkGuardianRequest;
 import com.altafjava.school.api.dto.request.UpdatePhoneRequest;
+import com.altafjava.school.api.dto.request.UpdatePhotoRequest;
 import com.altafjava.school.api.dto.response.GuardianConsentRecordResponse;
 import com.altafjava.school.api.dto.response.GuardianResponse;
 import com.altafjava.school.api.dto.response.StudentGuardianLinkResponse;
@@ -110,6 +111,15 @@ public class GuardianController implements GuardianApi {
 	public ApiResponse<GuardianResponse> updatePhone(@PathVariable String publicId,
 			@Valid @RequestBody UpdatePhoneRequest request) {
 		return ApiResponse.success(guardianMapper.toResponse(guardianService.updatePhone(publicId, request.phone())));
+	}
+
+	@Override
+	@PatchMapping("/{publicId}/photo")
+	@PreAuthorize("@permissionAuthorizationService.hasPermission('GUARDIAN_MANAGE')")
+	public ApiResponse<GuardianResponse> updatePhoto(@PathVariable String publicId,
+			@Valid @RequestBody UpdatePhotoRequest request) {
+		return ApiResponse
+				.success(guardianMapper.toResponse(guardianService.updatePhoto(publicId, request.filePublicId())));
 	}
 
 	@Override

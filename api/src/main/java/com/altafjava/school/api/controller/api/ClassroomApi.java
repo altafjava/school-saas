@@ -7,12 +7,14 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
 import com.altafjava.platform.api.dto.response.ApiResponse;
 import com.altafjava.school.api.dto.request.AssignClassroomCurriculumRequest;
+import com.altafjava.school.api.dto.request.AssignRollNumberRequest;
 import com.altafjava.school.api.dto.request.CreateClassroomRequest;
 import com.altafjava.school.api.dto.request.EnrollStudentInClassroomRequest;
 import com.altafjava.school.api.dto.request.MoveClassroomAcademicYearRequest;
 import com.altafjava.school.api.dto.request.ReassignClassTeacherRequest;
 import com.altafjava.school.api.dto.request.UpdateClassroomCapacityRequest;
 import com.altafjava.school.api.dto.response.ClassroomResponse;
+import com.altafjava.school.api.dto.response.RollNumberResponse;
 import com.altafjava.school.api.dto.response.StudentClassroomLinkResponse;
 import com.altafjava.school.api.dto.response.StudentResponse;
 import com.altafjava.school.api.dto.response.TimetableEntryResponse;
@@ -66,4 +68,9 @@ public interface ClassroomApi {
 
 	@Operation(summary = "Withdraw student", operationId = "classroom_withdrawStudent")
 	public ApiResponse<Void> withdrawStudent(@PathVariable String publicId, @PathVariable String studentPublicId);
+
+	@Operation(summary = "Assign roll number", operationId = "classroom_assignRollNumber")
+	public ApiResponse<RollNumberResponse> assignRollNumber(
+			@PathVariable String publicId, @PathVariable String studentPublicId,
+			@Valid @RequestBody AssignRollNumberRequest request);
 }

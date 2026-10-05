@@ -11,5 +11,6 @@ public record StudentResponse(
 		String phone,
 		LocalDate dateOfBirth,
 		String enrollmentStatus,
-		AddressResponse address) {
+		AddressResponse address,
+		String photoFilePublicId) {
 }

@@ -6,5 +6,6 @@ public record GuardianResponse(
 		String lastName,
 		String email,
 		String phone,
-		AddressResponse address) {
+		AddressResponse address,
+		String photoFilePublicId) {
 }

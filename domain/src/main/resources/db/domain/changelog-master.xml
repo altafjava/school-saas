@@ -57,5 +57,9 @@
     <include file="db/domain/changesets/050-retention-and-guardian-consent.xml"/>
     <include file="db/domain/changesets/051-classroom-link-soft-delete-unique-fix.xml"/>
     <include file="db/domain/changesets/052-generalize-soft-delete-unique-index-fix.xml"/>
+    <include file="db/domain/changesets/053-health-record-history.xml"/>
+    <include file="db/domain/changesets/054-photo-and-roll-number.xml"/>
+    <include file="db/domain/changesets/055-student-documents.xml"/>
+    <include file="db/domain/changesets/056-tenant-admin-phase1-permissions.xml"/>
 
 </databaseChangeLog>
