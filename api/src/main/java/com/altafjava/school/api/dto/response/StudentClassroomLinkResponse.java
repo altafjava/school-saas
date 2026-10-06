@@ -7,5 +7,6 @@ public record StudentClassroomLinkResponse(
 		String studentPublicId,
 		String classroomPublicId,
 		String academicYearPublicId,
-		LocalDate enrolledAt) {
+		LocalDate enrolledAt,
+		String rollNumber) {
 }

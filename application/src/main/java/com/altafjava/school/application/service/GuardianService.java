@@ -1,6 +1,7 @@
 package com.altafjava.school.application.service;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
@@ -80,6 +81,13 @@ public class GuardianService {
 			throw new BusinessException("Invalid phone number: " + phone);
 		}
 		guardian.updatePhone(phone);
+		return guardianRepository.save(guardian);
+	}
+
+	@Transactional
+	public Guardian updatePhoto(String publicId, String filePublicId) {
+		Guardian guardian = findByPublicId(publicId);
+		guardian.updatePhoto(Optional.ofNullable(filePublicId).map(UUID::fromString).orElse(null));
 		return guardianRepository.save(guardian);
 	}
 

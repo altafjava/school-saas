@@ -211,6 +211,9 @@
     "name" : "SSO Configuration",
     "description" : "Manage per-tenant SSO (SAML 2.0 / OIDC) configuration"
   }, {
+    "name" : "Student Documents",
+    "description" : "APIs for uploading and verifying student record documents (birth certificate, transfer certificate, ID proof, ...).\n\n**Tenant Scope**: All endpoints are tenant-scoped via X-Tenant-ID header.\n**Auth**: JWT Bearer token required on all endpoints."
+  }, {
     "name" : "Admin Cache Management",
     "description" : "APIs for managing application cache"
   }, {
@@ -267,6 +270,9 @@
   }, {
     "name" : "File Management",
     "description" : "APIs for file upload and download"
+  }, {
+    "name" : "Document Verification",
+    "description" : "Genuinely anonymous, unauthenticated (permitAll) endpoint for the Document Template Engine — a third party verifying an issued document (an ID card, a certificate rendered through this engine) has no account on this tenant, mirroring school-saas's CertificateVerificationApi."
   }, {
     "name" : "Report Card Template",
     "description" : "APIs for managing Report Card Template operations.\n\n**Tenant Scope**: All endpoints are tenant-scoped via X-Tenant-ID header.\n**Auth**: JWT Bearer token required on all endpoints unless marked public."
@@ -367,6 +373,9 @@
     "name" : "Payment Gateways (Admin)",
     "description" : "Platform-wide default payment gateway configuration"
   }, {
+    "name" : "Document Templates",
+    "description" : "Tenant-admin endpoints for the generic Document Template Engine — configure the SVG template + placeholder schema a domain consumer (school-saas ID cards/certificates, etc.) renders documents from"
+  }, {
     "name" : "Tenant Settings",
     "description" : "Endpoints for managing general tenant preferences (e.g., locale, currency, branding)"
   }, {
@@ -430,6 +439,9 @@
     "name" : "Session Management",
     "description" : "View and revoke active login sessions for the current user"
   }, {
+    "name" : "Teacher ID Card",
+    "description" : "Issues and downloads a teacher ID card via the platform's Document Template Engine.\n\n**Tenant Scope**: All endpoints are tenant-scoped via X-Tenant-ID header.\n**Auth**: JWT Bearer token required on all endpoints."
+  }, {
     "name" : "Tenant Security Settings",
     "description" : "Endpoints for managing tenant-specific security configurations (e.g., password policies, session timeouts)"
   }, {
@@ -441,6 +453,9 @@
   }, {
     "name" : "Notifications",
     "description" : "User notification management"
+  }, {
+    "name" : "Student ID Card",
+    "description" : "Issues and downloads a student ID card via the platform's Document Template Engine.\n\n**Tenant Scope**: All endpoints are tenant-scoped via X-Tenant-ID header.\n**Auth**: JWT Bearer token required on all endpoints."
   }, {
     "name" : "Medical Incident",
     "description" : "APIs for managing Medical Incident operations.\n\n**Tenant Scope**: All endpoints are tenant-scoped via X-Tenant-ID header.\n**Auth**: JWT Bearer token required on all endpoints unless marked public."
@@ -2597,6 +2612,112 @@
           "bearerAuth" : [ ]
         }, {
           "tenantHeader" : [ ]
+        } ]
+      }
+    },
+    "/api/v1/document-templates/{id}/deactivate" : {
+      "put" : {
+        "tags" : [ "Document Templates" ],
+        "summary" : "Deactivate a document template",
+        "operationId" : "deactivate",
+        "parameters" : [ {
+          "name" : "id",
+          "in" : "path",
+          "description" : "Document template public UUID",
+          "required" : true,
+          "schema" : {
+            "type" : "string",
+            "default" : ""
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiResponseDocumentTemplateResponse"
+                }
+              }
+            }
+          }
+        },
+        "security" : [ {
+          "bearerAuth" : [ ]
+        } ]
+      }
+    },
+    "/api/v1/document-templates/{id}/content" : {
+      "put" : {
+        "tags" : [ "Document Templates" ],
+        "summary" : "Revise a document template's content, bumping its version",
+        "operationId" : "reviseContent",
+        "parameters" : [ {
+          "name" : "id",
+          "in" : "path",
+          "description" : "Document template public UUID",
+          "required" : true,
+          "schema" : {
+            "type" : "string",
+            "default" : ""
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/ReviseDocumentTemplateContentRequest"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiResponseDocumentTemplateResponse"
+                }
+              }
+            }
+          }
+        },
+        "security" : [ {
+          "bearerAuth" : [ ]
+        } ]
+      }
+    },
+    "/api/v1/document-templates/{id}/activate" : {
+      "put" : {
+        "tags" : [ "Document Templates" ],
+        "summary" : "Activate a document template (deactivates any other active template for the same documentType)",
+        "operationId" : "activate",
+        "parameters" : [ {
+          "name" : "id",
+          "in" : "path",
+          "description" : "Document template public UUID",
+          "required" : true,
+          "schema" : {
+            "type" : "string",
+            "default" : ""
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiResponseDocumentTemplateResponse"
+                }
+              }
+            }
+          }
+        },
+        "security" : [ {
+          "bearerAuth" : [ ]
         } ]
       }
     },
@@ -5170,6 +5291,38 @@
         } ]
       }
     },
+    "/api/v1/teachers/{teacherPublicId}/id-card" : {
+      "post" : {
+        "tags" : [ "Teacher ID Card" ],
+        "summary" : "Issue",
+        "operationId" : "teacheridcard_issue",
+        "parameters" : [ {
+          "name" : "teacherPublicId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "201" : {
+            "description" : "Created",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiResponseIdCardIssuanceResponse"
+                }
+              }
+            }
+          }
+        },
+        "security" : [ {
+          "bearerAuth" : [ ]
+        }, {
+          "tenantHeader" : [ ]
+        } ]
+      }
+    },
     "/api/v1/system/auth/login" : {
       "post" : {
         "tags" : [ "System Administration" ],
@@ -5728,6 +5881,128 @@
               "*/*" : {
                 "schema" : {
                   "$ref" : "#/components/schemas/ApiResponseStudentResponse"
+                }
+              }
+            }
+          }
+        },
+        "security" : [ {
+          "bearerAuth" : [ ]
+        }, {
+          "tenantHeader" : [ ]
+        } ]
+      }
+    },
+    "/api/v1/students/{studentPublicId}/id-card" : {
+      "post" : {
+        "tags" : [ "Student ID Card" ],
+        "summary" : "Issue",
+        "operationId" : "studentidcard_issue",
+        "parameters" : [ {
+          "name" : "studentPublicId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "201" : {
+            "description" : "Created",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiResponseIdCardIssuanceResponse"
+                }
+              }
+            }
+          }
+        },
+        "security" : [ {
+          "bearerAuth" : [ ]
+        }, {
+          "tenantHeader" : [ ]
+        } ]
+      }
+    },
+    "/api/v1/students/{studentPublicId}/documents" : {
+      "get" : {
+        "tags" : [ "Student Documents" ],
+        "summary" : "List",
+        "operationId" : "studentdocument_list",
+        "parameters" : [ {
+          "name" : "studentPublicId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "name" : "page",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int32",
+            "default" : 0
+          }
+        }, {
+          "name" : "size",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int32",
+            "default" : 20
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiResponsePageStudentDocumentResponse"
+                }
+              }
+            }
+          }
+        },
+        "security" : [ {
+          "bearerAuth" : [ ]
+        }, {
+          "tenantHeader" : [ ]
+        } ]
+      },
+      "post" : {
+        "tags" : [ "Student Documents" ],
+        "summary" : "Upload",
+        "operationId" : "studentdocument_upload",
+        "parameters" : [ {
+          "name" : "studentPublicId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/UploadStudentDocumentRequest"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "201" : {
+            "description" : "Created",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiResponseStudentDocumentResponse"
                 }
               }
             }
@@ -8185,12 +8460,12 @@
         } ]
       }
     },
-    "/api/v1/files/{fileId}/confirm" : {
+    "/api/v1/files/{filePublicId}/confirm" : {
       "post" : {
         "tags" : [ "File Management" ],
         "operationId" : "confirmUpload",
         "parameters" : [ {
-          "name" : "fileId",
+          "name" : "filePublicId",
           "in" : "path",
           "required" : true,
           "schema" : {
@@ -8904,6 +9179,58 @@
         } ]
       }
     },
+    "/api/v1/document-templates" : {
+      "get" : {
+        "tags" : [ "Document Templates" ],
+        "summary" : "List the caller's tenant's document templates",
+        "operationId" : "list_3",
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiResponseListDocumentTemplateResponse"
+                }
+              }
+            }
+          }
+        },
+        "security" : [ {
+          "bearerAuth" : [ ]
+        } ]
+      },
+      "post" : {
+        "tags" : [ "Document Templates" ],
+        "summary" : "Create a document template for the caller's tenant, activating it",
+        "operationId" : "create_3",
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/CreateDocumentTemplateRequest"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiResponseDocumentTemplateResponse"
+                }
+              }
+            }
+          }
+        },
+        "security" : [ {
+          "bearerAuth" : [ ]
+        } ]
+      }
+    },
     "/api/v1/discipline-incidents" : {
       "get" : {
         "tags" : [ "Discipline Incident" ],
@@ -9126,7 +9453,7 @@
       "get" : {
         "tags" : [ "Data Retention Policies" ],
         "summary" : "List the caller's tenant's data-retention policies",
-        "operationId" : "list_3",
+        "operationId" : "list_4",
         "responses" : {
           "200" : {
             "description" : "OK",
@@ -9146,7 +9473,7 @@
       "post" : {
         "tags" : [ "Data Retention Policies" ],
         "summary" : "Create a data-retention policy for the caller's tenant",
-        "operationId" : "create_3",
+        "operationId" : "create_4",
         "requestBody" : {
           "content" : {
             "application/json" : {
@@ -11767,7 +12094,7 @@
       "get" : {
         "tags" : [ "Alert Rules" ],
         "summary" : "List the caller's tenant's alert rules",
-        "operationId" : "list_4",
+        "operationId" : "list_5",
         "responses" : {
           "200" : {
             "description" : "OK",
@@ -11787,7 +12114,7 @@
       "post" : {
         "tags" : [ "Alert Rules" ],
         "summary" : "Create an alert rule for the caller's tenant",
-        "operationId" : "create_4",
+        "operationId" : "create_5",
         "requestBody" : {
           "content" : {
             "application/json" : {
@@ -14914,6 +15241,48 @@
         } ]
       }
     },
+    "/api/v1/teachers/{publicId}/photo" : {
+      "patch" : {
+        "tags" : [ "Teacher" ],
+        "summary" : "Update photo",
+        "operationId" : "teacher_updatePhoto",
+        "parameters" : [ {
+          "name" : "publicId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/UpdatePhotoRequest"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiResponseTeacherResponse"
+                }
+              }
+            }
+          }
+        },
+        "security" : [ {
+          "bearerAuth" : [ ]
+        }, {
+          "tenantHeader" : [ ]
+        } ]
+      }
+    },
     "/api/v1/teachers/{publicId}/phone" : {
       "patch" : {
         "tags" : [ "Teacher" ],
@@ -15156,6 +15525,94 @@
         } ]
       }
     },
+    "/api/v1/students/{studentPublicId}/documents/{documentPublicId}/verify" : {
+      "patch" : {
+        "tags" : [ "Student Documents" ],
+        "summary" : "Verify",
+        "operationId" : "studentdocument_verify",
+        "parameters" : [ {
+          "name" : "studentPublicId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "name" : "documentPublicId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiResponseStudentDocumentResponse"
+                }
+              }
+            }
+          }
+        },
+        "security" : [ {
+          "bearerAuth" : [ ]
+        }, {
+          "tenantHeader" : [ ]
+        } ]
+      }
+    },
+    "/api/v1/students/{studentPublicId}/documents/{documentPublicId}/reject" : {
+      "patch" : {
+        "tags" : [ "Student Documents" ],
+        "summary" : "Reject",
+        "operationId" : "studentdocument_reject",
+        "parameters" : [ {
+          "name" : "studentPublicId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "name" : "documentPublicId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/RejectDocumentRequest"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiResponseStudentDocumentResponse"
+                }
+              }
+            }
+          }
+        },
+        "security" : [ {
+          "bearerAuth" : [ ]
+        }, {
+          "tenantHeader" : [ ]
+        } ]
+      }
+    },
     "/api/v1/students/{publicId}/withdraw" : {
       "patch" : {
         "tags" : [ "Student" ],
@@ -15201,6 +15658,48 @@
             "type" : "string"
           }
         } ],
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiResponseStudentResponse"
+                }
+              }
+            }
+          }
+        },
+        "security" : [ {
+          "bearerAuth" : [ ]
+        }, {
+          "tenantHeader" : [ ]
+        } ]
+      }
+    },
+    "/api/v1/students/{publicId}/photo" : {
+      "patch" : {
+        "tags" : [ "Student" ],
+        "summary" : "Update photo",
+        "operationId" : "student_updatePhoto",
+        "parameters" : [ {
+          "name" : "publicId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/UpdatePhotoRequest"
+              }
+            }
+          },
+          "required" : true
+        },
         "responses" : {
           "200" : {
             "description" : "OK",
@@ -16382,6 +16881,48 @@
               "*/*" : {
                 "schema" : {
                   "$ref" : "#/components/schemas/ApiResponseHolidayResponse"
+                }
+              }
+            }
+          }
+        },
+        "security" : [ {
+          "bearerAuth" : [ ]
+        }, {
+          "tenantHeader" : [ ]
+        } ]
+      }
+    },
+    "/api/v1/guardians/{publicId}/photo" : {
+      "patch" : {
+        "tags" : [ "Guardian" ],
+        "summary" : "Update photo",
+        "operationId" : "guardian_updatePhoto",
+        "parameters" : [ {
+          "name" : "publicId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/UpdatePhotoRequest"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiResponseGuardianResponse"
                 }
               }
             }
@@ -17954,6 +18495,55 @@
               "*/*" : {
                 "schema" : {
                   "$ref" : "#/components/schemas/ApiResponseVoid"
+                }
+              }
+            }
+          }
+        },
+        "security" : [ {
+          "bearerAuth" : [ ]
+        }, {
+          "tenantHeader" : [ ]
+        } ]
+      }
+    },
+    "/api/v1/classrooms/{publicId}/students/{studentPublicId}/roll-number" : {
+      "patch" : {
+        "tags" : [ "Classroom" ],
+        "summary" : "Assign roll number",
+        "operationId" : "classroom_assignRollNumber",
+        "parameters" : [ {
+          "name" : "publicId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "name" : "studentPublicId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/AssignRollNumberRequest"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiResponseRollNumberResponse"
                 }
               }
             }
@@ -20318,6 +20908,46 @@
         } ]
       }
     },
+    "/api/v1/teachers/{teacherPublicId}/id-card/{issuancePublicId}/download" : {
+      "get" : {
+        "tags" : [ "Teacher ID Card" ],
+        "summary" : "Download",
+        "operationId" : "teacheridcard_download",
+        "parameters" : [ {
+          "name" : "teacherPublicId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "name" : "issuancePublicId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "type" : "string",
+                  "format" : "byte"
+                }
+              }
+            }
+          }
+        },
+        "security" : [ {
+          "bearerAuth" : [ ]
+        }, {
+          "tenantHeader" : [ ]
+        } ]
+      }
+    },
     "/api/v1/teachers/{publicId}" : {
       "get" : {
         "tags" : [ "Teacher" ],
@@ -20571,6 +21201,46 @@
               "*/*" : {
                 "schema" : {
                   "$ref" : "#/components/schemas/ApiResponseSubjectResponse"
+                }
+              }
+            }
+          }
+        },
+        "security" : [ {
+          "bearerAuth" : [ ]
+        }, {
+          "tenantHeader" : [ ]
+        } ]
+      }
+    },
+    "/api/v1/students/{studentPublicId}/id-card/{issuancePublicId}/download" : {
+      "get" : {
+        "tags" : [ "Student ID Card" ],
+        "summary" : "Download",
+        "operationId" : "studentidcard_download",
+        "parameters" : [ {
+          "name" : "studentPublicId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "name" : "issuancePublicId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "type" : "string",
+                  "format" : "byte"
                 }
               }
             }
@@ -21873,6 +22543,56 @@
         } ]
       }
     },
+    "/api/v1/health-records/students/{studentPublicId}/corrections" : {
+      "get" : {
+        "tags" : [ "Health Record" ],
+        "summary" : "List corrections",
+        "operationId" : "healthrecord_listCorrections",
+        "parameters" : [ {
+          "name" : "studentPublicId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "name" : "page",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int32",
+            "default" : 0
+          }
+        }, {
+          "name" : "size",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int32",
+            "default" : 20
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiResponsePageHealthRecordCorrectionResponse"
+                }
+              }
+            }
+          }
+        },
+        "security" : [ {
+          "bearerAuth" : [ ]
+        }, {
+          "tenantHeader" : [ ]
+        } ]
+      }
+    },
     "/api/v1/guardians/{publicId}" : {
       "get" : {
         "tags" : [ "Guardian" ],
@@ -22184,12 +22904,12 @@
         } ]
       }
     },
-    "/api/v1/files/{fileId}/download" : {
+    "/api/v1/files/{filePublicId}/download" : {
       "get" : {
         "tags" : [ "File Management" ],
         "operationId" : "getDownloadUrl",
         "parameters" : [ {
-          "name" : "fileId",
+          "name" : "filePublicId",
           "in" : "path",
           "required" : true,
           "schema" : {
@@ -22415,6 +23135,66 @@
           "bearerAuth" : [ ]
         }, {
           "tenantHeader" : [ ]
+        } ]
+      }
+    },
+    "/api/v1/documents/verify/{verificationCode}" : {
+      "get" : {
+        "tags" : [ "Document Verification" ],
+        "summary" : "Verify",
+        "description" : "Looks up an issued document by its public verification code and confirms it was genuinely issued, without exposing the PDF, owner identity, or any other data.",
+        "operationId" : "documentverification_verify",
+        "parameters" : [ {
+          "name" : "verificationCode",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiResponseDocumentVerificationResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/document-templates/{id}" : {
+      "get" : {
+        "tags" : [ "Document Templates" ],
+        "summary" : "Get one document template",
+        "operationId" : "get_3",
+        "parameters" : [ {
+          "name" : "id",
+          "in" : "path",
+          "description" : "Document template public UUID",
+          "required" : true,
+          "schema" : {
+            "type" : "string",
+            "default" : ""
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiResponseDocumentTemplateResponse"
+                }
+              }
+            }
+          }
+        },
+        "security" : [ {
+          "bearerAuth" : [ ]
         } ]
       }
     },
@@ -26290,12 +27070,12 @@
         } ]
       }
     },
-    "/api/v1/files/{fileId}" : {
+    "/api/v1/files/{filePublicId}" : {
       "delete" : {
         "tags" : [ "File Management" ],
         "operationId" : "deleteFile",
         "parameters" : [ {
-          "name" : "fileId",
+          "name" : "filePublicId",
           "in" : "path",
           "required" : true,
           "schema" : {
@@ -27343,12 +28123,12 @@
       "SetTenantLogoRequest" : {
         "type" : "object",
         "properties" : {
-          "fileId" : {
-            "type" : "integer",
-            "format" : "int64"
+          "filePublicId" : {
+            "type" : "string",
+            "minLength" : 1
           }
         },
-        "required" : [ "fileId" ]
+        "required" : [ "filePublicId" ]
       },
       "ApiResponseVoid" : {
         "type" : "object",
@@ -27828,6 +28608,107 @@
             "enum" : [ "CLAIM_ONLY", "OPEN" ]
           }
         }
+      },
+      "ApiResponseDocumentTemplateResponse" : {
+        "type" : "object",
+        "properties" : {
+          "success" : {
+            "type" : "boolean"
+          },
+          "data" : {
+            "$ref" : "#/components/schemas/DocumentTemplateResponse"
+          },
+          "error" : {
+            "$ref" : "#/components/schemas/Error"
+          },
+          "meta" : {
+            "$ref" : "#/components/schemas/Meta"
+          }
+        }
+      },
+      "DocumentTemplateResponse" : {
+        "type" : "object",
+        "default" : null,
+        "description" : "Document template details",
+        "properties" : {
+          "id" : {
+            "type" : "string",
+            "default" : "",
+            "description" : "Public UUID of the template"
+          },
+          "documentType" : {
+            "type" : "string",
+            "default" : "",
+            "description" : "Consumer-defined document type, e.g. STUDENT_ID_CARD"
+          },
+          "name" : {
+            "type" : "string",
+            "default" : "",
+            "description" : "Display name"
+          },
+          "templateVersion" : {
+            "type" : "integer",
+            "format" : "int32",
+            "default" : "",
+            "description" : "Business-visible revision number, bumped on every content change"
+          },
+          "active" : {
+            "type" : "boolean",
+            "default" : false,
+            "description" : "Whether this is the currently active template for its documentType"
+          },
+          "createdAt" : {
+            "type" : "string",
+            "format" : "date-time",
+            "default" : "",
+            "description" : "Timestamp when created"
+          },
+          "updatedAt" : {
+            "type" : "string",
+            "format" : "date-time",
+            "default" : "",
+            "description" : "Timestamp when last updated"
+          }
+        }
+      },
+      "PlaceholderFieldRequest" : {
+        "type" : "object",
+        "properties" : {
+          "key" : {
+            "type" : "string",
+            "minLength" : 1
+          },
+          "label" : {
+            "type" : "string",
+            "minLength" : 1
+          },
+          "type" : {
+            "type" : "string",
+            "enum" : [ "TEXT", "IMAGE", "QR" ]
+          }
+        },
+        "required" : [ "key", "label", "type" ]
+      },
+      "ReviseDocumentTemplateContentRequest" : {
+        "type" : "object",
+        "properties" : {
+          "name" : {
+            "type" : "string",
+            "minLength" : 1
+          },
+          "svgContent" : {
+            "type" : "string",
+            "minLength" : 1
+          },
+          "placeholderSchema" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/PlaceholderFieldRequest"
+            },
+            "minItems" : 1
+          }
+        },
+        "required" : [ "name", "placeholderSchema", "svgContent" ]
       },
       "UpdateDataRetentionPolicyRequest" : {
         "type" : "object",
@@ -29540,6 +30421,44 @@
           "probationEndDate" : {
             "type" : "string",
             "format" : "date"
+          },
+          "photoFilePublicId" : {
+            "type" : "string"
+          }
+        }
+      },
+      "ApiResponseIdCardIssuanceResponse" : {
+        "type" : "object",
+        "properties" : {
+          "success" : {
+            "type" : "boolean"
+          },
+          "data" : {
+            "$ref" : "#/components/schemas/IdCardIssuanceResponse"
+          },
+          "error" : {
+            "$ref" : "#/components/schemas/Error"
+          },
+          "meta" : {
+            "$ref" : "#/components/schemas/Meta"
+          }
+        }
+      },
+      "IdCardIssuanceResponse" : {
+        "type" : "object",
+        "properties" : {
+          "publicId" : {
+            "type" : "string"
+          },
+          "documentType" : {
+            "type" : "string"
+          },
+          "verificationCode" : {
+            "type" : "string"
+          },
+          "issuedAt" : {
+            "type" : "string",
+            "format" : "date-time"
           }
         }
       },
@@ -30173,6 +31092,69 @@
           },
           "address" : {
             "$ref" : "#/components/schemas/AddressResponse"
+          },
+          "photoFilePublicId" : {
+            "type" : "string"
+          }
+        }
+      },
+      "UploadStudentDocumentRequest" : {
+        "type" : "object",
+        "properties" : {
+          "documentType" : {
+            "type" : "string",
+            "maxLength" : 100,
+            "minLength" : 0
+          },
+          "filePublicId" : {
+            "type" : "string",
+            "maxLength" : 36,
+            "minLength" : 0
+          }
+        },
+        "required" : [ "documentType", "filePublicId" ]
+      },
+      "ApiResponseStudentDocumentResponse" : {
+        "type" : "object",
+        "properties" : {
+          "success" : {
+            "type" : "boolean"
+          },
+          "data" : {
+            "$ref" : "#/components/schemas/StudentDocumentResponse"
+          },
+          "error" : {
+            "$ref" : "#/components/schemas/Error"
+          },
+          "meta" : {
+            "$ref" : "#/components/schemas/Meta"
+          }
+        }
+      },
+      "StudentDocumentResponse" : {
+        "type" : "object",
+        "properties" : {
+          "publicId" : {
+            "type" : "string"
+          },
+          "studentPublicId" : {
+            "type" : "string"
+          },
+          "documentType" : {
+            "type" : "string"
+          },
+          "filePublicId" : {
+            "type" : "string"
+          },
+          "verificationStatus" : {
+            "type" : "string"
+          },
+          "verifiedAt" : {
+            "type" : "string",
+            "format" : "date-time"
+          },
+          "rejectionReason" : {
+            "type" : "string"
           }
         }
       },
@@ -32025,6 +33007,9 @@
           },
           "address" : {
             "$ref" : "#/components/schemas/AddressResponse"
+          },
+          "photoFilePublicId" : {
+            "type" : "string"
           }
         }
       },
@@ -32933,6 +33918,31 @@
           }
         }
       },
+      "CreateDocumentTemplateRequest" : {
+        "type" : "object",
+        "properties" : {
+          "documentType" : {
+            "type" : "string",
+            "minLength" : 1
+          },
+          "name" : {
+            "type" : "string",
+            "minLength" : 1
+          },
+          "svgContent" : {
+            "type" : "string",
+            "minLength" : 1
+          },
+          "placeholderSchema" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/PlaceholderFieldRequest"
+            },
+            "minItems" : 1
+          }
+        },
+        "required" : [ "documentType", "name", "placeholderSchema", "svgContent" ]
+      },
       "RecordDisciplineIncidentRequest" : {
         "type" : "object",
         "properties" : {
@@ -33681,6 +34691,9 @@
           "enrolledAt" : {
             "type" : "string",
             "format" : "date"
+          },
+          "rollNumber" : {
+            "type" : "string"
           }
         }
       },
@@ -37069,6 +38082,16 @@
         },
         "required" : [ "probationEndDate" ]
       },
+      "UpdatePhotoRequest" : {
+        "type" : "object",
+        "properties" : {
+          "filePublicId" : {
+            "type" : "string",
+            "maxLength" : 36,
+            "minLength" : 0
+          }
+        }
+      },
       "UpdatePhoneRequest" : {
         "type" : "object",
         "properties" : {
@@ -37161,6 +38184,17 @@
           }
         },
         "required" : [ "curriculumPublicId" ]
+      },
+      "RejectDocumentRequest" : {
+        "type" : "object",
+        "properties" : {
+          "rejectionReason" : {
+            "type" : "string",
+            "maxLength" : 500,
+            "minLength" : 0
+          }
+        },
+        "required" : [ "rejectionReason" ]
       },
       "UpdateStudentContactDetailsRequest" : {
         "type" : "object",
@@ -37681,6 +38715,48 @@
           "teacherId" : {
             "type" : "integer",
             "format" : "int64"
+          }
+        }
+      },
+      "AssignRollNumberRequest" : {
+        "type" : "object",
+        "properties" : {
+          "rollNumber" : {
+            "type" : "string",
+            "maxLength" : 20,
+            "minLength" : 0
+          }
+        },
+        "required" : [ "rollNumber" ]
+      },
+      "ApiResponseRollNumberResponse" : {
+        "type" : "object",
+        "properties" : {
+          "success" : {
+            "type" : "boolean"
+          },
+          "data" : {
+            "$ref" : "#/components/schemas/RollNumberResponse"
+          },
+          "error" : {
+            "$ref" : "#/components/schemas/Error"
+          },
+          "meta" : {
+            "$ref" : "#/components/schemas/Meta"
+          }
+        }
+      },
+      "RollNumberResponse" : {
+        "type" : "object",
+        "properties" : {
+          "studentPublicId" : {
+            "type" : "string"
+          },
+          "classroomPublicId" : {
+            "type" : "string"
+          },
+          "rollNumber" : {
+            "type" : "string"
           }
         }
       },
@@ -39082,6 +40158,46 @@
             "type" : "array",
             "items" : {
               "$ref" : "#/components/schemas/StudentResponse"
+            }
+          },
+          "pageNumber" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "pageSize" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "totalElements" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        }
+      },
+      "ApiResponsePageStudentDocumentResponse" : {
+        "type" : "object",
+        "properties" : {
+          "success" : {
+            "type" : "boolean"
+          },
+          "data" : {
+            "$ref" : "#/components/schemas/PageStudentDocumentResponse"
+          },
+          "error" : {
+            "$ref" : "#/components/schemas/Error"
+          },
+          "meta" : {
+            "$ref" : "#/components/schemas/Meta"
+          }
+        }
+      },
+      "PageStudentDocumentResponse" : {
+        "type" : "object",
+        "properties" : {
+          "content" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/StudentDocumentResponse"
             }
           },
           "pageNumber" : {
@@ -40679,6 +41795,85 @@
           }
         }
       },
+      "ApiResponsePageHealthRecordCorrectionResponse" : {
+        "type" : "object",
+        "properties" : {
+          "success" : {
+            "type" : "boolean"
+          },
+          "data" : {
+            "$ref" : "#/components/schemas/PageHealthRecordCorrectionResponse"
+          },
+          "error" : {
+            "$ref" : "#/components/schemas/Error"
+          },
+          "meta" : {
+            "$ref" : "#/components/schemas/Meta"
+          }
+        }
+      },
+      "HealthRecordCorrectionResponse" : {
+        "type" : "object",
+        "properties" : {
+          "publicId" : {
+            "type" : "string"
+          },
+          "oldBloodGroup" : {
+            "type" : "string"
+          },
+          "oldAllergies" : {
+            "type" : "string"
+          },
+          "oldConditions" : {
+            "type" : "string"
+          },
+          "oldImmunizations" : {
+            "type" : "string"
+          },
+          "newBloodGroup" : {
+            "type" : "string"
+          },
+          "newAllergies" : {
+            "type" : "string"
+          },
+          "newConditions" : {
+            "type" : "string"
+          },
+          "newImmunizations" : {
+            "type" : "string"
+          },
+          "correctedBy" : {
+            "type" : "string"
+          },
+          "correctedAt" : {
+            "type" : "string",
+            "format" : "date-time"
+          }
+        }
+      },
+      "PageHealthRecordCorrectionResponse" : {
+        "type" : "object",
+        "properties" : {
+          "content" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/HealthRecordCorrectionResponse"
+            }
+          },
+          "pageNumber" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "pageSize" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "totalElements" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        }
+      },
       "ApiResponsePageGuardianResponse" : {
         "type" : "object",
         "properties" : {
@@ -41251,6 +42446,66 @@
           "totalElements" : {
             "type" : "integer",
             "format" : "int64"
+          }
+        }
+      },
+      "ApiResponseDocumentVerificationResponse" : {
+        "type" : "object",
+        "properties" : {
+          "success" : {
+            "type" : "boolean"
+          },
+          "data" : {
+            "$ref" : "#/components/schemas/DocumentVerificationResponse"
+          },
+          "error" : {
+            "$ref" : "#/components/schemas/Error"
+          },
+          "meta" : {
+            "$ref" : "#/components/schemas/Meta"
+          }
+        }
+      },
+      "DocumentVerificationResponse" : {
+        "type" : "object",
+        "default" : null,
+        "description" : "Confirmation that a document with this verification code was genuinely issued",
+        "properties" : {
+          "documentType" : {
+            "type" : "string",
+            "default" : "",
+            "description" : "Consumer-defined document type, e.g. STUDENT_ID_CARD"
+          },
+          "ownerEntityType" : {
+            "type" : "string",
+            "default" : "",
+            "description" : "Opaque owner category, e.g. STUDENT — no owner id is exposed"
+          },
+          "issuedAt" : {
+            "type" : "string",
+            "format" : "date-time",
+            "default" : "",
+            "description" : "When the document was issued"
+          }
+        }
+      },
+      "ApiResponseListDocumentTemplateResponse" : {
+        "type" : "object",
+        "properties" : {
+          "success" : {
+            "type" : "boolean"
+          },
+          "data" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/DocumentTemplateResponse"
+            }
+          },
+          "error" : {
+            "$ref" : "#/components/schemas/Error"
+          },
+          "meta" : {
+            "$ref" : "#/components/schemas/Meta"
           }
         }
       },

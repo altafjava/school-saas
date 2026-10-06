@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="400" height="250" viewBox="0 0 400 250">
+  <rect x="0" y="0" width="400" height="250" fill="#ffffff" stroke="#1e3a5f" stroke-width="4"/>
+  <rect x="0" y="0" width="400" height="50" fill="#1e3a5f"/>
+  <text x="20" y="32" font-family="Helvetica, Arial, sans-serif" font-size="20" font-weight="bold" fill="#ffffff">{{tenantName}}</text>
+  <text x="200" y="70" text-anchor="middle" font-family="Helvetica, Arial, sans-serif" font-size="14" font-weight="bold" fill="#1e3a5f">STUDENT ID CARD</text>
+
+  <rect x="20" y="85" width="110" height="130" fill="#e8ecf1" stroke="#1e3a5f" stroke-width="1"/>
+  <image x="20" y="85" width="110" height="130" xlink:href="{{photo}}"/>
+
+  <text x="150" y="105" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#6e6e6e">Name</text>
+  <text x="150" y="123" font-family="Helvetica, Arial, sans-serif" font-size="16" font-weight="bold" fill="#1e3a5f">{{studentName}}</text>
+
+  <text x="150" y="150" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#6e6e6e">Roll No. / Admission No.</text>
+  <text x="150" y="168" font-family="Helvetica, Arial, sans-serif" font-size="14" fill="#1e3a5f">{{rollNumberOrAdmissionNumber}}</text>
+
+  <text x="150" y="195" font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#6e6e6e">Class</text>
+  <text x="150" y="213" font-family="Helvetica, Arial, sans-serif" font-size="14" fill="#1e3a5f">{{className}}</text>
+
+  <image x="325" y="150" width="60" height="60" xlink:href="{{qrCode}}"/>
+</svg>

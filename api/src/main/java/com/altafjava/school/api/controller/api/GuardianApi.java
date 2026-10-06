@@ -11,6 +11,7 @@ import com.altafjava.school.api.dto.request.CreateGuardianRequest;
 import com.altafjava.school.api.dto.request.GrantGuardianConsentRequest;
 import com.altafjava.school.api.dto.request.LinkGuardianRequest;
 import com.altafjava.school.api.dto.request.UpdatePhoneRequest;
+import com.altafjava.school.api.dto.request.UpdatePhotoRequest;
 import com.altafjava.school.api.dto.response.GuardianConsentRecordResponse;
 import com.altafjava.school.api.dto.response.GuardianResponse;
 import com.altafjava.school.api.dto.response.StudentGuardianLinkResponse;
@@ -43,6 +44,10 @@ public interface GuardianApi {
 	@Operation(summary = "Update phone", operationId = "guardian_updatePhone")
 	public ApiResponse<GuardianResponse> updatePhone(@PathVariable String publicId,
 			@Valid @RequestBody UpdatePhoneRequest request);
+
+	@Operation(summary = "Update photo", operationId = "guardian_updatePhoto")
+	public ApiResponse<GuardianResponse> updatePhoto(@PathVariable String publicId,
+			@Valid @RequestBody UpdatePhotoRequest request);
 
 	@Operation(summary = "Link student", operationId = "guardian_linkStudent")
 	public ApiResponse<StudentGuardianLinkResponse> linkStudent(@PathVariable String publicId,

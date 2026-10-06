@@ -14,5 +14,6 @@ public record TeacherResponse(
 		String qualification,
 		String employmentType,
 		AddressResponse address,
-		LocalDate probationEndDate) {
+		LocalDate probationEndDate,
+		String photoFilePublicId) {
 }

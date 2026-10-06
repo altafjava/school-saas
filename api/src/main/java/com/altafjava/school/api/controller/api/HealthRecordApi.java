@@ -3,8 +3,10 @@ package com.altafjava.school.api.controller.api;
 import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestParam;
 import com.altafjava.platform.api.dto.response.ApiResponse;
 import com.altafjava.school.api.dto.request.UpsertHealthRecordRequest;
+import com.altafjava.school.api.dto.response.HealthRecordCorrectionResponse;
 import com.altafjava.school.api.dto.response.HealthRecordResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
@@ -21,4 +23,10 @@ public interface HealthRecordApi {
 	@Operation(summary = "Upsert", operationId = "healthrecord_upsert")
 	public ApiResponse<HealthRecordResponse> upsert(@PathVariable String studentPublicId,
 			@Valid @RequestBody UpsertHealthRecordRequest request);
+
+	@Operation(summary = "List corrections", operationId = "healthrecord_listCorrections")
+	public ApiResponse<com.altafjava.platform.core.model.Page<HealthRecordCorrectionResponse>> listCorrections(
+			@PathVariable String studentPublicId,
+			@RequestParam(defaultValue = "0") int page,
+			@RequestParam(defaultValue = "20") int size);
 }

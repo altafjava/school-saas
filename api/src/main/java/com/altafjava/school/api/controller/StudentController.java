@@ -26,6 +26,7 @@ import com.altafjava.school.api.controller.api.StudentApi;
 import com.altafjava.school.api.dto.request.AddressRequest;
 import com.altafjava.school.api.dto.request.CreateStudentRequest;
 import com.altafjava.school.api.dto.request.UpdatePhoneRequest;
+import com.altafjava.school.api.dto.request.UpdatePhotoRequest;
 import com.altafjava.school.api.dto.request.UpdateStudentContactDetailsRequest;
 import com.altafjava.school.api.dto.response.AttendancePercentageResponse;
 import com.altafjava.school.api.dto.response.AttendanceResponse;
@@ -200,6 +201,15 @@ public class StudentController implements StudentApi {
 			@Valid @RequestBody AddressRequest request) {
 		return ApiResponse.success(
 				studentMapper.toResponse(studentService.updateAddress(publicId, addressMapper.toDomain(request))));
+	}
+
+	@Override
+	@PatchMapping("/{publicId}/photo")
+	@PreAuthorize("@permissionAuthorizationService.hasPermission('STUDENT_MANAGE')")
+	public ApiResponse<StudentResponse> updatePhoto(@PathVariable String publicId,
+			@Valid @RequestBody UpdatePhotoRequest request) {
+		return ApiResponse
+				.success(studentMapper.toResponse(studentService.updatePhoto(publicId, request.filePublicId())));
 	}
 
 	@Override

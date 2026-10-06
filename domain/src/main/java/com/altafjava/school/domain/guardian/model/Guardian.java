@@ -1,5 +1,6 @@
 package com.altafjava.school.domain.guardian.model;
 
+import java.util.UUID;
 import jakarta.persistence.Column;
 import jakarta.persistence.Embedded;
 import jakarta.persistence.Entity;
@@ -46,6 +47,12 @@ public class Guardian extends SoftDeletableEntity {
 	@Embedded
 	private Address address;
 
+	// FK to platform file_metadata.public_id (see Student.photoFilePublicId's Javadoc) — nullable;
+	// useful for pickup-authorization/gate-security use cases (visually confirming who is
+	// collecting a student), not just a display picture.
+	@Column(name = "photo_file_public_id")
+	private UUID photoFilePublicId;
+
 	public static Guardian create(String firstName, String lastName, String email, String phone, Long userId) {
 		return Guardian.builder()
 				.firstName(firstName)
@@ -71,6 +78,10 @@ public class Guardian extends SoftDeletableEntity {
 		this.phone = phone;
 	}
 
+	public void updatePhoto(UUID photoFilePublicId) {
+		this.photoFilePublicId = photoFilePublicId;
+	}
+
 	// GDPR/DPDP erasure (see DomainPiiHandler) — mirrors the platform's own User tombstone
 	// strategy: firstName/lastName can't go null (NOT NULL columns) so they get an opaque
 	// placeholder, everything else PII-bearing is cleared.
@@ -80,5 +91,6 @@ public class Guardian extends SoftDeletableEntity {
 		this.email = null;
 		this.phone = null;
 		this.address = null;
+		this.photoFilePublicId = null;
 	}
 }
