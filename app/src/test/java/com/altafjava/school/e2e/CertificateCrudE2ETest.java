@@ -55,16 +55,20 @@ class CertificateCrudE2ETest extends SchoolIntegrationTestBase {
 		tenantId = tenant.getId();
 	}
 
+	private static String uniqueCode() {
+		return "C" + UUID.randomUUID().toString().replace("-", "").substring(0, 12).toUpperCase();
+	}
+
 	private String createTemplate(String accessToken, Long forTenantId, String name) {
 		return given()
 				.header("X-Tenant-ID", forTenantId)
 				.header("Authorization", "Bearer " + accessToken)
 				.contentType(ContentType.JSON)
 				.body("""
-						{"name":"%s","bodyTemplate":"This certifies {{studentName}} of {{className}}."}
-						""".formatted(name))
+						{"code":"%s","name":"%s","wording":"This certifies {{studentName}} of {{className}}."}
+						""".formatted(uniqueCode(), name))
 				.when()
-				.post("/api/v1/certificate-templates")
+				.post("/api/v1/certificate-types")
 				.then()
 				.statusCode(HttpStatus.CREATED.value())
 				.extract().path("data.publicId");
@@ -95,10 +99,10 @@ class CertificateCrudE2ETest extends SchoolIntegrationTestBase {
 				.header("Authorization", "Bearer " + accessToken)
 				.contentType(ContentType.JSON)
 				.body("""
-						{"name":"Bonafide Certificate","bodyTemplate":"Certifies {{studentName}}."}
+						{"code":"BONAFIDE","name":"Bonafide Certificate","wording":"Certifies {{studentName}}."}
 						""")
 				.when()
-				.post("/api/v1/certificate-templates")
+				.post("/api/v1/certificate-types")
 				.then()
 				.statusCode(HttpStatus.CREATED.value())
 				.body("data.publicId", notNullValue())
@@ -111,10 +115,10 @@ class CertificateCrudE2ETest extends SchoolIntegrationTestBase {
 				.header("X-Tenant-ID", tenantId)
 				.contentType(ContentType.JSON)
 				.body("""
-						{"name":"Bonafide Certificate","bodyTemplate":"Certifies {{studentName}}."}
+						{"code":"BONAFIDE","name":"Bonafide Certificate","wording":"Certifies {{studentName}}."}
 						""")
 				.when()
-				.post("/api/v1/certificate-templates")
+				.post("/api/v1/certificate-types")
 				.then()
 				.statusCode(HttpStatus.UNAUTHORIZED.value());
 	}
@@ -128,10 +132,10 @@ class CertificateCrudE2ETest extends SchoolIntegrationTestBase {
 				.header("Authorization", "Bearer " + teacherToken)
 				.contentType(ContentType.JSON)
 				.body("""
-						{"name":"Bonafide Certificate","bodyTemplate":"Certifies {{studentName}}."}
+						{"code":"BONAFIDE","name":"Bonafide Certificate","wording":"Certifies {{studentName}}."}
 						""")
 				.when()
-				.post("/api/v1/certificate-templates")
+				.post("/api/v1/certificate-types")
 				.then()
 				.statusCode(HttpStatus.FORBIDDEN.value());
 	}
@@ -147,7 +151,7 @@ class CertificateCrudE2ETest extends SchoolIntegrationTestBase {
 				.header("X-Tenant-ID", tenantId)
 				.header("Authorization", "Bearer " + accessToken)
 				.when()
-				.post("/api/v1/students/" + studentPublicId + "/certificates?certificateTemplatePublicId="
+				.post("/api/v1/students/" + studentPublicId + "/certificates?certificateTypePublicId="
 						+ templatePublicId)
 				.then()
 				.statusCode(HttpStatus.CREATED.value())
@@ -186,7 +190,7 @@ class CertificateCrudE2ETest extends SchoolIntegrationTestBase {
 				.header("X-Tenant-ID", tenantId)
 				.header("Authorization", "Bearer " + teacherToken)
 				.when()
-				.post("/api/v1/students/" + studentPublicId + "/certificates?certificateTemplatePublicId="
+				.post("/api/v1/students/" + studentPublicId + "/certificates?certificateTypePublicId="
 						+ templatePublicId)
 				.then()
 				.statusCode(HttpStatus.FORBIDDEN.value());
@@ -202,7 +206,7 @@ class CertificateCrudE2ETest extends SchoolIntegrationTestBase {
 				.header("X-Tenant-ID", tenantId)
 				.header("Authorization", "Bearer " + accessToken)
 				.when()
-				.post("/api/v1/students/" + studentPublicId + "/certificates?certificateTemplatePublicId="
+				.post("/api/v1/students/" + studentPublicId + "/certificates?certificateTypePublicId="
 						+ templatePublicId)
 				.then()
 				.statusCode(HttpStatus.CREATED.value())
@@ -213,10 +217,11 @@ class CertificateCrudE2ETest extends SchoolIntegrationTestBase {
 				.header("X-Tenant-ID", tenantId)
 				.header("Authorization", "Bearer " + teacherToken)
 				.when()
-				.get("/api/v1/certificates/verify/" + verificationCode)
+				.get("/api/v1/documents/verify/" + verificationCode)
 				.then()
 				.statusCode(HttpStatus.OK.value())
-				.body("data.studentName", equalTo("Alice Smith"))
+				.body("data.subjectName", equalTo("Alice Smith"))
+				.body("data.status", equalTo("VALID"))
 				.body("data.issuedAt", notNullValue());
 	}
 
@@ -228,7 +233,7 @@ class CertificateCrudE2ETest extends SchoolIntegrationTestBase {
 				.header("X-Tenant-ID", tenantId)
 				.header("Authorization", "Bearer " + accessToken)
 				.when()
-				.get("/api/v1/certificates/verify/does-not-exist")
+				.get("/api/v1/documents/verify/does-not-exist")
 				.then()
 				.statusCode(HttpStatus.NOT_FOUND.value());
 	}
@@ -243,7 +248,7 @@ class CertificateCrudE2ETest extends SchoolIntegrationTestBase {
 				.header("X-Tenant-ID", tenantId)
 				.header("Authorization", "Bearer " + accessToken)
 				.when()
-				.post("/api/v1/students/" + studentPublicId + "/certificates?certificateTemplatePublicId="
+				.post("/api/v1/students/" + studentPublicId + "/certificates?certificateTypePublicId="
 						+ templatePublicId)
 				.then()
 				.statusCode(HttpStatus.CREATED.value())
@@ -254,10 +259,11 @@ class CertificateCrudE2ETest extends SchoolIntegrationTestBase {
 		given()
 				.header("X-Tenant-ID", tenantId)
 				.when()
-				.get("/api/v1/certificates/verify/" + verificationCode)
+				.get("/api/v1/documents/verify/" + verificationCode)
 				.then()
 				.statusCode(HttpStatus.OK.value())
-				.body("data.studentName", equalTo("Alice Smith"));
+				.body("data.subjectName", equalTo("Alice Smith"))
+				.body("data.status", equalTo("VALID"));
 	}
 
 	@Test
@@ -265,7 +271,7 @@ class CertificateCrudE2ETest extends SchoolIntegrationTestBase {
 		given()
 				.header("X-Tenant-ID", tenantId)
 				.when()
-				.get("/api/v1/certificates/verify/does-not-exist")
+				.get("/api/v1/documents/verify/does-not-exist")
 				.then()
 				.statusCode(HttpStatus.NOT_FOUND.value());
 	}
@@ -280,7 +286,7 @@ class CertificateCrudE2ETest extends SchoolIntegrationTestBase {
 				.header("X-Tenant-ID", tenantId)
 				.header("Authorization", "Bearer " + accessToken)
 				.when()
-				.post("/api/v1/students/" + studentPublicId + "/certificates?certificateTemplatePublicId="
+				.post("/api/v1/students/" + studentPublicId + "/certificates?certificateTypePublicId="
 						+ templatePublicId)
 				.then()
 				.statusCode(HttpStatus.CREATED.value());

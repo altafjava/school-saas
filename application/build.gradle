@@ -57,6 +57,7 @@ dependencies {
     testRuntimeOnly libs.junit.jupiter.engine
     testRuntimeOnly libs.junit.platform.launcher
     testImplementation libs.mockito.core
+    testImplementation "org.apache.pdfbox:pdfbox:3.0.7"
     testImplementation libs.mockito.junit.jupiter
     // jakarta.servlet-api is compileOnly in the platform's application module (a servlet container
     // provides it at runtime), so it's absent from the published POM. NoOpActivityLogService (audit

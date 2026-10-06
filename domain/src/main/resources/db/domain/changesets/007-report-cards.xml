@@ -25,7 +25,8 @@
             <column name="term_id" type="BIGINT">
                 <constraints nullable="false"/>
             </column>
-            <column name="storage_key" type="VARCHAR(500)">
+            <!-- The rendered PDF is a platform document issuance (verifiable, revocable). -->
+            <column name="document_issuance_id" type="BIGINT">
                 <constraints nullable="false"/>
             </column>
             <column name="generated_at" type="TIMESTAMP">
@@ -54,6 +55,10 @@
                 constraintName="fk_report_cards_student_id"
                 baseTableName="report_cards" baseColumnNames="student_id"
                 referencedTableName="students" referencedColumnNames="id"/>
+        <addForeignKeyConstraint
+                constraintName="fk_report_cards_document_issuance_id"
+                baseTableName="report_cards" baseColumnNames="document_issuance_id"
+                referencedTableName="document_issuances" referencedColumnNames="id"/>
         <addForeignKeyConstraint
                 constraintName="fk_report_cards_term_id"
                 baseTableName="report_cards" baseColumnNames="term_id"

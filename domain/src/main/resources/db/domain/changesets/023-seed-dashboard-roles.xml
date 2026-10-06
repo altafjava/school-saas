@@ -15,7 +15,7 @@
             <column name="name" value="PRINCIPAL"/>
             <column name="description" value="School-wide summary dashboard: enrollment, attendance, GPA, events"/>
             <column name="is_system_role" valueBoolean="true"/>
-            <column name="permissions_json" value='["CERTIFICATE_MANAGE", "CERTIFICATE_TEMPLATE_READ", "DASHBOARD_PRINCIPAL_READ"]'/>
+            <column name="permissions_json" value='["CERTIFICATE_MANAGE", "CERTIFICATE_TYPE_READ", "DASHBOARD_PRINCIPAL_READ"]'/>
             <column name="created_by" type="VARCHAR(100)"/>
             <column name="created_at" valueDate="NOW()"/>
         </insert>

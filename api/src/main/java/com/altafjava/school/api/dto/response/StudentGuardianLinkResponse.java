@@ -8,5 +8,8 @@ public record StudentGuardianLinkResponse(
 		Long guardianId,
 		String relationshipType,
 		boolean primaryContact,
-		Instant consentGivenAt) {
+		Instant consentGivenAt,
+		boolean authorizedForPickup,
+		boolean custodyRestricted,
+		String custodyRestrictionNote) {
 }

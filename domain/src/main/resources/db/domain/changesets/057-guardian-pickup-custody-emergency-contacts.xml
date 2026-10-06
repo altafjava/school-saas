@@ -1,0 +1,155 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                            http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-5.0.xsd">
+
+    <!-- Phase 2.5 — guardian/family safety: authorized-pickup and custody-restriction flags on the
+         guardian link, an append-only change history for both, and emergency contacts that need not
+         be guardians. Pickup defaults to false: it is always an explicit grant. -->
+
+    <changeSet id="school-141-guardian-link-pickup-custody" author="school">
+        <addColumn tableName="student_guardian_links">
+            <column name="authorized_for_pickup" type="BOOLEAN" defaultValueBoolean="false">
+                <constraints nullable="false"/>
+            </column>
+            <column name="custody_restricted" type="BOOLEAN" defaultValueBoolean="false">
+                <constraints nullable="false"/>
+            </column>
+            <column name="custody_restriction_note" type="VARCHAR(500)"/>
+        </addColumn>
+        <sql>
+            ALTER TABLE student_guardian_links
+            ADD CONSTRAINT chk_student_guardian_links_restricted_not_pickup
+            CHECK (NOT (custody_restricted AND authorized_for_pickup))
+        </sql>
+    </changeSet>
+
+    <changeSet id="school-142-guardian-authorization-changes" author="school">
+        <createTable tableName="guardian_authorization_changes">
+            <column name="id" type="BIGINT" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="public_id" type="VARCHAR(36)">
+                <constraints nullable="false" unique="true"/>
+            </column>
+            <column name="version" type="BIGINT" defaultValueNumeric="0">
+                <constraints nullable="false"/>
+            </column>
+            <column name="tenant_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="student_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="guardian_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="old_authorized_for_pickup" type="BOOLEAN">
+                <constraints nullable="false"/>
+            </column>
+            <column name="new_authorized_for_pickup" type="BOOLEAN">
+                <constraints nullable="false"/>
+            </column>
+            <column name="old_custody_restricted" type="BOOLEAN">
+                <constraints nullable="false"/>
+            </column>
+            <column name="new_custody_restricted" type="BOOLEAN">
+                <constraints nullable="false"/>
+            </column>
+            <column name="note" type="VARCHAR(500)"/>
+            <column name="changed_by_user_id" type="BIGINT"/>
+            <column name="created_at" type="TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="updated_at" type="TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_by" type="VARCHAR(100)"/>
+            <column name="updated_by" type="VARCHAR(100)"/>
+        </createTable>
+
+        <addForeignKeyConstraint
+                constraintName="fk_guardian_authorization_changes_tenant_id"
+                baseTableName="guardian_authorization_changes" baseColumnNames="tenant_id"
+                referencedTableName="tenants" referencedColumnNames="id"/>
+        <addForeignKeyConstraint
+                constraintName="fk_guardian_authorization_changes_student_id"
+                baseTableName="guardian_authorization_changes" baseColumnNames="student_id"
+                referencedTableName="students" referencedColumnNames="id"/>
+        <addForeignKeyConstraint
+                constraintName="fk_guardian_authorization_changes_guardian_id"
+                baseTableName="guardian_authorization_changes" baseColumnNames="guardian_id"
+                referencedTableName="guardians" referencedColumnNames="id"/>
+
+        <createIndex indexName="idx_guardian_authorization_changes_tenant_student" tableName="guardian_authorization_changes">
+            <column name="tenant_id"/>
+            <column name="student_id"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet id="school-143-emergency-contacts" author="school">
+        <createTable tableName="emergency_contacts">
+            <column name="id" type="BIGINT" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="public_id" type="VARCHAR(36)">
+                <constraints nullable="false" unique="true"/>
+            </column>
+            <column name="version" type="BIGINT" defaultValueNumeric="0">
+                <constraints nullable="false"/>
+            </column>
+            <column name="tenant_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="student_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="name" type="VARCHAR(200)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="relationship" type="VARCHAR(100)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="phone" type="VARCHAR(30)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="alternate_phone" type="VARCHAR(30)"/>
+            <column name="priority" type="INT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="deleted" type="BOOLEAN" defaultValueBoolean="false">
+                <constraints nullable="false"/>
+            </column>
+            <column name="deleted_at" type="TIMESTAMP"/>
+            <column name="deleted_by" type="VARCHAR(100)"/>
+            <column name="created_at" type="TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="updated_at" type="TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_by" type="VARCHAR(100)"/>
+            <column name="updated_by" type="VARCHAR(100)"/>
+        </createTable>
+
+        <addForeignKeyConstraint
+                constraintName="fk_emergency_contacts_tenant_id"
+                baseTableName="emergency_contacts" baseColumnNames="tenant_id"
+                referencedTableName="tenants" referencedColumnNames="id"/>
+        <addForeignKeyConstraint
+                constraintName="fk_emergency_contacts_student_id"
+                baseTableName="emergency_contacts" baseColumnNames="student_id"
+                referencedTableName="students" referencedColumnNames="id"/>
+
+        <createIndex indexName="idx_emergency_contacts_tenant_student" tableName="emergency_contacts">
+            <column name="tenant_id"/>
+            <column name="student_id"/>
+        </createIndex>
+        <createIndex indexName="idx_emergency_contacts_deleted" tableName="emergency_contacts">
+            <column name="deleted"/>
+        </createIndex>
+    </changeSet>
+
+</databaseChangeLog>

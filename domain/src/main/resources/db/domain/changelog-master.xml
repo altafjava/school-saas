@@ -61,5 +61,7 @@
     <include file="db/domain/changesets/054-photo-and-roll-number.xml"/>
     <include file="db/domain/changesets/055-student-documents.xml"/>
     <include file="db/domain/changesets/056-tenant-admin-phase1-permissions.xml"/>
+    <include file="db/domain/changesets/057-guardian-pickup-custody-emergency-contacts.xml"/>
+    <include file="db/domain/changesets/058-tenant-admin-guardian-safety-permissions.xml"/>
 
 </databaseChangeLog>

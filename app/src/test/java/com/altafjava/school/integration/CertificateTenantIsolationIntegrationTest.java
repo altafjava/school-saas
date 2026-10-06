@@ -9,20 +9,21 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Import;
 import org.springframework.data.domain.PageRequest;
+import com.altafjava.platform.application.document.DocumentIssuanceService;
 import com.altafjava.platform.application.dto.RegisterTenantCommand;
 import com.altafjava.platform.application.service.TenantOnboardingService;
 import com.altafjava.platform.core.exception.ResourceNotFoundException;
 import com.altafjava.platform.core.tenant.TenantContext;
+import com.altafjava.platform.domain.document.model.DocumentIssuance;
 import com.altafjava.platform.domain.tenant.model.Tenant;
 import com.altafjava.school.application.service.CertificateService;
-import com.altafjava.school.application.service.CertificateTemplateService;
+import com.altafjava.school.application.service.CertificateTypeService;
 import com.altafjava.school.application.service.StudentService;
 import com.altafjava.school.base.SchoolIntegrationTestBase;
 import com.altafjava.school.config.TestPaymentConfig;
 import com.altafjava.school.config.TestRedisConfig;
 import com.altafjava.school.config.TestStorageConfig;
-import com.altafjava.school.domain.certificate.model.CertificateIssuance;
-import com.altafjava.school.domain.certificate.model.CertificateTemplate;
+import com.altafjava.school.domain.certificate.model.CertificateType;
 import com.altafjava.school.domain.student.model.Student;
 
 /**
@@ -37,7 +38,10 @@ class CertificateTenantIsolationIntegrationTest extends SchoolIntegrationTestBas
 	private CertificateService certificateService;
 
 	@Autowired
-	private CertificateTemplateService certificateTemplateService;
+	private CertificateTypeService certificateTypeService;
+
+	@Autowired
+	private DocumentIssuanceService documentIssuanceService;
 
 	@Autowired
 	private StudentService studentService;
@@ -74,7 +78,7 @@ class CertificateTenantIsolationIntegrationTest extends SchoolIntegrationTestBas
 		activateTenant(tenantA);
 		Student student = studentService.enroll("STU-" + UUID.randomUUID().toString().substring(0, 6), "Alice",
 				"Smith", "alice@cert.test", LocalDate.of(2010, 1, 1));
-		CertificateTemplate template = certificateTemplateService.create("Bonafide Certificate",
+		CertificateType template = certificateTypeService.create("BONAFIDE", "Bonafide Certificate",
 				"This certifies {{studentName}}.");
 		certificateService.issue(student.getPublicId().toString(), template.getPublicId().toString(), 1L);
 		String studentPublicId = student.getPublicId().toString();
@@ -90,14 +94,15 @@ class CertificateTenantIsolationIntegrationTest extends SchoolIntegrationTestBas
 		activateTenant(tenantA);
 		Student student = studentService.enroll("STU-" + UUID.randomUUID().toString().substring(0, 6), "Bob",
 				"Jones", "bob@cert.test", LocalDate.of(2011, 2, 2));
-		CertificateTemplate template = certificateTemplateService.create("Transfer Certificate",
+		CertificateType template = certificateTypeService.create("TRANSFER", "Transfer Certificate",
 				"This certifies {{studentName}}.");
-		CertificateIssuance issuance = certificateService.issue(student.getPublicId().toString(),
+		DocumentIssuance issuance = certificateService.issue(student.getPublicId().toString(),
 				template.getPublicId().toString(), 1L);
 		String verificationCode = issuance.getVerificationCode();
 
 		activateTenant(tenantB);
-		assertThrows(ResourceNotFoundException.class, () -> certificateService.verify(verificationCode),
+		assertThrows(ResourceNotFoundException.class,
+				() -> documentIssuanceService.verify(tenantB.getId(), verificationCode),
 				"Tenant B must not verify a certificate issued under tenant A, even with the correct code");
 	}
 }

@@ -4,12 +4,16 @@ import java.util.HashMap;
 import java.util.Map;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
+import com.altafjava.platform.application.document.DocumentIssuanceService;
 import com.altafjava.platform.core.privacy.DomainPiiHandler;
+import com.altafjava.school.application.document.SchoolDocumentTypes;
 import com.altafjava.school.domain.counseling.model.CounselingSession;
 import com.altafjava.school.domain.counseling.repository.CounselingSessionRepository;
 import com.altafjava.school.domain.discipline.model.DisciplineIncident;
 import com.altafjava.school.domain.discipline.repository.DisciplineIncidentRepository;
+import com.altafjava.school.domain.guardian.model.EmergencyContact;
 import com.altafjava.school.domain.guardian.model.Guardian;
+import com.altafjava.school.domain.guardian.repository.EmergencyContactRepository;
 import com.altafjava.school.domain.guardian.repository.GuardianRepository;
 import com.altafjava.school.domain.health.model.HealthRecord;
 import com.altafjava.school.domain.health.model.MedicalIncident;
@@ -41,6 +45,8 @@ public class StudentGuardianPiiHandler implements DomainPiiHandler {
 	private final MedicalIncidentRepository medicalIncidentRepository;
 	private final DisciplineIncidentRepository disciplineIncidentRepository;
 	private final CounselingSessionRepository counselingSessionRepository;
+	private final EmergencyContactRepository emergencyContactRepository;
+	private final DocumentIssuanceService documentIssuanceService;
 
 	public StudentGuardianPiiHandler(
 			StudentRepository studentRepository,
@@ -48,13 +54,17 @@ public class StudentGuardianPiiHandler implements DomainPiiHandler {
 			HealthRecordRepository healthRecordRepository,
 			MedicalIncidentRepository medicalIncidentRepository,
 			DisciplineIncidentRepository disciplineIncidentRepository,
-			CounselingSessionRepository counselingSessionRepository) {
+			CounselingSessionRepository counselingSessionRepository,
+			EmergencyContactRepository emergencyContactRepository,
+			DocumentIssuanceService documentIssuanceService) {
 		this.studentRepository = studentRepository;
 		this.guardianRepository = guardianRepository;
 		this.healthRecordRepository = healthRecordRepository;
 		this.medicalIncidentRepository = medicalIncidentRepository;
 		this.disciplineIncidentRepository = disciplineIncidentRepository;
 		this.counselingSessionRepository = counselingSessionRepository;
+		this.emergencyContactRepository = emergencyContactRepository;
+		this.documentIssuanceService = documentIssuanceService;
 	}
 
 	@Override
@@ -90,6 +100,13 @@ public class StudentGuardianPiiHandler implements DomainPiiHandler {
 			session.erasePii();
 			counselingSessionRepository.save(session);
 		});
+		documentIssuanceService.eraseOwnerPii(tenantId, SchoolDocumentTypes.OWNER_STUDENT, studentId);
+		emergencyContactRepository.findAllByStudentIdAndTenantIdOrderByPriorityAsc(studentId, tenantId)
+				.forEach(contact -> {
+					contact.erasePii();
+					contact.softDelete("gdpr-dsar-erasure");
+					emergencyContactRepository.save(contact);
+				});
 	}
 
 	@Override
@@ -110,6 +127,9 @@ public class StudentGuardianPiiHandler implements DomainPiiHandler {
 			data.put("counselingSessions", counselingSessionRepository
 					.findAllByStudentIdAndTenantId(student.getId(), tenantId).stream()
 					.map(this::toCounselingSessionExport).toList());
+			data.put("emergencyContacts", emergencyContactRepository
+					.findAllByStudentIdAndTenantIdOrderByPriorityAsc(student.getId(), tenantId).stream()
+					.map(this::toEmergencyContactExport).toList());
 		});
 		guardianRepository.findByUserIdAndTenantId(userId, tenantId)
 				.ifPresent(guardian -> data.put("guardian", toGuardianExport(guardian)));
@@ -146,6 +166,15 @@ public class StudentGuardianPiiHandler implements DomainPiiHandler {
 		Map<String, Object> export = new HashMap<>();
 		export.put("sessionDate", session.getSessionDate());
 		export.put("notes", session.getNotes());
+		return export;
+	}
+
+	private Map<String, Object> toEmergencyContactExport(EmergencyContact contact) {
+		Map<String, Object> export = new HashMap<>();
+		export.put("name", contact.getName());
+		export.put("relationship", contact.getRelationship());
+		export.put("phone", contact.getPhone());
+		export.put("alternatePhone", contact.getAlternatePhone());
 		return export;
 	}
 

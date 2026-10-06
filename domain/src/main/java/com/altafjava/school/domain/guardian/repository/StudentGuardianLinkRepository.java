@@ -21,7 +21,8 @@ public interface StudentGuardianLinkRepository extends JpaRepository<StudentGuar
 
 	List<StudentGuardianLink> findAllByGuardianIdAndTenantId(Long guardianId, Long tenantId);
 
-	@Query("SELECT l FROM StudentGuardianLink l WHERE l.tenantId = :tenantId AND l.guardianId = :guardianId")
+	@Query("SELECT l FROM StudentGuardianLink l WHERE l.tenantId = :tenantId AND l.guardianId = :guardianId"
+			+ " AND l.custodyRestricted = false")
 	Page<StudentGuardianLink> findByGuardianId(@Param("tenantId") Long tenantId,
 			@Param("guardianId") Long guardianId, Pageable pageable);
 
