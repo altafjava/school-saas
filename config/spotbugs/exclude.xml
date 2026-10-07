@@ -105,10 +105,9 @@
         <Bug pattern="EI_EXPOSE_REP2"/>
     </Match>
     <!--
-      EI_EXPOSE_REP2 on CertificateService's 9-arg constructor: flags storing the injected
-      StorageService (a platform interface) into a field — the exact same finding already
-      investigated and excluded for ReportCardService above, on the identical StorageService type.
-      Investigated 2026-08-25: no mutable state leak, reference never handed back to a caller.
+      EI_EXPOSE_REP2 on CertificateService's constructor: flags storing the injected
+      DocumentIssuanceService (a platform application service) into a field — standard
+      constructor injection, no mutable state leak, reference never handed back to a caller.
     -->
     <Match>
         <Class name="com.altafjava.school.application.service.CertificateService"/>
@@ -268,6 +267,48 @@
     </Match>
     <Match>
         <Class name="com.altafjava.school.api.controller.AdmissionCustomFieldController"/>
+        <Method name="&lt;init&gt;"/>
+        <Bug pattern="EI_EXPOSE_REP2"/>
+    </Match>
+    <!--
+      Phase 1/2 additions (2026-10-06). EI_EXPOSE_REP/REP2 on constructor-injected collaborators and
+      on internal result records that carry JPA entities between application and api layers: the
+      same detector noise excluded above for the existing services/controllers — no mutable state is
+      shared, references are never handed to untrusted callers.
+    -->
+    <Match>
+        <Class name="com.altafjava.school.application.document.StudentPlacementResolver$Placement"/>
+        <Bug pattern="EI_EXPOSE_REP"/>
+    </Match>
+    <Match>
+        <Class name="com.altafjava.school.application.document.StudentPlacementResolver$Placement"/>
+        <Bug pattern="EI_EXPOSE_REP2"/>
+    </Match>
+    <Match>
+        <Class name="com.altafjava.school.application.service.GuardianPickupService$PickupAuthorizedGuardian"/>
+        <Bug pattern="EI_EXPOSE_REP"/>
+    </Match>
+    <Match>
+        <Class name="com.altafjava.school.application.service.GuardianPickupService$PickupAuthorizedGuardian"/>
+        <Bug pattern="EI_EXPOSE_REP2"/>
+    </Match>
+    <Match>
+        <Class name="com.altafjava.school.application.privacy.StudentGuardianPiiHandler"/>
+        <Method name="&lt;init&gt;"/>
+        <Bug pattern="EI_EXPOSE_REP2"/>
+    </Match>
+    <Match>
+        <Class name="com.altafjava.school.api.controller.StudentEmergencyContactController"/>
+        <Method name="&lt;init&gt;"/>
+        <Bug pattern="EI_EXPOSE_REP2"/>
+    </Match>
+    <Match>
+        <Class name="com.altafjava.school.api.controller.StudentIdCardController"/>
+        <Method name="&lt;init&gt;"/>
+        <Bug pattern="EI_EXPOSE_REP2"/>
+    </Match>
+    <Match>
+        <Class name="com.altafjava.school.api.controller.TeacherIdCardController"/>
         <Method name="&lt;init&gt;"/>
         <Bug pattern="EI_EXPOSE_REP2"/>
     </Match>

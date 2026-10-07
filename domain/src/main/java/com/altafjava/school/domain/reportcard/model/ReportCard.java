@@ -28,9 +28,9 @@ public class ReportCard extends SoftDeletableEntity {
 	@Column(name = "term_id", nullable = false)
 	private Long termId;
 
-	// Object storage key (platform StorageService) where the generated PDF is stored.
-	@Column(name = "storage_key", nullable = false, length = 500)
-	private String storageKey;
+	// FK to platform document_issuances.id — the rendered, verifiable PDF.
+	@Column(name = "document_issuance_id", nullable = false)
+	private Long documentIssuanceId;
 
 	@Column(name = "generated_at", nullable = false)
 	private Instant generatedAt;
@@ -41,11 +41,11 @@ public class ReportCard extends SoftDeletableEntity {
 	@Column(name = "principal_remarks", length = 1000)
 	private String principalRemarks;
 
-	public static ReportCard create(Long studentId, Long termId, String storageKey) {
+	public static ReportCard create(Long studentId, Long termId, Long documentIssuanceId) {
 		return ReportCard.builder()
 				.studentId(studentId)
 				.termId(termId)
-				.storageKey(storageKey)
+				.documentIssuanceId(documentIssuanceId)
 				.generatedAt(Instant.now())
 				.build();
 	}

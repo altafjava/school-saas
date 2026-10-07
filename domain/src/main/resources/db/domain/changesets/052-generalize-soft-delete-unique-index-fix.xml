@@ -308,20 +308,6 @@
         </createIndex>
     </changeSet>
 
-    <changeSet id="school-117-certificate-issuances-soft-delete-unique-fix" author="school">
-        <dropIndex indexName="uq_certificate_issuances_verification_code" tableName="certificate_issuances"/>
-        <sql>
-            ALTER TABLE certificate_issuances
-            ADD COLUMN active_verification_code VARCHAR(32)
-            GENERATED ALWAYS AS (CASE WHEN deleted = FALSE THEN verification_code ELSE NULL END) STORED;
-        </sql>
-        <createIndex indexName="uq_certificate_issuances_active_verification_code" tableName="certificate_issuances"
-                     unique="true">
-            <column name="tenant_id"/>
-            <column name="active_verification_code"/>
-        </createIndex>
-    </changeSet>
-
     <changeSet id="school-118-terms-soft-delete-unique-fix" author="school">
         <dropIndex indexName="uq_terms_name_academic_year_tenant" tableName="terms"/>
         <sql>

@@ -1,14 +1,15 @@
 package com.altafjava.school.application.idcard;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyMap;
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 import org.junit.jupiter.api.AfterEach;
@@ -18,14 +19,15 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import com.altafjava.platform.application.document.DefaultDocumentTemplate;
-import com.altafjava.platform.application.document.DocumentRenderingService;
+import com.altafjava.platform.application.document.DocumentIssuanceService;
+import com.altafjava.platform.application.document.DocumentIssueRequest;
 import com.altafjava.platform.application.service.FileStorageService;
+import com.altafjava.platform.core.exception.ResourceNotFoundException;
 import com.altafjava.platform.core.tenant.TenantContext;
 import com.altafjava.platform.core.tenant.TenantType;
 import com.altafjava.platform.domain.document.model.DocumentIssuance;
-import com.altafjava.platform.domain.tenant.model.Tenant;
-import com.altafjava.platform.domain.tenant.repository.TenantRepository;
+import com.altafjava.school.application.document.SchoolDocumentTypes;
+import com.altafjava.school.application.document.StudentPlacementResolver;
 import com.altafjava.school.domain.academicyear.repository.AcademicYearRepository;
 import com.altafjava.school.domain.classroom.model.Classroom;
 import com.altafjava.school.domain.classroom.model.StudentClassroomLink;
@@ -40,6 +42,8 @@ import com.altafjava.school.domain.teacher.repository.TeacherRepository;
 @ExtendWith(MockitoExtension.class)
 class IdCardServiceTest {
 
+	private static final Long ISSUER = 99L;
+
 	@Mock
 	private StudentRepository studentRepository;
 	@Mock
@@ -53,19 +57,18 @@ class IdCardServiceTest {
 	@Mock
 	private DepartmentRepository departmentRepository;
 	@Mock
-	private TenantRepository tenantRepository;
-	@Mock
 	private FileStorageService fileStorageService;
 	@Mock
-	private DocumentRenderingService documentRenderingService;
+	private DocumentIssuanceService documentIssuanceService;
 
 	private IdCardService idCardService;
 
 	@BeforeEach
 	void setUp() {
-		idCardService = new IdCardService(studentRepository, studentClassroomLinkRepository, classroomRepository,
-				academicYearRepository, teacherRepository, departmentRepository, tenantRepository, fileStorageService,
-				documentRenderingService);
+		StudentPlacementResolver placementResolver = new StudentPlacementResolver(studentClassroomLinkRepository,
+				classroomRepository, academicYearRepository);
+		idCardService = new IdCardService(studentRepository, teacherRepository, departmentRepository,
+				placementResolver, fileStorageService, documentIssuanceService);
 		TenantContext.ForTesting.setCurrentTenant(1L, null, null, TenantType.SHARED);
 	}
 
@@ -74,76 +77,102 @@ class IdCardServiceTest {
 		TenantContext.ForTesting.clear();
 	}
 
-	@Test
-	void issueForStudent_withNoClassroomLink_usesStudentCodeAsRollNumber() {
-		UUID studentPublicId = UUID.randomUUID();
-		Student student = Student.create("STU-100", "Jane", "Doe", "jane@school.test", LocalDate.of(2012, 1, 1));
-		student.setId(10L);
-		student.setPublicId(studentPublicId);
-		when(studentRepository.findByPublicIdAndTenantId(studentPublicId, 1L)).thenReturn(Optional.of(student));
-		when(studentClassroomLinkRepository.findByStudentId(1L, 10L)).thenReturn(List.of());
-		when(tenantRepository.findById(1L)).thenReturn(Optional.of(Tenant.builder().name("Test School").build()));
-		DocumentIssuance issuance = mock(DocumentIssuance.class);
-		when(documentRenderingService.render(eq(1L), eq(IdCardService.STUDENT_ID_CARD_TYPE), eq("STUDENT"), eq(10L),
-				anyMap(), anyMap(), any(), any(DefaultDocumentTemplate.class))).thenReturn(issuance);
+	private Student student(long id, String code, UUID publicId) {
+		Student student = Student.create(code, "Jane", "Doe", "jane@school.test", LocalDate.of(2012, 1, 1));
+		student.setId(id);
+		student.setPublicId(publicId);
+		return student;
+	}
 
-		DocumentIssuance result = idCardService.issueForStudent(studentPublicId.toString());
-
-		assertEquals(issuance, result);
-		ArgumentCaptor<java.util.Map<String, String>> textValuesCaptor = ArgumentCaptor.forClass(java.util.Map.class);
-		verify(documentRenderingService).render(eq(1L), eq(IdCardService.STUDENT_ID_CARD_TYPE), eq("STUDENT"), eq(10L),
-				textValuesCaptor.capture(), anyMap(), any(), any(DefaultDocumentTemplate.class));
-		assertEquals("Jane Doe", textValuesCaptor.getValue().get("studentName"));
-		assertEquals("STU-100", textValuesCaptor.getValue().get("rollNumberOrAdmissionNumber"));
+	@SuppressWarnings("unchecked")
+	private Map<String, Object> issuedModel(String documentType, String ownerType, long ownerId) {
+		ArgumentCaptor<DocumentIssueRequest> captor = ArgumentCaptor.forClass(DocumentIssueRequest.class);
+		verify(documentIssuanceService).issue(captor.capture());
+		DocumentIssueRequest request = captor.getValue();
+		assertEquals(documentType, request.documentType());
+		assertEquals(ownerType, request.ownerEntityType());
+		assertEquals(ownerId, request.ownerEntityId());
+		assertEquals(ISSUER, request.issuedByUserId());
+		return (Map<String, Object>) request.model();
 	}
 
 	@Test
-	void issueForStudent_withClassroomLinkRollNumber_prefersRollNumberOverStudentCode() {
-		UUID studentPublicId = UUID.randomUUID();
-		Student student = Student.create("STU-101", "John", "Roe", "john@school.test", LocalDate.of(2012, 1, 1));
-		student.setId(11L);
-		student.setPublicId(studentPublicId);
+	void issueForStudent_withNoClassroomLink_usesStudentCodeAsRollNumber() {
+		UUID publicId = UUID.randomUUID();
+		when(studentRepository.findByPublicIdAndTenantId(publicId, 1L))
+				.thenReturn(Optional.of(student(10L, "STU-100", publicId)));
+		when(studentClassroomLinkRepository.findByStudentId(1L, 10L)).thenReturn(List.of());
+		DocumentIssuance issuance = mock(DocumentIssuance.class);
+		when(documentIssuanceService.issue(any(DocumentIssueRequest.class))).thenReturn(issuance);
+
+		assertSame(issuance, idCardService.issueForStudent(publicId.toString(), ISSUER));
+
+		Map<String, Object> model = issuedModel(SchoolDocumentTypes.STUDENT_ID_CARD, "STUDENT", 10L);
+		assertEquals("Jane Doe", model.get("studentName"));
+		assertEquals("STU-100", model.get("rollNumberOrAdmissionNumber"));
+		assertEquals("", model.get("className"));
+	}
+
+	@Test
+	void issueForStudent_withRollNumber_prefersItAndPrintsTheClass() {
+		UUID publicId = UUID.randomUUID();
 		StudentClassroomLink link = StudentClassroomLink.create(11L, 20L, 30L, LocalDate.now());
 		link.assignRollNumber("07");
 		Classroom classroom = Classroom.builder().grade("5").section("A").build();
-		classroom.setId(20L);
-		when(studentRepository.findByPublicIdAndTenantId(studentPublicId, 1L)).thenReturn(Optional.of(student));
+		when(studentRepository.findByPublicIdAndTenantId(publicId, 1L))
+				.thenReturn(Optional.of(student(11L, "STU-101", publicId)));
 		when(studentClassroomLinkRepository.findByStudentId(1L, 11L)).thenReturn(List.of(link));
 		when(academicYearRepository.findByCurrentTrueAndTenantId(1L)).thenReturn(Optional.empty());
 		when(classroomRepository.findByIdAndTenantId(20L, 1L)).thenReturn(Optional.of(classroom));
-		when(tenantRepository.findById(1L)).thenReturn(Optional.of(Tenant.builder().name("Test School").build()));
-		DocumentIssuance issuance = mock(DocumentIssuance.class);
-		when(documentRenderingService.render(eq(1L), eq(IdCardService.STUDENT_ID_CARD_TYPE), eq("STUDENT"), eq(11L),
-				anyMap(), anyMap(), any(), any(DefaultDocumentTemplate.class))).thenReturn(issuance);
+		when(academicYearRepository.findByIdAndTenantId(30L, 1L)).thenReturn(Optional.empty());
 
-		idCardService.issueForStudent(studentPublicId.toString());
+		idCardService.issueForStudent(publicId.toString(), ISSUER);
 
-		ArgumentCaptor<java.util.Map<String, String>> textValuesCaptor = ArgumentCaptor.forClass(java.util.Map.class);
-		verify(documentRenderingService).render(eq(1L), eq(IdCardService.STUDENT_ID_CARD_TYPE), eq("STUDENT"), eq(11L),
-				textValuesCaptor.capture(), anyMap(), any(), any(DefaultDocumentTemplate.class));
-		assertEquals("07", textValuesCaptor.getValue().get("rollNumberOrAdmissionNumber"));
-		assertEquals("5 A", textValuesCaptor.getValue().get("className"));
+		Map<String, Object> model = issuedModel(SchoolDocumentTypes.STUDENT_ID_CARD, "STUDENT", 11L);
+		assertEquals("07", model.get("rollNumberOrAdmissionNumber"));
+		assertEquals("5 A", model.get("className"));
 	}
 
 	@Test
-	void issueForTeacher_buildsExpectedPlaceholders() {
-		UUID teacherPublicId = UUID.randomUUID();
+	void issueForStudent_withPhoto_loadsItThroughTheTenantScopedFileService() {
+		UUID publicId = UUID.randomUUID();
+		UUID photoId = UUID.randomUUID();
+		Student student = student(12L, "STU-102", publicId);
+		student.updatePhoto(photoId);
+		byte[] photo = { 1, 2, 3 };
+		when(studentRepository.findByPublicIdAndTenantId(publicId, 1L)).thenReturn(Optional.of(student));
+		when(studentClassroomLinkRepository.findByStudentId(1L, 12L)).thenReturn(List.of());
+		when(fileStorageService.downloadFileForTenant(photoId.toString())).thenReturn(photo);
+
+		idCardService.issueForStudent(publicId.toString(), ISSUER);
+
+		assertSame(photo, issuedModel(SchoolDocumentTypes.STUDENT_ID_CARD, "STUDENT", 12L).get("photo"));
+	}
+
+	@Test
+	void issueForTeacher_buildsTheStaffCardModel() {
+		UUID publicId = UUID.randomUUID();
 		Teacher teacher = Teacher.create("EMP-1", "Sam", "Lee", "sam@school.test", LocalDate.of(2020, 1, 1));
 		teacher.setId(50L);
-		teacher.setPublicId(teacherPublicId);
-		when(teacherRepository.findByPublicIdAndTenantId(teacherPublicId, 1L)).thenReturn(Optional.of(teacher));
-		when(tenantRepository.findById(1L)).thenReturn(Optional.of(Tenant.builder().name("Test School").build()));
-		DocumentIssuance issuance = mock(DocumentIssuance.class);
-		when(documentRenderingService.render(eq(1L), eq(IdCardService.TEACHER_ID_CARD_TYPE), eq("TEACHER"), eq(50L),
-				anyMap(), anyMap(), any(), any(DefaultDocumentTemplate.class))).thenReturn(issuance);
+		teacher.setPublicId(publicId);
+		when(teacherRepository.findByPublicIdAndTenantId(publicId, 1L)).thenReturn(Optional.of(teacher));
 
-		DocumentIssuance result = idCardService.issueForTeacher(teacherPublicId.toString());
+		idCardService.issueForTeacher(publicId.toString(), ISSUER);
 
-		assertEquals(issuance, result);
-		ArgumentCaptor<java.util.Map<String, String>> textValuesCaptor = ArgumentCaptor.forClass(java.util.Map.class);
-		verify(documentRenderingService).render(eq(1L), eq(IdCardService.TEACHER_ID_CARD_TYPE), eq("TEACHER"), eq(50L),
-				textValuesCaptor.capture(), anyMap(), any(), any(DefaultDocumentTemplate.class));
-		assertEquals("Sam Lee", textValuesCaptor.getValue().get("teacherName"));
-		assertEquals("EMP-1", textValuesCaptor.getValue().get("employeeCode"));
+		Map<String, Object> model = issuedModel(SchoolDocumentTypes.TEACHER_ID_CARD, "TEACHER", 50L);
+		assertEquals("Sam Lee", model.get("teacherName"));
+		assertEquals("EMP-1", model.get("employeeCode"));
+	}
+
+	@Test
+	void findStudentCard_isScopedToTheStudentInTheUrl() {
+		UUID publicId = UUID.randomUUID();
+		when(studentRepository.findByPublicIdAndTenantId(publicId, 1L))
+				.thenReturn(Optional.of(student(10L, "STU-100", publicId)));
+		when(documentIssuanceService.findForOwner(1L, "issuance-1", "STUDENT", 10L))
+				.thenThrow(new ResourceNotFoundException("Document not found"));
+
+		assertThrows(ResourceNotFoundException.class,
+				() -> idCardService.findStudentCard(publicId.toString(), "issuance-1"));
 	}
 }

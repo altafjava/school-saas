@@ -17,12 +17,14 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import com.altafjava.platform.application.document.DocumentIssuanceService;
 import com.altafjava.school.domain.counseling.model.CounselingSession;
 import com.altafjava.school.domain.counseling.repository.CounselingSessionRepository;
 import com.altafjava.school.domain.discipline.model.DisciplineIncident;
 import com.altafjava.school.domain.discipline.model.IncidentSeverity;
 import com.altafjava.school.domain.discipline.repository.DisciplineIncidentRepository;
 import com.altafjava.school.domain.guardian.model.Guardian;
+import com.altafjava.school.domain.guardian.repository.EmergencyContactRepository;
 import com.altafjava.school.domain.guardian.repository.GuardianRepository;
 import com.altafjava.school.domain.health.model.HealthRecord;
 import com.altafjava.school.domain.health.model.MedicalIncident;
@@ -46,12 +48,17 @@ class StudentGuardianPiiHandlerTest {
 	private DisciplineIncidentRepository disciplineIncidentRepository;
 	@Mock
 	private CounselingSessionRepository counselingSessionRepository;
+	@Mock
+	private EmergencyContactRepository emergencyContactRepository;
+	@Mock
+	private DocumentIssuanceService documentIssuanceService;
 
 	private StudentGuardianPiiHandler piiHandler;
 
 	private void newHandler() {
 		piiHandler = new StudentGuardianPiiHandler(studentRepository, guardianRepository, healthRecordRepository,
-				medicalIncidentRepository, disciplineIncidentRepository, counselingSessionRepository);
+				medicalIncidentRepository, disciplineIncidentRepository, counselingSessionRepository,
+				emergencyContactRepository, documentIssuanceService);
 	}
 
 	private Student studentWithId(Long id) {

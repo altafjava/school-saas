@@ -8,11 +8,11 @@ class ReportCardTest {
 
 	@Test
 	void create_setsAllFields() {
-		ReportCard reportCard = ReportCard.create(1L, 2L, "tenants/1/report-cards/1/2/abc.pdf");
+		ReportCard reportCard = ReportCard.create(1L, 2L, 3L);
 
 		assertEquals(1L, reportCard.getStudentId());
 		assertEquals(2L, reportCard.getTermId());
-		assertEquals("tenants/1/report-cards/1/2/abc.pdf", reportCard.getStorageKey());
+		assertEquals(3L, reportCard.getDocumentIssuanceId());
 		assertNotNull(reportCard.getGeneratedAt());
 	}
 }

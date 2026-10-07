@@ -1,0 +1,103 @@
+package com.altafjava.school.application.document;
+
+import java.util.List;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import com.altafjava.platform.application.document.DefaultDocumentTemplate;
+import com.altafjava.platform.application.document.DocumentTypeDefinition;
+import com.altafjava.platform.domain.document.model.DocumentTemplateFormat;
+import com.altafjava.platform.domain.document.model.PlaceholderField;
+import com.altafjava.school.domain.certificate.model.CertificateType;
+
+/**
+ * Every document school-saas issues through the platform Document Template Engine: the fields
+ * each one supplies (what tenant template designers can use) and the built-in default design. The
+ * engine adds its system fields (tenant name/logo, title, issue date, verification code/QR).
+ */
+@Configuration
+public class SchoolDocumentTypes {
+
+	public static final String STUDENT_ID_CARD = "STUDENT_ID_CARD";
+	public static final String TEACHER_ID_CARD = "TEACHER_ID_CARD";
+	public static final String CERTIFICATE = CertificateType.DOCUMENT_TYPE_FAMILY;
+	public static final String REPORT_CARD = "REPORT_CARD";
+
+	public static final String OWNER_STUDENT = "STUDENT";
+	public static final String OWNER_TEACHER = "TEACHER";
+
+	@Bean
+	DocumentTypeDefinition studentIdCardDocumentType() {
+		return new DocumentTypeDefinition(STUDENT_ID_CARD, "Student ID card", List.of(
+				PlaceholderField.text("studentName", "Student name"),
+				PlaceholderField.text("rollNumberOrAdmissionNumber", "Roll no. (falls back to admission no.)"),
+				PlaceholderField.text("className", "Class"),
+				PlaceholderField.image("photo", "Photo")),
+				DefaultDocumentTemplate.classpath(DocumentTemplateFormat.SVG,
+						"document-templates/student-id-card.svg"));
+	}
+
+	@Bean
+	DocumentTypeDefinition teacherIdCardDocumentType() {
+		return new DocumentTypeDefinition(TEACHER_ID_CARD, "Staff ID card", List.of(
+				PlaceholderField.text("teacherName", "Name"),
+				PlaceholderField.text("employeeCode", "Employee code"),
+				PlaceholderField.text("department", "Department"),
+				PlaceholderField.image("photo", "Photo")),
+				DefaultDocumentTemplate.classpath(DocumentTemplateFormat.SVG,
+						"document-templates/teacher-id-card.svg"));
+	}
+
+	// One registration serves every CERTIFICATE.<code> type a tenant defines.
+	@Bean
+	DocumentTypeDefinition certificateDocumentType() {
+		return new DocumentTypeDefinition(CERTIFICATE, "Certificate", List.of(
+				PlaceholderField.text("body", "Certificate wording, resolved for the student"),
+				PlaceholderField.text("studentName", "Student name"),
+				PlaceholderField.text("studentCode", "Admission no."),
+				PlaceholderField.text("className", "Class"),
+				PlaceholderField.text("academicYear", "Academic year"),
+				PlaceholderField.text("admissionDate", "Admission date")),
+				DefaultDocumentTemplate.classpath(DocumentTemplateFormat.HTML, "document-templates/certificate.html"));
+	}
+
+	@Bean
+	DocumentTypeDefinition reportCardDocumentType() {
+		return new DocumentTypeDefinition(REPORT_CARD, "Report card", List.of(
+				PlaceholderField.text("studentName", "Student name"),
+				PlaceholderField.text("studentCode", "Admission no."),
+				PlaceholderField.text("termName", "Term"),
+				PlaceholderField.text("grade", "Grade"),
+				PlaceholderField.text("section", "Section"),
+				PlaceholderField.list("lines", "Results", List.of(
+						PlaceholderField.text("subject", "Subject"),
+						PlaceholderField.text("exam", "Exam"),
+						PlaceholderField.text("marks", "Marks"),
+						PlaceholderField.text("maxMarks", "Maximum marks"),
+						PlaceholderField.text("gradeLetter", "Grade letter"))),
+				PlaceholderField.flag("hasTotals", "Has totals"),
+				PlaceholderField.text("totalMarks", "Total marks"),
+				PlaceholderField.text("totalMaxMarks", "Total maximum marks"),
+				PlaceholderField.text("percentage", "Percentage"),
+				PlaceholderField.flag("showAttendance", "Show attendance"),
+				PlaceholderField.text("attendanceSummary", "Attendance summary"),
+				PlaceholderField.flag("showRank", "Show rank"),
+				PlaceholderField.text("rank", "Class rank"),
+				PlaceholderField.flag("showCompetencies", "Show competencies"),
+				PlaceholderField.list("competencies", "Competencies", List.of(
+						PlaceholderField.text("label", "Competency"),
+						PlaceholderField.text("value", "Assessment"))),
+				PlaceholderField.flag("showRemarks", "Show remarks"),
+				PlaceholderField.text("teacherRemarks", "Teacher's remarks"),
+				PlaceholderField.text("principalRemarks", "Principal's remarks"),
+				PlaceholderField.text("labelGrade", "Label: Grade"),
+				PlaceholderField.text("labelSection", "Label: Section"),
+				PlaceholderField.text("labelAttendance", "Label: Attendance"),
+				PlaceholderField.text("labelRank", "Label: Rank"),
+				PlaceholderField.text("labelCompetencies", "Label: Competencies"),
+				PlaceholderField.text("labelTeacherRemarks", "Label: Teacher's remarks"),
+				PlaceholderField.text("labelPrincipalRemarks", "Label: Principal's remarks"),
+				PlaceholderField.text("labelClassTeacher", "Label: Class teacher"),
+				PlaceholderField.text("labelPrincipal", "Label: Principal")),
+				DefaultDocumentTemplate.classpath(DocumentTemplateFormat.HTML, "document-templates/report-card.html"));
+	}
+}

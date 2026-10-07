@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en">
+<head>
+<title>{{documentTitle}}</title>
+<style>
+  @page { size: A4 landscape; margin: 12mm; }
+  body { font-family: 'Noto Sans'; color: #1f2933; margin: 0; }
+  .frame { border: 3pt double #1e3a5f; padding: 14mm 18mm 10mm 18mm; height: 160mm; position: relative; }
+  .header { text-align: center; }
+  .logo { height: 22mm; }
+  .tenant { font-size: 16pt; font-weight: bold; color: #1e3a5f; letter-spacing: 1pt; margin-top: 3mm; }
+  .title { font-size: 28pt; font-weight: bold; color: #1e3a5f; margin: 9mm 0 7mm 0; text-align: center; }
+  .body { font-size: 13pt; line-height: 1.7; text-align: center; margin: 0 12mm; white-space: pre-line; }
+  .footer { position: absolute; left: 18mm; right: 18mm; bottom: 10mm; }
+  .footer td { vertical-align: bottom; font-size: 9pt; color: #52606d; }
+  .signature { border-top: 0.8pt solid #1f2933; width: 60mm; padding-top: 2mm; text-align: center; color: #1f2933; }
+  .qr { width: 24mm; height: 24mm; }
+</style>
+</head>
+<body>
+<div class="frame">
+  <div class="header">
+    {{#tenantLogo}}<img class="logo" src="{{tenantLogo}}" alt="logo"/>{{/tenantLogo}}
+    <div class="tenant">{{tenantName}}</div>
+  </div>
+  <div class="title">{{documentTitle}}</div>
+  <div class="body">{{body}}</div>
+  <table class="footer" style="width: 100%">
+    <tr>
+      <td style="width: 35%">
+        Issued on {{issuedOn}}<br/>
+        Verification code: {{verificationCode}}
+      </td>
+      <td style="width: 30%; text-align: center">
+        {{#verificationQr}}<img class="qr" src="{{verificationQr}}" alt="verification QR code"/>{{/verificationQr}}
+      </td>
+      <td style="width: 35%">
+        <div class="signature" style="margin-left: auto">Principal</div>
+      </td>
+    </tr>
+  </table>
+</div>
+</body>
+</html>

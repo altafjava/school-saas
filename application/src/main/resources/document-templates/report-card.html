@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en">
+<head>
+<title>{{documentTitle}}</title>
+<style>
+  @page {
+    size: A4;
+    margin: 15mm 14mm 18mm 14mm;
+    @bottom-left { content: "Verification code: {{verificationCode}}"; font-family: 'Noto Sans'; font-size: 7.5pt; color: #6e7781; }
+    @bottom-right { content: "Page " counter(page) " of " counter(pages); font-family: 'Noto Sans'; font-size: 7.5pt; color: #6e7781; }
+  }
+  body { font-family: 'Noto Sans'; font-size: 9.5pt; color: #1f2933; margin: 0; }
+  table { width: 100%; border-collapse: collapse; }
+  .header td { vertical-align: middle; }
+  .logo { height: 16mm; }
+  .tenant { font-size: 14pt; font-weight: bold; color: #1e3a5f; }
+  .title { font-size: 18pt; font-weight: bold; color: #1e3a5f; }
+  .qr { width: 20mm; height: 20mm; }
+  .rule { border-bottom: 2pt solid #1e3a5f; margin: 3mm 0 4mm 0; }
+  .info td { padding: 1.2mm 0; width: 50%; }
+  .label { font-weight: bold; }
+  .grades { -fs-table-paginate: paginate; margin-top: 4mm; }
+  .grades thead { display: table-header-group; }
+  .grades th { background: #1e3a5f; color: #ffffff; text-align: left; padding: 2mm; font-size: 9pt; }
+  .grades td { border-bottom: 0.5pt solid #d0d7de; padding: 2mm; }
+  .grades tr { page-break-inside: avoid; }
+  .grades tbody tr:nth-child(even) td { background: #f0f3f7; }
+  .grades th.num, .grades td.num { text-align: right; }
+  .summary { margin-top: 4mm; border: 1pt solid #1e3a5f; padding: 2.5mm 3mm; width: 45%; font-weight: bold; color: #1e3a5f; }
+  h2 { font-size: 11pt; color: #1e3a5f; margin: 6mm 0 2mm 0; page-break-after: avoid; }
+  .remarks { white-space: pre-line; }
+  .signatures { margin-top: 18mm; page-break-inside: avoid; }
+  .signatures td { width: 50%; }
+  .sign { border-top: 0.8pt solid #1f2933; width: 55mm; padding-top: 1.5mm; font-weight: bold; }
+</style>
+</head>
+<body>
+<table class="header">
+  <tr>
+    {{#tenantLogo}}<td style="width: 20mm"><img class="logo" src="{{tenantLogo}}" alt="logo"/></td>{{/tenantLogo}}
+    <td>
+      <div class="tenant">{{tenantName}}</div>
+      <div class="title">{{documentTitle}}</div>
+    </td>
+    <td style="width: 22mm; text-align: right">
+      {{#verificationQr}}<img class="qr" src="{{verificationQr}}" alt="verification QR code"/>{{/verificationQr}}
+    </td>
+  </tr>
+</table>
+<div class="rule"></div>
+
+<table class="info">
+  <tr>
+    <td><span class="label">Student:</span> {{studentName}}</td>
+    <td><span class="label">Student Code:</span> {{studentCode}}</td>
+  </tr>
+  <tr>
+    <td><span class="label">Term:</span> {{termName}}</td>
+    <td><span class="label">Issued:</span> {{issuedOn}}</td>
+  </tr>
+  {{#grade}}<tr>
+    <td><span class="label">{{labelGrade}}:</span> {{grade}}</td>
+    <td>{{#section}}<span class="label">{{labelSection}}:</span> {{section}}{{/section}}</td>
+  </tr>{{/grade}}
+</table>
+
+<table class="grades">
+  <thead>
+    <tr><th>Subject</th><th>Exam</th><th class="num">Marks</th><th>Grade</th></tr>
+  </thead>
+  <tbody>
+    {{#lines}}<tr><td>{{subject}}</td><td>{{exam}}</td><td class="num">{{marks}} / {{maxMarks}}</td><td>{{gradeLetter}}</td></tr>{{/lines}}
+  </tbody>
+</table>
+
+{{#hasTotals}}
+<div class="summary">
+  Total: {{totalMarks}} / {{totalMaxMarks}}<br/>
+  Percentage: {{percentage}}%
+</div>
+{{/hasTotals}}
+
+{{#showAttendance}}
+<h2>{{labelAttendance}}</h2>
+<p>{{attendanceSummary}}</p>
+{{/showAttendance}}
+
+{{#showRank}}
+<h2>{{labelRank}}</h2>
+<p>{{rank}}</p>
+{{/showRank}}
+
+{{#showCompetencies}}
+<h2>{{labelCompetencies}}</h2>
+<table class="grades">
+  <tbody>
+    {{#competencies}}<tr><td>{{label}}</td><td>{{value}}</td></tr>{{/competencies}}
+  </tbody>
+</table>
+{{/showCompetencies}}
+
+{{#showRemarks}}
+{{#teacherRemarks}}<h2>{{labelTeacherRemarks}}</h2><p class="remarks">{{teacherRemarks}}</p>{{/teacherRemarks}}
+{{#principalRemarks}}<h2>{{labelPrincipalRemarks}}</h2><p class="remarks">{{principalRemarks}}</p>{{/principalRemarks}}
+{{/showRemarks}}
+
+<table class="signatures">
+  <tr>
+    <td><div class="sign">{{labelClassTeacher}}</div></td>
+    <td><div class="sign" style="margin-left: auto">{{labelPrincipal}}</div></td>
+  </tr>
+</table>
+</body>
+</html>

@@ -70,6 +70,9 @@
     "name" : "Guardian Self Registration",
     "description" : "Unauthenticated (permitAll) self-registration for a guardian who has no account yet, mirroring platform's AuthController#register — access to any student/tenant data must be granted separately afterward, this endpoint never accepts caller-supplied roles."
   }, {
+    "name" : "Document Templates",
+    "description" : "Tenant-admin endpoints for the Document Template Engine: design Mustache HTML/SVG templates, preview them as PDF, and activate one per document type"
+  }, {
     "name" : "Exam Type Definition",
     "description" : "APIs for managing Exam Type Definition operations.\n\n**Tenant Scope**: All endpoints are tenant-scoped via X-Tenant-ID header.\n**Auth**: JWT Bearer token required on all endpoints unless marked public."
   }, {
@@ -250,6 +253,12 @@
     "name" : "Asset Assignment",
     "description" : "APIs for managing Asset Assignment operations.\n\n**Tenant Scope**: All endpoints are tenant-scoped via X-Tenant-ID header.\n**Auth**: JWT Bearer token required on all endpoints unless marked public."
   }, {
+    "name" : "Document Types",
+    "description" : "Discovery for template designers: every document type the application can issue, the placeholders it supplies, and its built-in default template"
+  }, {
+    "name" : "Guardian Pickup",
+    "description" : "APIs for authorizing who may collect a student and for restricting a guardian's custody. Every change is audited and kept in an append-only history.\n\n**Tenant Scope**: All endpoints are tenant-scoped via X-Tenant-ID header.\n**Auth**: JWT Bearer token required on all endpoints."
+  }, {
     "name" : "Room",
     "description" : "APIs for managing Room operations.\n\n**Tenant Scope**: All endpoints are tenant-scoped via X-Tenant-ID header.\n**Auth**: JWT Bearer token required on all endpoints unless marked public."
   }, {
@@ -283,6 +292,9 @@
     "name" : "Certificate",
     "description" : "APIs for managing Certificate operations.\n\n**Tenant Scope**: All endpoints are tenant-scoped via X-Tenant-ID header.\n**Auth**: JWT Bearer token required on all endpoints unless marked public."
   }, {
+    "name" : "Student Emergency Contacts",
+    "description" : "APIs for managing who to call about a student in an emergency (need not be a guardian).\n\n**Tenant Scope**: All endpoints are tenant-scoped via X-Tenant-ID header.\n**Auth**: JWT Bearer token required on all endpoints."
+  }, {
     "name" : "Push Providers (Tenant)",
     "description" : "Per-tenant push provider override"
   }, {
@@ -300,6 +312,9 @@
   }, {
     "name" : "Payslip",
     "description" : "APIs for managing Payslip operations.\n\n**Tenant Scope**: All endpoints are tenant-scoped via X-Tenant-ID header.\n**Auth**: JWT Bearer token required on all endpoints unless marked public."
+  }, {
+    "name" : "Certificate Type",
+    "description" : "APIs for managing Certificate Type operations.\n\n**Tenant Scope**: All endpoints are tenant-scoped via X-Tenant-ID header.\n**Auth**: JWT Bearer token required on all endpoints unless marked public."
   }, {
     "name" : "Fee Structure Custom Field",
     "description" : "APIs for managing Fee Structure Custom Field operations.\n\n**Tenant Scope**: All endpoints are tenant-scoped via X-Tenant-ID header.\n**Auth**: JWT Bearer token required on all endpoints unless marked public."
@@ -331,12 +346,6 @@
     "name" : "Period Attendance",
     "description" : "APIs for managing Period Attendance operations.\n\n**Tenant Scope**: All endpoints are tenant-scoped via X-Tenant-ID header.\n**Auth**: JWT Bearer token required on all endpoints unless marked public."
   }, {
-    "name" : "Certificate Template",
-    "description" : "APIs for managing Certificate Template operations.\n\n**Tenant Scope**: All endpoints are tenant-scoped via X-Tenant-ID header.\n**Auth**: JWT Bearer token required on all endpoints unless marked public."
-  }, {
-    "name" : "Certificate Verification",
-    "description" : "Genuinely anonymous, unauthenticated (permitAll) endpoint — a third party verifying a certificate (an employer, another institution) has no account and no tenant context; the tenant is resolved from the verification code itself."
-  }, {
     "name" : "Leave Type",
     "description" : "APIs for managing Leave Type operations.\n\n**Tenant Scope**: All endpoints are tenant-scoped via X-Tenant-ID header.\n**Auth**: JWT Bearer token required on all endpoints unless marked public."
   }, {
@@ -361,6 +370,9 @@
     "name" : "Admission",
     "description" : "APIs for managing Admission operations.\n\n**Tenant Scope**: All endpoints are tenant-scoped via X-Tenant-ID header.\n**Auth**: JWT Bearer token required on all endpoints unless marked public."
   }, {
+    "name" : "Student Pickup",
+    "description" : "APIs for answering whether an adult may collect a student.\n\n**Tenant Scope**: All endpoints are tenant-scoped via X-Tenant-ID header.\n**Auth**: JWT Bearer token required on all endpoints."
+  }, {
     "name" : "Alert Rules",
     "description" : "Tenant-admin endpoints for configuring automated alert rules (enable/disable, threshold) without a deploy"
   }, {
@@ -372,9 +384,6 @@
   }, {
     "name" : "Payment Gateways (Admin)",
     "description" : "Platform-wide default payment gateway configuration"
-  }, {
-    "name" : "Document Templates",
-    "description" : "Tenant-admin endpoints for the generic Document Template Engine — configure the SVG template + placeholder schema a domain consumer (school-saas ID cards/certificates, etc.) renders documents from"
   }, {
     "name" : "Tenant Settings",
     "description" : "Endpoints for managing general tenant preferences (e.g., locale, currency, branding)"
@@ -1610,6 +1619,92 @@
         } ]
       }
     },
+    "/api/v1/students/{studentPublicId}/emergency-contacts/{contactPublicId}" : {
+      "put" : {
+        "tags" : [ "Student Emergency Contacts" ],
+        "summary" : "Update",
+        "operationId" : "emergencycontact_update",
+        "parameters" : [ {
+          "name" : "studentPublicId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "name" : "contactPublicId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/EmergencyContactRequest"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiResponseEmergencyContactResponse"
+                }
+              }
+            }
+          }
+        },
+        "security" : [ {
+          "bearerAuth" : [ ]
+        }, {
+          "tenantHeader" : [ ]
+        } ]
+      },
+      "delete" : {
+        "tags" : [ "Student Emergency Contacts" ],
+        "summary" : "Remove",
+        "operationId" : "emergencycontact_remove",
+        "parameters" : [ {
+          "name" : "studentPublicId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "name" : "contactPublicId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiResponseVoid"
+                }
+              }
+            }
+          }
+        },
+        "security" : [ {
+          "bearerAuth" : [ ]
+        }, {
+          "tenantHeader" : [ ]
+        } ]
+      }
+    },
     "/api/v1/students/{publicId}/custom-fields" : {
       "get" : {
         "tags" : [ "Student Custom Field" ],
@@ -2648,6 +2743,36 @@
       }
     },
     "/api/v1/document-templates/{id}/content" : {
+      "get" : {
+        "tags" : [ "Document Templates" ],
+        "summary" : "Get a document template's current source",
+        "operationId" : "content",
+        "parameters" : [ {
+          "name" : "id",
+          "in" : "path",
+          "description" : "Document template public UUID",
+          "required" : true,
+          "schema" : {
+            "type" : "string",
+            "default" : ""
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "type" : "string"
+                }
+              }
+            }
+          }
+        },
+        "security" : [ {
+          "bearerAuth" : [ ]
+        } ]
+      },
       "put" : {
         "tags" : [ "Document Templates" ],
         "summary" : "Revise a document template's content, bumping its version",
@@ -5310,7 +5435,7 @@
             "content" : {
               "*/*" : {
                 "schema" : {
-                  "$ref" : "#/components/schemas/ApiResponseIdCardIssuanceResponse"
+                  "$ref" : "#/components/schemas/ApiResponseIssuedDocumentResponse"
                 }
               }
             }
@@ -5912,7 +6037,79 @@
             "content" : {
               "*/*" : {
                 "schema" : {
-                  "$ref" : "#/components/schemas/ApiResponseIdCardIssuanceResponse"
+                  "$ref" : "#/components/schemas/ApiResponseIssuedDocumentResponse"
+                }
+              }
+            }
+          }
+        },
+        "security" : [ {
+          "bearerAuth" : [ ]
+        }, {
+          "tenantHeader" : [ ]
+        } ]
+      }
+    },
+    "/api/v1/students/{studentPublicId}/emergency-contacts" : {
+      "get" : {
+        "tags" : [ "Student Emergency Contacts" ],
+        "summary" : "List",
+        "operationId" : "emergencycontact_list",
+        "parameters" : [ {
+          "name" : "studentPublicId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiResponseListEmergencyContactResponse"
+                }
+              }
+            }
+          }
+        },
+        "security" : [ {
+          "bearerAuth" : [ ]
+        }, {
+          "tenantHeader" : [ ]
+        } ]
+      },
+      "post" : {
+        "tags" : [ "Student Emergency Contacts" ],
+        "summary" : "Add",
+        "operationId" : "emergencycontact_add",
+        "parameters" : [ {
+          "name" : "studentPublicId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/EmergencyContactRequest"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "201" : {
+            "description" : "Created",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiResponseEmergencyContactResponse"
                 }
               }
             }
@@ -6052,7 +6249,7 @@
             "content" : {
               "*/*" : {
                 "schema" : {
-                  "$ref" : "#/components/schemas/ApiResponsePageCertificateIssuanceResponse"
+                  "$ref" : "#/components/schemas/ApiResponsePageIssuedDocumentResponse"
                 }
               }
             }
@@ -6076,7 +6273,7 @@
             "type" : "string"
           }
         }, {
-          "name" : "certificateTemplatePublicId",
+          "name" : "certificateTypePublicId",
           "in" : "query",
           "required" : true,
           "schema" : {
@@ -6089,7 +6286,7 @@
             "content" : {
               "*/*" : {
                 "schema" : {
-                  "$ref" : "#/components/schemas/ApiResponseCertificateIssuanceResponse"
+                  "$ref" : "#/components/schemas/ApiResponseIssuedDocumentResponse"
                 }
               }
             }
@@ -9231,6 +9428,39 @@
         } ]
       }
     },
+    "/api/v1/document-templates/preview" : {
+      "post" : {
+        "tags" : [ "Document Templates" ],
+        "summary" : "Render template content against sample data as a PDF, without saving it",
+        "operationId" : "preview",
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/PreviewDocumentTemplateRequest"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "type" : "string",
+                  "format" : "byte"
+                }
+              }
+            }
+          }
+        },
+        "security" : [ {
+          "bearerAuth" : [ ]
+        } ]
+      }
+    },
     "/api/v1/discipline-incidents" : {
       "get" : {
         "tags" : [ "Discipline Incident" ],
@@ -10020,11 +10250,11 @@
         } ]
       }
     },
-    "/api/v1/certificate-templates" : {
+    "/api/v1/certificate-types" : {
       "get" : {
-        "tags" : [ "Certificate Template" ],
+        "tags" : [ "Certificate Type" ],
         "summary" : "List",
-        "operationId" : "certificatetemplate_list",
+        "operationId" : "certificatetype_list",
         "parameters" : [ {
           "name" : "page",
           "in" : "query",
@@ -10050,7 +10280,7 @@
             "content" : {
               "*/*" : {
                 "schema" : {
-                  "$ref" : "#/components/schemas/ApiResponsePageCertificateTemplateResponse"
+                  "$ref" : "#/components/schemas/ApiResponsePageCertificateTypeResponse"
                 }
               }
             }
@@ -10063,14 +10293,14 @@
         } ]
       },
       "post" : {
-        "tags" : [ "Certificate Template" ],
+        "tags" : [ "Certificate Type" ],
         "summary" : "Create",
-        "operationId" : "certificatetemplate_create",
+        "operationId" : "certificatetype_create",
         "requestBody" : {
           "content" : {
             "application/json" : {
               "schema" : {
-                "$ref" : "#/components/schemas/CreateCertificateTemplateRequest"
+                "$ref" : "#/components/schemas/CreateCertificateTypeRequest"
               }
             }
           },
@@ -10082,7 +10312,7 @@
             "content" : {
               "*/*" : {
                 "schema" : {
-                  "$ref" : "#/components/schemas/ApiResponseCertificateTemplateResponse"
+                  "$ref" : "#/components/schemas/ApiResponseCertificateTypeResponse"
                 }
               }
             }
@@ -15613,6 +15843,55 @@
         } ]
       }
     },
+    "/api/v1/students/{studentPublicId}/certificates/{certificatePublicId}/revoke" : {
+      "patch" : {
+        "tags" : [ "Certificate" ],
+        "summary" : "Revoke",
+        "operationId" : "certificate_revoke",
+        "parameters" : [ {
+          "name" : "studentPublicId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "name" : "certificatePublicId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/RevokeDocumentRequest"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiResponseIssuedDocumentResponse"
+                }
+              }
+            }
+          }
+        },
+        "security" : [ {
+          "bearerAuth" : [ ]
+        }, {
+          "tenantHeader" : [ ]
+        } ]
+      }
+    },
     "/api/v1/students/{publicId}/withdraw" : {
       "patch" : {
         "tags" : [ "Student" ],
@@ -17007,6 +17286,172 @@
               "*/*" : {
                 "schema" : {
                   "$ref" : "#/components/schemas/ApiResponseGuardianResponse"
+                }
+              }
+            }
+          }
+        },
+        "security" : [ {
+          "bearerAuth" : [ ]
+        }, {
+          "tenantHeader" : [ ]
+        } ]
+      }
+    },
+    "/api/v1/guardians/{guardianPublicId}/students/{studentPublicId}/pickup-authorization/revoke" : {
+      "patch" : {
+        "tags" : [ "Guardian Pickup" ],
+        "summary" : "Revoke pickup authorization",
+        "operationId" : "guardianpickup_revoke",
+        "parameters" : [ {
+          "name" : "guardianPublicId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "name" : "studentPublicId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiResponseStudentGuardianLinkResponse"
+                }
+              }
+            }
+          }
+        },
+        "security" : [ {
+          "bearerAuth" : [ ]
+        }, {
+          "tenantHeader" : [ ]
+        } ]
+      }
+    },
+    "/api/v1/guardians/{guardianPublicId}/students/{studentPublicId}/pickup-authorization/grant" : {
+      "patch" : {
+        "tags" : [ "Guardian Pickup" ],
+        "summary" : "Authorize pickup",
+        "operationId" : "guardianpickup_authorize",
+        "parameters" : [ {
+          "name" : "guardianPublicId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "name" : "studentPublicId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiResponseStudentGuardianLinkResponse"
+                }
+              }
+            }
+          }
+        },
+        "security" : [ {
+          "bearerAuth" : [ ]
+        }, {
+          "tenantHeader" : [ ]
+        } ]
+      }
+    },
+    "/api/v1/guardians/{guardianPublicId}/students/{studentPublicId}/custody-restriction/lift" : {
+      "patch" : {
+        "tags" : [ "Guardian Pickup" ],
+        "summary" : "Lift custody restriction",
+        "operationId" : "guardianpickup_liftCustodyRestriction",
+        "parameters" : [ {
+          "name" : "guardianPublicId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "name" : "studentPublicId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiResponseStudentGuardianLinkResponse"
+                }
+              }
+            }
+          }
+        },
+        "security" : [ {
+          "bearerAuth" : [ ]
+        }, {
+          "tenantHeader" : [ ]
+        } ]
+      }
+    },
+    "/api/v1/guardians/{guardianPublicId}/students/{studentPublicId}/custody-restriction/apply" : {
+      "patch" : {
+        "tags" : [ "Guardian Pickup" ],
+        "summary" : "Restrict custody",
+        "operationId" : "guardianpickup_restrictCustody",
+        "parameters" : [ {
+          "name" : "guardianPublicId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "name" : "studentPublicId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/RestrictCustodyRequest"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiResponseStudentGuardianLinkResponse"
                 }
               }
             }
@@ -18724,11 +19169,11 @@
         } ]
       }
     },
-    "/api/v1/certificate-templates/{publicId}" : {
+    "/api/v1/certificate-types/{publicId}" : {
       "get" : {
-        "tags" : [ "Certificate Template" ],
+        "tags" : [ "Certificate Type" ],
         "summary" : "Get",
-        "operationId" : "certificatetemplate_get",
+        "operationId" : "certificatetype_get",
         "parameters" : [ {
           "name" : "publicId",
           "in" : "path",
@@ -18743,7 +19188,7 @@
             "content" : {
               "*/*" : {
                 "schema" : {
-                  "$ref" : "#/components/schemas/ApiResponseCertificateTemplateResponse"
+                  "$ref" : "#/components/schemas/ApiResponseCertificateTypeResponse"
                 }
               }
             }
@@ -18756,9 +19201,9 @@
         } ]
       },
       "patch" : {
-        "tags" : [ "Certificate Template" ],
+        "tags" : [ "Certificate Type" ],
         "summary" : "Update details",
-        "operationId" : "certificatetemplate_updateDetails",
+        "operationId" : "certificatetype_updateDetails",
         "parameters" : [ {
           "name" : "publicId",
           "in" : "path",
@@ -18771,7 +19216,7 @@
           "content" : {
             "application/json" : {
               "schema" : {
-                "$ref" : "#/components/schemas/UpdateCertificateTemplateRequest"
+                "$ref" : "#/components/schemas/UpdateCertificateTypeRequest"
               }
             }
           },
@@ -18783,7 +19228,7 @@
             "content" : {
               "*/*" : {
                 "schema" : {
-                  "$ref" : "#/components/schemas/ApiResponseCertificateTemplateResponse"
+                  "$ref" : "#/components/schemas/ApiResponseCertificateTypeResponse"
                 }
               }
             }
@@ -18796,11 +19241,11 @@
         } ]
       }
     },
-    "/api/v1/certificate-templates/{publicId}/deactivate" : {
+    "/api/v1/certificate-types/{publicId}/deactivate" : {
       "patch" : {
-        "tags" : [ "Certificate Template" ],
+        "tags" : [ "Certificate Type" ],
         "summary" : "Deactivate",
-        "operationId" : "certificatetemplate_deactivate",
+        "operationId" : "certificatetype_deactivate",
         "parameters" : [ {
           "name" : "publicId",
           "in" : "path",
@@ -18815,7 +19260,7 @@
             "content" : {
               "*/*" : {
                 "schema" : {
-                  "$ref" : "#/components/schemas/ApiResponseCertificateTemplateResponse"
+                  "$ref" : "#/components/schemas/ApiResponseCertificateTypeResponse"
                 }
               }
             }
@@ -18828,11 +19273,11 @@
         } ]
       }
     },
-    "/api/v1/certificate-templates/{publicId}/activate" : {
+    "/api/v1/certificate-types/{publicId}/activate" : {
       "patch" : {
-        "tags" : [ "Certificate Template" ],
+        "tags" : [ "Certificate Type" ],
         "summary" : "Activate",
-        "operationId" : "certificatetemplate_activate",
+        "operationId" : "certificatetype_activate",
         "parameters" : [ {
           "name" : "publicId",
           "in" : "path",
@@ -18847,7 +19292,7 @@
             "content" : {
               "*/*" : {
                 "schema" : {
-                  "$ref" : "#/components/schemas/ApiResponseCertificateTemplateResponse"
+                  "$ref" : "#/components/schemas/ApiResponseCertificateTypeResponse"
                 }
               }
             }
@@ -21213,6 +21658,109 @@
         } ]
       }
     },
+    "/api/v1/students/{studentPublicId}/pickup-authorizations" : {
+      "get" : {
+        "tags" : [ "Student Pickup" ],
+        "summary" : "List guardians authorized to collect the student",
+        "operationId" : "studentpickup_listAuthorized",
+        "parameters" : [ {
+          "name" : "studentPublicId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiResponseListPickupAuthorizedGuardianResponse"
+                }
+              }
+            }
+          }
+        },
+        "security" : [ {
+          "bearerAuth" : [ ]
+        }, {
+          "tenantHeader" : [ ]
+        } ]
+      }
+    },
+    "/api/v1/students/{studentPublicId}/pickup-authorizations/history" : {
+      "get" : {
+        "tags" : [ "Student Pickup" ],
+        "summary" : "Pickup authorization and custody change history",
+        "operationId" : "studentpickup_history",
+        "parameters" : [ {
+          "name" : "studentPublicId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiResponseListGuardianAuthorizationChangeResponse"
+                }
+              }
+            }
+          }
+        },
+        "security" : [ {
+          "bearerAuth" : [ ]
+        }, {
+          "tenantHeader" : [ ]
+        } ]
+      }
+    },
+    "/api/v1/students/{studentPublicId}/pickup-authorizations/check" : {
+      "get" : {
+        "tags" : [ "Student Pickup" ],
+        "summary" : "Check whether a guardian may collect the student",
+        "operationId" : "studentpickup_check",
+        "parameters" : [ {
+          "name" : "studentPublicId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "name" : "guardianPublicId",
+          "in" : "query",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiResponsePickupCheckResponse"
+                }
+              }
+            }
+          }
+        },
+        "security" : [ {
+          "bearerAuth" : [ ]
+        }, {
+          "tenantHeader" : [ ]
+        } ]
+      }
+    },
     "/api/v1/students/{studentPublicId}/id-card/{issuancePublicId}/download" : {
       "get" : {
         "tags" : [ "Student ID Card" ],
@@ -23166,6 +23714,60 @@
         }
       }
     },
+    "/api/v1/document-types" : {
+      "get" : {
+        "tags" : [ "Document Types" ],
+        "summary" : "List document types with their placeholders",
+        "operationId" : "list_6",
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiResponseListDocumentTypeResponse"
+                }
+              }
+            }
+          }
+        },
+        "security" : [ {
+          "bearerAuth" : [ ]
+        } ]
+      }
+    },
+    "/api/v1/document-types/{documentType}/default-content" : {
+      "get" : {
+        "tags" : [ "Document Types" ],
+        "summary" : "Get a document type's built-in default template source, as a starting point for a design",
+        "operationId" : "defaultTemplateContent",
+        "parameters" : [ {
+          "name" : "documentType",
+          "in" : "path",
+          "description" : "Document type, e.g. CERTIFICATE",
+          "required" : true,
+          "schema" : {
+            "type" : "string",
+            "default" : ""
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "type" : "string"
+                }
+              }
+            }
+          }
+        },
+        "security" : [ {
+          "bearerAuth" : [ ]
+        } ]
+      }
+    },
     "/api/v1/document-templates/{id}" : {
       "get" : {
         "tags" : [ "Document Templates" ],
@@ -23812,46 +24414,18 @@
         } ]
       }
     },
-    "/api/v1/certificates/verify/{verificationCode}" : {
+    "/api/v1/certificate-types/active" : {
       "get" : {
-        "tags" : [ "Certificate Verification" ],
-        "summary" : "Verify",
-        "description" : "Looks up a certificate by its public verification code and confirms it was genuinely issued by this system, without exposing any other student data.",
-        "operationId" : "certificateverification_verify",
-        "parameters" : [ {
-          "name" : "verificationCode",
-          "in" : "path",
-          "required" : true,
-          "schema" : {
-            "type" : "string"
-          }
-        } ],
-        "responses" : {
-          "200" : {
-            "description" : "OK",
-            "content" : {
-              "*/*" : {
-                "schema" : {
-                  "$ref" : "#/components/schemas/ApiResponseCertificateVerificationResponse"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/api/v1/certificate-templates/active" : {
-      "get" : {
-        "tags" : [ "Certificate Template" ],
+        "tags" : [ "Certificate Type" ],
         "summary" : "List active",
-        "operationId" : "certificatetemplate_listActive",
+        "operationId" : "certificatetype_listActive",
         "responses" : {
           "200" : {
             "description" : "OK",
             "content" : {
               "*/*" : {
                 "schema" : {
-                  "$ref" : "#/components/schemas/ApiResponseListCertificateTemplateResponse"
+                  "$ref" : "#/components/schemas/ApiResponseListCertificateTypeResponse"
                 }
               }
             }
@@ -28145,6 +28719,77 @@
           }
         }
       },
+      "EmergencyContactRequest" : {
+        "type" : "object",
+        "properties" : {
+          "name" : {
+            "type" : "string",
+            "maxLength" : 200,
+            "minLength" : 0
+          },
+          "relationship" : {
+            "type" : "string",
+            "maxLength" : 100,
+            "minLength" : 0
+          },
+          "phone" : {
+            "type" : "string",
+            "minLength" : 1,
+            "pattern" : "^\\+?[0-9 ()-]{7,30}$"
+          },
+          "alternatePhone" : {
+            "type" : "string",
+            "pattern" : "^\\+?[0-9 ()-]{7,30}$"
+          },
+          "priority" : {
+            "type" : "integer",
+            "format" : "int32",
+            "minimum" : 1
+          }
+        },
+        "required" : [ "name", "phone", "relationship" ]
+      },
+      "ApiResponseEmergencyContactResponse" : {
+        "type" : "object",
+        "properties" : {
+          "success" : {
+            "type" : "boolean"
+          },
+          "data" : {
+            "$ref" : "#/components/schemas/EmergencyContactResponse"
+          },
+          "error" : {
+            "$ref" : "#/components/schemas/Error"
+          },
+          "meta" : {
+            "$ref" : "#/components/schemas/Meta"
+          }
+        }
+      },
+      "EmergencyContactResponse" : {
+        "type" : "object",
+        "properties" : {
+          "publicId" : {
+            "type" : "string"
+          },
+          "name" : {
+            "type" : "string"
+          },
+          "relationship" : {
+            "type" : "string"
+          },
+          "phone" : {
+            "type" : "string"
+          },
+          "alternatePhone" : {
+            "type" : "string"
+          },
+          "priority" : {
+            "type" : "integer",
+            "format" : "int32"
+          }
+        }
+      },
       "UpdateRoleRequest" : {
         "type" : "object",
         "properties" : {
@@ -28646,6 +29291,12 @@
             "default" : "",
             "description" : "Display name"
           },
+          "format" : {
+            "type" : "string",
+            "default" : "",
+            "description" : "Template markup format",
+            "enum" : [ "SVG", "HTML" ]
+          },
           "templateVersion" : {
             "type" : "integer",
             "format" : "int32",
@@ -28671,44 +29322,25 @@
           }
         }
       },
-      "PlaceholderFieldRequest" : {
-        "type" : "object",
-        "properties" : {
-          "key" : {
-            "type" : "string",
-            "minLength" : 1
-          },
-          "label" : {
-            "type" : "string",
-            "minLength" : 1
-          },
-          "type" : {
-            "type" : "string",
-            "enum" : [ "TEXT", "IMAGE", "QR" ]
-          }
-        },
-        "required" : [ "key", "label", "type" ]
-      },
       "ReviseDocumentTemplateContentRequest" : {
         "type" : "object",
         "properties" : {
           "name" : {
             "type" : "string",
-            "minLength" : 1
+            "maxLength" : 200,
+            "minLength" : 0
           },
-          "svgContent" : {
+          "format" : {
             "type" : "string",
-            "minLength" : 1
+            "enum" : [ "SVG", "HTML" ]
           },
-          "placeholderSchema" : {
-            "type" : "array",
-            "items" : {
-              "$ref" : "#/components/schemas/PlaceholderFieldRequest"
-            },
-            "minItems" : 1
+          "content" : {
+            "type" : "string",
+            "maxLength" : 524288,
+            "minLength" : 0
           }
         },
-        "required" : [ "name", "placeholderSchema", "svgContent" ]
+        "required" : [ "content", "format", "name" ]
       },
       "UpdateDataRetentionPolicyRequest" : {
         "type" : "object",
@@ -30427,14 +31059,14 @@
           }
         }
       },
-      "ApiResponseIdCardIssuanceResponse" : {
+      "ApiResponseIssuedDocumentResponse" : {
         "type" : "object",
         "properties" : {
           "success" : {
             "type" : "boolean"
           },
           "data" : {
-            "$ref" : "#/components/schemas/IdCardIssuanceResponse"
+            "$ref" : "#/components/schemas/IssuedDocumentResponse"
           },
           "error" : {
             "$ref" : "#/components/schemas/Error"
@@ -30444,7 +31076,7 @@
           }
         }
       },
-      "IdCardIssuanceResponse" : {
+      "IssuedDocumentResponse" : {
         "type" : "object",
         "properties" : {
           "publicId" : {
@@ -30453,12 +31085,25 @@
           "documentType" : {
             "type" : "string"
           },
+          "title" : {
+            "type" : "string"
+          },
           "verificationCode" : {
             "type" : "string"
           },
           "issuedAt" : {
             "type" : "string",
             "format" : "date-time"
+          },
+          "revoked" : {
+            "type" : "boolean"
+          },
+          "revokedAt" : {
+            "type" : "string",
+            "format" : "date-time"
+          },
+          "revocationReason" : {
+            "type" : "string"
           }
         }
       },
@@ -31154,46 +31799,6 @@
             "format" : "date-time"
           },
           "rejectionReason" : {
-            "type" : "string"
-          }
-        }
-      },
-      "ApiResponseCertificateIssuanceResponse" : {
-        "type" : "object",
-        "properties" : {
-          "success" : {
-            "type" : "boolean"
-          },
-          "data" : {
-            "$ref" : "#/components/schemas/CertificateIssuanceResponse"
-          },
-          "error" : {
-            "$ref" : "#/components/schemas/Error"
-          },
-          "meta" : {
-            "$ref" : "#/components/schemas/Meta"
-          }
-        }
-      },
-      "CertificateIssuanceResponse" : {
-        "type" : "object",
-        "properties" : {
-          "publicId" : {
-            "type" : "string"
-          },
-          "studentId" : {
-            "type" : "integer",
-            "format" : "int64"
-          },
-          "certificateTemplateId" : {
-            "type" : "integer",
-            "format" : "int64"
-          },
-          "issuedAt" : {
-            "type" : "string",
-            "format" : "date-time"
-          },
-          "verificationCode" : {
             "type" : "string"
           }
         }
@@ -33070,6 +33675,15 @@
           "consentGivenAt" : {
             "type" : "string",
             "format" : "date-time"
+          },
+          "authorizedForPickup" : {
+            "type" : "boolean"
+          },
+          "custodyRestricted" : {
+            "type" : "boolean"
+          },
+          "custodyRestrictionNote" : {
+            "type" : "string"
           }
         }
       },
@@ -33923,25 +34537,51 @@
         "properties" : {
           "documentType" : {
             "type" : "string",
-            "minLength" : 1
+            "default" : "",
+            "description" : "Registered document type, or a dot-separated child of one (e.g. CERTIFICATE.BONAFIDE)",
+            "maxLength" : 100,
+            "minLength" : 0,
+            "pattern" : "^[A-Z][A-Z0-9_]*(\\.[A-Z][A-Z0-9_]*)*$"
           },
           "name" : {
             "type" : "string",
-            "minLength" : 1
+            "maxLength" : 200,
+            "minLength" : 0
           },
-          "svgContent" : {
+          "format" : {
             "type" : "string",
-            "minLength" : 1
+            "enum" : [ "SVG", "HTML" ]
           },
-          "placeholderSchema" : {
-            "type" : "array",
-            "items" : {
-              "$ref" : "#/components/schemas/PlaceholderFieldRequest"
-            },
-            "minItems" : 1
+          "content" : {
+            "type" : "string",
+            "default" : "",
+            "description" : "Mustache template: XHTML for HTML, SVG markup for SVG",
+            "maxLength" : 524288,
+            "minLength" : 0
           }
         },
-        "required" : [ "documentType", "name", "placeholderSchema", "svgContent" ]
+        "required" : [ "content", "documentType", "format", "name" ]
+      },
+      "PreviewDocumentTemplateRequest" : {
+        "type" : "object",
+        "properties" : {
+          "documentType" : {
+            "type" : "string",
+            "maxLength" : 100,
+            "minLength" : 0,
+            "pattern" : "^[A-Z][A-Z0-9_]*(\\.[A-Z][A-Z0-9_]*)*$"
+          },
+          "format" : {
+            "type" : "string",
+            "enum" : [ "SVG", "HTML" ]
+          },
+          "content" : {
+            "type" : "string",
+            "maxLength" : 524288,
+            "minLength" : 0
+          }
+        },
+        "required" : [ "content", "documentType", "format" ]
       },
       "RecordDisciplineIncidentRequest" : {
         "type" : "object",
@@ -34759,29 +35399,34 @@
           }
         }
       },
-      "CreateCertificateTemplateRequest" : {
+      "CreateCertificateTypeRequest" : {
         "type" : "object",
         "properties" : {
+          "code" : {
+            "type" : "string",
+            "minLength" : 1,
+            "pattern" : "^[A-Z][A-Z0-9_]{1,49}$"
+          },
           "name" : {
             "type" : "string",
             "maxLength" : 150,
             "minLength" : 0
           },
-          "bodyTemplate" : {
+          "wording" : {
             "type" : "string",
             "minLength" : 1
           }
         },
-        "required" : [ "bodyTemplate", "name" ]
+        "required" : [ "code", "name", "wording" ]
       },
-      "ApiResponseCertificateTemplateResponse" : {
+      "ApiResponseCertificateTypeResponse" : {
         "type" : "object",
         "properties" : {
           "success" : {
             "type" : "boolean"
           },
           "data" : {
-            "$ref" : "#/components/schemas/CertificateTemplateResponse"
+            "$ref" : "#/components/schemas/CertificateTypeResponse"
           },
           "error" : {
             "$ref" : "#/components/schemas/Error"
@@ -34791,16 +35436,22 @@
           }
         }
       },
-      "CertificateTemplateResponse" : {
+      "CertificateTypeResponse" : {
         "type" : "object",
         "properties" : {
           "publicId" : {
             "type" : "string"
           },
+          "code" : {
+            "type" : "string"
+          },
+          "documentType" : {
+            "type" : "string"
+          },
           "name" : {
             "type" : "string"
           },
-          "bodyTemplate" : {
+          "wording" : {
             "type" : "string"
           },
           "active" : {
@@ -38196,6 +38847,17 @@
         },
         "required" : [ "rejectionReason" ]
       },
+      "RevokeDocumentRequest" : {
+        "type" : "object",
+        "properties" : {
+          "reason" : {
+            "type" : "string",
+            "maxLength" : 500,
+            "minLength" : 0
+          }
+        },
+        "required" : [ "reason" ]
+      },
       "UpdateStudentContactDetailsRequest" : {
         "type" : "object",
         "properties" : {
@@ -38445,6 +39107,17 @@
           }
         },
         "required" : [ "date", "name" ]
+      },
+      "RestrictCustodyRequest" : {
+        "type" : "object",
+        "properties" : {
+          "note" : {
+            "type" : "string",
+            "maxLength" : 500,
+            "minLength" : 0
+          }
+        },
+        "required" : [ "note" ]
       },
       "UpdateGradingScaleThresholdsRequest" : {
         "type" : "object",
@@ -38800,7 +39473,7 @@
         },
         "required" : [ "returnedAt" ]
       },
-      "UpdateCertificateTemplateRequest" : {
+      "UpdateCertificateTypeRequest" : {
         "type" : "object",
         "properties" : {
           "name" : {
@@ -38808,12 +39481,12 @@
             "maxLength" : 150,
             "minLength" : 0
           },
-          "bodyTemplate" : {
+          "wording" : {
             "type" : "string",
             "minLength" : 1
           }
         },
-        "required" : [ "bodyTemplate", "name" ]
+        "required" : [ "name", "wording" ]
       },
       "UpdateBoardRequest" : {
         "type" : "object",
@@ -40174,6 +40847,152 @@
           }
         }
       },
+      "ApiResponseListPickupAuthorizedGuardianResponse" : {
+        "type" : "object",
+        "properties" : {
+          "success" : {
+            "type" : "boolean"
+          },
+          "data" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/PickupAuthorizedGuardianResponse"
+            }
+          },
+          "error" : {
+            "$ref" : "#/components/schemas/Error"
+          },
+          "meta" : {
+            "$ref" : "#/components/schemas/Meta"
+          }
+        }
+      },
+      "PickupAuthorizedGuardianResponse" : {
+        "type" : "object",
+        "properties" : {
+          "guardianPublicId" : {
+            "type" : "string"
+          },
+          "firstName" : {
+            "type" : "string"
+          },
+          "lastName" : {
+            "type" : "string"
+          },
+          "phone" : {
+            "type" : "string"
+          },
+          "photoFilePublicId" : {
+            "type" : "string"
+          },
+          "relationshipType" : {
+            "type" : "string"
+          }
+        }
+      },
+      "ApiResponseListGuardianAuthorizationChangeResponse" : {
+        "type" : "object",
+        "properties" : {
+          "success" : {
+            "type" : "boolean"
+          },
+          "data" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/GuardianAuthorizationChangeResponse"
+            }
+          },
+          "error" : {
+            "$ref" : "#/components/schemas/Error"
+          },
+          "meta" : {
+            "$ref" : "#/components/schemas/Meta"
+          }
+        }
+      },
+      "GuardianAuthorizationChangeResponse" : {
+        "type" : "object",
+        "properties" : {
+          "publicId" : {
+            "type" : "string"
+          },
+          "guardianId" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "oldAuthorizedForPickup" : {
+            "type" : "boolean"
+          },
+          "newAuthorizedForPickup" : {
+            "type" : "boolean"
+          },
+          "oldCustodyRestricted" : {
+            "type" : "boolean"
+          },
+          "newCustodyRestricted" : {
+            "type" : "boolean"
+          },
+          "note" : {
+            "type" : "string"
+          },
+          "changedByUserId" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "changedAt" : {
+            "type" : "string",
+            "format" : "date-time"
+          }
+        }
+      },
+      "ApiResponsePickupCheckResponse" : {
+        "type" : "object",
+        "properties" : {
+          "success" : {
+            "type" : "boolean"
+          },
+          "data" : {
+            "$ref" : "#/components/schemas/PickupCheckResponse"
+          },
+          "error" : {
+            "$ref" : "#/components/schemas/Error"
+          },
+          "meta" : {
+            "$ref" : "#/components/schemas/Meta"
+          }
+        }
+      },
+      "PickupCheckResponse" : {
+        "type" : "object",
+        "properties" : {
+          "authorized" : {
+            "type" : "boolean"
+          },
+          "decision" : {
+            "type" : "string"
+          }
+        }
+      },
+      "ApiResponseListEmergencyContactResponse" : {
+        "type" : "object",
+        "properties" : {
+          "success" : {
+            "type" : "boolean"
+          },
+          "data" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/EmergencyContactResponse"
+            }
+          },
+          "error" : {
+            "$ref" : "#/components/schemas/Error"
+          },
+          "meta" : {
+            "$ref" : "#/components/schemas/Meta"
+          }
+        }
+      },
       "ApiResponsePageStudentDocumentResponse" : {
         "type" : "object",
         "properties" : {
@@ -40214,14 +41033,14 @@
           }
         }
       },
-      "ApiResponsePageCertificateIssuanceResponse" : {
+      "ApiResponsePageIssuedDocumentResponse" : {
         "type" : "object",
         "properties" : {
           "success" : {
             "type" : "boolean"
           },
           "data" : {
-            "$ref" : "#/components/schemas/PageCertificateIssuanceResponse"
+            "$ref" : "#/components/schemas/PageIssuedDocumentResponse"
           },
           "error" : {
             "$ref" : "#/components/schemas/Error"
@@ -40231,13 +41050,13 @@
           }
         }
       },
-      "PageCertificateIssuanceResponse" : {
+      "PageIssuedDocumentResponse" : {
         "type" : "object",
         "properties" : {
           "content" : {
             "type" : "array",
             "items" : {
-              "$ref" : "#/components/schemas/CertificateIssuanceResponse"
+              "$ref" : "#/components/schemas/IssuedDocumentResponse"
             }
           },
           "pageNumber" : {
@@ -42469,23 +43288,106 @@
       "DocumentVerificationResponse" : {
         "type" : "object",
         "default" : null,
-        "description" : "Confirmation that a document with this verification code was genuinely issued",
+        "description" : "Whether a document with this verification code was genuinely issued and is still valid",
         "properties" : {
-          "documentType" : {
+          "status" : {
             "type" : "string",
             "default" : "",
-            "description" : "Consumer-defined document type, e.g. STUDENT_ID_CARD"
+            "description" : "VALID or REVOKED"
           },
-          "ownerEntityType" : {
+          "title" : {
             "type" : "string",
             "default" : "",
-            "description" : "Opaque owner category, e.g. STUDENT — no owner id is exposed"
+            "description" : "Document title as printed, e.g. Bonafide Certificate"
+          },
+          "subjectName" : {
+            "type" : "string",
+            "default" : "",
+            "description" : "Name printed on the document; null once erased under a data-subject request"
           },
           "issuedAt" : {
             "type" : "string",
             "format" : "date-time",
             "default" : "",
             "description" : "When the document was issued"
+          },
+          "revokedAt" : {
+            "type" : "string",
+            "format" : "date-time",
+            "default" : "",
+            "description" : "When the document was revoked, if it was"
+          }
+        }
+      },
+      "ApiResponseListDocumentTypeResponse" : {
+        "type" : "object",
+        "properties" : {
+          "success" : {
+            "type" : "boolean"
+          },
+          "data" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/DocumentTypeResponse"
+            }
+          },
+          "error" : {
+            "$ref" : "#/components/schemas/Error"
+          },
+          "meta" : {
+            "$ref" : "#/components/schemas/Meta"
+          }
+        }
+      },
+      "DocumentTypeResponse" : {
+        "type" : "object",
+        "default" : null,
+        "description" : "A document type templates can be designed for, with every placeholder it supplies",
+        "properties" : {
+          "documentType" : {
+            "type" : "string",
+            "default" : "",
+            "description" : "Document type; dot-separated children (e.g. CERTIFICATE.BONAFIDE) inherit it"
+          },
+          "displayName" : {
+            "type" : "string",
+            "default" : "",
+            "description" : "Display name"
+          },
+          "defaultFormat" : {
+            "type" : "string",
+            "default" : "",
+            "description" : "Format of the built-in default template",
+            "enum" : [ "SVG", "HTML" ]
+          },
+          "placeholders" : {
+            "type" : "array",
+            "default" : "",
+            "description" : "Placeholders available to templates: engine-supplied system fields first, then the type's own",
+            "items" : {
+              "$ref" : "#/components/schemas/PlaceholderField"
+            }
+          }
+        }
+      },
+      "PlaceholderField" : {
+        "type" : "object",
+        "properties" : {
+          "key" : {
+            "type" : "string"
+          },
+          "label" : {
+            "type" : "string"
+          },
+          "type" : {
+            "type" : "string",
+            "enum" : [ "TEXT", "IMAGE", "QR", "BOOLEAN", "LIST" ]
+          },
+          "fields" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/PlaceholderField"
+            }
           }
         }
       },
@@ -42945,14 +43847,14 @@
           }
         }
       },
-      "ApiResponseCertificateVerificationResponse" : {
+      "ApiResponsePageCertificateTypeResponse" : {
         "type" : "object",
         "properties" : {
           "success" : {
             "type" : "boolean"
           },
           "data" : {
-            "$ref" : "#/components/schemas/CertificateVerificationResponse"
+            "$ref" : "#/components/schemas/PageCertificateTypeResponse"
           },
           "error" : {
             "$ref" : "#/components/schemas/Error"
@@ -42962,45 +43864,13 @@
           }
         }
       },
-      "CertificateVerificationResponse" : {
-        "type" : "object",
-        "properties" : {
-          "studentName" : {
-            "type" : "string"
-          },
-          "certificateName" : {
-            "type" : "string"
-          },
-          "issuedAt" : {
-            "type" : "string",
-            "format" : "date-time"
-          }
-        }
-      },
-      "ApiResponsePageCertificateTemplateResponse" : {
-        "type" : "object",
-        "properties" : {
-          "success" : {
-            "type" : "boolean"
-          },
-          "data" : {
-            "$ref" : "#/components/schemas/PageCertificateTemplateResponse"
-          },
-          "error" : {
-            "$ref" : "#/components/schemas/Error"
-          },
-          "meta" : {
-            "$ref" : "#/components/schemas/Meta"
-          }
-        }
-      },
-      "PageCertificateTemplateResponse" : {
+      "PageCertificateTypeResponse" : {
         "type" : "object",
         "properties" : {
           "content" : {
             "type" : "array",
             "items" : {
-              "$ref" : "#/components/schemas/CertificateTemplateResponse"
+              "$ref" : "#/components/schemas/CertificateTypeResponse"
             }
           },
           "pageNumber" : {
@@ -43017,7 +43887,7 @@
           }
         }
       },
-      "ApiResponseListCertificateTemplateResponse" : {
+      "ApiResponseListCertificateTypeResponse" : {
         "type" : "object",
         "properties" : {
           "success" : {
@@ -43026,7 +43896,7 @@
           "data" : {
             "type" : "array",
             "items" : {
-              "$ref" : "#/components/schemas/CertificateTemplateResponse"
+              "$ref" : "#/components/schemas/CertificateTypeResponse"
             }
           },
           "error" : {

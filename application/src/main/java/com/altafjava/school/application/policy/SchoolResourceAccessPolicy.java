@@ -11,6 +11,7 @@ import com.altafjava.school.domain.student.repository.StudentRepository;
 import com.altafjava.school.domain.teacher.repository.TeacherRepository;
 
 // School-specific rules applied after platform RBAC passes; other resource types default to allowed.
+// A custody-restricted guardian stays linked but loses own-child data access.
 @Component
 public class SchoolResourceAccessPolicy implements ResourceAccessPolicy {
 
@@ -68,8 +69,9 @@ public class SchoolResourceAccessPolicy implements ResourceAccessPolicy {
 				return true;
 			}
 			return guardianRepository.findByUserIdAndTenantId(actingUserId, tenantId)
-					.map(guardian -> studentGuardianLinkRepository.existsByGuardianIdAndStudentIdAndTenantId(
+					.flatMap(guardian -> studentGuardianLinkRepository.findByGuardianIdAndStudentIdAndTenantId(
 							guardian.getId(), student.getId(), tenantId))
+					.map(link -> !link.isCustodyRestricted())
 					.orElse(false);
 		} catch (IllegalArgumentException e) {
 			return false;

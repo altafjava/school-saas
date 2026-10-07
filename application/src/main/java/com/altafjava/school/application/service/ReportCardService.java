@@ -5,32 +5,36 @@ import java.math.RoundingMode;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+import org.springframework.context.MessageSource;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.support.TransactionTemplate;
-import com.altafjava.platform.application.branding.TenantBrandingService;
+import com.altafjava.platform.application.document.DocumentIssuanceService;
+import com.altafjava.platform.application.document.DocumentIssueRequest;
 import com.altafjava.platform.application.event.publisher.EventPublisher;
 import com.altafjava.platform.application.tenant.TenantFormattingService;
 import com.altafjava.platform.core.exception.ResourceNotFoundException;
+import com.altafjava.platform.core.security.AuthenticatedUser;
 import com.altafjava.platform.core.tenant.TenantContext;
-import com.altafjava.platform.domain.file.service.StorageService;
-import com.altafjava.platform.domain.tenant.model.Tenant;
-import com.altafjava.platform.domain.tenant.repository.TenantRepository;
+import com.altafjava.platform.domain.document.model.DocumentIssuance;
 import com.altafjava.school.application.customfield.CustomFieldValue;
-import com.altafjava.school.application.reportcard.ReportCardExtras;
+import com.altafjava.school.application.document.SchoolDocumentTypes;
 import com.altafjava.school.application.reportcard.ReportCardLine;
-import com.altafjava.school.application.reportcard.ReportCardPdfGenerator;
 import com.altafjava.school.application.security.StudentDataAccessGuard;
 import com.altafjava.school.domain.attendance.model.AttendancePercentage;
 import com.altafjava.school.domain.attendance.model.AttendanceStatus;
@@ -71,13 +75,11 @@ public class ReportCardService {
 	private final GradeRepository gradeRepository;
 	private final ExamRepository examRepository;
 	private final SubjectRepository subjectRepository;
-	private final StorageService storageService;
-	private final ReportCardPdfGenerator pdfGenerator;
+	private final DocumentIssuanceService documentIssuanceService;
+	private final MessageSource messageSource;
 	private final StudentDataAccessGuard studentDataAccessGuard;
 	private final EventPublisher eventPublisher;
 	private final TransactionTemplate transactionTemplate;
-	private final TenantRepository tenantRepository;
-	private final TenantBrandingService tenantBrandingService;
 	private final TenantFormattingService tenantFormattingService;
 	private final AttendanceRepository attendanceRepository;
 	private final HolidayRepository holidayRepository;
@@ -94,10 +96,10 @@ public class ReportCardService {
 
 	public ReportCardService(ReportCardRepository reportCardRepository, StudentRepository studentRepository,
 			TermRepository termRepository, GradeRepository gradeRepository, ExamRepository examRepository,
-			SubjectRepository subjectRepository, StorageService storageService, ReportCardPdfGenerator pdfGenerator,
-			StudentDataAccessGuard studentDataAccessGuard, EventPublisher eventPublisher,
-			PlatformTransactionManager transactionManager, TenantRepository tenantRepository,
-			TenantBrandingService tenantBrandingService, TenantFormattingService tenantFormattingService,
+			SubjectRepository subjectRepository, DocumentIssuanceService documentIssuanceService,
+			MessageSource messageSource, StudentDataAccessGuard studentDataAccessGuard,
+			EventPublisher eventPublisher, PlatformTransactionManager transactionManager,
+			TenantFormattingService tenantFormattingService,
 			AttendanceRepository attendanceRepository, HolidayRepository holidayRepository,
 			StudentClassroomLinkRepository studentClassroomLinkRepository, ClassroomRepository classroomRepository,
 			ReportCardTemplateRepository reportCardTemplateRepository,
@@ -108,13 +110,11 @@ public class ReportCardService {
 		this.gradeRepository = gradeRepository;
 		this.examRepository = examRepository;
 		this.subjectRepository = subjectRepository;
-		this.storageService = storageService;
-		this.pdfGenerator = pdfGenerator;
+		this.documentIssuanceService = documentIssuanceService;
+		this.messageSource = messageSource;
 		this.studentDataAccessGuard = studentDataAccessGuard;
 		this.eventPublisher = eventPublisher;
 		this.transactionTemplate = new TransactionTemplate(transactionManager);
-		this.tenantRepository = tenantRepository;
-		this.tenantBrandingService = tenantBrandingService;
 		this.tenantFormattingService = tenantFormattingService;
 		this.attendanceRepository = attendanceRepository;
 		this.holidayRepository = holidayRepository;
@@ -142,7 +142,13 @@ public class ReportCardService {
 	}
 
 	public byte[] downloadPdf(ReportCard reportCard) {
-		return storageService.downloadFile(reportCard.getStorageKey());
+		return documentIssuanceService.downloadPdf(issuanceOf(reportCard));
+	}
+
+	private DocumentIssuance issuanceOf(ReportCard reportCard) {
+		return documentIssuanceService.findById(reportCard.getDocumentIssuanceId())
+				.orElseThrow(() -> new ResourceNotFoundException(
+						"Document for report card not found: " + reportCard.getPublicId()));
 	}
 
 	/**
@@ -189,88 +195,149 @@ public class ReportCardService {
 				.orElseThrow(() -> new ResourceNotFoundException("Term not found: " + termId));
 
 		List<ReportCardLine> lines = buildReportLines(tenantId, studentId, term);
-		String tenantName = tenantRepository.findById(tenantId)
-				.map(Tenant::getName)
-				.orElse("");
-		byte[] logoBytes = tenantBrandingService.getLogoBytes(tenantId).orElse(null);
-		ReportCardExtras extras = buildExtras(tenantId, student, term, teacherRemarks, principalRemarks,
-				classroomRankCache);
+		Locale locale = tenantFormattingService.resolveLocale(tenantId);
+		Map<String, Object> model = buildModel(tenantId, student, term, lines, teacherRemarks, principalRemarks,
+				classroomRankCache, locale);
 
-		byte[] pdf = pdfGenerator.generate(student, term, lines, tenantName, logoBytes,
-				tenantFormattingService.resolveLocale(tenantId), extras);
-		String storageKey = String.format("tenants/%d/report-cards/%d/%d/%s.pdf", tenantId, studentId, termId,
-				UUID.randomUUID());
-		storageService.uploadFile(storageKey, pdf, "application/pdf");
-
+		DocumentIssuance issuance = documentIssuanceService.issue(new DocumentIssueRequest(tenantId,
+				SchoolDocumentTypes.REPORT_CARD, SchoolDocumentTypes.OWNER_STUDENT, studentId,
+				"Report Card — " + term.getName(), student.getFirstName() + " " + student.getLastName(), model,
+				currentUserId()));
 		try {
-			return persistReportCard(tenantId, studentId, termId, storageKey, teacherRemarks, principalRemarks);
+			return persistReportCard(tenantId, studentId, termId, issuance.getId(), teacherRemarks, principalRemarks);
 		} catch (RuntimeException ex) {
 			log.error(
-					"action=report-card-persist-failed tenantId={} studentId={} termId={} storageKey={} — cleaning up orphaned upload",
-					tenantId, studentId, termId, storageKey, ex);
+					"action=report-card-persist-failed tenantId={} studentId={} termId={} issuanceId={} — revoking unlinked document",
+					tenantId, studentId, termId, issuance.getId(), ex);
 			try {
-				storageService.deleteFile(storageKey);
-			} catch (RuntimeException cleanupEx) {
-				log.error("action=report-card-orphan-cleanup-failed tenantId={} storageKey={}", tenantId, storageKey,
-						cleanupEx);
+				documentIssuanceService.revoke(issuance, "Report card could not be saved");
+			} catch (RuntimeException revokeEx) {
+				log.error("action=report-card-orphan-revoke-failed tenantId={} issuanceId={}", tenantId,
+						issuance.getId(), revokeEx);
 			}
 			throw ex;
 		}
 	}
 
-	// The S3 object of any report card this regeneration replaces is deleted here, after the DB
-	// transaction commits — never inside it, for the same reason the new upload happens before
-	// the transaction rather than inside it (see this class's Javadoc). Left uncleaned, every
-	// regeneration for the same student+term would leak its predecessor's PDF in storage forever.
-	private ReportCard persistReportCard(Long tenantId, Long studentId, Long termId, String storageKey,
+	private Long currentUserId() {
+		Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+		return authentication != null && authentication.getPrincipal() instanceof AuthenticatedUser user
+				? user.getId()
+				: null;
+	}
+
+	// A regenerated report card supersedes the previous one: its PDF stays retrievable and its
+	// verification code keeps answering, but as REVOKED, so an old printout can't pass for current.
+	private ReportCard persistReportCard(Long tenantId, Long studentId, Long termId, Long documentIssuanceId,
 			String teacherRemarks, String principalRemarks) {
-		String[] previousStorageKey = new String[1];
+		Long[] supersededIssuanceId = new Long[1];
 		ReportCard saved = transactionTemplate.execute(status -> {
 			reportCardRepository.findByStudentIdAndTermIdAndTenantId(studentId, termId, tenantId)
 					.ifPresent(existing -> {
-						previousStorageKey[0] = existing.getStorageKey();
+						supersededIssuanceId[0] = existing.getDocumentIssuanceId();
 						existing.softDelete("report-card-regeneration");
 						reportCardRepository.save(existing);
 					});
 
-			ReportCard reportCard = ReportCard.create(studentId, termId, storageKey);
+			ReportCard reportCard = ReportCard.create(studentId, termId, documentIssuanceId);
 			reportCard.addRemarks(teacherRemarks, principalRemarks);
 			ReportCard result = reportCardRepository.save(reportCard);
 			eventPublisher.publish(new ReportCardGeneratedEvent(tenantId, studentId, termId, result.getId()));
 			return result;
 		});
 
-		if (previousStorageKey[0] != null) {
-			try {
-				storageService.deleteFile(previousStorageKey[0]);
-			} catch (RuntimeException ex) {
-				log.error(
-						"action=report-card-previous-version-cleanup-failed tenantId={} studentId={} termId={} storageKey={}",
-						tenantId, studentId, termId, previousStorageKey[0], ex);
-			}
+		if (supersededIssuanceId[0] != null) {
+			documentIssuanceService.findById(supersededIssuanceId[0]).ifPresent(previous -> {
+				try {
+					documentIssuanceService.revoke(previous, "Superseded by a regenerated report card");
+				} catch (RuntimeException ex) {
+					log.error("action=report-card-supersede-failed tenantId={} issuanceId={}", tenantId,
+							previous.getId(), ex);
+				}
+			});
 		}
 		return saved;
 	}
 
 	/**
-	 * Resolves every optional section's data up front, regardless of whether {@code template}
-	 * actually shows that section — cheap enough (a handful of already-indexed lookups) to compute
-	 * unconditionally rather than threading the template's flags through every helper here too.
+	 * Builds the report-card model: student/term facts, result lines with totals, and the optional
+	 * sections the tenant's {@link ReportCardTemplate} switches on. Section data is resolved up front
+	 * (a handful of indexed lookups) and the section flags decide whether the template shows it.
 	 */
-	private ReportCardExtras buildExtras(Long tenantId, Student student, Term term, String teacherRemarks,
-			String principalRemarks, Map<Long, Integer> classroomRankCache) {
-		ReportCardTemplate template = reportCardTemplateRepository.findByTenantId(tenantId)
+	private Map<String, Object> buildModel(Long tenantId, Student student, Term term, List<ReportCardLine> lines,
+			String teacherRemarks, String principalRemarks, Map<Long, Integer> classroomRankCache, Locale locale) {
+		ReportCardTemplate sections = reportCardTemplateRepository.findByTenantId(tenantId)
 				.orElseGet(ReportCardTemplate::createDefault);
 		Optional<Classroom> classroom = resolveCurrentClassroom(tenantId, student.getId());
-		AttendancePercentage attendancePercentage = calculateAttendancePercentage(tenantId, student.getId(), term);
-		Integer rank = classroom.map(c -> computeRank(tenantId, c.getId(), term, student.getId(), classroomRankCache))
-				.orElse(null);
-		List<CustomFieldValue> competencyValues = customFieldValueService
-				.getAllValues(CustomFieldEntityType.STUDENT, student.getId());
-		return new ReportCardExtras(template.isShowAttendanceSummary(), template.isShowRemarks(),
-				template.isShowCompetencyGrid(), template.isShowRank(), attendancePercentage, rank, competencyValues,
-				classroom.map(Classroom::getGrade).orElse(null), classroom.map(Classroom::getSection).orElse(null),
-				teacherRemarks, principalRemarks);
+		Map<String, Object> model = new HashMap<>();
+		model.put("studentName", student.getFirstName() + " " + student.getLastName());
+		model.put("studentCode", student.getStudentCode());
+		model.put("termName", term.getName());
+		model.put("grade", classroom.map(Classroom::getGrade).orElse(""));
+		model.put("section", classroom.map(Classroom::getSection).orElse(""));
+
+		List<Map<String, String>> rows = new ArrayList<>();
+		for (ReportCardLine line : lines) {
+			rows.add(Map.of("subject", line.subjectName(), "exam", line.examTitle(),
+					"marks", line.marks().toPlainString(), "maxMarks", line.maxMarks().toPlainString(),
+					"gradeLetter", line.gradeLetter() == null ? "" : line.gradeLetter()));
+		}
+		model.put("lines", rows);
+		BigDecimal totalMarks = lines.stream().map(ReportCardLine::marks).reduce(BigDecimal.ZERO, BigDecimal::add);
+		BigDecimal totalMax = lines.stream().map(ReportCardLine::maxMarks).reduce(BigDecimal.ZERO, BigDecimal::add);
+		boolean hasTotals = totalMax.compareTo(BigDecimal.ZERO) > 0;
+		model.put("hasTotals", hasTotals);
+		model.put("totalMarks", totalMarks.toPlainString());
+		model.put("totalMaxMarks", totalMax.toPlainString());
+		model.put("percentage", hasTotals
+				? totalMarks.multiply(BigDecimal.valueOf(100)).divide(totalMax, 2, RoundingMode.HALF_UP).toPlainString()
+				: "");
+
+		AttendancePercentage attendance = sections.isShowAttendanceSummary()
+				? calculateAttendancePercentage(tenantId, student.getId(), term)
+				: null;
+		boolean showAttendance = attendance != null && attendance.totalMarkedDays() > 0;
+		model.put("showAttendance", showAttendance);
+		model.put("attendanceSummary", showAttendance
+				? attendance.presentDays() + " / " + attendance.totalMarkedDays() + " days ("
+						+ attendance.percentage() + "%)"
+				: "");
+
+		Integer rank = sections.isShowRank()
+				? classroom.map(c -> computeRank(tenantId, c.getId(), term, student.getId(), classroomRankCache))
+						.orElse(null)
+				: null;
+		model.put("showRank", rank != null);
+		model.put("rank", rank == null ? "" : String.valueOf(rank));
+
+		List<CustomFieldValue> competencyValues = sections.isShowCompetencyGrid()
+				? customFieldValueService.getAllValues(CustomFieldEntityType.STUDENT, student.getId())
+				: List.of();
+		model.put("showCompetencies", !competencyValues.isEmpty());
+		model.put("competencies", competencyValues.stream()
+				.map(v -> Map.of("label", v.label(), "value", v.value() == null ? "" : v.value())).toList());
+
+		boolean hasRemarks = (teacherRemarks != null && !teacherRemarks.isBlank())
+				|| (principalRemarks != null && !principalRemarks.isBlank());
+		model.put("showRemarks", sections.isShowRemarks() && hasRemarks);
+		model.put("teacherRemarks", teacherRemarks == null ? "" : teacherRemarks);
+		model.put("principalRemarks", principalRemarks == null ? "" : principalRemarks);
+
+		model.put("labelGrade", label("school.reportcard.label.grade", "Grade", locale));
+		model.put("labelSection", label("school.reportcard.label.section", "Section", locale));
+		model.put("labelAttendance", label("school.reportcard.label.attendance", "Attendance", locale));
+		model.put("labelRank", label("school.reportcard.label.rank", "Rank", locale));
+		model.put("labelCompetencies", label("school.reportcard.label.competencies", "Competencies", locale));
+		model.put("labelTeacherRemarks", label("school.reportcard.label.teacherRemarks", "Teacher's Remarks", locale));
+		model.put("labelPrincipalRemarks",
+				label("school.reportcard.label.principalRemarks", "Principal's Remarks", locale));
+		model.put("labelClassTeacher", label("school.reportcard.label.classTeacher", "Class Teacher", locale));
+		model.put("labelPrincipal", label("school.reportcard.label.principal", "Principal", locale));
+		return model;
+	}
+
+	private String label(String code, String defaultMessage, Locale locale) {
+		return messageSource.getMessage(code, null, defaultMessage, locale);
 	}
 
 	private Optional<Classroom> resolveCurrentClassroom(Long tenantId, Long studentId) {
