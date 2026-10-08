@@ -25,6 +25,9 @@ public interface AttendanceRepository extends JpaRepository<Attendance, Long> {
 			@Param("classroomId") Long classroomId,
 			@Param("date") LocalDate date);
 
+	Optional<Attendance> findByStudentIdAndClassroomIdAndAttendanceDateAndTenantId(Long studentId, Long classroomId,
+			LocalDate attendanceDate, Long tenantId);
+
 	boolean existsByStudentIdAndClassroomIdAndAttendanceDateAndTenantId(Long studentId, Long classroomId,
 			LocalDate attendanceDate, Long tenantId);
 

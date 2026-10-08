@@ -1,6 +1,7 @@
 package com.altafjava.school.api.dto.response;
 
 import java.math.BigDecimal;
+import java.time.Instant;
 import java.time.LocalDateTime;
 
 public record ExamResponse(
@@ -12,5 +13,8 @@ public record ExamResponse(
 		BigDecimal maxMarks,
 		Long termId,
 		String status,
-		Long examTypeId) {
+		Long examTypeId,
+		BigDecimal weightage,
+		boolean resultsPublished,
+		Instant resultsPublishedAt) {
 }

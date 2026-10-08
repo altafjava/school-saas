@@ -27,9 +27,19 @@ public interface GradeRepository extends JpaRepository<Grade, Long> {
 
 	Page<Grade> findByStudentIdAndTenantId(Long studentId, Long tenantId, Pageable pageable);
 
+	@Query(value = "SELECT g FROM Grade g JOIN Exam e ON e.id = g.examId WHERE g.tenantId = :tenantId "
+			+ "AND e.tenantId = :tenantId AND g.studentId = :studentId AND e.resultsPublishedAt IS NOT NULL", countQuery = "SELECT COUNT(g) FROM Grade g JOIN Exam e ON e.id = g.examId WHERE g.tenantId = :tenantId "
+					+ "AND e.tenantId = :tenantId AND g.studentId = :studentId AND e.resultsPublishedAt IS NOT NULL")
+	Page<Grade> findPublishedByStudentId(@Param("studentId") Long studentId, @Param("tenantId") Long tenantId,
+			Pageable pageable);
+
 	boolean existsByStudentIdAndExamIdAndTenantId(Long studentId, Long examId, Long tenantId);
 
 	Page<Grade> findByExamIdInAndTenantId(List<Long> examIds, Long tenantId, Pageable pageable);
+
+	boolean existsByExamIdAndTenantId(Long examId, Long tenantId);
+
+	List<Grade> findAllByExamIdAndTenantId(Long examId, Long tenantId);
 
 	long countByTenantId(Long tenantId);
 

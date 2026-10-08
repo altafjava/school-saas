@@ -3,6 +3,7 @@ package com.altafjava.school.application.service;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.when;
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -18,6 +19,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import com.altafjava.platform.core.tenant.TenantContext;
 import com.altafjava.platform.core.tenant.TenantType;
+import com.altafjava.school.application.security.ExamResultVisibilityPolicy;
 import com.altafjava.school.application.security.StudentDataAccessGuard;
 import com.altafjava.school.domain.academicyear.model.AcademicYear;
 import com.altafjava.school.domain.academicyear.repository.AcademicYearRepository;
@@ -50,18 +52,22 @@ class StudentGpaServiceTest {
 	private StudentDataAccessGuard studentDataAccessGuard;
 	@Mock
 	private GradingScaleService gradingScaleService;
+	@Mock
+	private ExamResultVisibilityPolicy examResultVisibilityPolicy;
 
 	private StudentGpaService studentGpaService;
 
 	@BeforeEach
 	void setUp() {
 		studentGpaService = new StudentGpaService(gradeRepository, examRepository, termRepository,
-				academicYearRepository, studentRepository, studentDataAccessGuard, gradingScaleService);
+				academicYearRepository, studentRepository, studentDataAccessGuard, gradingScaleService,
+				examResultVisibilityPolicy);
 		TenantContext.ForTesting.setCurrentTenant(1L, null, null, TenantType.SHARED);
 		Student student = Student.create("STU-1", "Alice", "Smith", "alice@school.test", null);
 		student.setId(3L);
 		when(studentRepository.findByPublicIdAndTenantId(STUDENT_PUBLIC_ID, 1L)).thenReturn(Optional.of(student));
 		doNothing().when(studentDataAccessGuard).assertCanView(1L, STUDENT_PUBLIC_ID.toString());
+		lenient().when(examResultVisibilityPolicy.canSeeUnpublishedResults()).thenReturn(true);
 	}
 
 	@AfterEach
@@ -76,7 +82,7 @@ class StudentGpaServiceTest {
 
 	private Exam examScheduledAt(long id, long classroomId, LocalDateTime scheduledAt) {
 		Exam exam = Exam.create("Midterm", 5L, classroomId, scheduledAt, BigDecimal.valueOf(100), null,
-				1L);
+				1L, Exam.FULL_WEIGHTAGE);
 		exam.setId(id);
 		return exam;
 	}
@@ -162,6 +168,47 @@ class StudentGpaServiceTest {
 
 		GpaResult result = studentGpaService.calculateAcademicYearGpa(STUDENT_PUBLIC_ID.toString(),
 				academicYearPublicId.toString());
+
+		assertEquals(1, result.gradeCount());
+		assertEquals(0, new BigDecimal("4.00").compareTo(result.gpa()));
+	}
+
+	@Test
+	void calculateCumulativeGpa_weightsGradePointsByExamWeightage() {
+		Exam heavy = Exam.create("Final", 5L, 10L, LocalDateTime.of(2026, 5, 1, 9, 0), BigDecimal.valueOf(100), null,
+				1L, new BigDecimal("80"));
+		heavy.setId(1L);
+		Exam light = Exam.create("Quiz", 5L, 10L, LocalDateTime.of(2026, 5, 2, 9, 0), BigDecimal.valueOf(100), null,
+				1L, new BigDecimal("20"));
+		light.setId(2L);
+		when(gradeRepository.findByStudentId(1L, 3L))
+				.thenReturn(List.of(gradeWithExam(1L, "B"), gradeWithExam(2L, "A")));
+		when(examRepository.findAllByIdInAndTenantId(List.of(1L, 2L), 1L)).thenReturn(List.of(heavy, light));
+		when(gradingScaleService.resolveEffectiveThresholds(10L)).thenReturn(List.of(
+				GradingScaleThreshold.create(99L, "A", new BigDecimal("90"), new BigDecimal("4.0")),
+				GradingScaleThreshold.create(99L, "B", new BigDecimal("80"), new BigDecimal("3.0"))));
+
+		GpaResult result = studentGpaService.calculateCumulativeGpa(STUDENT_PUBLIC_ID.toString());
+
+		// (3.0 * 80 + 4.0 * 20) / 100
+		assertEquals(0, new BigDecimal("3.20").compareTo(result.gpa()));
+	}
+
+	@Test
+	void calculateCumulativeGpa_withoutUnpublishedAccess_excludesUnpublishedExams() {
+		when(examResultVisibilityPolicy.canSeeUnpublishedResults()).thenReturn(false);
+		Exam published = examScheduledAt(1L, 10L, LocalDateTime.of(2026, 5, 1, 9, 0));
+		published.complete();
+		published.publishResults("registrar");
+		Exam unpublished = examScheduledAt(2L, 10L, LocalDateTime.of(2026, 5, 2, 9, 0));
+		when(gradeRepository.findByStudentId(1L, 3L))
+				.thenReturn(List.of(gradeWithExam(1L, "A"), gradeWithExam(2L, "B")));
+		when(examRepository.findAllByIdInAndTenantId(List.of(1L, 2L), 1L)).thenReturn(List.of(published, unpublished));
+		when(gradingScaleService.resolveEffectiveThresholds(10L)).thenReturn(List.of(
+				GradingScaleThreshold.create(99L, "A", new BigDecimal("90"), new BigDecimal("4.0")),
+				GradingScaleThreshold.create(99L, "B", new BigDecimal("80"), new BigDecimal("3.0"))));
+
+		GpaResult result = studentGpaService.calculateCumulativeGpa(STUDENT_PUBLIC_ID.toString());
 
 		assertEquals(1, result.gradeCount());
 		assertEquals(0, new BigDecimal("4.00").compareTo(result.gpa()));

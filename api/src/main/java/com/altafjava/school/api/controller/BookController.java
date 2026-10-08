@@ -22,6 +22,7 @@ import com.altafjava.school.api.dto.response.BookResponse;
 import com.altafjava.school.api.mapper.BookCopyMapper;
 import com.altafjava.school.api.mapper.BookMapper;
 import com.altafjava.school.api.support.PlatformPageMapper;
+import com.altafjava.school.api.support.SortableBy;
 import com.altafjava.school.api.support.SpringDataPageableResolver;
 import com.altafjava.school.application.service.BookCatalogService;
 
@@ -46,6 +47,7 @@ public class BookController implements BookApi {
 	@Override
 	@GetMapping
 	@PreAuthorize("@permissionAuthorizationService.hasPermission('BOOK_READ')")
+	@SortableBy({ "title", "author", "category" })
 	public ApiResponse<com.altafjava.platform.core.model.Page<BookResponse>> list(
 			@RequestParam(defaultValue = "0") int page,
 			@RequestParam(defaultValue = "20") int size) {

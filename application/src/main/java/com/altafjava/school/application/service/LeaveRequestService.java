@@ -2,7 +2,9 @@ package com.altafjava.school.application.service;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import org.springframework.data.domain.Page;
@@ -21,14 +23,20 @@ import com.altafjava.platform.core.tenant.TenantContext;
 import com.altafjava.platform.domain.notification.model.NotificationPriority;
 import com.altafjava.platform.domain.notification.model.NotificationType;
 import com.altafjava.school.application.scheduler.support.TenantAdminNotifier;
+import com.altafjava.school.application.security.LeaveApprovalAuthorizer;
 import com.altafjava.school.domain.academicyear.model.AcademicYear;
 import com.altafjava.school.domain.academicyear.repository.AcademicYearRepository;
+import com.altafjava.school.domain.department.model.Department;
+import com.altafjava.school.domain.department.repository.DepartmentRepository;
 import com.altafjava.school.domain.employee.model.Employee;
 import com.altafjava.school.domain.employee.repository.EmployeeRepository;
+import com.altafjava.school.domain.leave.model.LeaveApproval;
+import com.altafjava.school.domain.leave.model.LeaveApprovalStage;
 import com.altafjava.school.domain.leave.model.LeaveBalance;
 import com.altafjava.school.domain.leave.model.LeaveRequest;
 import com.altafjava.school.domain.leave.model.LeaveRequestStatus;
 import com.altafjava.school.domain.leave.model.LeaveType;
+import com.altafjava.school.domain.leave.repository.LeaveApprovalRepository;
 import com.altafjava.school.domain.leave.repository.LeaveBalanceRepository;
 import com.altafjava.school.domain.leave.repository.LeaveRequestRepository;
 import com.altafjava.school.domain.leave.repository.LeaveTypeRepository;
@@ -45,12 +53,17 @@ public class LeaveRequestService {
 	private final TenantAdminNotifier tenantAdminNotifier;
 	private final NotificationService notificationService;
 	private final HolidayService holidayService;
+	private final LeaveApprovalRepository leaveApprovalRepository;
+	private final DepartmentRepository departmentRepository;
+	private final LeaveApprovalAuthorizer leaveApprovalAuthorizer;
 	private final LeaveDayCalculator leaveDayCalculator = new LeaveDayCalculator();
 
 	public LeaveRequestService(LeaveRequestRepository leaveRequestRepository, LeaveTypeRepository leaveTypeRepository,
 			LeaveBalanceRepository leaveBalanceRepository, EmployeeRepository employeeRepository,
 			AcademicYearRepository academicYearRepository, TenantAdminNotifier tenantAdminNotifier,
-			NotificationService notificationService, HolidayService holidayService) {
+			NotificationService notificationService, HolidayService holidayService,
+			LeaveApprovalRepository leaveApprovalRepository, DepartmentRepository departmentRepository,
+			LeaveApprovalAuthorizer leaveApprovalAuthorizer) {
 		this.leaveRequestRepository = leaveRequestRepository;
 		this.leaveTypeRepository = leaveTypeRepository;
 		this.leaveBalanceRepository = leaveBalanceRepository;
@@ -59,6 +72,9 @@ public class LeaveRequestService {
 		this.tenantAdminNotifier = tenantAdminNotifier;
 		this.notificationService = notificationService;
 		this.holidayService = holidayService;
+		this.leaveApprovalRepository = leaveApprovalRepository;
+		this.departmentRepository = departmentRepository;
+		this.leaveApprovalAuthorizer = leaveApprovalAuthorizer;
 	}
 
 	@Transactional(readOnly = true)
@@ -73,6 +89,29 @@ public class LeaveRequestService {
 		return leaveRequestRepository.findAllByTenantId(TenantContext.getCurrentTenantId(), pageable);
 	}
 
+	@Transactional(readOnly = true)
+	public Page<LeaveRequest> listAwaitingMyReview(Pageable pageable) {
+		Long tenantId = TenantContext.getCurrentTenantId();
+		Employee head = resolveCurrentEmployee(tenantId);
+		List<Long> departmentIds = departmentRepository.findIdsHeadedBy(tenantId, head.getId());
+		if (departmentIds.isEmpty()) {
+			return Page.empty(pageable);
+		}
+		List<Long> employeeIds = employeeRepository.findIdsInDepartments(tenantId, departmentIds);
+		if (employeeIds.isEmpty()) {
+			return Page.empty(pageable);
+		}
+		return leaveRequestRepository.findAwaitingDepartmentHead(tenantId, employeeIds, pageable);
+	}
+
+	@Transactional(readOnly = true)
+	public List<LeaveApproval> listApprovals(String publicId) {
+		Long tenantId = TenantContext.getCurrentTenantId();
+		LeaveRequest request = findRequest(tenantId, publicId);
+		return leaveApprovalRepository.findAllByLeaveRequestIdAndTenantIdOrderByDecidedAtAsc(request.getId(),
+				tenantId);
+	}
+
 	@Transactional
 	public LeaveRequest submit(String leaveTypePublicId, LocalDate startDate, LocalDate endDate, String reason) {
 		Long tenantId = TenantContext.getCurrentTenantId();
@@ -80,9 +119,15 @@ public class LeaveRequestService {
 		LeaveType leaveType = findLeaveType(tenantId, leaveTypePublicId);
 		AcademicYear academicYear = academicYearRepository.findByCurrentTrueAndTenantId(tenantId)
 				.orElseThrow(() -> new BusinessException("No current academic year configured for this tenant"));
+		if (!leaveType.isActive()) {
+			throw new BusinessException("Leave type '" + leaveType.getName() + "' is no longer available");
+		}
 		if (employee.isOnProbation(LocalDate.now()) && !leaveType.isAvailableDuringProbation()) {
 			throw new BusinessException(
 					"Leave type '" + leaveType.getName() + "' is not available during probation");
+		}
+		if (leaveRequestRepository.existsOverlapping(tenantId, employee.getId(), startDate, endDate)) {
+			throw new BusinessException("You already have a leave request covering some of these days");
 		}
 
 		Set<LocalDate> holidayDates = holidayService.datesInRange(tenantId, startDate, endDate);
@@ -93,10 +138,15 @@ public class LeaveRequestService {
 						academicYear.getId(), tenantId)
 				.ifPresent(balance -> validateSufficientBalance(balance, daysRequested));
 
+		Optional<Employee> departmentHead = leaveType.requiresDepartmentHeadApproval()
+				? findActionableDepartmentHead(tenantId, employee)
+				: Optional.empty();
 		LeaveRequest request = LeaveRequest.submit(employee.getId(), leaveType.getId(), academicYear.getId(),
-				startDate, endDate, reason, daysRequested);
+				startDate, endDate, reason, daysRequested, departmentHead.isPresent() ? 2 : 1);
 		LeaveRequest saved = leaveRequestRepository.save(request);
-		notifyAdminsOfRequest(tenantId, employee, leaveType, saved);
+		departmentHead.ifPresentOrElse(
+				head -> notifyDepartmentHeadOfRequest(tenantId, head, employee, leaveType, saved),
+				() -> notifyAdminsOfRequest(tenantId, employee, leaveType, saved));
 		return saved;
 	}
 
@@ -104,16 +154,30 @@ public class LeaveRequestService {
 	public LeaveRequest approve(String publicId) {
 		Long tenantId = TenantContext.getCurrentTenantId();
 		LeaveRequest request = findRequest(tenantId, publicId);
+		Long actorUserId = resolveCurrentUserId();
+		LeaveApprovalStage stage = authorizeDecision(tenantId, request, actorUserId, "approve");
+		if (leaveApprovalRepository.existsByLeaveRequestIdAndDecidedByUserIdAndTenantId(request.getId(), actorUserId,
+				tenantId)) {
+			throw new BusinessException("Each level of approval must come from a different person");
+		}
 		LeaveBalance balance = leaveBalanceRepository
 				.findByEmployeeIdAndLeaveTypeIdAndAcademicYearIdAndTenantId(request.getEmployeeId(),
 						request.getLeaveTypeId(), request.getAcademicYearId(), tenantId)
 				.orElseThrow(() -> new BusinessException(
 						"No leave balance allocated for employee " + request.getEmployeeId()));
-		balance.deduct(request.getDaysRequested());
-		request.approve(resolveCurrentUserId());
-		leaveBalanceRepository.save(balance);
+		leaveApprovalRepository.save(LeaveApproval.approved(request.getId(), stage, actorUserId));
+		request.approve(actorUserId);
+		if (request.getStatus() == LeaveRequestStatus.APPROVED) {
+			balance.deduct(request.getDaysRequested());
+			leaveBalanceRepository.save(balance);
+		}
 		LeaveRequest saved = leaveRequestRepository.save(request);
-		notifyEmployeeOfDecision(tenantId, saved, NotificationType.LEAVE_APPROVED, "Your leave request was approved");
+		if (saved.getStatus() == LeaveRequestStatus.APPROVED) {
+			notifyEmployeeOfDecision(tenantId, saved, NotificationType.LEAVE_APPROVED,
+					"Your leave request was approved");
+		} else {
+			notifyAdminsAwaitingFinalApproval(tenantId, saved);
+		}
 		return saved;
 	}
 
@@ -121,10 +185,21 @@ public class LeaveRequestService {
 	public LeaveRequest reject(String publicId, String rejectionReason) {
 		Long tenantId = TenantContext.getCurrentTenantId();
 		LeaveRequest request = findRequest(tenantId, publicId);
-		request.reject(resolveCurrentUserId(), rejectionReason);
+		Long actorUserId = resolveCurrentUserId();
+		LeaveApprovalStage stage = authorizeDecision(tenantId, request, actorUserId, "reject");
+		leaveApprovalRepository.save(LeaveApproval.rejected(request.getId(), stage, actorUserId, rejectionReason));
+		request.reject(actorUserId, rejectionReason);
 		LeaveRequest saved = leaveRequestRepository.save(request);
 		notifyEmployeeOfDecision(tenantId, saved, NotificationType.LEAVE_REJECTED, "Your leave request was rejected");
 		return saved;
+	}
+
+	private LeaveApprovalStage authorizeDecision(Long tenantId, LeaveRequest request, Long actorUserId,
+			String action) {
+		LeaveApprovalStage stage = request.awaitingStage().orElseThrow(
+				() -> new BusinessException("Cannot " + action + " a leave request in status " + request.getStatus()));
+		leaveApprovalAuthorizer.assertMayDecide(tenantId, request, stage, actorUserId);
+		return stage;
 	}
 
 	@Transactional
@@ -147,6 +222,19 @@ public class LeaveRequestService {
 					});
 		}
 		return leaveRequestRepository.save(request);
+	}
+
+	// The first approval needs someone who can act on it: an active head with a login, other than the requester.
+	private Optional<Employee> findActionableDepartmentHead(Long tenantId, Employee requester) {
+		if (requester.getDepartmentId() == null) {
+			return Optional.empty();
+		}
+		return departmentRepository.findByIdAndTenantId(requester.getDepartmentId(), tenantId)
+				.map(Department::getHeadEmployeeId)
+				.flatMap(headId -> employeeRepository.findByIdAndTenantId(headId, tenantId))
+				.filter(Employee::isActive)
+				.filter(head -> head.getUserId() != null)
+				.filter(head -> !head.getId().equals(requester.getId()));
 	}
 
 	private void validateSufficientBalance(LeaveBalance balance, BigDecimal daysRequested) {
@@ -212,5 +300,40 @@ public class LeaveRequestService {
 										: ""))
 						.priority(NotificationPriority.NORMAL)
 						.build()));
+	}
+
+	private void notifyDepartmentHeadOfRequest(Long tenantId, Employee head, Employee employee, LeaveType leaveType,
+			LeaveRequest request) {
+		String employeeName = employee.getFirstName() + " " + employee.getLastName();
+		notificationService.send(SendNotificationCommand.builder()
+				.tenantId(tenantId)
+				.userId(head.getUserId())
+				.type(NotificationType.LEAVE_REQUESTED)
+				.title("Leave Request: " + employeeName)
+				.message(employeeName + " requested " + request.getDaysRequested() + " day(s) of "
+						+ leaveType.getName() + " and needs your approval")
+				.templateVariables(Map.of(
+						"employeeName", employeeName,
+						"leaveTypeName", leaveType.getName(),
+						"startDate", request.getStartDate().toString(),
+						"endDate", request.getEndDate().toString(),
+						"daysRequested", request.getDaysRequested().toString()))
+				.priority(NotificationPriority.NORMAL)
+				.build());
+	}
+
+	private void notifyAdminsAwaitingFinalApproval(Long tenantId, LeaveRequest request) {
+		employeeRepository.findByIdAndTenantId(request.getEmployeeId(), tenantId).ifPresent(employee -> {
+			String employeeName = employee.getFirstName() + " " + employee.getLastName();
+			tenantAdminNotifier.notifyAll(tenantId, NotificationType.LEAVE_REQUESTED,
+					"Leave Request awaiting final approval: " + employeeName,
+					"The department head approved " + employeeName + "'s request for "
+							+ request.getDaysRequested() + " day(s)",
+					Map.of(
+							"employeeName", employeeName,
+							"startDate", request.getStartDate().toString(),
+							"endDate", request.getEndDate().toString(),
+							"daysRequested", request.getDaysRequested().toString()));
+		});
 	}
 }

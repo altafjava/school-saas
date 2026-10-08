@@ -23,6 +23,16 @@ public interface StudentRepository extends JpaRepository<Student, Long> {
 
 	List<Student> findAllByIdInAndTenantId(List<Long> ids, Long tenantId);
 
+	List<Student> findAllBySiblingGroupIdAndTenantId(Long siblingGroupId, Long tenantId);
+
+	// Other students linked to any of the given guardians — the people a student might be a sibling of.
+	@Query("SELECT DISTINCT s FROM Student s WHERE s.tenantId = :tenantId AND s.id <> :studentId AND s.id IN ("
+			+ "SELECT l.studentId FROM StudentGuardianLink l WHERE l.tenantId = :tenantId AND l.guardianId IN ("
+			+ "SELECT own.guardianId FROM StudentGuardianLink own WHERE own.tenantId = :tenantId "
+			+ "AND own.studentId = :studentId))")
+	List<Student> findStudentsSharingAGuardianWith(@Param("tenantId") Long tenantId,
+			@Param("studentId") Long studentId);
+
 	long countByEnrollmentStatusAndTenantId(EnrollmentStatus enrollmentStatus, Long tenantId);
 
 	Optional<Student> findByPublicIdAndTenantId(UUID publicId, Long tenantId);

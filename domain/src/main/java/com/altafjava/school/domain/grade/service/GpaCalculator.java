@@ -5,14 +5,22 @@ import java.math.RoundingMode;
 import java.util.List;
 import java.util.Optional;
 
-// Pure domain logic (no Spring, no persistence) — unweighted average of resolved grade points.
+// Pure domain logic (no Spring, no persistence) — average of resolved grade points, each weighted
+// by its exam's weightage.
 public class GpaCalculator {
 
-	public Optional<BigDecimal> calculateAverage(List<BigDecimal> points) {
-		if (points.isEmpty()) {
+	public record WeightedPoints(BigDecimal points, BigDecimal weightage) {
+	}
+
+	public Optional<BigDecimal> calculateWeightedAverage(List<WeightedPoints> weightedPoints) {
+		BigDecimal totalWeight = weightedPoints.stream().map(WeightedPoints::weightage).reduce(BigDecimal.ZERO,
+				BigDecimal::add);
+		if (totalWeight.signum() <= 0) {
 			return Optional.empty();
 		}
-		BigDecimal sum = points.stream().reduce(BigDecimal.ZERO, BigDecimal::add);
-		return Optional.of(sum.divide(BigDecimal.valueOf(points.size()), 2, RoundingMode.HALF_UP));
+		BigDecimal weightedSum = weightedPoints.stream()
+				.map(entry -> entry.points().multiply(entry.weightage()))
+				.reduce(BigDecimal.ZERO, BigDecimal::add);
+		return Optional.of(weightedSum.divide(totalWeight, 2, RoundingMode.HALF_UP));
 	}
 }

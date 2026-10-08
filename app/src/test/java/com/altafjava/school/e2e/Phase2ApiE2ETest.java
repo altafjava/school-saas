@@ -270,13 +270,16 @@ class Phase2ApiE2ETest extends SchoolIntegrationTestBase {
 		asAdmin().body("{\"applicationFeeAmount\":300.00}").put("/api/v1/admission-settings").then()
 				.statusCode(HttpStatus.OK.value()).body("data.applicationFeeAmount", equalTo(300.0f));
 
-		String admission = given().header("X-Tenant-ID", tenantId).contentType(ContentType.JSON).body(APPLICATION)
-				.post("/api/v1/admissions/apply").then().statusCode(HttpStatus.CREATED.value())
+		String admission = given().header("X-Tenant-ID", tenantId)
+				.header("Idempotency-Key", UUID.randomUUID().toString())
+				.contentType(ContentType.JSON).body(APPLICATION).post("/api/v1/admissions/apply").then()
+				.statusCode(HttpStatus.CREATED.value())
 				.body("data.applicationFeeStatus", equalTo("PENDING"))
 				.body("data.applicationFeeAmount", equalTo(300.0f)).extract().path("data.publicId");
 
 		asAdmin().patch("/api/v1/admissions/" + admission + "/under-review").then().statusCode(CLIENT_ERROR);
-		asAdmin().patch("/api/v1/admissions/" + admission + "/application-fee/payment").then()
+		asAdmin().header("Idempotency-Key", java.util.UUID.randomUUID().toString())
+				.patch("/api/v1/admissions/" + admission + "/application-fee/payment").then()
 				.statusCode(HttpStatus.OK.value()).body("data.applicationFeeStatus", equalTo("PAID"))
 				.body("data.applicationFeeReceiptNumber", notNullValue());
 		asAdmin().patch("/api/v1/admissions/" + admission + "/application-fee/waive")
@@ -286,7 +289,8 @@ class Phase2ApiE2ETest extends SchoolIntegrationTestBase {
 
 		asAdmin().get("/api/v1/admissions/" + admission + "/offer-letter/download").then()
 				.statusCode(HttpStatus.NOT_FOUND.value());
-		asAdmin().post("/api/v1/admissions/" + admission + "/offer-letter").then().statusCode(CLIENT_ERROR);
+		asAdmin().header("Idempotency-Key", java.util.UUID.randomUUID().toString())
+				.post("/api/v1/admissions/" + admission + "/offer-letter").then().statusCode(CLIENT_ERROR);
 		asAdmin().get("/api/v1/admissions/" + admission + "/lifecycle").then().statusCode(HttpStatus.OK.value())
 				.body("data.toStage", org.hamcrest.Matchers.contains("SUBMITTED", "UNDER_REVIEW"));
 	}
@@ -295,7 +299,8 @@ class Phase2ApiE2ETest extends SchoolIntegrationTestBase {
 	void admissions_settingsAndFeeOperationsRequireTheFeePermission() {
 		asTeacher().body("{\"applicationFeeAmount\":1}").put("/api/v1/admission-settings").then()
 				.statusCode(HttpStatus.FORBIDDEN.value());
-		asTeacher().patch("/api/v1/admissions/" + UUID.randomUUID() + "/application-fee/payment").then()
+		asTeacher().header("Idempotency-Key", UUID.randomUUID().toString())
+				.patch("/api/v1/admissions/" + UUID.randomUUID() + "/application-fee/payment").then()
 				.statusCode(HttpStatus.FORBIDDEN.value());
 	}
 }

@@ -21,6 +21,7 @@ import com.altafjava.school.api.dto.response.GradeResponse;
 import com.altafjava.school.api.mapper.GradeCorrectionMapper;
 import com.altafjava.school.api.mapper.GradeMapper;
 import com.altafjava.school.api.support.PlatformPageMapper;
+import com.altafjava.school.api.support.SortableBy;
 import com.altafjava.school.api.support.SpringDataPageableResolver;
 import com.altafjava.school.application.service.GradeService;
 
@@ -45,6 +46,7 @@ public class GradeController implements GradeApi {
 	@Override
 	@GetMapping
 	@PreAuthorize("@permissionAuthorizationService.hasPermission('STUDENT_GRADES_READ')")
+	@SortableBy({ "marks", "gradeLetter" })
 	public ApiResponse<com.altafjava.platform.core.model.Page<GradeResponse>> list(
 			@RequestParam(defaultValue = "0") int page,
 			@RequestParam(defaultValue = "20") int size) {
@@ -82,7 +84,7 @@ public class GradeController implements GradeApi {
 
 	@Override
 	@GetMapping("/{publicId}/corrections")
-	@PreAuthorize("@permissionAuthorizationService.hasPermission('STUDENT_GRADES_READ')")
+	@PreAuthorize("@permissionAuthorizationService.hasPermission('STUDENT_GRADES_WRITE')")
 	public ApiResponse<com.altafjava.platform.core.model.Page<GradeCorrectionResponse>> listCorrections(
 			@PathVariable String publicId,
 			@RequestParam(defaultValue = "0") int page,

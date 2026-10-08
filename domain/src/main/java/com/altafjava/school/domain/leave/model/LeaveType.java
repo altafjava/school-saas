@@ -5,6 +5,7 @@ import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Table;
 import org.hibernate.annotations.SQLRestriction;
+import com.altafjava.platform.core.exception.BusinessException;
 import com.altafjava.platform.core.model.SoftDeletableEntity;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -57,8 +58,14 @@ public class LeaveType extends SoftDeletableEntity {
 	@Column(name = "carry_forward_expiry_months")
 	private Integer carryForwardExpiryMonths;
 
+	// 2 means the requester's department head must approve before an administrator gives the final
+	// approval; 1 leaves the decision to an administrator alone.
+	@Column(name = "approval_levels", nullable = false)
+	private int approvalLevels;
+
 	public static LeaveType create(String name, BigDecimal defaultAnnualDays) {
 		return LeaveType.builder()
+				.approvalLevels(1)
 				.name(name)
 				.defaultAnnualDays(defaultAnnualDays)
 				.active(true)
@@ -95,6 +102,17 @@ public class LeaveType extends SoftDeletableEntity {
 
 	public void allowDuringProbation() {
 		this.availableDuringProbation = true;
+	}
+
+	public void configureApprovalLevels(int approvalLevels) {
+		if (approvalLevels < 1 || approvalLevels > 2) {
+			throw new BusinessException("A leave type needs one or two levels of approval");
+		}
+		this.approvalLevels = approvalLevels;
+	}
+
+	public boolean requiresDepartmentHeadApproval() {
+		return approvalLevels > 1;
 	}
 
 	public void configureCarryForward(boolean enabled, BigDecimal maxCarryForwardDays,

@@ -24,6 +24,12 @@ public interface TimetableEntryRepository extends JpaRepository<TimetableEntry, 
 	boolean existsByTenantIdAndDayOfWeekAndPeriodIdAndClassroomId(Long tenantId, DayOfWeek dayOfWeek, Long periodId,
 			Long classroomId);
 
+	List<TimetableEntry> findAllByTenantIdAndDayOfWeek(Long tenantId, DayOfWeek dayOfWeek);
+
+	List<TimetableEntry> findAllByTenantIdAndDayOfWeekAndPeriodId(Long tenantId, DayOfWeek dayOfWeek, Long periodId);
+
+	List<TimetableEntry> findAllByIdInAndTenantId(List<Long> ids, Long tenantId);
+
 	boolean existsByTenantIdAndDayOfWeekAndPeriodIdAndTeacherId(Long tenantId, DayOfWeek dayOfWeek, Long periodId,
 			Long teacherId);
 }

@@ -73,6 +73,7 @@ public final class SchoolPermissions {
 			def("EVENT_REGISTER", "Register for and cancel event registration", CAT_COMMUNICATION),
 			def("EVENT_STAFF_MANAGE", "View and mark event registration attendance", CAT_COMMUNICATION),
 			def("EXAM_COMPLETE", "Mark an exam complete", CAT_ACADEMIC),
+			def("EXAM_RESULT_PUBLISH", "Publish or withdraw exam results", CAT_ACADEMIC),
 			def("EXAM_TYPE_MANAGE", "Manage tenant exam-type definitions", CAT_ACADEMIC),
 			def("EXAM_WRITE", "Schedule, reassign, and cancel exams", CAT_ACADEMIC),
 			def("FEE_DISCOUNT_MANAGE", "Grant, revoke and view student fee discounts", CAT_FINANCE),
@@ -98,6 +99,7 @@ public final class SchoolPermissions {
 			def("ID_CARD_ISSUE", "Issue student and staff ID cards", CAT_ADMISSIONS),
 			def("LEAVE_BALANCE_MANAGE", "View any teacher's leave balance", CAT_HR),
 			def("LEAVE_REQUEST_MANAGE", "View and decide on leave requests", CAT_HR),
+			def("LEAVE_REQUEST_REVIEW", "Approve leave requests of the department you head", CAT_HR),
 			def("LEAVE_SELF_SERVICE", "Submit and cancel own leave requests", CAT_HR),
 			def("LEAVE_TYPE_READ", "View leave types", CAT_HR),
 			def("LEAVE_TYPE_WRITE", "Manage leave types", CAT_HR),
@@ -133,6 +135,7 @@ public final class SchoolPermissions {
 			def("SUBMISSION_GRADE", "Grade assignment submissions", CAT_ACADEMIC),
 			def("SUBMISSION_READ", "View assignment submissions", CAT_ACADEMIC),
 			def("SUBMISSION_SUBMIT", "Submit an assignment", CAT_ACADEMIC),
+			def("SUBSTITUTION_MANAGE", "Assign and cancel substitute teachers", CAT_ACADEMIC),
 			def("TEACHER_MANAGE", "Manage teacher records", CAT_HR),
 			def("TERM_READ", "View academic terms", CAT_ACADEMIC),
 			def("TERM_WRITE", "Create academic terms", CAT_ACADEMIC),
@@ -146,7 +149,11 @@ public final class SchoolPermissions {
 			def("TRANSPORT_ROUTE_WRITE", "Manage transport routes", CAT_TRANSPORT),
 			def("VEHICLE_READ", "View transport vehicles", CAT_TRANSPORT),
 			def("VEHICLE_WRITE", "Manage transport vehicles", CAT_TRANSPORT),
-			def("VISITOR_LOG_MANAGE", "Check visitors in and out", CAT_FACILITIES));
+			def("VENUE_MANAGE", "Manage teaching venues", CAT_ACADEMIC),
+			def("VISITOR_LOG_MANAGE", "Check visitors in and out", CAT_FACILITIES),
+			def("VISITOR_REQUEST_APPROVE", "Approve or reject any visitor request", CAT_FACILITIES),
+			def("VISITOR_REQUEST_SELF_SERVICE", "Pre-register visitors and decide on the visits you host",
+					CAT_FACILITIES));
 
 	private static PermissionDefinition def(String code, String description, String category) {
 		return new PermissionDefinition(code, description, category);

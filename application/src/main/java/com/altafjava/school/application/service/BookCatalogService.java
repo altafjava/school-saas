@@ -1,5 +1,6 @@
 package com.altafjava.school.application.service;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
 import org.springframework.data.domain.Page;
@@ -9,6 +10,7 @@ import org.springframework.transaction.annotation.Transactional;
 import com.altafjava.platform.core.exception.BusinessException;
 import com.altafjava.platform.core.exception.ResourceNotFoundException;
 import com.altafjava.platform.core.tenant.TenantContext;
+import com.altafjava.school.application.library.ReservationAllocator;
 import com.altafjava.school.domain.library.model.Book;
 import com.altafjava.school.domain.library.model.BookCopy;
 import com.altafjava.school.domain.library.repository.BookCopyRepository;
@@ -19,10 +21,13 @@ public class BookCatalogService {
 
 	private final BookRepository bookRepository;
 	private final BookCopyRepository bookCopyRepository;
+	private final ReservationAllocator reservationAllocator;
 
-	public BookCatalogService(BookRepository bookRepository, BookCopyRepository bookCopyRepository) {
+	public BookCatalogService(BookRepository bookRepository, BookCopyRepository bookCopyRepository,
+			ReservationAllocator reservationAllocator) {
 		this.bookRepository = bookRepository;
 		this.bookCopyRepository = bookCopyRepository;
+		this.reservationAllocator = reservationAllocator;
 	}
 
 	@Transactional(readOnly = true)
@@ -62,7 +67,9 @@ public class BookCatalogService {
 		if (bookCopyRepository.existsByBookIdAndCopyCodeAndTenantId(book.getId(), copyCode, tenantId)) {
 			throw new BusinessException("Copy code already exists for this book: " + copyCode);
 		}
-		return bookCopyRepository.save(BookCopy.create(book.getId(), copyCode));
+		BookCopy copy = bookCopyRepository.save(BookCopy.create(book.getId(), copyCode));
+		reservationAllocator.allocate(tenantId, copy, LocalDate.now());
+		return copy;
 	}
 
 	@Transactional

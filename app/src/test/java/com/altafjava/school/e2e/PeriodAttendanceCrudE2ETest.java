@@ -280,6 +280,7 @@ class PeriodAttendanceCrudE2ETest extends SchoolIntegrationTestBase {
 				.body("{\"studentId\":" + studentId + ",\"classroomId\":" + classroomId + ",\"timetableEntryId\":"
 						+ timetableEntryId + ",\"attendanceDate\":\"2026-02-02\",\"status\":\"PRESENT\","
 						+ "\"markedBy\":\"admin\"}")
+				.header("Idempotency-Key", java.util.UUID.randomUUID().toString())
 				.when()
 				.post("/api/v1/period-attendance")
 				.then()
@@ -315,6 +316,7 @@ class PeriodAttendanceCrudE2ETest extends SchoolIntegrationTestBase {
 				.body("{\"studentId\":" + studentId + ",\"classroomId\":" + classroomId + ",\"timetableEntryId\":"
 						+ timetableEntryId + ",\"attendanceDate\":\"2026-02-03\",\"status\":\"PRESENT\","
 						+ "\"markedBy\":\"self\"}")
+				.header("Idempotency-Key", java.util.UUID.randomUUID().toString())
 				.when()
 				.post("/api/v1/period-attendance")
 				.then()
@@ -335,6 +337,7 @@ class PeriodAttendanceCrudE2ETest extends SchoolIntegrationTestBase {
 				.body("{\"studentId\":" + studentId + ",\"classroomId\":" + classroomId + ",\"timetableEntryId\":"
 						+ timetableEntryId + ",\"attendanceDate\":\"2026-02-04\",\"status\":\"ABSENT\","
 						+ "\"markedBy\":\"admin\"}")
+				.header("Idempotency-Key", java.util.UUID.randomUUID().toString())
 				.when()
 				.post("/api/v1/period-attendance")
 				.then()

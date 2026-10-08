@@ -1,6 +1,7 @@
 package com.altafjava.school.domain.exam.model;
 
 import java.math.BigDecimal;
+import java.time.Instant;
 import java.time.LocalDateTime;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -23,6 +24,8 @@ import lombok.experimental.SuperBuilder;
 @SuperBuilder
 @NoArgsConstructor
 public class Exam extends SoftDeletableEntity {
+
+	public static final BigDecimal FULL_WEIGHTAGE = BigDecimal.valueOf(100);
 
 	@Column(name = "title", nullable = false, length = 200)
 	private String title;
@@ -55,8 +58,21 @@ public class Exam extends SoftDeletableEntity {
 	@Column(name = "exam_type_id")
 	private Long examTypeId;
 
+	// Percentage contribution to the subject's result for the term; the exams of one subject in one
+	// term together weigh at most 100.
+	@Column(name = "weightage", nullable = false, precision = 5, scale = 2)
+	private BigDecimal weightage;
+
+	// Students and guardians see no grade of this exam until results are published.
+	@Column(name = "results_published_at")
+	private Instant resultsPublishedAt;
+
+	@Column(name = "results_published_by", length = 100)
+	private String resultsPublishedBy;
+
 	public static Exam create(String title, Long subjectId, Long classroomId,
-			LocalDateTime scheduledAt, BigDecimal maxMarks, Long termId, Long examTypeId) {
+			LocalDateTime scheduledAt, BigDecimal maxMarks, Long termId, Long examTypeId, BigDecimal weightage) {
+		requireValidWeightage(weightage);
 		return Exam.builder()
 				.title(title)
 				.subjectId(subjectId)
@@ -65,8 +81,15 @@ public class Exam extends SoftDeletableEntity {
 				.maxMarks(maxMarks)
 				.termId(termId)
 				.examTypeId(examTypeId)
+				.weightage(weightage)
 				.status(ExamStatus.SCHEDULED)
 				.build();
+	}
+
+	private static void requireValidWeightage(BigDecimal weightage) {
+		if (weightage == null || weightage.signum() <= 0 || weightage.compareTo(FULL_WEIGHTAGE) > 0) {
+			throw new BusinessException("Exam weightage must be above 0 and at most 100");
+		}
 	}
 
 	public void reschedule(LocalDateTime scheduledAt) {
@@ -75,6 +98,37 @@ public class Exam extends SoftDeletableEntity {
 
 	public void assignTerm(Long termId) {
 		this.termId = termId;
+	}
+
+	public void reweight(BigDecimal weightage) {
+		if (isResultsPublished()) {
+			throw new BusinessException("Weightage cannot change after results are published");
+		}
+		requireValidWeightage(weightage);
+		this.weightage = weightage;
+	}
+
+	public boolean isResultsPublished() {
+		return resultsPublishedAt != null;
+	}
+
+	public void publishResults(String publishedBy) {
+		if (this.status != ExamStatus.COMPLETED) {
+			throw new BusinessException("Results can only be published for a completed exam");
+		}
+		if (isResultsPublished()) {
+			throw new BusinessException("Results are already published");
+		}
+		this.resultsPublishedAt = Instant.now();
+		this.resultsPublishedBy = publishedBy;
+	}
+
+	public void withdrawResults() {
+		if (!isResultsPublished()) {
+			throw new BusinessException("Results are not published");
+		}
+		this.resultsPublishedAt = null;
+		this.resultsPublishedBy = null;
 	}
 
 	public void complete() {

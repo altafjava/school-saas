@@ -11,5 +11,6 @@ public record LeaveTypeResponse(
 		boolean availableDuringProbation,
 		boolean carryForwardEnabled,
 		BigDecimal maxCarryForwardDays,
-		Integer carryForwardExpiryMonths) {
+		Integer carryForwardExpiryMonths,
+		int approvalLevels) {
 }

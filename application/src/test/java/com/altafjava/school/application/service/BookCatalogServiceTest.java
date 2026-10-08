@@ -16,6 +16,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import com.altafjava.platform.core.exception.BusinessException;
 import com.altafjava.platform.core.tenant.TenantContext;
 import com.altafjava.platform.core.tenant.TenantType;
+import com.altafjava.school.application.library.ReservationAllocator;
 import com.altafjava.school.domain.library.model.Book;
 import com.altafjava.school.domain.library.model.BookCopy;
 import com.altafjava.school.domain.library.repository.BookCopyRepository;
@@ -30,12 +31,14 @@ class BookCatalogServiceTest {
 	private BookRepository bookRepository;
 	@Mock
 	private BookCopyRepository bookCopyRepository;
+	@Mock
+	private ReservationAllocator reservationAllocator;
 
 	private BookCatalogService bookCatalogService;
 
 	@BeforeEach
 	void setUp() {
-		bookCatalogService = new BookCatalogService(bookRepository, bookCopyRepository);
+		bookCatalogService = new BookCatalogService(bookRepository, bookCopyRepository, reservationAllocator);
 		TenantContext.ForTesting.setCurrentTenant(1L, null, null, TenantType.SHARED);
 	}
 

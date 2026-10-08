@@ -21,6 +21,12 @@ public interface CirculationRepository extends JpaRepository<Circulation, Long> 
 
 	List<Circulation> findAllByTenantIdAndReturnedAtIsNull(Long tenantId);
 
+	// Whether the member already has a copy of this title out.
+	@Query("SELECT COUNT(c) > 0 FROM Circulation c, BookCopy bc WHERE c.bookCopyId = bc.id AND c.tenantId = :tenantId "
+			+ "AND bc.tenantId = :tenantId AND bc.bookId = :bookId AND c.studentId = :studentId AND c.returnedAt IS NULL")
+	boolean hasTitleOut(@Param("tenantId") Long tenantId, @Param("bookId") Long bookId,
+			@Param("studentId") Long studentId);
+
 	@Query("SELECT COALESCE(SUM(c.fineAmount), 0) FROM Circulation c WHERE c.tenantId = :tenantId AND c.fineAmount IS NOT NULL")
 	BigDecimal sumFineAmountByTenantId(@Param("tenantId") Long tenantId);
 }

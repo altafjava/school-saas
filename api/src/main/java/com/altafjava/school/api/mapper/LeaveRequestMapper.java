@@ -11,5 +11,6 @@ public interface LeaveRequestMapper {
 
 	@Mapping(target = "publicId", expression = "java(leaveRequest.getPublicId().toString())")
 	@Mapping(target = "status", expression = "java(leaveRequest.getStatus().name())")
+	@Mapping(target = "awaitingStage", expression = "java(leaveRequest.awaitingStage().map(Enum::name).orElse(null))")
 	LeaveRequestResponse toResponse(LeaveRequest leaveRequest);
 }

@@ -15,5 +15,8 @@ public record LeaveRequestResponse(
 		String status,
 		Long approvedByUserId,
 		LocalDateTime approvedAt,
-		String rejectionReason) {
+		String rejectionReason,
+		int approvalsRequired,
+		int approvalsGranted,
+		String awaitingStage) {
 }

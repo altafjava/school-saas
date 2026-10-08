@@ -160,10 +160,20 @@ class ReportCardServiceTest {
 		return grade;
 	}
 
-	private Exam examAt(long id, LocalDateTime scheduledAt) {
-		Exam exam = Exam.create("Midterm", 5L, 2L, scheduledAt, BigDecimal.valueOf(100), null,
-				1L);
+	private Exam unpublishedExamAt(long id, LocalDateTime scheduledAt, BigDecimal weightage) {
+		Exam exam = Exam.create("Midterm", 5L, 2L, scheduledAt, BigDecimal.valueOf(100), null, 1L, weightage);
 		exam.setId(id);
+		return exam;
+	}
+
+	private Exam examAt(long id, LocalDateTime scheduledAt) {
+		return publishedExamAt(id, scheduledAt, Exam.FULL_WEIGHTAGE);
+	}
+
+	private Exam publishedExamAt(long id, LocalDateTime scheduledAt, BigDecimal weightage) {
+		Exam exam = unpublishedExamAt(id, scheduledAt, weightage);
+		exam.complete();
+		exam.publishResults("registrar");
 		return exam;
 	}
 
@@ -223,6 +233,52 @@ class ReportCardServiceTest {
 		// The out-of-range exam means no grade survives to the subject-batching step at all.
 		verify(subjectRepository, never()).findByIdAndTenantId(any(), any());
 		verify(subjectRepository, never()).findAllByIdInAndTenantId(any(), any());
+	}
+
+	@Test
+	void generate_withUnpublishedExam_leavesItOffTheReportCard() {
+		Student student = studentWithId(1L);
+		Term term = termWithId(10L, LocalDate.of(2026, 1, 1), LocalDate.of(2026, 3, 31));
+		Grade grade = gradeWithId(100L, 50L, BigDecimal.valueOf(85));
+		Exam unpublished = unpublishedExamAt(50L, LocalDateTime.of(2026, 2, 1, 9, 0), Exam.FULL_WEIGHTAGE);
+
+		when(studentRepository.findByIdAndTenantId(1L, 1L)).thenReturn(Optional.of(student));
+		when(termRepository.findByIdAndTenantId(10L, 1L)).thenReturn(Optional.of(term));
+		when(gradeRepository.findByStudentId(1L, 1L)).thenReturn(List.of(grade));
+		when(examRepository.findAllByIdInAndTenantId(List.of(50L), 1L)).thenReturn(List.of(unpublished));
+		when(reportCardRepository.findByStudentIdAndTermIdAndTenantId(1L, 10L, 1L)).thenReturn(Optional.empty());
+		when(reportCardRepository.save(any(ReportCard.class))).thenAnswer(inv -> inv.getArgument(0));
+
+		reportCardService.generate(1L, 10L, null, null);
+
+		assertTrue(issuedLines().isEmpty());
+	}
+
+	@Test
+	void generate_weightsTheOverallPercentageByExamWeightage() {
+		Student student = studentWithId(1L);
+		Term term = termWithId(10L, LocalDate.of(2026, 1, 1), LocalDate.of(2026, 3, 31));
+		Grade quiz = gradeWithId(100L, 50L, BigDecimal.valueOf(100));
+		Grade finalExam = gradeWithId(101L, 51L, BigDecimal.valueOf(50));
+		Exam quizExam = publishedExamAt(50L, LocalDateTime.of(2026, 2, 1, 9, 0), new BigDecimal("20"));
+		Exam finalPaper = publishedExamAt(51L, LocalDateTime.of(2026, 3, 1, 9, 0), new BigDecimal("80"));
+		Subject subject = Subject.create("MATH", "Mathematics", null);
+		subject.setId(5L);
+
+		when(studentRepository.findByIdAndTenantId(1L, 1L)).thenReturn(Optional.of(student));
+		when(termRepository.findByIdAndTenantId(10L, 1L)).thenReturn(Optional.of(term));
+		when(gradeRepository.findByStudentId(1L, 1L)).thenReturn(List.of(quiz, finalExam));
+		when(examRepository.findAllByIdInAndTenantId(List.of(50L, 51L), 1L))
+				.thenReturn(List.of(quizExam, finalPaper));
+		when(subjectRepository.findAllByIdInAndTenantId(List.of(5L), 1L)).thenReturn(List.of(subject));
+		when(reportCardRepository.findByStudentIdAndTermIdAndTenantId(1L, 10L, 1L)).thenReturn(Optional.empty());
+		when(reportCardRepository.save(any(ReportCard.class))).thenAnswer(inv -> inv.getArgument(0));
+
+		reportCardService.generate(1L, 10L, null, null);
+
+		// (100% * 20 + 50% * 80) / 100
+		assertEquals("60.00", issuedModel().get("percentage"));
+		assertEquals("20", issuedLines().get(0).get("weightage"));
 	}
 
 	@Test

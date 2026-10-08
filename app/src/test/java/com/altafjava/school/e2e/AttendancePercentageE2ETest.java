@@ -128,6 +128,7 @@ class AttendancePercentageE2ETest extends SchoolIntegrationTestBase {
 				.contentType(ContentType.JSON)
 				.body("{\"studentId\":" + studentId + ",\"classroomId\":" + classroomId + ",\"attendanceDate\":\""
 						+ date + "\",\"status\":\"" + status + "\",\"markedBy\":\"admin\"}")
+				.header("Idempotency-Key", java.util.UUID.randomUUID().toString())
 				.when()
 				.post("/api/v1/attendance")
 				.then()

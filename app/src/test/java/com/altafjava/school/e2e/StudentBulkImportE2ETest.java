@@ -69,6 +69,7 @@ class StudentBulkImportE2ETest extends SchoolIntegrationTestBase {
 				.header("X-Tenant-ID", tenantId)
 				.header("Authorization", "Bearer " + accessToken)
 				.multiPart("file", "students.csv", csv.getBytes(StandardCharsets.UTF_8), "text/csv")
+				.header("Idempotency-Key", java.util.UUID.randomUUID().toString())
 				.when()
 				.post("/api/v1/students/bulk-import")
 				.then()
@@ -84,6 +85,7 @@ class StudentBulkImportE2ETest extends SchoolIntegrationTestBase {
 				.header("X-Tenant-ID", tenantId)
 				.multiPart("file", "students.csv", "studentCode,firstName,lastName,email,dateOfBirth\n"
 						.getBytes(StandardCharsets.UTF_8), "text/csv")
+				.header("Idempotency-Key", java.util.UUID.randomUUID().toString())
 				.when()
 				.post("/api/v1/students/bulk-import")
 				.then()
@@ -99,6 +101,7 @@ class StudentBulkImportE2ETest extends SchoolIntegrationTestBase {
 				.header("Authorization", "Bearer " + teacherToken)
 				.multiPart("file", "students.csv", "studentCode,firstName,lastName,email,dateOfBirth\n"
 						.getBytes(StandardCharsets.UTF_8), "text/csv")
+				.header("Idempotency-Key", java.util.UUID.randomUUID().toString())
 				.when()
 				.post("/api/v1/students/bulk-import")
 				.then()

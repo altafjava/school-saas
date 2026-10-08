@@ -47,6 +47,8 @@ import com.altafjava.school.domain.classroom.repository.StudentClassroomLinkRepo
 import com.altafjava.school.domain.customfield.model.CustomFieldEntityType;
 import com.altafjava.school.domain.exam.model.Exam;
 import com.altafjava.school.domain.exam.repository.ExamRepository;
+import com.altafjava.school.domain.exam.service.ExamScore;
+import com.altafjava.school.domain.exam.service.WeightedResultCalculator;
 import com.altafjava.school.domain.grade.model.Grade;
 import com.altafjava.school.domain.grade.repository.GradeRepository;
 import com.altafjava.school.domain.holiday.repository.HolidayRepository;
@@ -93,6 +95,7 @@ public class ReportCardService {
 	private final AttendancePercentageCalculator attendancePercentageCalculator = new AttendancePercentageCalculator();
 	private final HolidayDateRangeResolver holidayDateRangeResolver = new HolidayDateRangeResolver();
 	private final ReportCardRankCalculator reportCardRankCalculator = new ReportCardRankCalculator();
+	private final WeightedResultCalculator weightedResultCalculator = new WeightedResultCalculator();
 
 	public ReportCardService(ReportCardRepository reportCardRepository, StudentRepository studentRepository,
 			TermRepository termRepository, GradeRepository gradeRepository, ExamRepository examRepository,
@@ -152,11 +155,11 @@ public class ReportCardService {
 	}
 
 	/**
-	 * Generates (or regenerates) a student's report card for a term: aggregates every Grade
-	 * whose Exam falls within the term's date range, renders a PDF, and stores it. There is no
-	 * {@code termId} column on {@code Exam} — the term boundary is applied as a date-range filter
-	 * on {@code Exam.scheduledAt} against {@code Term.startDate}/{@code endDate} instead, which
-	 * avoids a schema change to an entity two earlier phases already shipped and tested.
+	 * Generates (or regenerates) a student's report card for a term: aggregates every Grade of a
+	 * published Exam falling within the term's date range, weights the exams by their weightage,
+	 * renders a PDF, and stores it. The term boundary is a date-range filter on
+	 * {@code Exam.scheduledAt} against {@code Term.startDate}/{@code endDate}, since
+	 * {@code Exam.termId} is optional.
 	 *
 	 * <p>
 	 * {@code teacherRemarks}/{@code principalRemarks} are baked into the PDF at generation time
@@ -280,18 +283,19 @@ public class ReportCardService {
 		for (ReportCardLine line : lines) {
 			rows.add(Map.of("subject", line.subjectName(), "exam", line.examTitle(),
 					"marks", line.marks().toPlainString(), "maxMarks", line.maxMarks().toPlainString(),
+					"weightage", line.weightage().stripTrailingZeros().toPlainString(),
 					"gradeLetter", line.gradeLetter() == null ? "" : line.gradeLetter()));
 		}
 		model.put("lines", rows);
 		BigDecimal totalMarks = lines.stream().map(ReportCardLine::marks).reduce(BigDecimal.ZERO, BigDecimal::add);
 		BigDecimal totalMax = lines.stream().map(ReportCardLine::maxMarks).reduce(BigDecimal.ZERO, BigDecimal::add);
-		boolean hasTotals = totalMax.compareTo(BigDecimal.ZERO) > 0;
-		model.put("hasTotals", hasTotals);
+		Optional<BigDecimal> weightedPercentage = weightedResultCalculator.percentage(lines.stream()
+				.map(line -> new ExamScore(line.marks(), line.maxMarks(), line.weightage())).toList());
+		model.put("hasTotals", weightedPercentage.isPresent());
 		model.put("totalMarks", totalMarks.toPlainString());
 		model.put("totalMaxMarks", totalMax.toPlainString());
-		model.put("percentage", hasTotals
-				? totalMarks.multiply(BigDecimal.valueOf(100)).divide(totalMax, 2, RoundingMode.HALF_UP).toPlainString()
-				: "");
+		model.put("percentage", weightedPercentage
+				.map(percentage -> percentage.setScale(2, RoundingMode.HALF_UP).toPlainString()).orElse(""));
 
 		AttendancePercentage attendance = sections.isShowAttendanceSummary()
 				? calculateAttendancePercentage(tenantId, student.getId(), term)
@@ -398,20 +402,16 @@ public class ReportCardService {
 		LocalDateTime termStart = term.getStartDate().atStartOfDay();
 		LocalDateTime termEnd = term.getEndDate().atTime(LocalTime.MAX);
 		Map<Long, List<Grade>> gradesByStudentId = allGrades.stream()
-				.filter(grade -> isWithinTerm(examsById.get(grade.getExamId()), termStart, termEnd))
+				.filter(grade -> isReportable(examsById.get(grade.getExamId()), termStart, termEnd))
 				.collect(Collectors.groupingBy(Grade::getStudentId));
 
 		Map<Long, BigDecimal> percentageByStudentId = new HashMap<>();
 		for (Long classmateId : classmateIds) {
-			List<Grade> grades = gradesByStudentId.getOrDefault(classmateId, List.of());
-			BigDecimal totalMarks = grades.stream().map(Grade::getMarks).reduce(BigDecimal.ZERO, BigDecimal::add);
-			BigDecimal totalMax = grades.stream()
-					.map(grade -> examsById.get(grade.getExamId()).getMaxMarks())
-					.reduce(BigDecimal.ZERO, BigDecimal::add);
-			if (totalMax.compareTo(BigDecimal.ZERO) > 0) {
-				percentageByStudentId.put(classmateId,
-						totalMarks.multiply(BigDecimal.valueOf(100)).divide(totalMax, 4, RoundingMode.HALF_UP));
-			}
+			List<ExamScore> scores = gradesByStudentId.getOrDefault(classmateId, List.of()).stream()
+					.map(grade -> toScore(grade, examsById.get(grade.getExamId())))
+					.toList();
+			weightedResultCalculator.percentage(scores)
+					.ifPresent(percentage -> percentageByStudentId.put(classmateId, percentage));
 		}
 
 		if (classroomRankCache != null) {
@@ -441,7 +441,7 @@ public class ReportCardService {
 		Map<Long, Exam> examsById = loadExamsById(tenantId, grades);
 
 		List<Grade> gradesInTerm = grades.stream()
-				.filter(grade -> isWithinTerm(examsById.get(grade.getExamId()), termStart, termEnd))
+				.filter(grade -> isReportable(examsById.get(grade.getExamId()), termStart, termEnd))
 				.toList();
 		Map<Long, Subject> subjectsById = loadSubjectsById(tenantId, gradesInTerm);
 
@@ -450,8 +450,14 @@ public class ReportCardService {
 				.toList();
 	}
 
-	private boolean isWithinTerm(Exam exam, LocalDateTime termStart, LocalDateTime termEnd) {
-		return exam != null && !exam.getScheduledAt().isBefore(termStart) && !exam.getScheduledAt().isAfter(termEnd);
+	// Only published results are official, so an exam still being marked never reaches a report card.
+	private boolean isReportable(Exam exam, LocalDateTime termStart, LocalDateTime termEnd) {
+		return exam != null && exam.isResultsPublished() && !exam.getScheduledAt().isBefore(termStart)
+				&& !exam.getScheduledAt().isAfter(termEnd);
+	}
+
+	private ExamScore toScore(Grade grade, Exam exam) {
+		return new ExamScore(grade.getMarks(), exam.getMaxMarks(), exam.getWeightage());
 	}
 
 	private Map<Long, Exam> loadExamsById(Long tenantId, List<Grade> grades) {
@@ -477,6 +483,6 @@ public class ReportCardService {
 				.map(Subject::getName)
 				.orElse("Unknown Subject");
 		return new ReportCardLine(subjectName, exam.getTitle(), grade.getMarks(), exam.getMaxMarks(),
-				grade.getGradeLetter());
+				exam.getWeightage(), grade.getGradeLetter());
 	}
 }

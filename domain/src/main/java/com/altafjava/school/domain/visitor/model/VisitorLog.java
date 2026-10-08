@@ -1,6 +1,7 @@
 package com.altafjava.school.domain.visitor.model;
 
 import java.time.LocalDateTime;
+import java.util.UUID;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Table;
@@ -14,13 +15,10 @@ import lombok.Setter;
 import lombok.experimental.SuperBuilder;
 
 /**
- * {@code hostTeacherId} references {@code Teacher} (school-saas's staff/employee entity — the same
- * one payroll's {@code SalaryStructure}/{@code Payslip} attach to for every staff role, not only
- * classroom teachers) rather than a raw platform {@code User} id: every other cross-entity
- * reference in this codebase resolves through a repository via a client-supplied public id, and
- * {@code Teacher} is the one staff-facing entity in school-saas's own domain boundary with that
- * lookup already available. A raw platform user id would be the one field in this API surface
- * bypassing that convention.
+ * One visitor's time on the premises. It is created from an approved {@link VisitorRequest} and
+ * copies what the request said, so the log still reads correctly if the request is later edited.
+ * {@code hostEmployeeId} references {@code Employee} rather than a raw platform user id, following
+ * every other cross-entity reference in this codebase.
  */
 @Entity
 @Table(name = "visitor_logs")
@@ -42,8 +40,20 @@ public class VisitorLog extends SoftDeletableEntity {
 	@Column(name = "purpose", nullable = false, length = 500)
 	private String purpose;
 
-	@Column(name = "host_teacher_id", nullable = false)
-	private Long hostTeacherId;
+	@Column(name = "host_employee_id", nullable = false)
+	private Long hostEmployeeId;
+
+	// FK to visitor_requests.id — null for visits logged before approvals existed.
+	@Column(name = "visitor_request_id")
+	private Long visitorRequestId;
+
+	// FK to platform file_metadata.public_id — the photo taken or supplied for this visit.
+	@Column(name = "photo_file_public_id")
+	private UUID photoFilePublicId;
+
+	// FK to platform document_issuances.id — the badge handed to the visitor.
+	@Column(name = "badge_issuance_id")
+	private Long badgeIssuanceId;
 
 	@Column(name = "check_in_at", nullable = false)
 	private LocalDateTime checkInAt;
@@ -51,15 +61,20 @@ public class VisitorLog extends SoftDeletableEntity {
 	@Column(name = "check_out_at")
 	private LocalDateTime checkOutAt;
 
-	public static VisitorLog checkIn(String visitorName, String visitorPhone, String purpose, Long hostTeacherId,
-			LocalDateTime checkInAt) {
+	public static VisitorLog checkIn(VisitorRequest request, UUID photoFilePublicId, LocalDateTime checkInAt) {
 		return VisitorLog.builder()
-				.visitorName(visitorName)
-				.visitorPhone(visitorPhone)
-				.purpose(purpose)
-				.hostTeacherId(hostTeacherId)
+				.visitorName(request.getVisitorName())
+				.visitorPhone(request.getVisitorPhone())
+				.purpose(request.getPurpose())
+				.hostEmployeeId(request.getHostEmployeeId())
+				.visitorRequestId(request.getId())
+				.photoFilePublicId(photoFilePublicId)
 				.checkInAt(checkInAt)
 				.build();
+	}
+
+	public void attachBadge(Long badgeIssuanceId) {
+		this.badgeIssuanceId = badgeIssuanceId;
 	}
 
 	public void checkOut(LocalDateTime checkOutAt) {

@@ -1,6 +1,7 @@
 package com.altafjava.school.domain.employee.repository;
 
 import java.time.LocalDate;
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -41,6 +42,10 @@ public interface EmployeeRepository extends JpaRepository<Employee, Long> {
 	List<Employee> findAllByIdInAndTenantId(List<Long> ids, Long tenantId);
 
 	Optional<Employee> findByUserIdAndTenantId(Long userId, Long tenantId);
+
+	@Query("SELECT e.id FROM Employee e WHERE e.tenantId = :tenantId AND e.departmentId IN :departmentIds")
+	List<Long> findIdsInDepartments(@Param("tenantId") Long tenantId,
+			@Param("departmentIds") Collection<Long> departmentIds);
 
 	boolean existsByEmployeeCodeAndTenantId(String employeeCode, Long tenantId);
 

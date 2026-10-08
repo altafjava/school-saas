@@ -57,7 +57,7 @@ class PeriodAttendanceServiceTest {
 	}
 
 	private TimetableEntry timetableEntryForClassroom(Long classroomId) {
-		TimetableEntry entry = TimetableEntry.create(java.time.DayOfWeek.MONDAY, 3L, classroomId, 5L, 7L);
+		TimetableEntry entry = TimetableEntry.create(java.time.DayOfWeek.MONDAY, 3L, classroomId, 5L, 7L, null);
 		entry.setId(100L);
 		return entry;
 	}

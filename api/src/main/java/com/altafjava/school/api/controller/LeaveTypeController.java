@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import com.altafjava.platform.api.dto.response.ApiResponse;
 import com.altafjava.school.api.controller.api.LeaveTypeApi;
+import com.altafjava.school.api.dto.request.ConfigureLeaveApprovalRequest;
 import com.altafjava.school.api.dto.request.ConfigureLeaveCarryForwardRequest;
 import com.altafjava.school.api.dto.request.CreateLeaveTypeRequest;
 import com.altafjava.school.api.dto.request.UpdateLeaveTypeRequest;
@@ -127,5 +128,14 @@ public class LeaveTypeController implements LeaveTypeApi {
 		return ApiResponse
 				.success(leaveTypeMapper.toResponse(leaveTypeService.configureCarryForward(publicId, request.enabled(),
 						request.maxCarryForwardDays(), request.carryForwardExpiryMonths())));
+	}
+
+	@Override
+	@PatchMapping("/{publicId}/approval-levels")
+	@PreAuthorize("@permissionAuthorizationService.hasPermission('LEAVE_TYPE_WRITE')")
+	public ApiResponse<LeaveTypeResponse> configureApprovalLevels(@PathVariable String publicId,
+			@Valid @RequestBody ConfigureLeaveApprovalRequest request) {
+		return ApiResponse.success(leaveTypeMapper
+				.toResponse(leaveTypeService.configureApprovalLevels(publicId, request.approvalLevels())));
 	}
 }

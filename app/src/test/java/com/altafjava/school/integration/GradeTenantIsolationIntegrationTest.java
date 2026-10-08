@@ -110,7 +110,7 @@ class GradeTenantIsolationIntegrationTest extends SchoolIntegrationTestBase {
 		Subject subject = subjectService.create("MATH-" + UUID.randomUUID().toString().substring(0, 6), "Math", null);
 		Exam exam = examService.schedule("Midterm", subject.getId(), classroom.getId(),
 				LocalDateTime.now().plusDays(7), BigDecimal.valueOf(100), null,
-				examTypeIdFor("MIDTERM"));
+				examTypeIdFor("MIDTERM"), Exam.FULL_WEIGHTAGE);
 		Student student = studentService.enroll("STU-" + UUID.randomUUID().toString().substring(0, 6),
 				"Alice", "Smith", "alice@a.edu", LocalDate.of(2010, 1, 1));
 		gradeService.record(student.getId(), exam.getId(), BigDecimal.valueOf(85), "teacher-a");
@@ -133,7 +133,7 @@ class GradeTenantIsolationIntegrationTest extends SchoolIntegrationTestBase {
 				null);
 		Exam exam = examService.schedule("Final", subject.getId(), classroom.getId(),
 				LocalDateTime.now().plusDays(14), BigDecimal.valueOf(100), null,
-				examTypeIdFor("FINAL"));
+				examTypeIdFor("FINAL"), Exam.FULL_WEIGHTAGE);
 		Student student = studentService.enroll("STU-" + UUID.randomUUID().toString().substring(0, 6),
 				"Bob", "Jones", "bob@a.edu", LocalDate.of(2011, 3, 20));
 		Grade grade = gradeService.record(student.getId(), exam.getId(),

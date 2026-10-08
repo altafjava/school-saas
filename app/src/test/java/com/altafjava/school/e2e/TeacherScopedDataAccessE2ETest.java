@@ -321,6 +321,7 @@ class TeacherScopedDataAccessE2ETest extends SchoolIntegrationTestBase {
 				.contentType(ContentType.JSON)
 				.body("{\"studentId\":" + studentId + ",\"classroomId\":" + classroomId
 						+ ",\"attendanceDate\":\"2026-02-01\",\"status\":\"PRESENT\",\"markedBy\":\"admin\"}")
+				.header("Idempotency-Key", java.util.UUID.randomUUID().toString())
 				.when()
 				.post("/api/v1/attendance")
 				.then()

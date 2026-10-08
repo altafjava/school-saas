@@ -32,6 +32,7 @@ import com.altafjava.school.api.mapper.GuardianMapper;
 import com.altafjava.school.api.mapper.StudentGuardianLinkMapper;
 import com.altafjava.school.api.mapper.StudentMapper;
 import com.altafjava.school.api.support.PlatformPageMapper;
+import com.altafjava.school.api.support.SortableBy;
 import com.altafjava.school.api.support.SpringDataPageableResolver;
 import com.altafjava.school.application.service.GuardianConsentService;
 import com.altafjava.school.application.service.GuardianService;
@@ -68,6 +69,7 @@ public class GuardianController implements GuardianApi {
 	@Override
 	@GetMapping
 	@PreAuthorize("@permissionAuthorizationService.hasPermission('GUARDIAN_MANAGE')")
+	@SortableBy({ "firstName", "lastName" })
 	public ApiResponse<com.altafjava.platform.core.model.Page<GuardianResponse>> list(
 			@RequestParam(defaultValue = "0") int page,
 			@RequestParam(defaultValue = "20") int size) {

@@ -62,7 +62,7 @@ class ExamScheduleReminderRuleEvaluatorTest {
 
 	private Exam examWithId(long id, long classroomId, long subjectId) {
 		Exam exam = Exam.create("Midterm", subjectId, classroomId, LocalDateTime.now().plusDays(1),
-				BigDecimal.valueOf(100), null, 1L);
+				BigDecimal.valueOf(100), null, 1L, Exam.FULL_WEIGHTAGE);
 		exam.setId(id);
 		return exam;
 	}

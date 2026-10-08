@@ -66,17 +66,16 @@
 
 <table class="grades">
   <thead>
-    <tr><th>Subject</th><th>Exam</th><th class="num">Marks</th><th>Grade</th></tr>
+    <tr><th>Subject</th><th>Exam</th><th class="num">Marks</th><th class="num">Weight</th><th>Grade</th></tr>
   </thead>
   <tbody>
-    {{#lines}}<tr><td>{{subject}}</td><td>{{exam}}</td><td class="num">{{marks}} / {{maxMarks}}</td><td>{{gradeLetter}}</td></tr>{{/lines}}
+    {{#lines}}<tr><td>{{subject}}</td><td>{{exam}}</td><td class="num">{{marks}} / {{maxMarks}}</td><td class="num">{{weightage}}%</td><td>{{gradeLetter}}</td></tr>{{/lines}}
   </tbody>
 </table>
 
 {{#hasTotals}}
 <div class="summary">
-  Total: {{totalMarks}} / {{totalMaxMarks}}<br/>
-  Percentage: {{percentage}}%
+  Overall (weighted): {{percentage}}%
 </div>
 {{/hasTotals}}
 

@@ -3,10 +3,13 @@ package com.altafjava.school.api.controller.api;
 import java.time.LocalDateTime;
 import jakarta.validation.Valid;
 import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
 import com.altafjava.platform.api.dto.response.ApiResponse;
+import com.altafjava.platform.core.security.AuthenticatedUser;
 import com.altafjava.school.api.dto.request.CheckInVisitorRequest;
 import com.altafjava.school.api.dto.response.VisitorLogResponse;
 import io.swagger.v3.oas.annotations.Operation;
@@ -29,8 +32,14 @@ public interface VisitorLogApi {
 	@Operation(summary = "Get", operationId = "visitorlog_get")
 	public ApiResponse<VisitorLogResponse> get(@PathVariable String publicId);
 
-	@Operation(summary = "Check in", operationId = "visitorlog_checkIn")
-	public ApiResponse<VisitorLogResponse> checkIn(@Valid @RequestBody CheckInVisitorRequest request);
+	@Operation(summary = "Check in", operationId = "visitorlog_checkIn", description = "Admits a visitor against an APPROVED visitor request for today. A photo is required — "
+			+ "either already on the request or supplied here — and a badge is issued; it stops being valid at "
+			+ "check-out.")
+	public ApiResponse<VisitorLogResponse> checkIn(@Valid @RequestBody CheckInVisitorRequest request,
+			@AuthenticationPrincipal AuthenticatedUser user);
+
+	@Operation(summary = "Download badge", operationId = "visitorlog_downloadBadge", description = "The visitor's badge as a PDF.")
+	public ResponseEntity<byte[]> downloadBadge(@PathVariable String publicId);
 
 	@Operation(summary = "Check out", operationId = "visitorlog_checkOut")
 	public ApiResponse<VisitorLogResponse> checkOut(@PathVariable String publicId);

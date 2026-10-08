@@ -6,6 +6,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
 import com.altafjava.platform.api.dto.response.ApiResponse;
+import com.altafjava.school.api.dto.request.ConfigureLeaveApprovalRequest;
 import com.altafjava.school.api.dto.request.ConfigureLeaveCarryForwardRequest;
 import com.altafjava.school.api.dto.request.CreateLeaveTypeRequest;
 import com.altafjava.school.api.dto.request.UpdateLeaveTypeRequest;
@@ -55,4 +56,9 @@ public interface LeaveTypeApi {
 	@Operation(summary = "Configure carry forward", operationId = "leavetype_configureCarryForward")
 	public ApiResponse<LeaveTypeResponse> configureCarryForward(@PathVariable String publicId,
 			@Valid @RequestBody ConfigureLeaveCarryForwardRequest request);
+
+	@Operation(summary = "Configure approval levels", operationId = "leavetype_configureApprovalLevels", description = "1 leaves the decision to a leave administrator; 2 makes the requester's "
+			+ "department head approve first. Applies to requests submitted afterwards.")
+	public ApiResponse<LeaveTypeResponse> configureApprovalLevels(@PathVariable String publicId,
+			@Valid @RequestBody ConfigureLeaveApprovalRequest request);
 }

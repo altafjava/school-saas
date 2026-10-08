@@ -6,5 +6,6 @@ public record TimetableEntryResponse(
 		Long periodId,
 		Long classroomId,
 		Long subjectId,
-		Long teacherId) {
+		Long teacherId,
+		Long venueId) {
 }

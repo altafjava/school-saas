@@ -2,9 +2,11 @@ package com.altafjava.school.domain.leave.model;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import java.math.BigDecimal;
 import org.junit.jupiter.api.Test;
+import com.altafjava.platform.core.exception.BusinessException;
 
 class LeaveTypeTest {
 
@@ -59,5 +61,30 @@ class LeaveTypeTest {
 		leaveType.deactivate();
 
 		assertFalse(leaveType.isActive());
+	}
+
+	@Test
+	void create_needsOnlyAnAdministratorsApproval() {
+		LeaveType leaveType = LeaveType.create("Sick Leave", BigDecimal.valueOf(12));
+
+		assertEquals(1, leaveType.getApprovalLevels());
+		assertFalse(leaveType.requiresDepartmentHeadApproval());
+	}
+
+	@Test
+	void configureApprovalLevels_two_requiresTheDepartmentHead() {
+		LeaveType leaveType = LeaveType.create("Casual", BigDecimal.valueOf(8));
+
+		leaveType.configureApprovalLevels(2);
+
+		assertTrue(leaveType.requiresDepartmentHeadApproval());
+	}
+
+	@Test
+	void configureApprovalLevels_outsideOneToTwo_throwsBusinessException() {
+		LeaveType leaveType = LeaveType.create("Casual", BigDecimal.valueOf(8));
+
+		assertThrows(BusinessException.class, () -> leaveType.configureApprovalLevels(0));
+		assertThrows(BusinessException.class, () -> leaveType.configureApprovalLevels(3));
 	}
 }

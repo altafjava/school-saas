@@ -1,16 +1,16 @@
 {
   "openapi" : "3.1.0",
   "info" : {
-    "title" : "Platform API",
-    "description" : "## Enterprise Multi-Tenant SaaS Platform API\n\n### Authentication\nClick **Authorize**, enter system admin credentials to log in.\nSwagger will inject the Bearer token automatically on all requests.\n\n### Multi-Tenancy\nSet `X-Tenant-ID` to the tenant slug for tenant-scoped endpoints.\nLeave it blank for system admin (`/api/v1/admin/...`) endpoints.\n\n### Versioning\nAPI is versioned via URL path: `/api/v1/...`\n\n### Rate Limiting\nRate limits apply per tenant. See response headers for limits.\n",
+    "title" : "School SaaS API",
+    "description" : "## School Management SaaS API\n\n### Authentication\nSign in with `POST /api/v1/auth/login` and send the returned access token as\n`Authorization: Bearer <token>`.\n\n### Multi-Tenancy\nEvery school is a tenant. Send its id in `X-Tenant-ID` on tenant-scoped requests.\n\n### Versioning\nThe API is versioned in the URL path: `/api/v1/...`\n\n### Idempotency\nEndpoints that create records or move money require an `Idempotency-Key` header, so a retried\nrequest is applied once.\n\n### Errors\nFailures return `success: false` with a machine-readable `error.code` and an `error.traceId`\nthat matches the `X-Request-Id` response header — quote it when reporting a problem.\n",
     "contact" : {
-      "name" : "Engineering Team",
-      "url" : "https://docs.platform.example.com",
-      "email" : "api-support@platform.example.com"
+      "name" : "School SaaS Engineering",
+      "url" : "https://docs.school-saas.example",
+      "email" : "api-support@school-saas.example"
     },
     "license" : {
       "name" : "Proprietary",
-      "url" : "https://platform.example.com/terms"
+      "url" : "https://school-saas.example/terms"
     },
     "version" : "v1.0.0"
   },
@@ -48,6 +48,12 @@
   }, {
     "name" : "Plan Management",
     "description" : "APIs for managing Plan operations.\n\n**Tenant Scope**: All endpoints are tenant-scoped via X-Tenant-ID header.\n**Auth**: JWT Bearer token required on all endpoints unless marked public."
+  }, {
+    "name" : "Visitor Request",
+    "description" : "APIs for managing Visitor Request operations.\n\n**Tenant Scope**: All endpoints are tenant-scoped via X-Tenant-ID header.\n**Auth**: JWT Bearer token required on all endpoints unless marked public."
+  }, {
+    "name" : "Book Reservation",
+    "description" : "APIs for managing Book Reservation operations.\n\n**Tenant Scope**: All endpoints are tenant-scoped via X-Tenant-ID header.\n**Auth**: JWT Bearer token required on all endpoints unless marked public."
   }, {
     "name" : "Cancellation Management",
     "description" : "APIs for managing Cancellation operations.\n\n**Tenant Scope**: All endpoints are tenant-scoped via X-Tenant-ID header.\n**Auth**: JWT Bearer token required on all endpoints unless marked public."
@@ -150,6 +156,9 @@
   }, {
     "name" : "Admin Metrics",
     "description" : "System performance and business metrics"
+  }, {
+    "name" : "Attendance Scan",
+    "description" : "APIs for managing Attendance Scan operations.\n\n**Tenant Scope**: All endpoints are tenant-scoped via X-Tenant-ID header.\n**Auth**: JWT Bearer token required on all endpoints unless marked public."
   }, {
     "name" : "AdminAuditLog Management",
     "description" : "APIs for managing AdminAuditLog operations.\n\n**Tenant Scope**: All endpoints are tenant-scoped via X-Tenant-ID header.\n**Auth**: JWT Bearer token required on all endpoints unless marked public."
@@ -316,6 +325,9 @@
     "name" : "Payslip",
     "description" : "APIs for managing Payslip operations.\n\n**Tenant Scope**: All endpoints are tenant-scoped via X-Tenant-ID header.\n**Auth**: JWT Bearer token required on all endpoints unless marked public."
   }, {
+    "name" : "Venue",
+    "description" : "APIs for managing Venue operations.\n\n**Tenant Scope**: All endpoints are tenant-scoped via X-Tenant-ID header.\n**Auth**: JWT Bearer token required on all endpoints unless marked public."
+  }, {
     "name" : "Certificate Type",
     "description" : "APIs for managing Certificate Type operations.\n\n**Tenant Scope**: All endpoints are tenant-scoped via X-Tenant-ID header.\n**Auth**: JWT Bearer token required on all endpoints unless marked public."
   }, {
@@ -388,6 +400,9 @@
     "name" : "Assignment",
     "description" : "APIs for managing Assignment operations.\n\n**Tenant Scope**: All endpoints are tenant-scoped via X-Tenant-ID header.\n**Auth**: JWT Bearer token required on all endpoints unless marked public."
   }, {
+    "name" : "Substitution",
+    "description" : "APIs for managing Substitution operations.\n\n**Tenant Scope**: All endpoints are tenant-scoped via X-Tenant-ID header.\n**Auth**: JWT Bearer token required on all endpoints unless marked public."
+  }, {
     "name" : "AdminAnalytics Management",
     "description" : "APIs for managing AdminAnalytics operations.\n\n**Tenant Scope**: All endpoints are tenant-scoped via X-Tenant-ID header.\n**Auth**: JWT Bearer token required on all endpoints unless marked public."
   }, {
@@ -432,6 +447,9 @@
   }, {
     "name" : "EmailVerification Management",
     "description" : "APIs for managing EmailVerification operations.\n\n**Tenant Scope**: All endpoints are tenant-scoped via X-Tenant-ID header.\n**Auth**: JWT Bearer token required on all endpoints unless marked public."
+  }, {
+    "name" : "Student Sibling",
+    "description" : "APIs for managing Student Sibling operations.\n\n**Tenant Scope**: All endpoints are tenant-scoped via X-Tenant-ID header.\n**Auth**: JWT Bearer token required on all endpoints unless marked public."
   }, {
     "name" : "Fee Online Payment",
     "description" : "APIs for managing Fee Online Payment operations.\n\n**Tenant Scope**: All endpoints are tenant-scoped via X-Tenant-ID header.\n**Auth**: JWT Bearer token required on all endpoints unless marked public."
@@ -4463,6 +4481,118 @@
         } ]
       }
     },
+    "/api/v1/visitor-requests" : {
+      "get" : {
+        "tags" : [ "Visitor Request" ],
+        "summary" : "List",
+        "description" : "Every visit request in the school, optionally filtered by status and a visit-date range.",
+        "operationId" : "visitorrequest_list",
+        "parameters" : [ {
+          "name" : "status",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "type" : "string",
+            "enum" : [ "PENDING", "APPROVED", "REJECTED", "CANCELLED", "CHECKED_IN" ]
+          }
+        }, {
+          "name" : "from",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "type" : "string",
+            "format" : "date"
+          }
+        }, {
+          "name" : "to",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "type" : "string",
+            "format" : "date"
+          }
+        }, {
+          "name" : "page",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int32",
+            "default" : 0
+          }
+        }, {
+          "name" : "size",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int32",
+            "default" : 20
+          }
+        }, {
+          "name" : "sort",
+          "in" : "query",
+          "description" : "Repeatable, `field` or `field,asc|desc`, at most 3 fields. Sortable: createdAt, source, status, updatedAt, visitDate.",
+          "required" : false,
+          "schema" : {
+            "type" : "array",
+            "items" : {
+              "type" : "string"
+            }
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiResponsePageVisitorRequestResponse"
+                }
+              }
+            }
+          }
+        },
+        "security" : [ {
+          "bearerAuth" : [ ]
+        }, {
+          "tenantHeader" : [ ]
+        } ]
+      },
+      "post" : {
+        "tags" : [ "Visitor Request" ],
+        "summary" : "Raise",
+        "description" : "Pre-registers a visit for visitDate, or raises a walk-in for today when visitDate is omitted. Hosts can raise visits for themselves; the front desk for any host. The host is notified and the request waits, PENDING, for approval.",
+        "operationId" : "visitorrequest_raise",
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/RaiseVisitorRequestRequest"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "201" : {
+            "description" : "Created",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiResponseVisitorRequestResponse"
+                }
+              }
+            }
+          }
+        },
+        "security" : [ {
+          "bearerAuth" : [ ]
+        }, {
+          "tenantHeader" : [ ]
+        } ]
+      }
+    },
     "/api/v1/visitor-logs" : {
       "get" : {
         "tags" : [ "Visitor Log" ],
@@ -4509,6 +4639,17 @@
             "format" : "int32",
             "default" : 20
           }
+        }, {
+          "name" : "sort",
+          "in" : "query",
+          "description" : "Repeatable, `field` or `field,asc|desc`, at most 3 fields. Sortable: checkInAt, checkOutAt, createdAt, updatedAt.",
+          "required" : false,
+          "schema" : {
+            "type" : "array",
+            "items" : {
+              "type" : "string"
+            }
+          }
         } ],
         "responses" : {
           "200" : {
@@ -4531,6 +4672,7 @@
       "post" : {
         "tags" : [ "Visitor Log" ],
         "summary" : "Check in",
+        "description" : "Admits a visitor against an APPROVED visitor request for today. A photo is required — either already on the request or supplied here — and a badge is issued; it stops being valid at check-out.",
         "operationId" : "visitorlog_checkIn",
         "requestBody" : {
           "content" : {
@@ -4549,6 +4691,93 @@
               "*/*" : {
                 "schema" : {
                   "$ref" : "#/components/schemas/ApiResponseVisitorLogResponse"
+                }
+              }
+            }
+          }
+        },
+        "security" : [ {
+          "bearerAuth" : [ ]
+        }, {
+          "tenantHeader" : [ ]
+        } ]
+      }
+    },
+    "/api/v1/venues" : {
+      "get" : {
+        "tags" : [ "Venue" ],
+        "summary" : "List",
+        "operationId" : "venue_list",
+        "parameters" : [ {
+          "name" : "page",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int32",
+            "default" : 0
+          }
+        }, {
+          "name" : "size",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int32",
+            "default" : 20
+          }
+        }, {
+          "name" : "sort",
+          "in" : "query",
+          "description" : "Repeatable, `field` or `field,asc|desc`, at most 3 fields. Sortable: createdAt, updatedAt.",
+          "required" : false,
+          "schema" : {
+            "type" : "array",
+            "items" : {
+              "type" : "string"
+            }
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiResponsePageVenueResponse"
+                }
+              }
+            }
+          }
+        },
+        "security" : [ {
+          "bearerAuth" : [ ]
+        }, {
+          "tenantHeader" : [ ]
+        } ]
+      },
+      "post" : {
+        "tags" : [ "Venue" ],
+        "summary" : "Create",
+        "description" : "Registers a physical space (classroom, laboratory, hall, ...) that timetable slots can be held in.",
+        "operationId" : "venue_create",
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/CreateVenueRequest"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "201" : {
+            "description" : "Created",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiResponseVenueResponse"
                 }
               }
             }
@@ -4583,6 +4812,17 @@
             "type" : "integer",
             "format" : "int32",
             "default" : 20
+          }
+        }, {
+          "name" : "sort",
+          "in" : "query",
+          "description" : "Repeatable, `field` or `field,asc|desc`, at most 3 fields. Sortable: createdAt, updatedAt.",
+          "required" : false,
+          "schema" : {
+            "type" : "array",
+            "items" : {
+              "type" : "string"
+            }
           }
         } ],
         "responses" : {
@@ -4686,6 +4926,17 @@
             "type" : "integer",
             "format" : "int32",
             "default" : 20
+          }
+        }, {
+          "name" : "sort",
+          "in" : "query",
+          "description" : "Repeatable, `field` or `field,asc|desc`, at most 3 fields. Sortable: createdAt, updatedAt.",
+          "required" : false,
+          "schema" : {
+            "type" : "array",
+            "items" : {
+              "type" : "string"
+            }
           }
         } ],
         "responses" : {
@@ -4960,6 +5211,17 @@
             "format" : "int32",
             "default" : 20
           }
+        }, {
+          "name" : "sort",
+          "in" : "query",
+          "description" : "Repeatable, `field` or `field,asc|desc`, at most 3 fields. Sortable: createdAt, updatedAt.",
+          "required" : false,
+          "schema" : {
+            "type" : "array",
+            "items" : {
+              "type" : "string"
+            }
+          }
         } ],
         "responses" : {
           "200" : {
@@ -5012,6 +5274,73 @@
         } ]
       }
     },
+    "/api/v1/timetable-substitutions" : {
+      "get" : {
+        "tags" : [ "Substitution" ],
+        "summary" : "List on date",
+        "description" : "The substitutions standing on one date.",
+        "operationId" : "substitution_listOn",
+        "parameters" : [ {
+          "name" : "date",
+          "in" : "query",
+          "required" : true,
+          "schema" : {
+            "type" : "string",
+            "format" : "date"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiResponseListSubstitutionResponse"
+                }
+              }
+            }
+          }
+        },
+        "security" : [ {
+          "bearerAuth" : [ ]
+        }, {
+          "tenantHeader" : [ ]
+        } ]
+      },
+      "post" : {
+        "tags" : [ "Substitution" ],
+        "summary" : "Assign",
+        "description" : "Has a free teacher cover one regular slot on one date. The date must fall on the slot's weekday, must not be in the past or a holiday.",
+        "operationId" : "substitution_assign",
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/AssignSubstituteRequest"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "201" : {
+            "description" : "Created",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiResponseSubstitutionResponse"
+                }
+              }
+            }
+          }
+        },
+        "security" : [ {
+          "bearerAuth" : [ ]
+        }, {
+          "tenantHeader" : [ ]
+        } ]
+      }
+    },
     "/api/v1/timetable-entries" : {
       "get" : {
         "tags" : [ "Timetable" ],
@@ -5035,6 +5364,17 @@
             "format" : "int32",
             "default" : 20
           }
+        }, {
+          "name" : "sort",
+          "in" : "query",
+          "description" : "Repeatable, `field` or `field,asc|desc`, at most 3 fields. Sortable: createdAt, updatedAt.",
+          "required" : false,
+          "schema" : {
+            "type" : "array",
+            "items" : {
+              "type" : "string"
+            }
+          }
         } ],
         "responses" : {
           "200" : {
@@ -5057,6 +5397,7 @@
       "post" : {
         "tags" : [ "Timetable" ],
         "summary" : "Schedule",
+        "description" : "A slot cannot double-book its class, its teacher or — when venuePublicId is given — its venue in the same day and period.",
         "operationId" : "timetable_schedule",
         "requestBody" : {
           "content" : {
@@ -5134,6 +5475,17 @@
             "format" : "int32",
             "default" : 20
           }
+        }, {
+          "name" : "sort",
+          "in" : "query",
+          "description" : "Repeatable, `field` or `field,asc|desc`, at most 3 fields. Sortable: category, createdAt, status, subject, updatedAt.",
+          "required" : false,
+          "schema" : {
+            "type" : "array",
+            "items" : {
+              "type" : "string"
+            }
+          }
         } ],
         "responses" : {
           "200" : {
@@ -5208,6 +5560,17 @@
             "type" : "integer",
             "format" : "int32",
             "default" : 20
+          }
+        }, {
+          "name" : "sort",
+          "in" : "query",
+          "description" : "Repeatable, `field` or `field,asc|desc`, at most 3 fields. Sortable: createdAt, updatedAt.",
+          "required" : false,
+          "schema" : {
+            "type" : "array",
+            "items" : {
+              "type" : "string"
+            }
           }
         } ],
         "responses" : {
@@ -5554,6 +5917,17 @@
             "type" : "integer",
             "format" : "int32",
             "default" : 20
+          }
+        }, {
+          "name" : "sort",
+          "in" : "query",
+          "description" : "Repeatable, `field` or `field,asc|desc`, at most 3 fields. Sortable: createdAt, employeeCode, firstName, joinDate, lastName, status, updatedAt.",
+          "required" : false,
+          "schema" : {
+            "type" : "array",
+            "items" : {
+              "type" : "string"
+            }
           }
         } ],
         "responses" : {
@@ -6042,6 +6416,17 @@
             "format" : "int32",
             "default" : 20
           }
+        }, {
+          "name" : "sort",
+          "in" : "query",
+          "description" : "Repeatable, `field` or `field,asc|desc`, at most 3 fields. Sortable: createdAt, updatedAt.",
+          "required" : false,
+          "schema" : {
+            "type" : "array",
+            "items" : {
+              "type" : "string"
+            }
+          }
         } ],
         "responses" : {
           "200" : {
@@ -6125,6 +6510,17 @@
             "type" : "string",
             "enum" : [ "ACTIVE", "SUSPENDED", "GRADUATED", "WITHDRAWN", "TRANSFERRED" ]
           }
+        }, {
+          "name" : "sort",
+          "in" : "query",
+          "description" : "Repeatable, `field` or `field,asc|desc`, at most 3 fields. Sortable: createdAt, dateOfBirth, enrollmentStatus, firstName, lastName, studentCode, updatedAt.",
+          "required" : false,
+          "schema" : {
+            "type" : "array",
+            "items" : {
+              "type" : "string"
+            }
+          }
         } ],
         "responses" : {
           "200" : {
@@ -6165,6 +6561,111 @@
               "*/*" : {
                 "schema" : {
                   "$ref" : "#/components/schemas/ApiResponseStudentResponse"
+                }
+              }
+            }
+          }
+        },
+        "security" : [ {
+          "bearerAuth" : [ ]
+        }, {
+          "tenantHeader" : [ ]
+        } ]
+      }
+    },
+    "/api/v1/students/{studentPublicId}/siblings" : {
+      "get" : {
+        "tags" : [ "Student Sibling" ],
+        "summary" : "List siblings",
+        "description" : "The student's siblings at the school, whatever their enrollment status.",
+        "operationId" : "studentsibling_list",
+        "parameters" : [ {
+          "name" : "studentPublicId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiResponseListSiblingResponse"
+                }
+              }
+            }
+          }
+        },
+        "security" : [ {
+          "bearerAuth" : [ ]
+        }, {
+          "tenantHeader" : [ ]
+        } ]
+      },
+      "post" : {
+        "tags" : [ "Student Sibling" ],
+        "summary" : "Link sibling",
+        "description" : "Records the two students as siblings and returns all of the student's siblings. Siblinghood is transitive: a student who already has siblings brings them all into the family.",
+        "operationId" : "studentsibling_link",
+        "parameters" : [ {
+          "name" : "studentPublicId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/LinkSiblingRequest"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "201" : {
+            "description" : "Created",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiResponseListSiblingResponse"
+                }
+              }
+            }
+          }
+        },
+        "security" : [ {
+          "bearerAuth" : [ ]
+        }, {
+          "tenantHeader" : [ ]
+        } ]
+      },
+      "delete" : {
+        "tags" : [ "Student Sibling" ],
+        "summary" : "Leave sibling group",
+        "description" : "Removes only this student from their siblings. A family left with one member is dissolved.",
+        "operationId" : "studentsibling_leave",
+        "parameters" : [ {
+          "name" : "studentPublicId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "204" : {
+            "description" : "No Content",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiResponseVoid"
                 }
               }
             }
@@ -6383,6 +6884,17 @@
             "format" : "int32",
             "default" : 20
           }
+        }, {
+          "name" : "sort",
+          "in" : "query",
+          "description" : "Repeatable, `field` or `field,asc|desc`, at most 3 fields. Sortable: createdAt, updatedAt.",
+          "required" : false,
+          "schema" : {
+            "type" : "array",
+            "items" : {
+              "type" : "string"
+            }
+          }
         } ],
         "responses" : {
           "200" : {
@@ -6473,6 +6985,17 @@
             "format" : "int32",
             "default" : 20
           }
+        }, {
+          "name" : "sort",
+          "in" : "query",
+          "description" : "Repeatable, `field` or `field,asc|desc`, at most 3 fields. Sortable: createdAt, updatedAt.",
+          "required" : false,
+          "schema" : {
+            "type" : "array",
+            "items" : {
+              "type" : "string"
+            }
+          }
         } ],
         "responses" : {
           "200" : {
@@ -6559,6 +7082,17 @@
             "type" : "integer",
             "format" : "int32",
             "default" : 20
+          }
+        }, {
+          "name" : "sort",
+          "in" : "query",
+          "description" : "Repeatable, `field` or `field,asc|desc`, at most 3 fields. Sortable: createdAt, updatedAt.",
+          "required" : false,
+          "schema" : {
+            "type" : "array",
+            "items" : {
+              "type" : "string"
+            }
           }
         } ],
         "responses" : {
@@ -6759,6 +7293,17 @@
             "format" : "int32",
             "default" : 20
           }
+        }, {
+          "name" : "sort",
+          "in" : "query",
+          "description" : "Repeatable, `field` or `field,asc|desc`, at most 3 fields. Sortable: createdAt, updatedAt.",
+          "required" : false,
+          "schema" : {
+            "type" : "array",
+            "items" : {
+              "type" : "string"
+            }
+          }
         } ],
         "responses" : {
           "200" : {
@@ -6834,6 +7379,17 @@
             "type" : "integer",
             "format" : "int32",
             "default" : 20
+          }
+        }, {
+          "name" : "sort",
+          "in" : "query",
+          "description" : "Repeatable, `field` or `field,asc|desc`, at most 3 fields. Sortable: createdAt, updatedAt.",
+          "required" : false,
+          "schema" : {
+            "type" : "array",
+            "items" : {
+              "type" : "string"
+            }
           }
         } ],
         "responses" : {
@@ -6989,6 +7545,17 @@
             "format" : "int32",
             "default" : 20
           }
+        }, {
+          "name" : "sort",
+          "in" : "query",
+          "description" : "Repeatable, `field` or `field,asc|desc`, at most 3 fields. Sortable: createdAt, updatedAt.",
+          "required" : false,
+          "schema" : {
+            "type" : "array",
+            "items" : {
+              "type" : "string"
+            }
+          }
         } ],
         "responses" : {
           "200" : {
@@ -7078,6 +7645,17 @@
             "type" : "integer",
             "format" : "int32",
             "default" : 20
+          }
+        }, {
+          "name" : "sort",
+          "in" : "query",
+          "description" : "Repeatable, `field` or `field,asc|desc`, at most 3 fields. Sortable: createdAt, updatedAt.",
+          "required" : false,
+          "schema" : {
+            "type" : "array",
+            "items" : {
+              "type" : "string"
+            }
           }
         } ],
         "responses" : {
@@ -7540,6 +8118,17 @@
             "format" : "int32",
             "default" : 20
           }
+        }, {
+          "name" : "sort",
+          "in" : "query",
+          "description" : "Repeatable, `field` or `field,asc|desc`, at most 3 fields. Sortable: createdAt, updatedAt.",
+          "required" : false,
+          "schema" : {
+            "type" : "array",
+            "items" : {
+              "type" : "string"
+            }
+          }
         } ],
         "responses" : {
           "200" : {
@@ -7614,6 +8203,17 @@
             "type" : "integer",
             "format" : "int32",
             "default" : 20
+          }
+        }, {
+          "name" : "sort",
+          "in" : "query",
+          "description" : "Repeatable, `field` or `field,asc|desc`, at most 3 fields. Sortable: createdAt, updatedAt.",
+          "required" : false,
+          "schema" : {
+            "type" : "array",
+            "items" : {
+              "type" : "string"
+            }
           }
         } ],
         "responses" : {
@@ -7995,6 +8595,17 @@
             "format" : "int32",
             "default" : 20
           }
+        }, {
+          "name" : "sort",
+          "in" : "query",
+          "description" : "Repeatable, `field` or `field,asc|desc`, at most 3 fields. Sortable: createdAt, updatedAt.",
+          "required" : false,
+          "schema" : {
+            "type" : "array",
+            "items" : {
+              "type" : "string"
+            }
+          }
         } ],
         "responses" : {
           "200" : {
@@ -8132,6 +8743,17 @@
             "format" : "int32",
             "default" : 20
           }
+        }, {
+          "name" : "sort",
+          "in" : "query",
+          "description" : "Repeatable, `field` or `field,asc|desc`, at most 3 fields. Sortable: createdAt, updatedAt.",
+          "required" : false,
+          "schema" : {
+            "type" : "array",
+            "items" : {
+              "type" : "string"
+            }
+          }
         } ],
         "responses" : {
           "200" : {
@@ -8241,6 +8863,17 @@
             "format" : "int32",
             "default" : 20
           }
+        }, {
+          "name" : "sort",
+          "in" : "query",
+          "description" : "Repeatable, `field` or `field,asc|desc`, at most 3 fields. Sortable: createdAt, updatedAt.",
+          "required" : false,
+          "schema" : {
+            "type" : "array",
+            "items" : {
+              "type" : "string"
+            }
+          }
         } ],
         "responses" : {
           "200" : {
@@ -8315,6 +8948,17 @@
             "type" : "integer",
             "format" : "int32",
             "default" : 20
+          }
+        }, {
+          "name" : "sort",
+          "in" : "query",
+          "description" : "Repeatable, `field` or `field,asc|desc`, at most 3 fields. Sortable: createdAt, daysRequested, endDate, startDate, status, updatedAt.",
+          "required" : false,
+          "schema" : {
+            "type" : "array",
+            "items" : {
+              "type" : "string"
+            }
           }
         } ],
         "responses" : {
@@ -8392,6 +9036,17 @@
             "format" : "int32",
             "default" : 20
           }
+        }, {
+          "name" : "sort",
+          "in" : "query",
+          "description" : "Repeatable, `field` or `field,asc|desc`, at most 3 fields. Sortable: createdAt, updatedAt.",
+          "required" : false,
+          "schema" : {
+            "type" : "array",
+            "items" : {
+              "type" : "string"
+            }
+          }
         } ],
         "responses" : {
           "200" : {
@@ -8467,6 +9122,17 @@
             "format" : "int32",
             "default" : 20
           }
+        }, {
+          "name" : "sort",
+          "in" : "query",
+          "description" : "Repeatable, `field` or `field,asc|desc`, at most 3 fields. Sortable: createdAt, updatedAt.",
+          "required" : false,
+          "schema" : {
+            "type" : "array",
+            "items" : {
+              "type" : "string"
+            }
+          }
         } ],
         "responses" : {
           "200" : {
@@ -8541,6 +9207,17 @@
             "type" : "integer",
             "format" : "int32",
             "default" : 20
+          }
+        }, {
+          "name" : "sort",
+          "in" : "query",
+          "description" : "Repeatable, `field` or `field,asc|desc`, at most 3 fields. Sortable: createdAt, firstName, lastName, updatedAt.",
+          "required" : false,
+          "schema" : {
+            "type" : "array",
+            "items" : {
+              "type" : "string"
+            }
           }
         } ],
         "responses" : {
@@ -8760,6 +9437,17 @@
             "format" : "int32",
             "default" : 20
           }
+        }, {
+          "name" : "sort",
+          "in" : "query",
+          "description" : "Repeatable, `field` or `field,asc|desc`, at most 3 fields. Sortable: createdAt, updatedAt.",
+          "required" : false,
+          "schema" : {
+            "type" : "array",
+            "items" : {
+              "type" : "string"
+            }
+          }
         } ],
         "responses" : {
           "200" : {
@@ -8835,6 +9523,17 @@
             "type" : "integer",
             "format" : "int32",
             "default" : 20
+          }
+        }, {
+          "name" : "sort",
+          "in" : "query",
+          "description" : "Repeatable, `field` or `field,asc|desc`, at most 3 fields. Sortable: createdAt, gradeLetter, marks, updatedAt.",
+          "required" : false,
+          "schema" : {
+            "type" : "array",
+            "items" : {
+              "type" : "string"
+            }
           }
         } ],
         "responses" : {
@@ -8968,6 +9667,17 @@
             "format" : "int32",
             "default" : 20
           }
+        }, {
+          "name" : "sort",
+          "in" : "query",
+          "description" : "Repeatable, `field` or `field,asc|desc`, at most 3 fields. Sortable: amount, createdAt, frequency, name, updatedAt.",
+          "required" : false,
+          "schema" : {
+            "type" : "array",
+            "items" : {
+              "type" : "string"
+            }
+          }
         } ],
         "responses" : {
           "200" : {
@@ -9049,6 +9759,17 @@
             "type" : "integer",
             "format" : "int32",
             "default" : 20
+          }
+        }, {
+          "name" : "sort",
+          "in" : "query",
+          "description" : "Repeatable, `field` or `field,asc|desc`, at most 3 fields. Sortable: createdAt, updatedAt.",
+          "required" : false,
+          "schema" : {
+            "type" : "array",
+            "items" : {
+              "type" : "string"
+            }
           }
         } ],
         "responses" : {
@@ -9132,6 +9853,17 @@
             "type" : "integer",
             "format" : "int32",
             "default" : 20
+          }
+        }, {
+          "name" : "sort",
+          "in" : "query",
+          "description" : "Repeatable, `field` or `field,asc|desc`, at most 3 fields. Sortable: createdAt, paidAmount, paidAt, receiptNumber, updatedAt.",
+          "required" : false,
+          "schema" : {
+            "type" : "array",
+            "items" : {
+              "type" : "string"
+            }
           }
         } ],
         "responses" : {
@@ -9403,6 +10135,17 @@
             "format" : "int32",
             "default" : 20
           }
+        }, {
+          "name" : "sort",
+          "in" : "query",
+          "description" : "Repeatable, `field` or `field,asc|desc`, at most 3 fields. Sortable: createdAt, maxMarks, scheduledAt, status, title, updatedAt.",
+          "required" : false,
+          "schema" : {
+            "type" : "array",
+            "items" : {
+              "type" : "string"
+            }
+          }
         } ],
         "responses" : {
           "200" : {
@@ -9425,7 +10168,7 @@
       "post" : {
         "tags" : [ "Exam" ],
         "summary" : "Schedule",
-        "description" : "Schedules a new exam against a tenant-defined exam type (see Exam Type Definition) — examTypeId must reference an existing, active catalog entry.",
+        "description" : "Schedules a new exam against a tenant-defined exam type (see Exam Type Definition) — examTypeId must reference an existing, active catalog entry. weightage (percent, default 100) is the exam's share of its subject's term result.",
         "operationId" : "exam_schedule",
         "requestBody" : {
           "content" : {
@@ -9440,6 +10183,72 @@
         "responses" : {
           "201" : {
             "description" : "Created",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiResponseExamResponse"
+                }
+              }
+            }
+          }
+        },
+        "security" : [ {
+          "bearerAuth" : [ ]
+        }, {
+          "tenantHeader" : [ ]
+        } ]
+      }
+    },
+    "/api/v1/exams/{publicId}/results/withdraw" : {
+      "post" : {
+        "tags" : [ "Exam" ],
+        "summary" : "Withdraw results",
+        "description" : "Hides a published exam's grades from students and guardians again, e.g. after a marking error is found.",
+        "operationId" : "exam_withdrawResults",
+        "parameters" : [ {
+          "name" : "publicId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiResponseExamResponse"
+                }
+              }
+            }
+          }
+        },
+        "security" : [ {
+          "bearerAuth" : [ ]
+        }, {
+          "tenantHeader" : [ ]
+        } ]
+      }
+    },
+    "/api/v1/exams/{publicId}/results/publish" : {
+      "post" : {
+        "tags" : [ "Exam" ],
+        "summary" : "Publish results",
+        "description" : "Makes a completed exam's grades visible to students and guardians and includes them in report cards and GPA. Requires at least one recorded grade.",
+        "operationId" : "exam_publishResults",
+        "parameters" : [ {
+          "name" : "publicId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "OK",
             "content" : {
               "*/*" : {
                 "schema" : {
@@ -9537,6 +10346,17 @@
             "format" : "int32",
             "default" : 20
           }
+        }, {
+          "name" : "sort",
+          "in" : "query",
+          "description" : "Repeatable, `field` or `field,asc|desc`, at most 3 fields. Sortable: createdAt, eventDate, title, updatedAt.",
+          "required" : false,
+          "schema" : {
+            "type" : "array",
+            "items" : {
+              "type" : "string"
+            }
+          }
         } ],
         "responses" : {
           "200" : {
@@ -9618,6 +10438,17 @@
             "type" : "integer",
             "format" : "int32",
             "default" : 20
+          }
+        }, {
+          "name" : "sort",
+          "in" : "query",
+          "description" : "Repeatable, `field` or `field,asc|desc`, at most 3 fields. Sortable: createdAt, updatedAt.",
+          "required" : false,
+          "schema" : {
+            "type" : "array",
+            "items" : {
+              "type" : "string"
+            }
           }
         } ],
         "responses" : {
@@ -9717,6 +10548,17 @@
             "type" : "integer",
             "format" : "int32",
             "default" : 20
+          }
+        }, {
+          "name" : "sort",
+          "in" : "query",
+          "description" : "Repeatable, `field` or `field,asc|desc`, at most 3 fields. Sortable: createdAt, employeeCode, firstName, joinDate, lastName, staffCategory, status, updatedAt.",
+          "required" : false,
+          "schema" : {
+            "type" : "array",
+            "items" : {
+              "type" : "string"
+            }
           }
         } ],
         "responses" : {
@@ -9910,6 +10752,17 @@
             "format" : "int32",
             "default" : 20
           }
+        }, {
+          "name" : "sort",
+          "in" : "query",
+          "description" : "Repeatable, `field` or `field,asc|desc`, at most 3 fields. Sortable: createdAt, updatedAt.",
+          "required" : false,
+          "schema" : {
+            "type" : "array",
+            "items" : {
+              "type" : "string"
+            }
+          }
         } ],
         "responses" : {
           "200" : {
@@ -10052,6 +10905,17 @@
             "type" : "integer",
             "format" : "int32",
             "default" : 20
+          }
+        }, {
+          "name" : "sort",
+          "in" : "query",
+          "description" : "Repeatable, `field` or `field,asc|desc`, at most 3 fields. Sortable: createdAt, updatedAt.",
+          "required" : false,
+          "schema" : {
+            "type" : "array",
+            "items" : {
+              "type" : "string"
+            }
           }
         } ],
         "responses" : {
@@ -10199,6 +11063,17 @@
             "format" : "int32",
             "default" : 20
           }
+        }, {
+          "name" : "sort",
+          "in" : "query",
+          "description" : "Repeatable, `field` or `field,asc|desc`, at most 3 fields. Sortable: createdAt, updatedAt.",
+          "required" : false,
+          "schema" : {
+            "type" : "array",
+            "items" : {
+              "type" : "string"
+            }
+          }
         } ],
         "responses" : {
           "200" : {
@@ -10275,6 +11150,17 @@
             "format" : "int32",
             "default" : 20
           }
+        }, {
+          "name" : "sort",
+          "in" : "query",
+          "description" : "Repeatable, `field` or `field,asc|desc`, at most 3 fields. Sortable: createdAt, updatedAt.",
+          "required" : false,
+          "schema" : {
+            "type" : "array",
+            "items" : {
+              "type" : "string"
+            }
+          }
         } ],
         "responses" : {
           "200" : {
@@ -10349,6 +11235,17 @@
             "type" : "integer",
             "format" : "int32",
             "default" : 20
+          }
+        }, {
+          "name" : "sort",
+          "in" : "query",
+          "description" : "Repeatable, `field` or `field,asc|desc`, at most 3 fields. Sortable: createdAt, updatedAt.",
+          "required" : false,
+          "schema" : {
+            "type" : "array",
+            "items" : {
+              "type" : "string"
+            }
           }
         } ],
         "responses" : {
@@ -10425,6 +11322,17 @@
             "format" : "int32",
             "default" : 20
           }
+        }, {
+          "name" : "sort",
+          "in" : "query",
+          "description" : "Repeatable, `field` or `field,asc|desc`, at most 3 fields. Sortable: createdAt, updatedAt.",
+          "required" : false,
+          "schema" : {
+            "type" : "array",
+            "items" : {
+              "type" : "string"
+            }
+          }
         } ],
         "responses" : {
           "200" : {
@@ -10499,6 +11407,17 @@
             "type" : "integer",
             "format" : "int32",
             "default" : 20
+          }
+        }, {
+          "name" : "sort",
+          "in" : "query",
+          "description" : "Repeatable, `field` or `field,asc|desc`, at most 3 fields. Sortable: classCode, createdAt, grade, section, updatedAt.",
+          "required" : false,
+          "schema" : {
+            "type" : "array",
+            "items" : {
+              "type" : "string"
+            }
           }
         } ],
         "responses" : {
@@ -10582,6 +11501,17 @@
             "format" : "int32",
             "default" : 20
           }
+        }, {
+          "name" : "sort",
+          "in" : "query",
+          "description" : "Repeatable, `field` or `field,asc|desc`, at most 3 fields. Sortable: createdAt, updatedAt.",
+          "required" : false,
+          "schema" : {
+            "type" : "array",
+            "items" : {
+              "type" : "string"
+            }
+          }
         } ],
         "responses" : {
           "200" : {
@@ -10646,6 +11576,7 @@
       "post" : {
         "tags" : [ "Circulation" ],
         "summary" : "Checkout",
+        "description" : "A copy held for a reservation can only be checked out by the member it is held for.",
         "operationId" : "circulation_checkout",
         "requestBody" : {
           "content" : {
@@ -10698,6 +11629,17 @@
             "type" : "integer",
             "format" : "int32",
             "default" : 20
+          }
+        }, {
+          "name" : "sort",
+          "in" : "query",
+          "description" : "Repeatable, `field` or `field,asc|desc`, at most 3 fields. Sortable: createdAt, updatedAt.",
+          "required" : false,
+          "schema" : {
+            "type" : "array",
+            "items" : {
+              "type" : "string"
+            }
           }
         } ],
         "responses" : {
@@ -10773,6 +11715,17 @@
             "type" : "integer",
             "format" : "int32",
             "default" : 20
+          }
+        }, {
+          "name" : "sort",
+          "in" : "query",
+          "description" : "Repeatable, `field` or `field,asc|desc`, at most 3 fields. Sortable: author, category, createdAt, title, updatedAt.",
+          "required" : false,
+          "schema" : {
+            "type" : "array",
+            "items" : {
+              "type" : "string"
+            }
           }
         } ],
         "responses" : {
@@ -10898,6 +11851,108 @@
         } ]
       }
     },
+    "/api/v1/book-reservations" : {
+      "get" : {
+        "tags" : [ "Book Reservation" ],
+        "summary" : "List",
+        "description" : "Reservations of one book (its queue, oldest first) or of one student — pass exactly one of bookPublicId or studentPublicId.",
+        "operationId" : "bookreservation_list",
+        "parameters" : [ {
+          "name" : "bookPublicId",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "name" : "studentPublicId",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "name" : "page",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int32",
+            "default" : 0
+          }
+        }, {
+          "name" : "size",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int32",
+            "default" : 20
+          }
+        }, {
+          "name" : "sort",
+          "in" : "query",
+          "description" : "Repeatable, `field` or `field,asc|desc`, at most 3 fields. Sortable: createdAt, reservedAt, status, updatedAt.",
+          "required" : false,
+          "schema" : {
+            "type" : "array",
+            "items" : {
+              "type" : "string"
+            }
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiResponsePageBookReservationResponse"
+                }
+              }
+            }
+          }
+        },
+        "security" : [ {
+          "bearerAuth" : [ ]
+        }, {
+          "tenantHeader" : [ ]
+        } ]
+      },
+      "post" : {
+        "tags" : [ "Book Reservation" ],
+        "summary" : "Reserve",
+        "description" : "Queues an active student for a title with no copy on the shelf. When a copy is returned it is held for the longest-waiting reservation until the hold period (library.reservation.hold-days, default 3) runs out.",
+        "operationId" : "bookreservation_reserve",
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/ReserveBookRequest"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "201" : {
+            "description" : "Created",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiResponseBookReservationResponse"
+                }
+              }
+            }
+          }
+        },
+        "security" : [ {
+          "bearerAuth" : [ ]
+        }, {
+          "tenantHeader" : [ ]
+        } ]
+      }
+    },
     "/api/v1/boards" : {
       "get" : {
         "tags" : [ "Board" ],
@@ -10920,6 +11975,17 @@
             "type" : "integer",
             "format" : "int32",
             "default" : 20
+          }
+        }, {
+          "name" : "sort",
+          "in" : "query",
+          "description" : "Repeatable, `field` or `field,asc|desc`, at most 3 fields. Sortable: createdAt, updatedAt.",
+          "required" : false,
+          "schema" : {
+            "type" : "array",
+            "items" : {
+              "type" : "string"
+            }
           }
         } ],
         "responses" : {
@@ -12141,6 +13207,17 @@
             "format" : "int32",
             "default" : 20
           }
+        }, {
+          "name" : "sort",
+          "in" : "query",
+          "description" : "Repeatable, `field` or `field,asc|desc`, at most 3 fields. Sortable: attendanceDate, createdAt, status, updatedAt.",
+          "required" : false,
+          "schema" : {
+            "type" : "array",
+            "items" : {
+              "type" : "string"
+            }
+          }
         } ],
         "responses" : {
           "200" : {
@@ -12181,6 +13258,41 @@
               "*/*" : {
                 "schema" : {
                   "$ref" : "#/components/schemas/ApiResponseAttendanceResponse"
+                }
+              }
+            }
+          }
+        },
+        "security" : [ {
+          "bearerAuth" : [ ]
+        }, {
+          "tenantHeader" : [ ]
+        } ]
+      }
+    },
+    "/api/v1/attendance/scan" : {
+      "post" : {
+        "tags" : [ "Attendance Scan" ],
+        "summary" : "Scan ID card",
+        "description" : "Marks the student on a scanned ID card present for today. payload is whatever the scanner read from the QR code (the card's verification link or bare code). A revoked, non-student or unenrolled card is refused; a repeat scan the same day returns the existing record with alreadyMarked=true.",
+        "operationId" : "attendancescan_scan",
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/ScanAttendanceRequest"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiResponseAttendanceScanResponse"
                 }
               }
             }
@@ -12256,6 +13368,17 @@
             "type" : "integer",
             "format" : "int32",
             "default" : 20
+          }
+        }, {
+          "name" : "sort",
+          "in" : "query",
+          "description" : "Repeatable, `field` or `field,asc|desc`, at most 3 fields. Sortable: createdAt, updatedAt.",
+          "required" : false,
+          "schema" : {
+            "type" : "array",
+            "items" : {
+              "type" : "string"
+            }
           }
         } ],
         "responses" : {
@@ -12340,6 +13463,17 @@
             "format" : "int32",
             "default" : 20
           }
+        }, {
+          "name" : "sort",
+          "in" : "query",
+          "description" : "Repeatable, `field` or `field,asc|desc`, at most 3 fields. Sortable: createdAt, updatedAt.",
+          "required" : false,
+          "schema" : {
+            "type" : "array",
+            "items" : {
+              "type" : "string"
+            }
+          }
         } ],
         "responses" : {
           "200" : {
@@ -12421,6 +13555,17 @@
             "type" : "integer",
             "format" : "int32",
             "default" : 20
+          }
+        }, {
+          "name" : "sort",
+          "in" : "query",
+          "description" : "Repeatable, `field` or `field,asc|desc`, at most 3 fields. Sortable: createdAt, updatedAt.",
+          "required" : false,
+          "schema" : {
+            "type" : "array",
+            "items" : {
+              "type" : "string"
+            }
           }
         } ],
         "responses" : {
@@ -12620,6 +13765,17 @@
             "format" : "int32",
             "default" : 20
           }
+        }, {
+          "name" : "sort",
+          "in" : "query",
+          "description" : "Repeatable, `field` or `field,asc|desc`, at most 3 fields. Sortable: createdAt, updatedAt.",
+          "required" : false,
+          "schema" : {
+            "type" : "array",
+            "items" : {
+              "type" : "string"
+            }
+          }
         } ],
         "responses" : {
           "200" : {
@@ -12693,6 +13849,17 @@
             "type" : "integer",
             "format" : "int32",
             "default" : 20
+          }
+        }, {
+          "name" : "sort",
+          "in" : "query",
+          "description" : "Repeatable, `field` or `field,asc|desc`, at most 3 fields. Sortable: createdAt, updatedAt.",
+          "required" : false,
+          "schema" : {
+            "type" : "array",
+            "items" : {
+              "type" : "string"
+            }
           }
         } ],
         "responses" : {
@@ -12830,6 +13997,17 @@
             "type" : "integer",
             "format" : "int32",
             "default" : 20
+          }
+        }, {
+          "name" : "sort",
+          "in" : "query",
+          "description" : "Repeatable, `field` or `field,asc|desc`, at most 3 fields. Sortable: applicantFirstName, applicantLastName, appliedGrade, createdAt, status, submittedAt, updatedAt.",
+          "required" : false,
+          "schema" : {
+            "type" : "array",
+            "items" : {
+              "type" : "string"
+            }
           }
         } ],
         "responses" : {
@@ -13526,6 +14704,17 @@
             "type" : "integer",
             "format" : "int32",
             "default" : 20
+          }
+        }, {
+          "name" : "sort",
+          "in" : "query",
+          "description" : "Repeatable, `field` or `field,asc|desc`, at most 3 fields. Sortable: createdAt, updatedAt.",
+          "required" : false,
+          "schema" : {
+            "type" : "array",
+            "items" : {
+              "type" : "string"
+            }
           }
         } ],
         "responses" : {
@@ -14617,6 +15806,17 @@
             "format" : "int32",
             "default" : 20
           }
+        }, {
+          "name" : "sort",
+          "in" : "query",
+          "description" : "Repeatable, `field` or `field,asc|desc`, at most 3 fields. Sortable: createdAt, updatedAt.",
+          "required" : false,
+          "schema" : {
+            "type" : "array",
+            "items" : {
+              "type" : "string"
+            }
+          }
         } ],
         "responses" : {
           "200" : {
@@ -14840,6 +16040,17 @@
             "format" : "int32",
             "default" : 20
           }
+        }, {
+          "name" : "sort",
+          "in" : "query",
+          "description" : "Repeatable, `field` or `field,asc|desc`, at most 3 fields. Sortable: createdAt, updatedAt.",
+          "required" : false,
+          "schema" : {
+            "type" : "array",
+            "items" : {
+              "type" : "string"
+            }
+          }
         } ],
         "responses" : {
           "200" : {
@@ -14960,6 +16171,156 @@
         } ]
       }
     },
+    "/api/v1/visitor-requests/{publicId}/reject" : {
+      "patch" : {
+        "tags" : [ "Visitor Request" ],
+        "summary" : "Reject",
+        "operationId" : "visitorrequest_reject",
+        "parameters" : [ {
+          "name" : "publicId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/RejectVisitorRequestRequest"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiResponseVisitorRequestResponse"
+                }
+              }
+            }
+          }
+        },
+        "security" : [ {
+          "bearerAuth" : [ ]
+        }, {
+          "tenantHeader" : [ ]
+        } ]
+      }
+    },
+    "/api/v1/visitor-requests/{publicId}/photo" : {
+      "patch" : {
+        "tags" : [ "Visitor Request" ],
+        "summary" : "Attach photo",
+        "description" : "Records the visitor's photo, uploaded beforehand through the file API, so it is ready at the gate.",
+        "operationId" : "visitorrequest_attachPhoto",
+        "parameters" : [ {
+          "name" : "publicId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/AttachVisitorPhotoRequest"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiResponseVisitorRequestResponse"
+                }
+              }
+            }
+          }
+        },
+        "security" : [ {
+          "bearerAuth" : [ ]
+        }, {
+          "tenantHeader" : [ ]
+        } ]
+      }
+    },
+    "/api/v1/visitor-requests/{publicId}/cancel" : {
+      "patch" : {
+        "tags" : [ "Visitor Request" ],
+        "summary" : "Cancel",
+        "operationId" : "visitorrequest_cancel",
+        "parameters" : [ {
+          "name" : "publicId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiResponseVisitorRequestResponse"
+                }
+              }
+            }
+          }
+        },
+        "security" : [ {
+          "bearerAuth" : [ ]
+        }, {
+          "tenantHeader" : [ ]
+        } ]
+      }
+    },
+    "/api/v1/visitor-requests/{publicId}/approve" : {
+      "patch" : {
+        "tags" : [ "Visitor Request" ],
+        "summary" : "Approve",
+        "description" : "By the host or a visitor-request approver. Only an approved visit for today can be checked in.",
+        "operationId" : "visitorrequest_approve",
+        "parameters" : [ {
+          "name" : "publicId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiResponseVisitorRequestResponse"
+                }
+              }
+            }
+          }
+        },
+        "security" : [ {
+          "bearerAuth" : [ ]
+        }, {
+          "tenantHeader" : [ ]
+        } ]
+      }
+    },
     "/api/v1/visitor-logs/{publicId}/check-out" : {
       "patch" : {
         "tags" : [ "Visitor Log" ],
@@ -14980,6 +16341,143 @@
               "*/*" : {
                 "schema" : {
                   "$ref" : "#/components/schemas/ApiResponseVisitorLogResponse"
+                }
+              }
+            }
+          }
+        },
+        "security" : [ {
+          "bearerAuth" : [ ]
+        }, {
+          "tenantHeader" : [ ]
+        } ]
+      }
+    },
+    "/api/v1/venues/{publicId}" : {
+      "get" : {
+        "tags" : [ "Venue" ],
+        "summary" : "Get",
+        "operationId" : "venue_get",
+        "parameters" : [ {
+          "name" : "publicId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiResponseVenueResponse"
+                }
+              }
+            }
+          }
+        },
+        "security" : [ {
+          "bearerAuth" : [ ]
+        }, {
+          "tenantHeader" : [ ]
+        } ]
+      },
+      "patch" : {
+        "tags" : [ "Venue" ],
+        "summary" : "Update",
+        "operationId" : "venue_update",
+        "parameters" : [ {
+          "name" : "publicId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/UpdateVenueRequest"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiResponseVenueResponse"
+                }
+              }
+            }
+          }
+        },
+        "security" : [ {
+          "bearerAuth" : [ ]
+        }, {
+          "tenantHeader" : [ ]
+        } ]
+      }
+    },
+    "/api/v1/venues/{publicId}/deactivate" : {
+      "patch" : {
+        "tags" : [ "Venue" ],
+        "summary" : "Deactivate",
+        "description" : "A deactivated venue cannot be given to new timetable slots; existing bookings stay.",
+        "operationId" : "venue_deactivate",
+        "parameters" : [ {
+          "name" : "publicId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiResponseVenueResponse"
+                }
+              }
+            }
+          }
+        },
+        "security" : [ {
+          "bearerAuth" : [ ]
+        }, {
+          "tenantHeader" : [ ]
+        } ]
+      }
+    },
+    "/api/v1/venues/{publicId}/activate" : {
+      "patch" : {
+        "tags" : [ "Venue" ],
+        "summary" : "Activate",
+        "operationId" : "venue_activate",
+        "parameters" : [ {
+          "name" : "publicId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiResponseVenueResponse"
                 }
               }
             }
@@ -15257,6 +16755,91 @@
               "*/*" : {
                 "schema" : {
                   "$ref" : "#/components/schemas/ApiResponseTransportAssignmentResponse"
+                }
+              }
+            }
+          }
+        },
+        "security" : [ {
+          "bearerAuth" : [ ]
+        }, {
+          "tenantHeader" : [ ]
+        } ]
+      }
+    },
+    "/api/v1/timetable-substitutions/{publicId}/cancel" : {
+      "patch" : {
+        "tags" : [ "Substitution" ],
+        "summary" : "Cancel",
+        "operationId" : "substitution_cancel",
+        "parameters" : [ {
+          "name" : "publicId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/CancelSubstitutionRequest"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiResponseSubstitutionResponse"
+                }
+              }
+            }
+          }
+        },
+        "security" : [ {
+          "bearerAuth" : [ ]
+        }, {
+          "tenantHeader" : [ ]
+        } ]
+      }
+    },
+    "/api/v1/timetable-entries/{publicId}/venue" : {
+      "patch" : {
+        "tags" : [ "Timetable" ],
+        "summary" : "Assign venue",
+        "description" : "Holds the slot in a venue; refused if another slot already uses that venue in the same day and period.",
+        "operationId" : "timetable_assignVenue",
+        "parameters" : [ {
+          "name" : "publicId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/AssignTimetableVenueRequest"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiResponseTimetableEntryResponse"
                 }
               }
             }
@@ -17159,6 +18742,49 @@
         } ]
       }
     },
+    "/api/v1/leave-types/{publicId}/approval-levels" : {
+      "patch" : {
+        "tags" : [ "Leave Type" ],
+        "summary" : "Configure approval levels",
+        "description" : "1 leaves the decision to a leave administrator; 2 makes the requester's department head approve first. Applies to requests submitted afterwards.",
+        "operationId" : "leavetype_configureApprovalLevels",
+        "parameters" : [ {
+          "name" : "publicId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/ConfigureLeaveApprovalRequest"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiResponseLeaveTypeResponse"
+                }
+              }
+            }
+          }
+        },
+        "security" : [ {
+          "bearerAuth" : [ ]
+        }, {
+          "tenantHeader" : [ ]
+        } ]
+      }
+    },
     "/api/v1/leave-types/{publicId}/allow-during-probation" : {
       "patch" : {
         "tags" : [ "Leave Type" ],
@@ -17269,7 +18895,7 @@
       "patch" : {
         "tags" : [ "Leave Request" ],
         "summary" : "Approve",
-        "description" : "Approves the request and atomically deducts the days from the employee's leave balance for that type and academic year.",
+        "description" : "Records the caller's approval for the level the request is waiting on: the requester's department head first when the leave type asks for it, then a leave administrator. The final approval atomically deducts the days from the employee's leave balance for that type and academic year. Nobody can decide their own request or approve at two levels.",
         "operationId" : "leaverequest_approve",
         "parameters" : [ {
           "name" : "publicId",
@@ -18183,6 +19809,49 @@
               "*/*" : {
                 "schema" : {
                   "$ref" : "#/components/schemas/ApiResponseFeeStructureResponse"
+                }
+              }
+            }
+          }
+        },
+        "security" : [ {
+          "bearerAuth" : [ ]
+        }, {
+          "tenantHeader" : [ ]
+        } ]
+      }
+    },
+    "/api/v1/exams/{publicId}/weightage" : {
+      "patch" : {
+        "tags" : [ "Exam" ],
+        "summary" : "Reweight",
+        "description" : "Sets the exam's percentage weight in its subject's term result. The exams of one subject in one term may weigh at most 100 together; locked once results are published.",
+        "operationId" : "exam_reweight",
+        "parameters" : [ {
+          "name" : "publicId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/ReweightExamRequest"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiResponseExamResponse"
                 }
               }
             }
@@ -19827,6 +21496,39 @@
         } ]
       }
     },
+    "/api/v1/circulations/{publicId}/renew" : {
+      "patch" : {
+        "tags" : [ "Circulation" ],
+        "summary" : "Renew",
+        "description" : "Extends the due date by another loan period. Refused when the loan is overdue, has used its renewals (library.renewal.max-count, default 2), or another member is queuing for the title.",
+        "operationId" : "circulation_renew",
+        "parameters" : [ {
+          "name" : "publicId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiResponseCirculationResponse"
+                }
+              }
+            }
+          }
+        },
+        "security" : [ {
+          "bearerAuth" : [ ]
+        }, {
+          "tenantHeader" : [ ]
+        } ]
+      }
+    },
     "/api/v1/certificate-types/{publicId}" : {
       "get" : {
         "tags" : [ "Certificate Type" ],
@@ -20047,6 +21749,39 @@
               "*/*" : {
                 "schema" : {
                   "$ref" : "#/components/schemas/ApiResponseBookCopyResponse"
+                }
+              }
+            }
+          }
+        },
+        "security" : [ {
+          "bearerAuth" : [ ]
+        }, {
+          "tenantHeader" : [ ]
+        } ]
+      }
+    },
+    "/api/v1/book-reservations/{publicId}/cancel" : {
+      "patch" : {
+        "tags" : [ "Book Reservation" ],
+        "summary" : "Cancel",
+        "description" : "Withdraws a reservation. A copy being held for it goes to the next member in the queue, or back on the shelf.",
+        "operationId" : "bookreservation_cancel",
+        "parameters" : [ {
+          "name" : "publicId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiResponseBookReservationResponse"
                 }
               }
             }
@@ -21359,6 +23094,117 @@
         }
       }
     },
+    "/api/v1/visitor-requests/{publicId}" : {
+      "get" : {
+        "tags" : [ "Visitor Request" ],
+        "summary" : "Get",
+        "operationId" : "visitorrequest_get",
+        "parameters" : [ {
+          "name" : "publicId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiResponseVisitorRequestResponse"
+                }
+              }
+            }
+          }
+        },
+        "security" : [ {
+          "bearerAuth" : [ ]
+        }, {
+          "tenantHeader" : [ ]
+        } ]
+      }
+    },
+    "/api/v1/visitor-requests/hosted-by-me" : {
+      "get" : {
+        "tags" : [ "Visitor Request" ],
+        "summary" : "List hosted by me",
+        "description" : "Visits where the current employee is the host.",
+        "operationId" : "visitorrequest_listHostedByMe",
+        "parameters" : [ {
+          "name" : "status",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "type" : "string",
+            "enum" : [ "PENDING", "APPROVED", "REJECTED", "CANCELLED", "CHECKED_IN" ]
+          }
+        }, {
+          "name" : "from",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "type" : "string",
+            "format" : "date"
+          }
+        }, {
+          "name" : "to",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "type" : "string",
+            "format" : "date"
+          }
+        }, {
+          "name" : "page",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int32",
+            "default" : 0
+          }
+        }, {
+          "name" : "size",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int32",
+            "default" : 20
+          }
+        }, {
+          "name" : "sort",
+          "in" : "query",
+          "description" : "Repeatable, `field` or `field,asc|desc`, at most 3 fields. Sortable: createdAt, source, status, updatedAt, visitDate.",
+          "required" : false,
+          "schema" : {
+            "type" : "array",
+            "items" : {
+              "type" : "string"
+            }
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiResponsePageVisitorRequestResponse"
+                }
+              }
+            }
+          }
+        },
+        "security" : [ {
+          "bearerAuth" : [ ]
+        }, {
+          "tenantHeader" : [ ]
+        } ]
+      }
+    },
     "/api/v1/visitor-logs/{publicId}" : {
       "get" : {
         "tags" : [ "Visitor Log" ],
@@ -21379,6 +23225,40 @@
               "*/*" : {
                 "schema" : {
                   "$ref" : "#/components/schemas/ApiResponseVisitorLogResponse"
+                }
+              }
+            }
+          }
+        },
+        "security" : [ {
+          "bearerAuth" : [ ]
+        }, {
+          "tenantHeader" : [ ]
+        } ]
+      }
+    },
+    "/api/v1/visitor-logs/{publicId}/badge" : {
+      "get" : {
+        "tags" : [ "Visitor Log" ],
+        "summary" : "Download badge",
+        "description" : "The visitor's badge as a PDF.",
+        "operationId" : "visitorlog_downloadBadge",
+        "parameters" : [ {
+          "name" : "publicId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "type" : "string",
+                  "format" : "byte"
                 }
               }
             }
@@ -21603,6 +23483,81 @@
         } ]
       }
     },
+    "/api/v1/timetable-substitutions/uncovered" : {
+      "get" : {
+        "tags" : [ "Substitution" ],
+        "summary" : "List uncovered",
+        "description" : "Slots on the date whose regular teacher is on approved leave and that have no substitute yet.",
+        "operationId" : "substitution_listUncovered",
+        "parameters" : [ {
+          "name" : "date",
+          "in" : "query",
+          "required" : true,
+          "schema" : {
+            "type" : "string",
+            "format" : "date"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiResponseListTimetableEntryResponse"
+                }
+              }
+            }
+          }
+        },
+        "security" : [ {
+          "bearerAuth" : [ ]
+        }, {
+          "tenantHeader" : [ ]
+        } ]
+      }
+    },
+    "/api/v1/timetable-substitutions/available-teachers" : {
+      "get" : {
+        "tags" : [ "Substitution" ],
+        "summary" : "List available teachers",
+        "description" : "Active teachers free to cover the slot on the date: not teaching, covering or on approved leave in that period.",
+        "operationId" : "substitution_listAvailableTeachers",
+        "parameters" : [ {
+          "name" : "timetableEntryPublicId",
+          "in" : "query",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "name" : "date",
+          "in" : "query",
+          "required" : true,
+          "schema" : {
+            "type" : "string",
+            "format" : "date"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiResponseListAvailableTeacherResponse"
+                }
+              }
+            }
+          }
+        },
+        "security" : [ {
+          "bearerAuth" : [ ]
+        }, {
+          "tenantHeader" : [ ]
+        } ]
+      }
+    },
     "/api/v1/timetable-entries/{publicId}" : {
       "get" : {
         "tags" : [ "Timetable" ],
@@ -21689,6 +23644,17 @@
             "type" : "integer",
             "format" : "int32",
             "default" : 20
+          }
+        }, {
+          "name" : "sort",
+          "in" : "query",
+          "description" : "Repeatable, `field` or `field,asc|desc`, at most 3 fields. Sortable: createdAt, updatedAt.",
+          "required" : false,
+          "schema" : {
+            "type" : "array",
+            "items" : {
+              "type" : "string"
+            }
           }
         } ],
         "responses" : {
@@ -22311,6 +24277,39 @@
         } ]
       }
     },
+    "/api/v1/students/{studentPublicId}/siblings/suggestions" : {
+      "get" : {
+        "tags" : [ "Student Sibling" ],
+        "summary" : "Suggest siblings",
+        "description" : "Students sharing a guardian with this one who are not yet recorded as siblings.",
+        "operationId" : "studentsibling_suggest",
+        "parameters" : [ {
+          "name" : "studentPublicId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiResponseListSiblingResponse"
+                }
+              }
+            }
+          }
+        },
+        "security" : [ {
+          "bearerAuth" : [ ]
+        }, {
+          "tenantHeader" : [ ]
+        } ]
+      }
+    },
     "/api/v1/students/{studentPublicId}/pickup-authorizations" : {
       "get" : {
         "tags" : [ "Student Pickup" ],
@@ -22660,6 +24659,17 @@
             "format" : "int32",
             "default" : 20
           }
+        }, {
+          "name" : "sort",
+          "in" : "query",
+          "description" : "Repeatable, `field` or `field,asc|desc`, at most 3 fields. Sortable: createdAt, updatedAt.",
+          "required" : false,
+          "schema" : {
+            "type" : "array",
+            "items" : {
+              "type" : "string"
+            }
+          }
         } ],
         "responses" : {
           "200" : {
@@ -22884,6 +24894,17 @@
             "format" : "int32",
             "default" : 20
           }
+        }, {
+          "name" : "sort",
+          "in" : "query",
+          "description" : "Repeatable, `field` or `field,asc|desc`, at most 3 fields. Sortable: createdAt, updatedAt.",
+          "required" : false,
+          "schema" : {
+            "type" : "array",
+            "items" : {
+              "type" : "string"
+            }
+          }
         } ],
         "responses" : {
           "200" : {
@@ -22989,6 +25010,17 @@
             "type" : "integer",
             "format" : "int32",
             "default" : 20
+          }
+        }, {
+          "name" : "sort",
+          "in" : "query",
+          "description" : "Repeatable, `field` or `field,asc|desc`, at most 3 fields. Sortable: createdAt, updatedAt.",
+          "required" : false,
+          "schema" : {
+            "type" : "array",
+            "items" : {
+              "type" : "string"
+            }
           }
         } ],
         "responses" : {
@@ -23304,6 +25336,17 @@
             "format" : "int32",
             "default" : 20
           }
+        }, {
+          "name" : "sort",
+          "in" : "query",
+          "description" : "Repeatable, `field` or `field,asc|desc`, at most 3 fields. Sortable: createdAt, netPay, payMonth, payYear, status, updatedAt.",
+          "required" : false,
+          "schema" : {
+            "type" : "array",
+            "items" : {
+              "type" : "string"
+            }
+          }
         } ],
         "responses" : {
           "200" : {
@@ -23614,6 +25657,17 @@
             "format" : "int32",
             "default" : 20
           }
+        }, {
+          "name" : "sort",
+          "in" : "query",
+          "description" : "Repeatable, `field` or `field,asc|desc`, at most 3 fields. Sortable: createdAt, updatedAt.",
+          "required" : false,
+          "schema" : {
+            "type" : "array",
+            "items" : {
+              "type" : "string"
+            }
+          }
         } ],
         "responses" : {
           "200" : {
@@ -23664,6 +25718,17 @@
             "format" : "int32",
             "default" : 20
           }
+        }, {
+          "name" : "sort",
+          "in" : "query",
+          "description" : "Repeatable, `field` or `field,asc|desc`, at most 3 fields. Sortable: createdAt, updatedAt.",
+          "required" : false,
+          "schema" : {
+            "type" : "array",
+            "items" : {
+              "type" : "string"
+            }
+          }
         } ],
         "responses" : {
           "200" : {
@@ -23708,6 +25773,39 @@
         } ]
       }
     },
+    "/api/v1/leave-requests/{publicId}/approvals" : {
+      "get" : {
+        "tags" : [ "Leave Request" ],
+        "summary" : "List approvals",
+        "description" : "The decision trail of one request: who decided at which level, and when.",
+        "operationId" : "leaverequest_listApprovals",
+        "parameters" : [ {
+          "name" : "publicId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiResponseListLeaveApprovalResponse"
+                }
+              }
+            }
+          }
+        },
+        "security" : [ {
+          "bearerAuth" : [ ]
+        }, {
+          "tenantHeader" : [ ]
+        } ]
+      }
+    },
     "/api/v1/leave-requests/my" : {
       "get" : {
         "tags" : [ "Leave Request" ],
@@ -23731,6 +25829,17 @@
             "type" : "integer",
             "format" : "int32",
             "default" : 20
+          }
+        }, {
+          "name" : "sort",
+          "in" : "query",
+          "description" : "Repeatable, `field` or `field,asc|desc`, at most 3 fields. Sortable: createdAt, daysRequested, endDate, startDate, status, updatedAt.",
+          "required" : false,
+          "schema" : {
+            "type" : "array",
+            "items" : {
+              "type" : "string"
+            }
           }
         } ],
         "responses" : {
@@ -23772,6 +25881,61 @@
               "*/*" : {
                 "schema" : {
                   "$ref" : "#/components/schemas/ApiResponseListLeaveBalanceResponse"
+                }
+              }
+            }
+          }
+        },
+        "security" : [ {
+          "bearerAuth" : [ ]
+        }, {
+          "tenantHeader" : [ ]
+        } ]
+      }
+    },
+    "/api/v1/leave-requests/awaiting-review" : {
+      "get" : {
+        "tags" : [ "Leave Request" ],
+        "summary" : "List awaiting my review",
+        "description" : "Requests waiting for the current employee's approval as head of the requester's department.",
+        "operationId" : "leaverequest_listAwaitingMyReview",
+        "parameters" : [ {
+          "name" : "page",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int32",
+            "default" : 0
+          }
+        }, {
+          "name" : "size",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int32",
+            "default" : 20
+          }
+        }, {
+          "name" : "sort",
+          "in" : "query",
+          "description" : "Repeatable, `field` or `field,asc|desc`, at most 3 fields. Sortable: createdAt, updatedAt.",
+          "required" : false,
+          "schema" : {
+            "type" : "array",
+            "items" : {
+              "type" : "string"
+            }
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiResponsePageLeaveRequestResponse"
                 }
               }
             }
@@ -23837,6 +26001,17 @@
             "type" : "integer",
             "format" : "int32",
             "default" : 20
+          }
+        }, {
+          "name" : "sort",
+          "in" : "query",
+          "description" : "Repeatable, `field` or `field,asc|desc`, at most 3 fields. Sortable: createdAt, updatedAt.",
+          "required" : false,
+          "schema" : {
+            "type" : "array",
+            "items" : {
+              "type" : "string"
+            }
           }
         } ],
         "responses" : {
@@ -23977,6 +26152,17 @@
             "format" : "int32",
             "default" : 20
           }
+        }, {
+          "name" : "sort",
+          "in" : "query",
+          "description" : "Repeatable, `field` or `field,asc|desc`, at most 3 fields. Sortable: createdAt, updatedAt.",
+          "required" : false,
+          "schema" : {
+            "type" : "array",
+            "items" : {
+              "type" : "string"
+            }
+          }
         } ],
         "responses" : {
           "200" : {
@@ -24091,6 +26277,17 @@
             "format" : "int32",
             "default" : 20
           }
+        }, {
+          "name" : "sort",
+          "in" : "query",
+          "description" : "Repeatable, `field` or `field,asc|desc`, at most 3 fields. Sortable: createdAt, updatedAt.",
+          "required" : false,
+          "schema" : {
+            "type" : "array",
+            "items" : {
+              "type" : "string"
+            }
+          }
         } ],
         "responses" : {
           "200" : {
@@ -24148,6 +26345,17 @@
             "type" : "integer",
             "format" : "int32",
             "default" : 20
+          }
+        }, {
+          "name" : "sort",
+          "in" : "query",
+          "description" : "Repeatable, `field` or `field,asc|desc`, at most 3 fields. Sortable: createdAt, updatedAt.",
+          "required" : false,
+          "schema" : {
+            "type" : "array",
+            "items" : {
+              "type" : "string"
+            }
           }
         } ],
         "responses" : {
@@ -24261,6 +26469,17 @@
             "type" : "integer",
             "format" : "int32",
             "default" : 20
+          }
+        }, {
+          "name" : "sort",
+          "in" : "query",
+          "description" : "Repeatable, `field` or `field,asc|desc`, at most 3 fields. Sortable: createdAt, updatedAt.",
+          "required" : false,
+          "schema" : {
+            "type" : "array",
+            "items" : {
+              "type" : "string"
+            }
           }
         } ],
         "responses" : {
@@ -24658,6 +26877,17 @@
             "format" : "int32",
             "default" : 20
           }
+        }, {
+          "name" : "sort",
+          "in" : "query",
+          "description" : "Repeatable, `field` or `field,asc|desc`, at most 3 fields. Sortable: createdAt, updatedAt.",
+          "required" : false,
+          "schema" : {
+            "type" : "array",
+            "items" : {
+              "type" : "string"
+            }
+          }
         } ],
         "responses" : {
           "200" : {
@@ -25026,6 +27256,17 @@
             "format" : "int32",
             "default" : 20
           }
+        }, {
+          "name" : "sort",
+          "in" : "query",
+          "description" : "Repeatable, `field` or `field,asc|desc`, at most 3 fields. Sortable: createdAt, updatedAt.",
+          "required" : false,
+          "schema" : {
+            "type" : "array",
+            "items" : {
+              "type" : "string"
+            }
+          }
         } ],
         "responses" : {
           "200" : {
@@ -25107,6 +27348,17 @@
             "type" : "integer",
             "format" : "int32",
             "default" : 20
+          }
+        }, {
+          "name" : "sort",
+          "in" : "query",
+          "description" : "Repeatable, `field` or `field,asc|desc`, at most 3 fields. Sortable: createdAt, updatedAt.",
+          "required" : false,
+          "schema" : {
+            "type" : "array",
+            "items" : {
+              "type" : "string"
+            }
           }
         } ],
         "responses" : {
@@ -25221,6 +27473,17 @@
             "type" : "integer",
             "format" : "int32",
             "default" : 20
+          }
+        }, {
+          "name" : "sort",
+          "in" : "query",
+          "description" : "Repeatable, `field` or `field,asc|desc`, at most 3 fields. Sortable: createdAt, updatedAt.",
+          "required" : false,
+          "schema" : {
+            "type" : "array",
+            "items" : {
+              "type" : "string"
+            }
           }
         } ],
         "responses" : {
@@ -25472,6 +27735,17 @@
             "format" : "int32",
             "default" : 10
           }
+        }, {
+          "name" : "sort",
+          "in" : "query",
+          "description" : "Repeatable, `field` or `field,asc|desc`, at most 3 fields. Sortable: createdAt, updatedAt.",
+          "required" : false,
+          "schema" : {
+            "type" : "array",
+            "items" : {
+              "type" : "string"
+            }
+          }
         } ],
         "responses" : {
           "200" : {
@@ -25625,6 +27899,17 @@
             "type" : "integer",
             "format" : "int32",
             "default" : 10
+          }
+        }, {
+          "name" : "sort",
+          "in" : "query",
+          "description" : "Repeatable, `field` or `field,asc|desc`, at most 3 fields. Sortable: createdAt, updatedAt.",
+          "required" : false,
+          "schema" : {
+            "type" : "array",
+            "items" : {
+              "type" : "string"
+            }
           }
         } ],
         "responses" : {
@@ -25914,6 +28199,17 @@
             "format" : "int32",
             "default" : 20
           }
+        }, {
+          "name" : "sort",
+          "in" : "query",
+          "description" : "Repeatable, `field` or `field,asc|desc`, at most 3 fields. Sortable: createdAt, updatedAt.",
+          "required" : false,
+          "schema" : {
+            "type" : "array",
+            "items" : {
+              "type" : "string"
+            }
+          }
         } ],
         "responses" : {
           "200" : {
@@ -25963,6 +28259,17 @@
             "type" : "integer",
             "format" : "int32",
             "default" : 20
+          }
+        }, {
+          "name" : "sort",
+          "in" : "query",
+          "description" : "Repeatable, `field` or `field,asc|desc`, at most 3 fields. Sortable: createdAt, updatedAt.",
+          "required" : false,
+          "schema" : {
+            "type" : "array",
+            "items" : {
+              "type" : "string"
+            }
           }
         } ],
         "responses" : {
@@ -26071,6 +28378,17 @@
             "format" : "int32",
             "default" : 20
           }
+        }, {
+          "name" : "sort",
+          "in" : "query",
+          "description" : "Repeatable, `field` or `field,asc|desc`, at most 3 fields. Sortable: createdAt, updatedAt.",
+          "required" : false,
+          "schema" : {
+            "type" : "array",
+            "items" : {
+              "type" : "string"
+            }
+          }
         } ],
         "responses" : {
           "200" : {
@@ -26113,6 +28431,17 @@
             "type" : "integer",
             "format" : "int32",
             "default" : 20
+          }
+        }, {
+          "name" : "sort",
+          "in" : "query",
+          "description" : "Repeatable, `field` or `field,asc|desc`, at most 3 fields. Sortable: createdAt, updatedAt.",
+          "required" : false,
+          "schema" : {
+            "type" : "array",
+            "items" : {
+              "type" : "string"
+            }
           }
         } ],
         "responses" : {
@@ -26396,6 +28725,17 @@
             "type" : "integer",
             "format" : "int32",
             "default" : 20
+          }
+        }, {
+          "name" : "sort",
+          "in" : "query",
+          "description" : "Repeatable, `field` or `field,asc|desc`, at most 3 fields. Sortable: createdAt, updatedAt.",
+          "required" : false,
+          "schema" : {
+            "type" : "array",
+            "items" : {
+              "type" : "string"
+            }
           }
         } ],
         "responses" : {
@@ -26713,6 +29053,17 @@
             "type" : "string",
             "format" : "date-time"
           }
+        }, {
+          "name" : "sort",
+          "in" : "query",
+          "description" : "Repeatable, `field` or `field,asc|desc`, at most 3 fields. Sortable: createdAt, updatedAt.",
+          "required" : false,
+          "schema" : {
+            "type" : "array",
+            "items" : {
+              "type" : "string"
+            }
+          }
         } ],
         "responses" : {
           "200" : {
@@ -26779,6 +29130,17 @@
             "format" : "int32",
             "default" : 20
           }
+        }, {
+          "name" : "sort",
+          "in" : "query",
+          "description" : "Repeatable, `field` or `field,asc|desc`, at most 3 fields. Sortable: createdAt, updatedAt.",
+          "required" : false,
+          "schema" : {
+            "type" : "array",
+            "items" : {
+              "type" : "string"
+            }
+          }
         } ],
         "responses" : {
           "200" : {
@@ -26844,6 +29206,17 @@
             "type" : "integer",
             "format" : "int32",
             "default" : 20
+          }
+        }, {
+          "name" : "sort",
+          "in" : "query",
+          "description" : "Repeatable, `field` or `field,asc|desc`, at most 3 fields. Sortable: createdAt, updatedAt.",
+          "required" : false,
+          "schema" : {
+            "type" : "array",
+            "items" : {
+              "type" : "string"
+            }
           }
         } ],
         "responses" : {
@@ -27773,6 +30146,17 @@
           "schema" : {
             "type" : "string",
             "default" : "desc"
+          }
+        }, {
+          "name" : "sort",
+          "in" : "query",
+          "description" : "Repeatable, `field` or `field,asc|desc`, at most 3 fields. Sortable: createdAt, updatedAt.",
+          "required" : false,
+          "schema" : {
+            "type" : "array",
+            "items" : {
+              "type" : "string"
+            }
           }
         } ],
         "responses" : {
@@ -30823,7 +33207,7 @@
           }
         }
       },
-      "CheckInVisitorRequest" : {
+      "RaiseVisitorRequestRequest" : {
         "type" : "object",
         "properties" : {
           "visitorName" : {
@@ -30841,12 +33225,91 @@
             "maxLength" : 500,
             "minLength" : 0
           },
-          "hostTeacherPublicId" : {
+          "hostEmployeePublicId" : {
             "type" : "string",
             "minLength" : 1
+          },
+          "visitDate" : {
+            "type" : "string",
+            "format" : "date"
           }
         },
-        "required" : [ "hostTeacherPublicId", "purpose", "visitorName" ]
+        "required" : [ "hostEmployeePublicId", "purpose", "visitorName" ]
+      },
+      "ApiResponseVisitorRequestResponse" : {
+        "type" : "object",
+        "properties" : {
+          "success" : {
+            "type" : "boolean"
+          },
+          "data" : {
+            "$ref" : "#/components/schemas/VisitorRequestResponse"
+          },
+          "error" : {
+            "$ref" : "#/components/schemas/Error"
+          },
+          "meta" : {
+            "$ref" : "#/components/schemas/Meta"
+          }
+        }
+      },
+      "VisitorRequestResponse" : {
+        "type" : "object",
+        "properties" : {
+          "publicId" : {
+            "type" : "string"
+          },
+          "visitorName" : {
+            "type" : "string"
+          },
+          "visitorPhone" : {
+            "type" : "string"
+          },
+          "purpose" : {
+            "type" : "string"
+          },
+          "hostEmployeeId" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "visitDate" : {
+            "type" : "string",
+            "format" : "date"
+          },
+          "source" : {
+            "type" : "string"
+          },
+          "status" : {
+            "type" : "string"
+          },
+          "photoFilePublicId" : {
+            "type" : "string"
+          },
+          "decidedByUserId" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "decidedAt" : {
+            "type" : "string",
+            "format" : "date-time"
+          },
+          "decisionReason" : {
+            "type" : "string"
+          }
+        }
+      },
+      "CheckInVisitorRequest" : {
+        "type" : "object",
+        "properties" : {
+          "visitorRequestPublicId" : {
+            "type" : "string",
+            "minLength" : 1
+          },
+          "photoFilePublicId" : {
+            "type" : "string"
+          }
+        },
+        "required" : [ "visitorRequestPublicId" ]
       },
       "ApiResponseVisitorLogResponse" : {
         "type" : "object",
@@ -30880,9 +33343,15 @@
           "purpose" : {
             "type" : "string"
           },
-          "hostTeacherId" : {
+          "hostEmployeeId" : {
             "type" : "integer",
             "format" : "int64"
+          },
+          "photoFilePublicId" : {
+            "type" : "string"
+          },
+          "badgeIssued" : {
+            "type" : "boolean"
           },
           "checkInAt" : {
             "type" : "string",
@@ -30891,6 +33360,71 @@
           "checkOutAt" : {
             "type" : "string",
             "format" : "date-time"
+          }
+        }
+      },
+      "CreateVenueRequest" : {
+        "type" : "object",
+        "properties" : {
+          "code" : {
+            "type" : "string",
+            "maxLength" : 50,
+            "minLength" : 0
+          },
+          "name" : {
+            "type" : "string",
+            "maxLength" : 100,
+            "minLength" : 0
+          },
+          "venueType" : {
+            "type" : "string",
+            "enum" : [ "CLASSROOM", "LABORATORY", "LIBRARY", "HALL", "SPORTS", "OTHER" ]
+          },
+          "capacity" : {
+            "type" : "integer",
+            "format" : "int32"
+          }
+        },
+        "required" : [ "code", "name", "venueType" ]
+      },
+      "ApiResponseVenueResponse" : {
+        "type" : "object",
+        "properties" : {
+          "success" : {
+            "type" : "boolean"
+          },
+          "data" : {
+            "$ref" : "#/components/schemas/VenueResponse"
+          },
+          "error" : {
+            "$ref" : "#/components/schemas/Error"
+          },
+          "meta" : {
+            "$ref" : "#/components/schemas/Meta"
+          }
+        }
+      },
+      "VenueResponse" : {
+        "type" : "object",
+        "properties" : {
+          "publicId" : {
+            "type" : "string"
+          },
+          "code" : {
+            "type" : "string"
+          },
+          "name" : {
+            "type" : "string"
+          },
+          "venueType" : {
+            "type" : "string"
+          },
+          "capacity" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "active" : {
+            "type" : "boolean"
           }
         }
       },
@@ -31263,6 +33797,101 @@
           }
         }
       },
+      "AssignSubstituteRequest" : {
+        "type" : "object",
+        "properties" : {
+          "timetableEntryPublicId" : {
+            "type" : "string",
+            "minLength" : 1
+          },
+          "date" : {
+            "type" : "string",
+            "format" : "date"
+          },
+          "substituteTeacherPublicId" : {
+            "type" : "string",
+            "minLength" : 1
+          },
+          "reason" : {
+            "type" : "string",
+            "maxLength" : 500,
+            "minLength" : 0
+          }
+        },
+        "required" : [ "date", "substituteTeacherPublicId", "timetableEntryPublicId" ]
+      },
+      "ApiResponseSubstitutionResponse" : {
+        "type" : "object",
+        "properties" : {
+          "success" : {
+            "type" : "boolean"
+          },
+          "data" : {
+            "$ref" : "#/components/schemas/SubstitutionResponse"
+          },
+          "error" : {
+            "$ref" : "#/components/schemas/Error"
+          },
+          "meta" : {
+            "$ref" : "#/components/schemas/Meta"
+          }
+        }
+      },
+      "SubstitutionResponse" : {
+        "type" : "object",
+        "properties" : {
+          "publicId" : {
+            "type" : "string"
+          },
+          "date" : {
+            "type" : "string",
+            "format" : "date"
+          },
+          "active" : {
+            "type" : "boolean"
+          },
+          "timetableEntryPublicId" : {
+            "type" : "string"
+          },
+          "dayOfWeek" : {
+            "type" : "string"
+          },
+          "periodId" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "classroomId" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "subjectId" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "regularTeacherPublicId" : {
+            "type" : "string"
+          },
+          "regularTeacherName" : {
+            "type" : "string"
+          },
+          "substituteTeacherPublicId" : {
+            "type" : "string"
+          },
+          "substituteTeacherName" : {
+            "type" : "string"
+          },
+          "reason" : {
+            "type" : "string"
+          },
+          "cancelledAt" : {
+            "type" : "string",
+            "format" : "date-time"
+          },
+          "cancellationReason" : {
+            "type" : "string"
+          }
+        }
+      },
       "CreateTimetableEntryRequest" : {
         "type" : "object",
         "properties" : {
@@ -31285,6 +33914,9 @@
           "teacherId" : {
             "type" : "integer",
             "format" : "int64"
+          },
+          "venuePublicId" : {
+            "type" : "string"
           }
         },
         "required" : [ "classroomId", "dayOfWeek", "periodId", "subjectId", "teacherId" ]
@@ -31328,6 +33960,10 @@
             "format" : "int64"
           },
           "teacherId" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "venueId" : {
             "type" : "integer",
             "format" : "int64"
           }
@@ -32712,6 +35348,59 @@
           },
           "address" : {
             "$ref" : "#/components/schemas/AddressResponse"
+          },
+          "photoFilePublicId" : {
+            "type" : "string"
+          }
+        }
+      },
+      "LinkSiblingRequest" : {
+        "type" : "object",
+        "properties" : {
+          "siblingPublicId" : {
+            "type" : "string",
+            "minLength" : 1
+          }
+        },
+        "required" : [ "siblingPublicId" ]
+      },
+      "ApiResponseListSiblingResponse" : {
+        "type" : "object",
+        "properties" : {
+          "success" : {
+            "type" : "boolean"
+          },
+          "data" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/SiblingResponse"
+            }
+          },
+          "error" : {
+            "$ref" : "#/components/schemas/Error"
+          },
+          "meta" : {
+            "$ref" : "#/components/schemas/Meta"
+          }
+        }
+      },
+      "SiblingResponse" : {
+        "type" : "object",
+        "properties" : {
+          "publicId" : {
+            "type" : "string"
+          },
+          "studentCode" : {
+            "type" : "string"
+          },
+          "firstName" : {
+            "type" : "string"
+          },
+          "lastName" : {
+            "type" : "string"
+          },
+          "enrollmentStatus" : {
+            "type" : "string"
           },
           "photoFilePublicId" : {
             "type" : "string"
@@ -34465,6 +37154,10 @@
           "carryForwardExpiryMonths" : {
             "type" : "integer",
             "format" : "int32"
+          },
+          "approvalLevels" : {
+            "type" : "integer",
+            "format" : "int32"
           }
         }
       },
@@ -34548,6 +37241,17 @@
             "format" : "date-time"
           },
           "rejectionReason" : {
+            "type" : "string"
+          },
+          "approvalsRequired" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "approvalsGranted" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "awaitingStage" : {
             "type" : "string"
           }
         }
@@ -35471,6 +38175,11 @@
           "examTypeId" : {
             "type" : "integer",
             "format" : "int64"
+          },
+          "weightage" : {
+            "type" : "number",
+            "maximum" : 100,
+            "minimum" : 0.01
           }
         },
         "required" : [ "classroomId", "examTypeId", "maxMarks", "scheduledAt", "subjectId", "title" ]
@@ -35526,6 +38235,16 @@
           "examTypeId" : {
             "type" : "integer",
             "format" : "int64"
+          },
+          "weightage" : {
+            "type" : "number"
+          },
+          "resultsPublished" : {
+            "type" : "boolean"
+          },
+          "resultsPublishedAt" : {
+            "type" : "string",
+            "format" : "date-time"
           }
         }
       },
@@ -36693,6 +39412,14 @@
           },
           "fineAmount" : {
             "type" : "number"
+          },
+          "renewalCount" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "lastRenewedAt" : {
+            "type" : "string",
+            "format" : "date"
           }
         }
       },
@@ -36873,6 +39600,72 @@
           },
           "status" : {
             "type" : "string"
+          }
+        }
+      },
+      "ReserveBookRequest" : {
+        "type" : "object",
+        "properties" : {
+          "bookPublicId" : {
+            "type" : "string",
+            "minLength" : 1
+          },
+          "studentPublicId" : {
+            "type" : "string",
+            "minLength" : 1
+          }
+        },
+        "required" : [ "bookPublicId", "studentPublicId" ]
+      },
+      "ApiResponseBookReservationResponse" : {
+        "type" : "object",
+        "properties" : {
+          "success" : {
+            "type" : "boolean"
+          },
+          "data" : {
+            "$ref" : "#/components/schemas/BookReservationResponse"
+          },
+          "error" : {
+            "$ref" : "#/components/schemas/Error"
+          },
+          "meta" : {
+            "$ref" : "#/components/schemas/Meta"
+          }
+        }
+      },
+      "BookReservationResponse" : {
+        "type" : "object",
+        "properties" : {
+          "publicId" : {
+            "type" : "string"
+          },
+          "bookId" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "studentId" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "status" : {
+            "type" : "string"
+          },
+          "reservedAt" : {
+            "type" : "string",
+            "format" : "date-time"
+          },
+          "heldCopyId" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "holdExpiresOn" : {
+            "type" : "string",
+            "format" : "date"
+          },
+          "closedAt" : {
+            "type" : "string",
+            "format" : "date-time"
           }
         }
       },
@@ -37775,6 +40568,61 @@
           },
           "markedBy" : {
             "type" : "string"
+          }
+        }
+      },
+      "ScanAttendanceRequest" : {
+        "type" : "object",
+        "properties" : {
+          "payload" : {
+            "type" : "string",
+            "maxLength" : 2048,
+            "minLength" : 0
+          }
+        },
+        "required" : [ "payload" ]
+      },
+      "ApiResponseAttendanceScanResponse" : {
+        "type" : "object",
+        "properties" : {
+          "success" : {
+            "type" : "boolean"
+          },
+          "data" : {
+            "$ref" : "#/components/schemas/AttendanceScanResponse"
+          },
+          "error" : {
+            "$ref" : "#/components/schemas/Error"
+          },
+          "meta" : {
+            "$ref" : "#/components/schemas/Meta"
+          }
+        }
+      },
+      "AttendanceScanResponse" : {
+        "type" : "object",
+        "properties" : {
+          "attendancePublicId" : {
+            "type" : "string"
+          },
+          "studentPublicId" : {
+            "type" : "string"
+          },
+          "studentName" : {
+            "type" : "string"
+          },
+          "className" : {
+            "type" : "string"
+          },
+          "attendanceDate" : {
+            "type" : "string",
+            "format" : "date"
+          },
+          "status" : {
+            "type" : "string"
+          },
+          "alreadyMarked" : {
+            "type" : "boolean"
           }
         }
       },
@@ -39635,6 +42483,46 @@
           }
         }
       },
+      "RejectVisitorRequestRequest" : {
+        "type" : "object",
+        "properties" : {
+          "reason" : {
+            "type" : "string",
+            "maxLength" : 500,
+            "minLength" : 0
+          }
+        },
+        "required" : [ "reason" ]
+      },
+      "AttachVisitorPhotoRequest" : {
+        "type" : "object",
+        "properties" : {
+          "photoFilePublicId" : {
+            "type" : "string",
+            "minLength" : 1
+          }
+        },
+        "required" : [ "photoFilePublicId" ]
+      },
+      "UpdateVenueRequest" : {
+        "type" : "object",
+        "properties" : {
+          "name" : {
+            "type" : "string",
+            "maxLength" : 100,
+            "minLength" : 0
+          },
+          "venueType" : {
+            "type" : "string",
+            "enum" : [ "CLASSROOM", "LABORATORY", "LIBRARY", "HALL", "SPORTS", "OTHER" ]
+          },
+          "capacity" : {
+            "type" : "integer",
+            "format" : "int32"
+          }
+        },
+        "required" : [ "name", "venueType" ]
+      },
       "UpdateVehicleRequest" : {
         "type" : "object",
         "properties" : {
@@ -39695,6 +42583,27 @@
           }
         },
         "required" : [ "effectiveTo" ]
+      },
+      "CancelSubstitutionRequest" : {
+        "type" : "object",
+        "properties" : {
+          "reason" : {
+            "type" : "string",
+            "maxLength" : 500,
+            "minLength" : 0
+          }
+        },
+        "required" : [ "reason" ]
+      },
+      "AssignTimetableVenueRequest" : {
+        "type" : "object",
+        "properties" : {
+          "venuePublicId" : {
+            "type" : "string",
+            "minLength" : 1
+          }
+        },
+        "required" : [ "venuePublicId" ]
       },
       "ResolveTicketRequest" : {
         "type" : "object",
@@ -40353,6 +43262,18 @@
           }
         }
       },
+      "ConfigureLeaveApprovalRequest" : {
+        "type" : "object",
+        "properties" : {
+          "approvalLevels" : {
+            "type" : "integer",
+            "format" : "int32",
+            "maximum" : 2,
+            "minimum" : 1
+          }
+        },
+        "required" : [ "approvalLevels" ]
+      },
       "RejectLeaveRequestRequest" : {
         "type" : "object",
         "properties" : {
@@ -40476,6 +43397,17 @@
           }
         },
         "required" : [ "amount" ]
+      },
+      "ReweightExamRequest" : {
+        "type" : "object",
+        "properties" : {
+          "weightage" : {
+            "type" : "number",
+            "maximum" : 100,
+            "minimum" : 0.01
+          }
+        },
+        "required" : [ "weightage" ]
       },
       "AssignExamTermRequest" : {
         "type" : "object",
@@ -41355,6 +44287,46 @@
           }
         }
       },
+      "ApiResponsePageVisitorRequestResponse" : {
+        "type" : "object",
+        "properties" : {
+          "success" : {
+            "type" : "boolean"
+          },
+          "data" : {
+            "$ref" : "#/components/schemas/PageVisitorRequestResponse"
+          },
+          "error" : {
+            "$ref" : "#/components/schemas/Error"
+          },
+          "meta" : {
+            "$ref" : "#/components/schemas/Meta"
+          }
+        }
+      },
+      "PageVisitorRequestResponse" : {
+        "type" : "object",
+        "properties" : {
+          "content" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/VisitorRequestResponse"
+            }
+          },
+          "pageNumber" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "pageSize" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "totalElements" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        }
+      },
       "ApiResponsePageVisitorLogResponse" : {
         "type" : "object",
         "properties" : {
@@ -41379,6 +44351,46 @@
             "type" : "array",
             "items" : {
               "$ref" : "#/components/schemas/VisitorLogResponse"
+            }
+          },
+          "pageNumber" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "pageSize" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "totalElements" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        }
+      },
+      "ApiResponsePageVenueResponse" : {
+        "type" : "object",
+        "properties" : {
+          "success" : {
+            "type" : "boolean"
+          },
+          "data" : {
+            "$ref" : "#/components/schemas/PageVenueResponse"
+          },
+          "error" : {
+            "$ref" : "#/components/schemas/Error"
+          },
+          "meta" : {
+            "$ref" : "#/components/schemas/Meta"
+          }
+        }
+      },
+      "PageVenueResponse" : {
+        "type" : "object",
+        "properties" : {
+          "content" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/VenueResponse"
             }
           },
           "pageNumber" : {
@@ -41748,6 +44760,80 @@
           "totalElements" : {
             "type" : "integer",
             "format" : "int64"
+          }
+        }
+      },
+      "ApiResponseListSubstitutionResponse" : {
+        "type" : "object",
+        "properties" : {
+          "success" : {
+            "type" : "boolean"
+          },
+          "data" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/SubstitutionResponse"
+            }
+          },
+          "error" : {
+            "$ref" : "#/components/schemas/Error"
+          },
+          "meta" : {
+            "$ref" : "#/components/schemas/Meta"
+          }
+        }
+      },
+      "ApiResponseListTimetableEntryResponse" : {
+        "type" : "object",
+        "properties" : {
+          "success" : {
+            "type" : "boolean"
+          },
+          "data" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/TimetableEntryResponse"
+            }
+          },
+          "error" : {
+            "$ref" : "#/components/schemas/Error"
+          },
+          "meta" : {
+            "$ref" : "#/components/schemas/Meta"
+          }
+        }
+      },
+      "ApiResponseListAvailableTeacherResponse" : {
+        "type" : "object",
+        "properties" : {
+          "success" : {
+            "type" : "boolean"
+          },
+          "data" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/AvailableTeacherResponse"
+            }
+          },
+          "error" : {
+            "$ref" : "#/components/schemas/Error"
+          },
+          "meta" : {
+            "$ref" : "#/components/schemas/Meta"
+          }
+        }
+      },
+      "AvailableTeacherResponse" : {
+        "type" : "object",
+        "properties" : {
+          "publicId" : {
+            "type" : "string"
+          },
+          "employeeCode" : {
+            "type" : "string"
+          },
+          "name" : {
+            "type" : "string"
           }
         }
       },
@@ -43953,6 +47039,51 @@
           }
         }
       },
+      "ApiResponseListLeaveApprovalResponse" : {
+        "type" : "object",
+        "properties" : {
+          "success" : {
+            "type" : "boolean"
+          },
+          "data" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/LeaveApprovalResponse"
+            }
+          },
+          "error" : {
+            "$ref" : "#/components/schemas/Error"
+          },
+          "meta" : {
+            "$ref" : "#/components/schemas/Meta"
+          }
+        }
+      },
+      "LeaveApprovalResponse" : {
+        "type" : "object",
+        "properties" : {
+          "publicId" : {
+            "type" : "string"
+          },
+          "stage" : {
+            "type" : "string"
+          },
+          "decision" : {
+            "type" : "string"
+          },
+          "decidedByUserId" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "decidedAt" : {
+            "type" : "string",
+            "format" : "date-time"
+          },
+          "remarks" : {
+            "type" : "string"
+          }
+        }
+      },
       "ApiResponseListLeaveBalanceResponse" : {
         "type" : "object",
         "properties" : {
@@ -45332,26 +48463,6 @@
           }
         }
       },
-      "ApiResponseListTimetableEntryResponse" : {
-        "type" : "object",
-        "properties" : {
-          "success" : {
-            "type" : "boolean"
-          },
-          "data" : {
-            "type" : "array",
-            "items" : {
-              "$ref" : "#/components/schemas/TimetableEntryResponse"
-            }
-          },
-          "error" : {
-            "$ref" : "#/components/schemas/Error"
-          },
-          "meta" : {
-            "$ref" : "#/components/schemas/Meta"
-          }
-        }
-      },
       "ApiResponsePageCirculationResponse" : {
         "type" : "object",
         "properties" : {
@@ -45509,6 +48620,46 @@
           },
           "meta" : {
             "$ref" : "#/components/schemas/Meta"
+          }
+        }
+      },
+      "ApiResponsePageBookReservationResponse" : {
+        "type" : "object",
+        "properties" : {
+          "success" : {
+            "type" : "boolean"
+          },
+          "data" : {
+            "$ref" : "#/components/schemas/PageBookReservationResponse"
+          },
+          "error" : {
+            "$ref" : "#/components/schemas/Error"
+          },
+          "meta" : {
+            "$ref" : "#/components/schemas/Meta"
+          }
+        }
+      },
+      "PageBookReservationResponse" : {
+        "type" : "object",
+        "properties" : {
+          "content" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/BookReservationResponse"
+            }
+          },
+          "pageNumber" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "pageSize" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "totalElements" : {
+            "type" : "integer",
+            "format" : "int64"
           }
         }
       },

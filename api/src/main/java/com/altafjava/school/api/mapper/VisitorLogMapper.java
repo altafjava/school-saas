@@ -10,5 +10,7 @@ import com.altafjava.school.domain.visitor.model.VisitorLog;
 public interface VisitorLogMapper {
 
 	@Mapping(target = "publicId", expression = "java(visitorLog.getPublicId().toString())")
+	@Mapping(target = "photoFilePublicId", expression = "java(visitorLog.getPhotoFilePublicId() != null ? visitorLog.getPhotoFilePublicId().toString() : null)")
+	@Mapping(target = "badgeIssued", expression = "java(visitorLog.getBadgeIssuanceId() != null)")
 	VisitorLogResponse toResponse(VisitorLog visitorLog);
 }

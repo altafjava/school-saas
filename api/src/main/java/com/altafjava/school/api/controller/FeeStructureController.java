@@ -26,6 +26,7 @@ import com.altafjava.school.api.mapper.FeeAssignmentMapper;
 import com.altafjava.school.api.mapper.FeeStructureMapper;
 import com.altafjava.school.api.mapper.FeeStructureRevisionMapper;
 import com.altafjava.school.api.support.PlatformPageMapper;
+import com.altafjava.school.api.support.SortableBy;
 import com.altafjava.school.api.support.SpringDataPageableResolver;
 import com.altafjava.school.application.service.FeeAssignmentService;
 import com.altafjava.school.application.service.FeeStructureService;
@@ -57,6 +58,7 @@ public class FeeStructureController implements FeeStructureApi {
 	@Override
 	@GetMapping
 	@PreAuthorize("@permissionAuthorizationService.hasPermission('FEE_STRUCTURE_MANAGE')")
+	@SortableBy({ "name", "amount", "frequency" })
 	public ApiResponse<com.altafjava.platform.core.model.Page<FeeStructureResponse>> list(
 			@RequestParam(defaultValue = "0") int page,
 			@RequestParam(defaultValue = "20") int size) {

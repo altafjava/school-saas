@@ -18,6 +18,7 @@ import com.altafjava.school.api.dto.request.RecordFeePaymentRequest;
 import com.altafjava.school.api.dto.response.FeePaymentResponse;
 import com.altafjava.school.api.mapper.FeePaymentMapper;
 import com.altafjava.school.api.support.PlatformPageMapper;
+import com.altafjava.school.api.support.SortableBy;
 import com.altafjava.school.api.support.SpringDataPageableResolver;
 import com.altafjava.school.application.service.FeePaymentService;
 
@@ -40,6 +41,7 @@ public class FeePaymentController implements FeePaymentApi {
 	@Override
 	@GetMapping
 	@PreAuthorize("@permissionAuthorizationService.hasPermission('FEE_PAYMENT_MANAGE')")
+	@SortableBy({ "paidAt", "paidAmount", "receiptNumber" })
 	public ApiResponse<com.altafjava.platform.core.model.Page<FeePaymentResponse>> list(
 			@RequestParam(defaultValue = "0") int page,
 			@RequestParam(defaultValue = "20") int size) {

@@ -5,3 +5,32 @@ spring:
     active: dev
   config:
     import: "classpath:platform-defaults.yml"
+
+platform:
+  openapi:
+    title: School SaaS API
+    description: |
+      ## School Management SaaS API
+
+      ### Authentication
+      Sign in with `POST /api/v1/auth/login` and send the returned access token as
+      `Authorization: Bearer <token>`.
+
+      ### Multi-Tenancy
+      Every school is a tenant. Send its id in `X-Tenant-ID` on tenant-scoped requests.
+
+      ### Versioning
+      The API is versioned in the URL path: `/api/v1/...`
+
+      ### Idempotency
+      Endpoints that create records or move money require an `Idempotency-Key` header, so a retried
+      request is applied once.
+
+      ### Errors
+      Failures return `success: false` with a machine-readable `error.code` and an `error.traceId`
+      that matches the `X-Request-Id` response header — quote it when reporting a problem.
+    contact-name: School SaaS Engineering
+    contact-email: ${OPENAPI_CONTACT_EMAIL:api-support@school-saas.example}
+    contact-url: ${OPENAPI_CONTACT_URL:https://docs.school-saas.example}
+    license-name: Proprietary
+    license-url: ${OPENAPI_LICENSE_URL:https://school-saas.example/terms}

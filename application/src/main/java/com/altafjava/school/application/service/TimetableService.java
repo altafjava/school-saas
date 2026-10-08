@@ -15,8 +15,10 @@ import com.altafjava.school.domain.employee.model.EmployeeStatus;
 import com.altafjava.school.domain.subject.repository.SubjectRepository;
 import com.altafjava.school.domain.teacher.repository.TeacherRepository;
 import com.altafjava.school.domain.timetable.model.TimetableEntry;
+import com.altafjava.school.domain.timetable.model.Venue;
 import com.altafjava.school.domain.timetable.repository.PeriodRepository;
 import com.altafjava.school.domain.timetable.repository.TimetableEntryRepository;
+import com.altafjava.school.domain.timetable.repository.VenueRepository;
 
 @Service
 public class TimetableService {
@@ -26,15 +28,17 @@ public class TimetableService {
 	private final ClassroomRepository classroomRepository;
 	private final SubjectRepository subjectRepository;
 	private final TeacherRepository teacherRepository;
+	private final VenueRepository venueRepository;
 
 	public TimetableService(TimetableEntryRepository timetableEntryRepository, PeriodRepository periodRepository,
 			ClassroomRepository classroomRepository, SubjectRepository subjectRepository,
-			TeacherRepository teacherRepository) {
+			TeacherRepository teacherRepository, VenueRepository venueRepository) {
 		this.timetableEntryRepository = timetableEntryRepository;
 		this.periodRepository = periodRepository;
 		this.classroomRepository = classroomRepository;
 		this.subjectRepository = subjectRepository;
 		this.teacherRepository = teacherRepository;
+		this.venueRepository = venueRepository;
 	}
 
 	@Transactional(readOnly = true)
@@ -60,7 +64,7 @@ public class TimetableService {
 
 	@Transactional
 	public TimetableEntry schedule(DayOfWeek dayOfWeek, Long periodId, Long classroomId, Long subjectId,
-			Long teacherId) {
+			Long teacherId, String venuePublicId) {
 		Long tenantId = TenantContext.getCurrentTenantId();
 		if (!periodRepository.existsByIdAndTenantId(periodId, tenantId)) {
 			throw new ResourceNotFoundException("Period not found: " + periodId);
@@ -85,7 +89,39 @@ public class TimetableService {
 			throw new BusinessException(
 					"Teacher " + teacherId + " is already scheduled for " + dayOfWeek + " period " + periodId);
 		}
-		TimetableEntry entry = TimetableEntry.create(dayOfWeek, periodId, classroomId, subjectId, teacherId);
+		Long venueId = venuePublicId == null ? null : requireFreeVenue(tenantId, venuePublicId, dayOfWeek, periodId);
+		TimetableEntry entry = TimetableEntry.create(dayOfWeek, periodId, classroomId, subjectId, teacherId, venueId);
 		return timetableEntryRepository.save(entry);
+	}
+
+	@Transactional
+	public TimetableEntry assignVenue(String publicId, String venuePublicId) {
+		Long tenantId = TenantContext.getCurrentTenantId();
+		TimetableEntry entry = findByPublicId(publicId);
+		entry.assignVenue(requireFreeVenue(tenantId, venuePublicId, entry.getDayOfWeek(), entry.getPeriodId(),
+				entry.getId()));
+		return timetableEntryRepository.save(entry);
+	}
+
+	private Long requireFreeVenue(Long tenantId, String venuePublicId, DayOfWeek dayOfWeek, Long periodId) {
+		return requireFreeVenue(tenantId, venuePublicId, dayOfWeek, periodId, null);
+	}
+
+	// The slot being moved is allowed to already hold the venue it is being assigned.
+	private Long requireFreeVenue(Long tenantId, String venuePublicId, DayOfWeek dayOfWeek, Long periodId,
+			Long movingEntryId) {
+		Venue venue = venueRepository.findByPublicIdAndTenantId(UUID.fromString(venuePublicId), tenantId)
+				.orElseThrow(() -> new ResourceNotFoundException("Venue not found: " + venuePublicId));
+		if (!venue.isActive()) {
+			throw new BusinessException("Venue " + venue.getName() + " is not in use");
+		}
+		boolean bookedByAnotherSlot = timetableEntryRepository
+				.findAllByTenantIdAndDayOfWeekAndPeriodId(tenantId, dayOfWeek, periodId).stream()
+				.anyMatch(slot -> venue.getId().equals(slot.getVenueId()) && !slot.getId().equals(movingEntryId));
+		if (bookedByAnotherSlot) {
+			throw new BusinessException(
+					"Venue " + venue.getName() + " is already booked on " + dayOfWeek + " period " + periodId);
+		}
+		return venue.getId();
 	}
 }

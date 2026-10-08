@@ -2,6 +2,7 @@ package com.altafjava.school.domain.leave.repository;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -22,6 +23,50 @@ public interface LeaveRequestRepository extends JpaRepository<LeaveRequest, Long
 	Optional<LeaveRequest> findByPublicIdAndTenantId(UUID publicId, Long tenantId);
 
 	long countByTenantIdAndStatus(Long tenantId, LeaveRequestStatus status);
+
+	// Pending requests still waiting on the department head's approval, from the given employees.
+	default Page<LeaveRequest> findAwaitingDepartmentHead(Long tenantId, Collection<Long> employeeIds,
+			Pageable pageable) {
+		return findAwaitingFirstApproval(tenantId, LeaveRequestStatus.PENDING, employeeIds, pageable);
+	}
+
+	@Query("""
+			SELECT lr FROM LeaveRequest lr
+			WHERE lr.tenantId = :tenantId AND lr.status = :status
+			  AND lr.approvalsRequired - lr.approvalsGranted > 1
+			  AND lr.employeeId IN :employeeIds
+			""")
+	Page<LeaveRequest> findAwaitingFirstApproval(@Param("tenantId") Long tenantId,
+			@Param("status") LeaveRequestStatus status, @Param("employeeIds") Collection<Long> employeeIds,
+			Pageable pageable);
+
+	// Who cannot be asked to cover a class on {@code date}.
+	default List<Long> findEmployeeIdsOnApprovedLeaveOn(Long tenantId, LocalDate date) {
+		return findEmployeeIdsOnLeaveOn(tenantId, LeaveRequestStatus.APPROVED, date);
+	}
+
+	@Query("""
+			SELECT DISTINCT lr.employeeId FROM LeaveRequest lr
+			WHERE lr.tenantId = :tenantId AND lr.status = :status
+			  AND lr.startDate <= :date AND lr.endDate >= :date
+			""")
+	List<Long> findEmployeeIdsOnLeaveOn(@Param("tenantId") Long tenantId,
+			@Param("status") LeaveRequestStatus status, @Param("date") LocalDate date);
+
+	// A second request over days already requested or approved would deduct the same days twice.
+	default boolean existsOverlapping(Long tenantId, Long employeeId, LocalDate startDate, LocalDate endDate) {
+		return existsOverlappingWithStatusIn(tenantId, employeeId,
+				List.of(LeaveRequestStatus.PENDING, LeaveRequestStatus.APPROVED), startDate, endDate);
+	}
+
+	@Query("""
+			SELECT COUNT(lr) > 0 FROM LeaveRequest lr
+			WHERE lr.tenantId = :tenantId AND lr.employeeId = :employeeId AND lr.status IN :statuses
+			  AND lr.startDate <= :endDate AND lr.endDate >= :startDate
+			""")
+	boolean existsOverlappingWithStatusIn(@Param("tenantId") Long tenantId, @Param("employeeId") Long employeeId,
+			@Param("statuses") Collection<LeaveRequestStatus> statuses, @Param("startDate") LocalDate startDate,
+			@Param("endDate") LocalDate endDate);
 
 	// Monthly leave-utilization trend (see LeaveUtilizationTrendDataProvider) — summed at the DB
 	// per period rather than pulled row-by-row.

@@ -22,10 +22,12 @@ public class SchoolDocumentTypes {
 	public static final String CERTIFICATE = CertificateType.DOCUMENT_TYPE_FAMILY;
 	public static final String REPORT_CARD = "REPORT_CARD";
 	public static final String ADMISSION_OFFER_LETTER = "ADMISSION_OFFER_LETTER";
+	public static final String VISITOR_BADGE = "VISITOR_BADGE";
 
 	public static final String OWNER_STUDENT = "STUDENT";
 	public static final String OWNER_EMPLOYEE = "EMPLOYEE";
 	public static final String OWNER_ADMISSION = "ADMISSION";
+	public static final String OWNER_VISITOR_REQUEST = "VISITOR_REQUEST";
 
 	@Bean
 	DocumentTypeDefinition studentIdCardDocumentType() {
@@ -77,6 +79,17 @@ public class SchoolDocumentTypes {
 	}
 
 	@Bean
+	DocumentTypeDefinition visitorBadgeDocumentType() {
+		return new DocumentTypeDefinition(VISITOR_BADGE, "Visitor badge", List.of(
+				PlaceholderField.text("visitorName", "Visitor name"),
+				PlaceholderField.text("hostName", "Person being visited"),
+				PlaceholderField.text("purpose", "Purpose of the visit"),
+				PlaceholderField.text("validOn", "Date the badge is valid"),
+				PlaceholderField.image("photo", "Photo")),
+				DefaultDocumentTemplate.classpath(DocumentTemplateFormat.SVG, "document-templates/visitor-badge.svg"));
+	}
+
+	@Bean
 	DocumentTypeDefinition reportCardDocumentType() {
 		return new DocumentTypeDefinition(REPORT_CARD, "Report card", List.of(
 				PlaceholderField.text("studentName", "Student name"),
@@ -89,11 +102,12 @@ public class SchoolDocumentTypes {
 						PlaceholderField.text("exam", "Exam"),
 						PlaceholderField.text("marks", "Marks"),
 						PlaceholderField.text("maxMarks", "Maximum marks"),
+						PlaceholderField.text("weightage", "Exam weightage (percent)"),
 						PlaceholderField.text("gradeLetter", "Grade letter"))),
 				PlaceholderField.flag("hasTotals", "Has totals"),
 				PlaceholderField.text("totalMarks", "Total marks"),
 				PlaceholderField.text("totalMaxMarks", "Total maximum marks"),
-				PlaceholderField.text("percentage", "Percentage"),
+				PlaceholderField.text("percentage", "Overall percentage, weighted by exam weightage"),
 				PlaceholderField.flag("showAttendance", "Show attendance"),
 				PlaceholderField.text("attendanceSummary", "Attendance summary"),
 				PlaceholderField.flag("showRank", "Show rank"),

@@ -116,7 +116,7 @@ class PeriodAttendanceTenantIsolationIntegrationTest extends SchoolIntegrationTe
 		Teacher teacher = teacherService.hire("EMP-" + suffix, "Jane", "Doe", "jane-" + suffix + "@school.test",
 				LocalDate.of(2020, 1, 1));
 		return timetableService.schedule(DayOfWeek.MONDAY, period.getId(), classroom.getId(), subject.getId(),
-				teacher.getId());
+				teacher.getId(), null);
 	}
 
 	@Test

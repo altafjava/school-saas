@@ -1,5 +1,6 @@
 package com.altafjava.school.api.controller;
 
+import java.util.List;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -16,9 +17,12 @@ import com.altafjava.platform.api.dto.response.ApiResponse;
 import com.altafjava.school.api.controller.api.LeaveRequestApi;
 import com.altafjava.school.api.dto.request.RejectLeaveRequestRequest;
 import com.altafjava.school.api.dto.request.SubmitLeaveRequestRequest;
+import com.altafjava.school.api.dto.response.LeaveApprovalResponse;
 import com.altafjava.school.api.dto.response.LeaveRequestResponse;
+import com.altafjava.school.api.mapper.LeaveApprovalMapper;
 import com.altafjava.school.api.mapper.LeaveRequestMapper;
 import com.altafjava.school.api.support.PlatformPageMapper;
+import com.altafjava.school.api.support.SortableBy;
 import com.altafjava.school.api.support.SpringDataPageableResolver;
 import com.altafjava.school.application.service.LeaveRequestService;
 
@@ -26,21 +30,29 @@ import com.altafjava.school.application.service.LeaveRequestService;
 @RequestMapping("/api/v1/leave-requests")
 public class LeaveRequestController implements LeaveRequestApi {
 
+	// Either permission opens the endpoint; the service then checks the caller may decide at the level
+	// this particular request is waiting on.
+	private static final String DECIDE_LEAVE = "@permissionAuthorizationService.hasPermission('LEAVE_REQUEST_MANAGE') "
+			+ "or @permissionAuthorizationService.hasPermission('LEAVE_REQUEST_REVIEW')";
+
 	private final LeaveRequestService leaveRequestService;
 	private final LeaveRequestMapper leaveRequestMapper;
+	private final LeaveApprovalMapper leaveApprovalMapper;
 
 	private final SpringDataPageableResolver pageableResolver;
 
 	public LeaveRequestController(LeaveRequestService leaveRequestService, LeaveRequestMapper leaveRequestMapper,
-			SpringDataPageableResolver pageableResolver) {
+			LeaveApprovalMapper leaveApprovalMapper, SpringDataPageableResolver pageableResolver) {
 		this.leaveRequestService = leaveRequestService;
 		this.leaveRequestMapper = leaveRequestMapper;
+		this.leaveApprovalMapper = leaveApprovalMapper;
 		this.pageableResolver = pageableResolver;
 	}
 
 	@Override
 	@GetMapping
 	@PreAuthorize("@permissionAuthorizationService.hasPermission('LEAVE_REQUEST_MANAGE')")
+	@SortableBy({ "startDate", "endDate", "status", "daysRequested" })
 	public ApiResponse<com.altafjava.platform.core.model.Page<LeaveRequestResponse>> list(
 			@RequestParam(defaultValue = "0") int page,
 			@RequestParam(defaultValue = "20") int size) {
@@ -52,6 +64,7 @@ public class LeaveRequestController implements LeaveRequestApi {
 	@Override
 	@GetMapping("/my")
 	@PreAuthorize("@permissionAuthorizationService.hasPermission('LEAVE_SELF_SERVICE')")
+	@SortableBy({ "startDate", "endDate", "status", "daysRequested" })
 	public ApiResponse<com.altafjava.platform.core.model.Page<LeaveRequestResponse>> listMine(
 			@RequestParam(defaultValue = "0") int page,
 			@RequestParam(defaultValue = "20") int size) {
@@ -70,15 +83,34 @@ public class LeaveRequestController implements LeaveRequestApi {
 	}
 
 	@Override
-	@PatchMapping("/{publicId}/approve")
+	@GetMapping("/awaiting-review")
+	@PreAuthorize("@permissionAuthorizationService.hasPermission('LEAVE_REQUEST_REVIEW')")
+	public ApiResponse<com.altafjava.platform.core.model.Page<LeaveRequestResponse>> listAwaitingMyReview(
+			@RequestParam(defaultValue = "0") int page,
+			@RequestParam(defaultValue = "20") int size) {
+		return ApiResponse.success(PlatformPageMapper
+				.toPlatformPage(leaveRequestService.listAwaitingMyReview(pageableResolver.resolve(page, size))
+						.map(leaveRequestMapper::toResponse)));
+	}
+
+	@Override
+	@GetMapping("/{publicId}/approvals")
 	@PreAuthorize("@permissionAuthorizationService.hasPermission('LEAVE_REQUEST_MANAGE')")
+	public ApiResponse<List<LeaveApprovalResponse>> listApprovals(@PathVariable String publicId) {
+		return ApiResponse.success(leaveRequestService.listApprovals(publicId).stream()
+				.map(leaveApprovalMapper::toResponse).toList());
+	}
+
+	@Override
+	@PatchMapping("/{publicId}/approve")
+	@PreAuthorize(DECIDE_LEAVE)
 	public ApiResponse<LeaveRequestResponse> approve(@PathVariable String publicId) {
 		return ApiResponse.success(leaveRequestMapper.toResponse(leaveRequestService.approve(publicId)));
 	}
 
 	@Override
 	@PatchMapping("/{publicId}/reject")
-	@PreAuthorize("@permissionAuthorizationService.hasPermission('LEAVE_REQUEST_MANAGE')")
+	@PreAuthorize(DECIDE_LEAVE)
 	public ApiResponse<LeaveRequestResponse> reject(@PathVariable String publicId,
 			@Valid @RequestBody RejectLeaveRequestRequest request) {
 		return ApiResponse.success(

@@ -67,5 +67,11 @@
     <include file="db/domain/changesets/060-fee-discounts-installments-refunds.xml"/>
     <include file="db/domain/changesets/061-admission-application-fee-offer-letter.xml"/>
     <include file="db/domain/changesets/062-employees.xml"/>
+    <include file="db/domain/changesets/063-exam-weightage-and-result-publication.xml"/>
+    <include file="db/domain/changesets/064-leave-multi-level-approval.xml"/>
+    <include file="db/domain/changesets/065-timetable-venues-and-substitutions.xml"/>
+    <include file="db/domain/changesets/066-library-renewal-and-reservations.xml"/>
+    <include file="db/domain/changesets/067-visitor-approval-workflow.xml"/>
+    <include file="db/domain/changesets/068-sibling-groups.xml"/>
 
 </databaseChangeLog>

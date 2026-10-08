@@ -9,6 +9,7 @@ import com.altafjava.platform.application.document.DocumentIssueRequest;
 import com.altafjava.platform.application.service.FileStorageService;
 import com.altafjava.platform.core.exception.BusinessException;
 import com.altafjava.platform.core.exception.ResourceNotFoundException;
+import com.altafjava.platform.core.model.Pageable;
 import com.altafjava.platform.core.tenant.TenantContext;
 import com.altafjava.platform.domain.document.model.DocumentIssuance;
 import com.altafjava.school.application.document.SchoolDocumentTypes;
@@ -31,6 +32,8 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class IdCardService {
 
+	private static final int MAX_CARDS_CHECKED = 100;
+
 	private final StudentRepository studentRepository;
 	private final EmployeeRepository employeeRepository;
 	private final DepartmentRepository departmentRepository;
@@ -50,10 +53,11 @@ public class IdCardService {
 		model.put("className", placement.map(StudentPlacementResolver.Placement::classLabel).orElse(""));
 		putPhoto(model, student.getPhotoFilePublicId());
 
-		return documentIssuanceService.issue(new DocumentIssueRequest(tenantId, SchoolDocumentTypes.STUDENT_ID_CARD,
-				SchoolDocumentTypes.OWNER_STUDENT, student.getId(), "Student ID Card",
-				model.get("studentName").toString(),
-				model, issuedByUserId));
+		DocumentIssuance card = documentIssuanceService.issue(new DocumentIssueRequest(tenantId,
+				SchoolDocumentTypes.STUDENT_ID_CARD, SchoolDocumentTypes.OWNER_STUDENT, student.getId(),
+				"Student ID Card", model.get("studentName").toString(), model, issuedByUserId));
+		revokeSuperseded(tenantId, card, SchoolDocumentTypes.OWNER_STUDENT, student.getId());
+		return card;
 	}
 
 	public DocumentIssuance issueForEmployee(String employeePublicId, Long issuedByUserId) {
@@ -72,9 +76,21 @@ public class IdCardService {
 						.map(Department::getName).orElse(""));
 		putPhoto(model, employee.getPhotoFilePublicId());
 
-		return documentIssuanceService.issue(new DocumentIssueRequest(tenantId, SchoolDocumentTypes.STAFF_ID_CARD,
-				SchoolDocumentTypes.OWNER_EMPLOYEE, employee.getId(), "Staff ID Card",
-				model.get("employeeName").toString(), model, issuedByUserId));
+		DocumentIssuance card = documentIssuanceService.issue(new DocumentIssueRequest(tenantId,
+				SchoolDocumentTypes.STAFF_ID_CARD, SchoolDocumentTypes.OWNER_EMPLOYEE, employee.getId(),
+				"Staff ID Card", model.get("employeeName").toString(), model, issuedByUserId));
+		revokeSuperseded(tenantId, card, SchoolDocumentTypes.OWNER_EMPLOYEE, employee.getId());
+		return card;
+	}
+
+	// A replacement card makes the old one — possibly lost — stop scanning as genuine.
+	private void revokeSuperseded(Long tenantId, DocumentIssuance newCard, String ownerType, Long ownerId) {
+		documentIssuanceService
+				.listForOwner(tenantId, ownerType, ownerId, newCard.getDocumentType(),
+						Pageable.of(0, MAX_CARDS_CHECKED))
+				.content().stream()
+				.filter(card -> !card.getId().equals(newCard.getId()) && !card.isRevoked())
+				.forEach(card -> documentIssuanceService.revoke(card, "Replaced by a newly issued card"));
 	}
 
 	public DocumentIssuance findStudentCard(String studentPublicId, String issuancePublicId) {

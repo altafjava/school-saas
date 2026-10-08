@@ -34,7 +34,7 @@ class PayrollCalculatorTest {
 
 	private LeaveRequest unpaidLeave(LocalDate start, LocalDate end) {
 		long inclusiveDays = ChronoUnit.DAYS.between(start, end) + 1;
-		return LeaveRequest.submit(1L, 2L, 3L, start, end, "Personal", BigDecimal.valueOf(inclusiveDays));
+		return LeaveRequest.submit(1L, 2L, 3L, start, end, "Personal", BigDecimal.valueOf(inclusiveDays), 1);
 	}
 
 	@Test

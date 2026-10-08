@@ -22,6 +22,7 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 import com.altafjava.platform.api.dto.response.ApiResponse;
+import com.altafjava.platform.core.idempotency.RequireIdempotencyKey;
 import com.altafjava.school.api.controller.api.StudentApi;
 import com.altafjava.school.api.dto.request.AddressRequest;
 import com.altafjava.school.api.dto.request.CreateStudentRequest;
@@ -47,6 +48,7 @@ import com.altafjava.school.api.mapper.ReportCardMapper;
 import com.altafjava.school.api.mapper.StudentMapper;
 import com.altafjava.school.api.ratelimit.RateLimited;
 import com.altafjava.school.api.support.PlatformPageMapper;
+import com.altafjava.school.api.support.SortableBy;
 import com.altafjava.school.api.support.SpringDataPageableResolver;
 import com.altafjava.school.application.lifecycle.LifecycleChange;
 import com.altafjava.school.application.service.AttendanceService;
@@ -115,6 +117,7 @@ public class StudentController implements StudentApi {
 	@Override
 	@GetMapping
 	@PreAuthorize("@permissionAuthorizationService.hasPermission('STUDENT_READ')")
+	@SortableBy({ "studentCode", "firstName", "lastName", "dateOfBirth", "enrollmentStatus" })
 	public ApiResponse<com.altafjava.platform.core.model.Page<StudentResponse>> list(
 			@RequestParam(defaultValue = "0") int page,
 			@RequestParam(defaultValue = "20") int size,
@@ -135,6 +138,7 @@ public class StudentController implements StudentApi {
 	@PostMapping("/bulk-import")
 	@PreAuthorize("@permissionAuthorizationService.hasPermission('STUDENT_MANAGE')")
 	@RateLimited(key = "student-bulk-import", capacity = 5, periodMinutes = 60)
+	@RequireIdempotencyKey
 	public ApiResponse<BulkImportResponse> bulkImport(@RequestParam("file") MultipartFile file) {
 		try (var inputStream = file.getInputStream()) {
 			return ApiResponse.success(bulkImportMapper.toResponse(studentBulkImportService.importCsv(inputStream)));

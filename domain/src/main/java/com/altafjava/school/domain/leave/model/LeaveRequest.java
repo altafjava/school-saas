@@ -3,6 +3,7 @@ package com.altafjava.school.domain.leave.model;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.Optional;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -62,10 +63,18 @@ public class LeaveRequest extends SoftDeletableEntity {
 	@Column(name = "rejection_reason", length = 500)
 	private String rejectionReason;
 
+	// Frozen at submission from the leave type, so a later policy change never re-routes a request
+	// already in flight.
+	@Column(name = "approvals_required", nullable = false)
+	private int approvalsRequired;
+
+	@Column(name = "approvals_granted", nullable = false)
+	private int approvalsGranted;
+
 	// daysRequested is precomputed by the caller (LeaveDayCalculator, given the tenant's holiday
 	// calendar) rather than derived here — this entity has no way to reach holiday data itself.
 	public static LeaveRequest submit(Long employeeId, Long leaveTypeId, Long academicYearId, LocalDate startDate,
-			LocalDate endDate, String reason, BigDecimal daysRequested) {
+			LocalDate endDate, String reason, BigDecimal daysRequested, int approvalsRequired) {
 		if (endDate.isBefore(startDate)) {
 			throw new BusinessException("Leave end date cannot be before the start date");
 		}
@@ -78,14 +87,29 @@ public class LeaveRequest extends SoftDeletableEntity {
 				.daysRequested(daysRequested)
 				.reason(reason)
 				.status(LeaveRequestStatus.PENDING)
+				.approvalsRequired(approvalsRequired)
 				.build();
 	}
 
+	/** The approval this request is waiting on, or empty once it is decided or cancelled. */
+	public Optional<LeaveApprovalStage> awaitingStage() {
+		if (status != LeaveRequestStatus.PENDING) {
+			return Optional.empty();
+		}
+		return Optional.of(approvalsRequired - approvalsGranted > 1
+				? LeaveApprovalStage.DEPARTMENT_HEAD
+				: LeaveApprovalStage.ADMINISTRATOR);
+	}
+
+	/** Records one approval; the request is approved once every required level has given theirs. */
 	public void approve(Long approvedByUserId) {
 		requireStatus(LeaveRequestStatus.PENDING, "approve");
-		this.status = LeaveRequestStatus.APPROVED;
-		this.approvedByUserId = approvedByUserId;
-		this.approvedAt = LocalDateTime.now();
+		this.approvalsGranted++;
+		if (this.approvalsGranted >= this.approvalsRequired) {
+			this.status = LeaveRequestStatus.APPROVED;
+			this.approvedByUserId = approvedByUserId;
+			this.approvedAt = LocalDateTime.now();
+		}
 	}
 
 	public void reject(Long rejectedByUserId, String rejectionReason) {
