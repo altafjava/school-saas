@@ -11,7 +11,7 @@ import com.altafjava.platform.core.security.permission.PermissionDefinition;
  * {@code @PreAuthorize("@permissionAuthorizationService.hasPermission('...')")} tests at each
  * controller endpoint. The default TEACHER/PARENT/STUDENT/PRINCIPAL/FINANCE/HR/ACADEMIC roles seed
  * exactly the subset each one needs to preserve pre-migration behavior (see
- * {@code 008-seed-school-roles.xml}/{@code 023-seed-dashboard-roles.xml}) — a tenant admin can
+ * {@code 008-seed-school-roles.xml}/{@code 019-seed-dashboard-roles.xml}) — a tenant admin can
  * then grant any of these to a custom role instead.
  */
 public final class SchoolPermissions {

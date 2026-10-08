@@ -24,6 +24,16 @@ import lombok.experimental.SuperBuilder;
 @NoArgsConstructor
 public class Guardian extends SoftDeletableEntity {
 
+	// FK to platform users.id — nullable, set only once this guardian has a login account.
+	@Column(name = "user_id")
+	private Long userId;
+
+	// FK to platform file_metadata.public_id (see Student.photoFilePublicId's Javadoc) — nullable;
+	// useful for pickup-authorization/gate-security use cases (visually confirming who is
+	// collecting a student), not just a display picture.
+	@Column(name = "photo_file_public_id")
+	private UUID photoFilePublicId;
+
 	@Pii
 	@Column(name = "first_name", nullable = false, length = 100)
 	private String firstName;
@@ -40,18 +50,8 @@ public class Guardian extends SoftDeletableEntity {
 	@Column(name = "phone", length = 30)
 	private String phone;
 
-	// FK to platform users.id — nullable, set only once this guardian has a login account.
-	@Column(name = "user_id")
-	private Long userId;
-
 	@Embedded
 	private Address address;
-
-	// FK to platform file_metadata.public_id (see Student.photoFilePublicId's Javadoc) — nullable;
-	// useful for pickup-authorization/gate-security use cases (visually confirming who is
-	// collecting a student), not just a display picture.
-	@Column(name = "photo_file_public_id")
-	private UUID photoFilePublicId;
 
 	public static Guardian create(String firstName, String lastName, String email, String phone, Long userId) {
 		return Guardian.builder()

@@ -50,10 +50,6 @@ public class LeaveRequest extends SoftDeletableEntity {
 	@Column(name = "reason", length = 500)
 	private String reason;
 
-	@Enumerated(EnumType.STRING)
-	@Column(name = "status", nullable = false, length = 20)
-	private LeaveRequestStatus status;
-
 	@Column(name = "approved_by_user_id")
 	private Long approvedByUserId;
 
@@ -70,6 +66,10 @@ public class LeaveRequest extends SoftDeletableEntity {
 
 	@Column(name = "approvals_granted", nullable = false)
 	private int approvalsGranted;
+
+	@Enumerated(EnumType.STRING)
+	@Column(name = "status", nullable = false, length = 20)
+	private LeaveRequestStatus status;
 
 	// daysRequested is precomputed by the caller (LeaveDayCalculator, given the tenant's holiday
 	// calendar) rather than derived here — this entity has no way to reach holiday data itself.

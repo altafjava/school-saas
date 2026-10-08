@@ -31,12 +31,12 @@ public class Attendance extends SoftDeletableEntity {
 	@Column(name = "attendance_date", nullable = false)
 	private LocalDate attendanceDate;
 
+	@Column(name = "marked_by", length = 100)
+	private String markedBy;
+
 	@Enumerated(EnumType.STRING)
 	@Column(name = "status", nullable = false, length = 20)
 	private AttendanceStatus status;
-
-	@Column(name = "marked_by", length = 100)
-	private String markedBy;
 
 	public static Attendance create(Long studentId, Long classroomId, LocalDate attendanceDate,
 			AttendanceStatus status, String markedBy) {

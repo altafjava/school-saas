@@ -32,10 +32,6 @@ public class GuardianConsentRecord extends TenantEntity {
 	@Column(name = "guardian_id", nullable = false)
 	private Long guardianId;
 
-	@Enumerated(EnumType.STRING)
-	@Column(name = "consent_type", nullable = false)
-	private GuardianConsentType consentType;
-
 	@Column(name = "granted", nullable = false)
 	private boolean granted;
 
@@ -47,6 +43,10 @@ public class GuardianConsentRecord extends TenantEntity {
 
 	@Column(name = "policy_version")
 	private String policyVersion;
+
+	@Enumerated(EnumType.STRING)
+	@Column(name = "consent_type", nullable = false)
+	private GuardianConsentType consentType;
 
 	public static GuardianConsentRecord create(Long studentId, Long guardianId, GuardianConsentType consentType) {
 		return GuardianConsentRecord.builder()

@@ -1,0 +1,176 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                            http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-5.0.xsd">
+
+    <!-- Phase 2.2 — Employee as the HR master record, Teacher as its teaching subtype.
+
+         Every teacher's HR data moves to `employees`, keeping the SAME id (so every FK to
+         teachers.id — classrooms, timetable, lessons, ... — stays valid untouched) and public id.
+         `teachers` keeps only its id, now a FK to employees.id. Leave, payroll and departments are
+         HR concerns, not teaching ones, so they are re-pointed at employees (non-teaching staff can
+         then have leave and payslips too). -->
+    <changeSet id="school-153-create-employees" author="school">
+        <createTable tableName="employees">
+            <column name="id" type="BIGINT" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="public_id" type="VARCHAR(36)">
+                <constraints nullable="false" unique="true"/>
+            </column>
+            <column name="tenant_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="user_id" type="BIGINT"/>
+            <column name="department_id" type="BIGINT"/>
+            <column name="photo_file_public_id" type="UUID"/>
+            <column name="employee_code" type="VARCHAR(50)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="first_name" type="VARCHAR(100)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="last_name" type="VARCHAR(100)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="email" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="phone" type="VARCHAR(30)"/>
+            <column name="address_line1" type="VARCHAR(255)"/>
+            <column name="address_line2" type="VARCHAR(255)"/>
+            <column name="address_locality" type="VARCHAR(100)"/>
+            <column name="address_region" type="VARCHAR(100)"/>
+            <column name="address_postal_code" type="VARCHAR(20)"/>
+            <column name="address_country_code" type="VARCHAR(2)"/>
+            <column name="join_date" type="DATE"/>
+            <column name="designation" type="VARCHAR(100)"/>
+            <column name="qualification" type="VARCHAR(255)"/>
+            <column name="staff_category" type="VARCHAR(20)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="probation_end_date" type="DATE"/>
+            <column name="exit_date" type="DATE"/>
+            <column name="exit_reason" type="VARCHAR(500)"/>
+            <column name="employment_type" type="VARCHAR(30)"/>
+            <column name="status" type="VARCHAR(20)" defaultValue="ACTIVE">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_at" type="TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_by" type="VARCHAR(100)"/>
+            <column name="updated_at" type="TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="updated_by" type="VARCHAR(100)"/>
+            <column name="deleted" type="BOOLEAN" defaultValueBoolean="false">
+                <constraints nullable="false"/>
+            </column>
+            <column name="deleted_at" type="TIMESTAMP"/>
+            <column name="deleted_by" type="VARCHAR(100)"/>
+            <column name="version" type="BIGINT" defaultValueNumeric="0">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+        <sql>
+            ALTER TABLE employees ADD CONSTRAINT chk_employees_exit_consistency
+                CHECK ((status = 'ACTIVE' AND exit_date IS NULL) OR (status &lt;&gt; 'ACTIVE' AND exit_date IS NOT NULL));
+        </sql>
+        <sql>
+            ALTER TABLE employees
+                ADD COLUMN active_employee_code VARCHAR(50)
+                GENERATED ALWAYS AS (CASE WHEN deleted = FALSE THEN employee_code ELSE NULL END) STORED;
+        </sql>
+        <createIndex indexName="uq_employees_active_employee_code_tenant" tableName="employees" unique="true">
+            <column name="active_employee_code"/>
+            <column name="tenant_id"/>
+        </createIndex>
+        <createIndex indexName="idx_employees_tenant_id" tableName="employees">
+            <column name="tenant_id"/>
+        </createIndex>
+        <createIndex indexName="idx_employees_deleted" tableName="employees">
+            <column name="deleted"/>
+        </createIndex>
+        <createIndex indexName="idx_employees_user_id" tableName="employees">
+            <column name="user_id"/>
+        </createIndex>
+        <createIndex indexName="idx_employees_department_id" tableName="employees">
+            <column name="department_id"/>
+        </createIndex>
+        <createIndex indexName="idx_employees_tenant_category_status" tableName="employees">
+            <column name="tenant_id"/>
+            <column name="staff_category"/>
+            <column name="status"/>
+        </createIndex>
+        <addForeignKeyConstraint
+                constraintName="fk_employees_tenant_id"
+                baseTableName="employees"
+                baseColumnNames="tenant_id"
+                referencedTableName="tenants"
+                referencedColumnNames="id"/>
+        <addForeignKeyConstraint
+                constraintName="fk_employees_user_id"
+                baseTableName="employees"
+                baseColumnNames="user_id"
+                referencedTableName="users"
+                referencedColumnNames="id"/>
+        <addForeignKeyConstraint
+                constraintName="fk_employees_department_id"
+                baseTableName="employees"
+                baseColumnNames="department_id"
+                referencedTableName="departments"
+                referencedColumnNames="id"/>
+        <addForeignKeyConstraint
+                constraintName="fk_employees_photo_file_public_id"
+                baseTableName="employees"
+                baseColumnNames="photo_file_public_id"
+                referencedTableName="file_metadata"
+                referencedColumnNames="public_id"/>
+        <addForeignKeyConstraint
+                constraintName="fk_teachers_employee_id"
+                baseTableName="teachers"
+                baseColumnNames="id"
+                referencedTableName="employees"
+                referencedColumnNames="id"/>
+        <addForeignKeyConstraint
+                constraintName="fk_leave_balances_employee_id"
+                baseTableName="leave_balances"
+                baseColumnNames="employee_id"
+                referencedTableName="employees"
+                referencedColumnNames="id"/>
+        <addForeignKeyConstraint
+                constraintName="fk_leave_requests_employee_id"
+                baseTableName="leave_requests"
+                baseColumnNames="employee_id"
+                referencedTableName="employees"
+                referencedColumnNames="id"/>
+        <addForeignKeyConstraint
+                constraintName="fk_salary_structures_employee_id"
+                baseTableName="salary_structures"
+                baseColumnNames="employee_id"
+                referencedTableName="employees"
+                referencedColumnNames="id"/>
+        <addForeignKeyConstraint
+                constraintName="fk_payslips_employee_id"
+                baseTableName="payslips"
+                baseColumnNames="employee_id"
+                referencedTableName="employees"
+                referencedColumnNames="id"/>
+        <addForeignKeyConstraint
+                constraintName="fk_departments_head_employee_id"
+                baseTableName="departments"
+                baseColumnNames="head_employee_id"
+                referencedTableName="employees"
+                referencedColumnNames="id"/>
+        <addForeignKeyConstraint
+                constraintName="fk_visitor_logs_host_employee_id"
+                baseTableName="visitor_logs"
+                baseColumnNames="host_employee_id"
+                referencedTableName="employees"
+                referencedColumnNames="id"/>
+    </changeSet>
+
+</databaseChangeLog>

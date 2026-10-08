@@ -28,6 +28,9 @@ public class Curriculum extends SoftDeletableEntity {
 	@Column(name = "board_id", nullable = false)
 	private Long boardId;
 
+	@Column(name = "grading_scale_id")
+	private Long gradingScaleId;
+
 	@Column(name = "name", nullable = false, length = 100)
 	private String name;
 
@@ -36,9 +39,6 @@ public class Curriculum extends SoftDeletableEntity {
 
 	@Column(name = "description", length = 500)
 	private String description;
-
-	@Column(name = "grading_scale_id")
-	private Long gradingScaleId;
 
 	@Column(name = "active", nullable = false)
 	private boolean active;

@@ -1,0 +1,155 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                            http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-5.0.xsd">
+
+    <changeSet id="school-067-salary-structures" author="school">
+        <createTable tableName="salary_structures">
+            <column name="id" type="BIGINT" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="public_id" type="VARCHAR(36)">
+                <constraints nullable="false" unique="true"/>
+            </column>
+            <column name="tenant_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="employee_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="effective_from" type="DATE">
+                <constraints nullable="false"/>
+            </column>
+            <column name="components_json" type="CLOB" defaultValue="[]">
+                <constraints nullable="false"/>
+            </column>
+            <column name="active" type="BOOLEAN" defaultValueBoolean="true">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_at" type="TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_by" type="VARCHAR(100)"/>
+            <column name="updated_at" type="TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="updated_by" type="VARCHAR(100)"/>
+            <column name="deleted" type="BOOLEAN" defaultValueBoolean="false">
+                <constraints nullable="false"/>
+            </column>
+            <column name="deleted_at" type="TIMESTAMP"/>
+            <column name="deleted_by" type="VARCHAR(100)"/>
+            <column name="version" type="BIGINT" defaultValueNumeric="0">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+        <createIndex indexName="idx_salary_structures_tenant_id" tableName="salary_structures">
+            <column name="tenant_id"/>
+        </createIndex>
+        <createIndex indexName="idx_salary_structures_deleted" tableName="salary_structures">
+            <column name="deleted"/>
+        </createIndex>
+        <createIndex indexName="idx_salary_structures_active" tableName="salary_structures">
+            <column name="active"/>
+        </createIndex>
+        <createIndex indexName="idx_salary_structures_employee_id" tableName="salary_structures">
+            <column name="employee_id"/>
+        </createIndex>
+        <addForeignKeyConstraint
+                constraintName="fk_salary_structures_tenant_id"
+                baseTableName="salary_structures"
+                baseColumnNames="tenant_id"
+                referencedTableName="tenants"
+                referencedColumnNames="id"/>
+    </changeSet>
+
+    <changeSet id="school-068-payslips" author="school">
+        <createTable tableName="payslips">
+            <column name="id" type="BIGINT" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="public_id" type="VARCHAR(36)">
+                <constraints nullable="false" unique="true"/>
+            </column>
+            <column name="tenant_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="employee_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="pay_year" type="INT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="pay_month" type="INT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="gross_pay" type="DECIMAL(12,2)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="loss_of_pay_days" type="DECIMAL(5,1)" defaultValueNumeric="0">
+                <constraints nullable="false"/>
+            </column>
+            <column name="loss_of_pay_amount" type="DECIMAL(12,2)" defaultValueNumeric="0">
+                <constraints nullable="false"/>
+            </column>
+            <column name="net_pay" type="DECIMAL(12,2)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="finalized_at" type="TIMESTAMP"/>
+            <column name="disbursed_at" type="TIMESTAMP"/>
+            <column name="components_json" type="CLOB" defaultValue="[]">
+                <constraints nullable="false"/>
+            </column>
+            <column name="status" type="VARCHAR(20)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_at" type="TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_by" type="VARCHAR(100)"/>
+            <column name="updated_at" type="TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="updated_by" type="VARCHAR(100)"/>
+            <column name="deleted" type="BOOLEAN" defaultValueBoolean="false">
+                <constraints nullable="false"/>
+            </column>
+            <column name="deleted_at" type="TIMESTAMP"/>
+            <column name="deleted_by" type="VARCHAR(100)"/>
+            <column name="version" type="BIGINT" defaultValueNumeric="0">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+        <sql>
+            ALTER TABLE payslips
+                ADD COLUMN active_pay_month INT
+                GENERATED ALWAYS AS (CASE WHEN deleted = FALSE THEN pay_month ELSE NULL END) STORED;
+        </sql>
+        <createIndex indexName="idx_payslips_tenant_id" tableName="payslips">
+            <column name="tenant_id"/>
+        </createIndex>
+        <createIndex indexName="idx_payslips_deleted" tableName="payslips">
+            <column name="deleted"/>
+        </createIndex>
+        <createIndex indexName="idx_payslips_status" tableName="payslips">
+            <column name="status"/>
+        </createIndex>
+        <createIndex indexName="idx_payslips_employee_id" tableName="payslips">
+            <column name="employee_id"/>
+        </createIndex>
+        <createIndex indexName="uq_payslips_employee_year_active_month" tableName="payslips" unique="true">
+            <column name="employee_id"/>
+            <column name="pay_year"/>
+            <column name="active_pay_month"/>
+        </createIndex>
+        <addForeignKeyConstraint
+                constraintName="fk_payslips_tenant_id"
+                baseTableName="payslips"
+                baseColumnNames="tenant_id"
+                referencedTableName="tenants"
+                referencedColumnNames="id"/>
+    </changeSet>
+
+</databaseChangeLog>

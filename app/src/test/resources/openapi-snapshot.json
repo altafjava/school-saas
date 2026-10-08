@@ -7713,6 +7713,14 @@
       "get" : {
         "tags" : [ "role-controller" ],
         "operationId" : "list_2",
+        "parameters" : [ {
+          "name" : "permission",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
         "responses" : {
           "200" : {
             "description" : "OK",

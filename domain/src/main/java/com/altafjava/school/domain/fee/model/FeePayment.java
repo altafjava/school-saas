@@ -46,14 +46,14 @@ public class FeePayment extends SoftDeletableEntity {
 	@Builder.Default
 	private PaymentSource paymentSource = PaymentSource.MANUAL;
 
-	// Set iff paymentSource == GATEWAY — the PaymentGatewayType this charge was made through.
-	@Column(name = "gateway_provider_type", length = 50)
-	private String gatewayProviderType;
-
 	// Set iff paymentSource == GATEWAY — unique per tenant (see uq_fee_payments_tenant_gateway_ref),
 	// null for MANUAL payments so the uniqueness constraint never applies to them.
 	@Column(name = "gateway_charge_reference", length = 255)
 	private String gatewayChargeReference;
+
+	// Set iff paymentSource == GATEWAY — the PaymentGatewayType this charge was made through.
+	@Column(name = "gateway_provider_type", length = 50)
+	private String gatewayProviderType;
 
 	public static FeePayment create(Long studentId, Long feeStructureId, BigDecimal paidAmount,
 			LocalDateTime paidAt, String receiptNumber) {

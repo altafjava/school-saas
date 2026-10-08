@@ -45,15 +45,15 @@ public class Ticket extends SoftDeletableEntity {
 	@Column(name = "description", nullable = false, length = 2000)
 	private String description;
 
-	@Enumerated(EnumType.STRING)
-	@Column(name = "status", nullable = false, length = 20)
-	private TicketStatus status;
-
 	@Column(name = "assigned_to_user_id")
 	private Long assignedToUserId;
 
 	@Column(name = "resolution", length = 2000)
 	private String resolution;
+
+	@Enumerated(EnumType.STRING)
+	@Column(name = "status", nullable = false, length = 20)
+	private TicketStatus status;
 
 	public static Ticket raise(Long raisedByUserId, TicketCategory category, String subject, String description) {
 		return Ticket.builder()

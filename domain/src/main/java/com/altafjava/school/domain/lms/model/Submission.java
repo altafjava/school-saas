@@ -32,6 +32,10 @@ public class Submission extends SoftDeletableEntity {
 	@Column(name = "student_id", nullable = false)
 	private Long studentId;
 
+	// FK to teachers.id — the grading teacher
+	@Column(name = "graded_by")
+	private Long gradedBy;
+
 	@Column(name = "submitted_at", nullable = false)
 	private LocalDateTime submittedAt;
 
@@ -42,10 +46,6 @@ public class Submission extends SoftDeletableEntity {
 	@Column(name = "text_content", columnDefinition = "TEXT")
 	private String textContent;
 
-	@Enumerated(EnumType.STRING)
-	@Column(name = "status", nullable = false, length = 20)
-	private SubmissionStatus status;
-
 	@Column(name = "marks_obtained", precision = 10, scale = 2)
 	private BigDecimal marksObtained;
 
@@ -55,9 +55,9 @@ public class Submission extends SoftDeletableEntity {
 	@Column(name = "graded_at")
 	private LocalDateTime gradedAt;
 
-	// FK to teachers.id — the grading teacher
-	@Column(name = "graded_by")
-	private Long gradedBy;
+	@Enumerated(EnumType.STRING)
+	@Column(name = "status", nullable = false, length = 20)
+	private SubmissionStatus status;
 
 	public static Submission submit(Long assignmentId, Long studentId, String storageKey, String textContent,
 			boolean isLate) {

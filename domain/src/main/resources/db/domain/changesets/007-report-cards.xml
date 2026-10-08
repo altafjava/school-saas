@@ -13,9 +13,6 @@
             <column name="public_id" type="VARCHAR(36)">
                 <constraints nullable="false" unique="true"/>
             </column>
-            <column name="version" type="BIGINT" defaultValueNumeric="0">
-                <constraints nullable="false"/>
-            </column>
             <column name="tenant_id" type="BIGINT">
                 <constraints nullable="false"/>
             </column>
@@ -32,38 +29,30 @@
             <column name="generated_at" type="TIMESTAMP">
                 <constraints nullable="false"/>
             </column>
+            <column name="teacher_remarks" type="VARCHAR(1000)"/>
+            <column name="principal_remarks" type="VARCHAR(1000)"/>
+            <column name="created_at" type="TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_by" type="VARCHAR(100)"/>
+            <column name="updated_at" type="TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="updated_by" type="VARCHAR(100)"/>
             <column name="deleted" type="BOOLEAN" defaultValueBoolean="false">
                 <constraints nullable="false"/>
             </column>
             <column name="deleted_at" type="TIMESTAMP"/>
             <column name="deleted_by" type="VARCHAR(100)"/>
-            <column name="created_at" type="TIMESTAMP">
+            <column name="version" type="BIGINT" defaultValueNumeric="0">
                 <constraints nullable="false"/>
             </column>
-            <column name="updated_at" type="TIMESTAMP">
-                <constraints nullable="false"/>
-            </column>
-            <column name="created_by" type="VARCHAR(100)"/>
-            <column name="updated_by" type="VARCHAR(100)"/>
         </createTable>
-
-        <addForeignKeyConstraint
-                constraintName="fk_report_cards_tenant_id"
-                baseTableName="report_cards" baseColumnNames="tenant_id"
-                referencedTableName="tenants" referencedColumnNames="id"/>
-        <addForeignKeyConstraint
-                constraintName="fk_report_cards_student_id"
-                baseTableName="report_cards" baseColumnNames="student_id"
-                referencedTableName="students" referencedColumnNames="id"/>
-        <addForeignKeyConstraint
-                constraintName="fk_report_cards_document_issuance_id"
-                baseTableName="report_cards" baseColumnNames="document_issuance_id"
-                referencedTableName="document_issuances" referencedColumnNames="id"/>
-        <addForeignKeyConstraint
-                constraintName="fk_report_cards_term_id"
-                baseTableName="report_cards" baseColumnNames="term_id"
-                referencedTableName="terms" referencedColumnNames="id"/>
-
+        <sql>
+            ALTER TABLE report_cards
+                ADD COLUMN active_term_id BIGINT
+                GENERATED ALWAYS AS (CASE WHEN deleted = FALSE THEN term_id ELSE NULL END) STORED;
+        </sql>
         <createIndex indexName="idx_report_cards_tenant_id" tableName="report_cards">
             <column name="tenant_id"/>
         </createIndex>
@@ -73,11 +62,35 @@
         <createIndex indexName="idx_report_cards_student_id" tableName="report_cards">
             <column name="student_id"/>
         </createIndex>
-        <createIndex indexName="uq_report_cards_student_term_tenant" tableName="report_cards" unique="true">
+        <createIndex indexName="uq_report_cards_student_active_term_tenant" tableName="report_cards" unique="true">
             <column name="student_id"/>
-            <column name="term_id"/>
+            <column name="active_term_id"/>
             <column name="tenant_id"/>
         </createIndex>
+        <addForeignKeyConstraint
+                constraintName="fk_report_cards_tenant_id"
+                baseTableName="report_cards"
+                baseColumnNames="tenant_id"
+                referencedTableName="tenants"
+                referencedColumnNames="id"/>
+        <addForeignKeyConstraint
+                constraintName="fk_report_cards_student_id"
+                baseTableName="report_cards"
+                baseColumnNames="student_id"
+                referencedTableName="students"
+                referencedColumnNames="id"/>
+        <addForeignKeyConstraint
+                constraintName="fk_report_cards_document_issuance_id"
+                baseTableName="report_cards"
+                baseColumnNames="document_issuance_id"
+                referencedTableName="document_issuances"
+                referencedColumnNames="id"/>
+        <addForeignKeyConstraint
+                constraintName="fk_report_cards_term_id"
+                baseTableName="report_cards"
+                baseColumnNames="term_id"
+                referencedTableName="terms"
+                referencedColumnNames="id"/>
     </changeSet>
 
 </databaseChangeLog>

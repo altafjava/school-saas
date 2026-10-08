@@ -29,10 +29,6 @@ public class StudentGuardianLink extends SoftDeletableEntity {
 	@Column(name = "guardian_id", nullable = false)
 	private Long guardianId;
 
-	@Enumerated(EnumType.STRING)
-	@Column(name = "relationship_type", nullable = false, length = 30)
-	private RelationshipType relationshipType;
-
 	@Column(name = "primary_contact", nullable = false)
 	private boolean primaryContact;
 
@@ -51,6 +47,10 @@ public class StudentGuardianLink extends SoftDeletableEntity {
 
 	@Column(name = "custody_restriction_note", length = 500)
 	private String custodyRestrictionNote;
+
+	@Enumerated(EnumType.STRING)
+	@Column(name = "relationship_type", nullable = false, length = 30)
+	private RelationshipType relationshipType;
 
 	public static StudentGuardianLink create(Long studentId, Long guardianId, RelationshipType relationshipType,
 			boolean primaryContact) {

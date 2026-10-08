@@ -37,6 +37,19 @@ import lombok.experimental.SuperBuilder;
 @NoArgsConstructor
 public class Employee extends SoftDeletableEntity {
 
+	// FK to platform users.id — nullable, set only once this person has a login account.
+	@Column(name = "user_id")
+	private Long userId;
+
+	// FK to departments.id — nullable, HR details are assigned after hiring, not at hire time.
+	@Column(name = "department_id")
+	private Long departmentId;
+
+	// FK to platform file_metadata.public_id — see Student.photoFilePublicId's Javadoc for why the
+	// UUID publicId, not the internal surrogate id.
+	@Column(name = "photo_file_public_id")
+	private UUID photoFilePublicId;
+
 	@Column(name = "employee_code", nullable = false, length = 50)
 	private String employeeCode;
 
@@ -62,14 +75,6 @@ public class Employee extends SoftDeletableEntity {
 	@Column(name = "join_date")
 	private LocalDate joinDate;
 
-	// FK to platform users.id — nullable, set only once this person has a login account.
-	@Column(name = "user_id")
-	private Long userId;
-
-	// FK to departments.id — nullable, HR details are assigned after hiring, not at hire time.
-	@Column(name = "department_id")
-	private Long departmentId;
-
 	@Column(name = "designation", length = 100)
 	private String designation;
 
@@ -77,16 +82,8 @@ public class Employee extends SoftDeletableEntity {
 	private String qualification;
 
 	@Enumerated(EnumType.STRING)
-	@Column(name = "employment_type", length = 30)
-	private EmploymentType employmentType;
-
-	@Enumerated(EnumType.STRING)
 	@Column(name = "staff_category", nullable = false, length = 20)
 	private StaffCategory staffCategory;
-
-	@Enumerated(EnumType.STRING)
-	@Column(name = "status", nullable = false, length = 20)
-	private EmployeeStatus status;
 
 	// Nullable — set only when the school places this person on probation; on/after this date they
 	// are no longer on probation, and null means never (or already ended).
@@ -99,10 +96,13 @@ public class Employee extends SoftDeletableEntity {
 	@Column(name = "exit_reason", length = 500)
 	private String exitReason;
 
-	// FK to platform file_metadata.public_id — see Student.photoFilePublicId's Javadoc for why the
-	// UUID publicId, not the internal surrogate id.
-	@Column(name = "photo_file_public_id")
-	private UUID photoFilePublicId;
+	@Enumerated(EnumType.STRING)
+	@Column(name = "employment_type", length = 30)
+	private EmploymentType employmentType;
+
+	@Enumerated(EnumType.STRING)
+	@Column(name = "status", nullable = false, length = 20)
+	private EmployeeStatus status;
 
 	/** Non-teaching staff; teachers are created with {@code Teacher.create}. */
 	public static Employee create(StaffCategory staffCategory, String employeeCode, String firstName,

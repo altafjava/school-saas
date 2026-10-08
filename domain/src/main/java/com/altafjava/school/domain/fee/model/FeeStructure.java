@@ -30,9 +30,6 @@ public class FeeStructure extends SoftDeletableEntity {
 	@Column(name = "frequency", nullable = false, length = 20)
 	private FeeFrequency frequency;
 
-	@Column(name = "plan_type", length = 100)
-	private String planType;
-
 	// Tenant-wide defaults for every FeeAssignment of this structure that doesn't set its own
 	// override — see FeeBalanceCalculator's assignment-then-structure-then-hardcoded fallback
 	// chain, mirroring AlertRule's per-rule-value-with-default-fallback pattern.
@@ -41,6 +38,9 @@ public class FeeStructure extends SoftDeletableEntity {
 
 	@Column(name = "late_fee_percentage", precision = 5, scale = 2)
 	private BigDecimal lateFeePercentage;
+
+	@Column(name = "plan_type", length = 100)
+	private String planType;
 
 	public static FeeStructure create(String name, BigDecimal amount, FeeFrequency frequency, String planType) {
 		return FeeStructure.builder()

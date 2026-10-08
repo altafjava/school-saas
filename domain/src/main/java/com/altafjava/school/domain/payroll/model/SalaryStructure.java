@@ -37,12 +37,12 @@ public class SalaryStructure extends SoftDeletableEntity {
 	@Column(name = "employee_id", nullable = false)
 	private Long employeeId;
 
+	@Column(name = "effective_from", nullable = false)
+	private LocalDate effectiveFrom;
+
 	@Convert(converter = PayComponentAmountListConverter.class)
 	@Column(name = "components_json", nullable = false)
 	private List<PayComponentAmount> components;
-
-	@Column(name = "effective_from", nullable = false)
-	private LocalDate effectiveFrom;
 
 	@Column(name = "active", nullable = false)
 	private boolean active;

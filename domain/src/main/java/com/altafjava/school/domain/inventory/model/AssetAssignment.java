@@ -26,10 +26,6 @@ public class AssetAssignment extends SoftDeletableEntity {
 	@Column(name = "asset_id", nullable = false)
 	private Long assetId;
 
-	@Enumerated(EnumType.STRING)
-	@Column(name = "assigned_to_type", nullable = false, length = 20)
-	private AssignedToType assignedToType;
-
 	// Either a teachers.id (STAFF) or a classrooms.id (CLASSROOM), per assignedToType — not a
 	// single FK since it targets two different tables.
 	@Column(name = "assigned_to_id", nullable = false)
@@ -40,6 +36,10 @@ public class AssetAssignment extends SoftDeletableEntity {
 
 	@Column(name = "returned_at")
 	private LocalDate returnedAt;
+
+	@Enumerated(EnumType.STRING)
+	@Column(name = "assigned_to_type", nullable = false, length = 20)
+	private AssignedToType assignedToType;
 
 	public static AssetAssignment create(Long assetId, AssignedToType assignedToType, Long assignedToId,
 			LocalDate assignedAt) {

@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                            http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-5.0.xsd">
+
+    <!-- Phase 1.2 — document management: zero document upload/verification model existed
+         anywhere before this (see StudentDocument's Javadoc). Reused for both admission-time
+         uploads (admission_id set) and later student-record documents (student_id set). -->
+    <changeSet id="school-139-student-documents" author="school">
+        <createTable tableName="student_documents">
+            <column name="id" type="BIGINT" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="public_id" type="VARCHAR(36)">
+                <constraints nullable="false" unique="true"/>
+            </column>
+            <column name="tenant_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="student_id" type="BIGINT"/>
+            <column name="admission_id" type="BIGINT"/>
+            <column name="file_public_id" type="UUID">
+                <constraints nullable="false"/>
+            </column>
+            <column name="verified_by_user_id" type="BIGINT"/>
+            <column name="verified_at" type="TIMESTAMP"/>
+            <column name="rejection_reason" type="VARCHAR(500)"/>
+            <column name="document_type" type="VARCHAR(100)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="verification_status" type="VARCHAR(20)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_at" type="TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_by" type="VARCHAR(100)"/>
+            <column name="updated_at" type="TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="updated_by" type="VARCHAR(100)"/>
+            <column name="deleted" type="BOOLEAN" defaultValueBoolean="false">
+                <constraints nullable="false"/>
+            </column>
+            <column name="deleted_at" type="TIMESTAMP"/>
+            <column name="deleted_by" type="VARCHAR(100)"/>
+            <column name="version" type="BIGINT" defaultValueNumeric="0">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+        <sql>
+            ALTER TABLE student_documents
+                ADD CONSTRAINT chk_student_documents_exactly_one_owner
+                CHECK ((student_id IS NULL) != (admission_id IS NULL));
+        </sql>
+        <createIndex indexName="idx_student_documents_tenant_student" tableName="student_documents">
+            <column name="tenant_id"/>
+            <column name="student_id"/>
+        </createIndex>
+        <createIndex indexName="idx_student_documents_tenant_admission" tableName="student_documents">
+            <column name="tenant_id"/>
+            <column name="admission_id"/>
+        </createIndex>
+        <createIndex indexName="idx_student_documents_deleted" tableName="student_documents">
+            <column name="deleted"/>
+        </createIndex>
+        <addForeignKeyConstraint
+                constraintName="fk_student_documents_student_id"
+                baseTableName="student_documents"
+                baseColumnNames="student_id"
+                referencedTableName="students"
+                referencedColumnNames="id"/>
+        <addForeignKeyConstraint
+                constraintName="fk_student_documents_admission_id"
+                baseTableName="student_documents"
+                baseColumnNames="admission_id"
+                referencedTableName="admissions"
+                referencedColumnNames="id"/>
+        <addForeignKeyConstraint
+                constraintName="fk_student_documents_file_public_id"
+                baseTableName="student_documents"
+                baseColumnNames="file_public_id"
+                referencedTableName="file_metadata"
+                referencedColumnNames="public_id"/>
+        <addForeignKeyConstraint
+                constraintName="fk_student_documents_tenant_id"
+                baseTableName="student_documents"
+                baseColumnNames="tenant_id"
+                referencedTableName="tenants"
+                referencedColumnNames="id"/>
+    </changeSet>
+
+</databaseChangeLog>

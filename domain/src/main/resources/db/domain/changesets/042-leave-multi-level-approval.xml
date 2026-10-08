@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                            http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-5.0.xsd">
+
+    <changeSet id="school-162-leave-request-approvals" author="school">
+        <createTable tableName="leave_request_approvals">
+            <column name="id" type="BIGINT" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="public_id" type="VARCHAR(36)">
+                <constraints nullable="false" unique="true"/>
+            </column>
+            <column name="tenant_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="leave_request_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="decision" type="VARCHAR(20)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="decided_by_user_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="decided_at" type="TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="remarks" type="VARCHAR(500)"/>
+            <column name="stage" type="VARCHAR(30)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_at" type="TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_by" type="VARCHAR(100)"/>
+            <column name="updated_at" type="TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="updated_by" type="VARCHAR(100)"/>
+            <column name="deleted" type="BOOLEAN" defaultValueBoolean="false">
+                <constraints nullable="false"/>
+            </column>
+            <column name="deleted_at" type="TIMESTAMP"/>
+            <column name="deleted_by" type="VARCHAR(100)"/>
+            <column name="version" type="BIGINT" defaultValueNumeric="0">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+        <createIndex indexName="idx_leave_request_approvals_tenant_id" tableName="leave_request_approvals">
+            <column name="tenant_id"/>
+        </createIndex>
+        <createIndex indexName="idx_leave_request_approvals_leave_request_id" tableName="leave_request_approvals">
+            <column name="leave_request_id"/>
+        </createIndex>
+        <createIndex indexName="idx_leave_request_approvals_deleted" tableName="leave_request_approvals">
+            <column name="deleted"/>
+        </createIndex>
+        <addForeignKeyConstraint
+                constraintName="fk_leave_request_approvals_tenant_id"
+                baseTableName="leave_request_approvals"
+                baseColumnNames="tenant_id"
+                referencedTableName="tenants"
+                referencedColumnNames="id"/>
+        <addForeignKeyConstraint
+                constraintName="fk_leave_request_approvals_leave_request_id"
+                baseTableName="leave_request_approvals"
+                baseColumnNames="leave_request_id"
+                referencedTableName="leave_requests"
+                referencedColumnNames="id"/>
+    </changeSet>
+
+</databaseChangeLog>

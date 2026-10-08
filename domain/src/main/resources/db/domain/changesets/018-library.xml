@@ -1,0 +1,211 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                            http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-5.0.xsd">
+
+    <changeSet id="school-051-books" author="school">
+        <createTable tableName="books">
+            <column name="id" type="BIGINT" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="public_id" type="VARCHAR(36)">
+                <constraints nullable="false" unique="true"/>
+            </column>
+            <column name="tenant_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="isbn" type="VARCHAR(20)"/>
+            <column name="title" type="VARCHAR(250)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="author" type="VARCHAR(150)"/>
+            <column name="publisher" type="VARCHAR(150)"/>
+            <column name="category" type="VARCHAR(100)"/>
+            <column name="active" type="BOOLEAN" defaultValueBoolean="true">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_at" type="TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_by" type="VARCHAR(100)"/>
+            <column name="updated_at" type="TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="updated_by" type="VARCHAR(100)"/>
+            <column name="deleted" type="BOOLEAN" defaultValueBoolean="false">
+                <constraints nullable="false"/>
+            </column>
+            <column name="deleted_at" type="TIMESTAMP"/>
+            <column name="deleted_by" type="VARCHAR(100)"/>
+            <column name="version" type="BIGINT" defaultValueNumeric="0">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+        <createIndex indexName="idx_books_tenant_id" tableName="books">
+            <column name="tenant_id"/>
+        </createIndex>
+        <createIndex indexName="idx_books_deleted" tableName="books">
+            <column name="deleted"/>
+        </createIndex>
+        <addForeignKeyConstraint
+                constraintName="fk_books_tenant_id"
+                baseTableName="books"
+                baseColumnNames="tenant_id"
+                referencedTableName="tenants"
+                referencedColumnNames="id"/>
+    </changeSet>
+
+    <changeSet id="school-052-book-copies" author="school">
+        <createTable tableName="book_copies">
+            <column name="id" type="BIGINT" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="public_id" type="VARCHAR(36)">
+                <constraints nullable="false" unique="true"/>
+            </column>
+            <column name="tenant_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="book_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="copy_code" type="VARCHAR(50)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="status" type="VARCHAR(20)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_at" type="TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_by" type="VARCHAR(100)"/>
+            <column name="updated_at" type="TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="updated_by" type="VARCHAR(100)"/>
+            <column name="deleted" type="BOOLEAN" defaultValueBoolean="false">
+                <constraints nullable="false"/>
+            </column>
+            <column name="deleted_at" type="TIMESTAMP"/>
+            <column name="deleted_by" type="VARCHAR(100)"/>
+            <column name="version" type="BIGINT" defaultValueNumeric="0">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+        <sql>
+            ALTER TABLE book_copies
+                ADD COLUMN active_copy_code VARCHAR(50)
+                GENERATED ALWAYS AS (CASE WHEN deleted = FALSE THEN copy_code ELSE NULL END) STORED;
+        </sql>
+        <createIndex indexName="idx_book_copies_tenant_id" tableName="book_copies">
+            <column name="tenant_id"/>
+        </createIndex>
+        <createIndex indexName="idx_book_copies_deleted" tableName="book_copies">
+            <column name="deleted"/>
+        </createIndex>
+        <createIndex indexName="idx_book_copies_book_id" tableName="book_copies">
+            <column name="book_id"/>
+        </createIndex>
+        <createIndex indexName="uq_book_copies_tenant_book_active_code" tableName="book_copies" unique="true">
+            <column name="tenant_id"/>
+            <column name="book_id"/>
+            <column name="active_copy_code"/>
+        </createIndex>
+        <addForeignKeyConstraint
+                constraintName="fk_book_copies_tenant_id"
+                baseTableName="book_copies"
+                baseColumnNames="tenant_id"
+                referencedTableName="tenants"
+                referencedColumnNames="id"/>
+        <addForeignKeyConstraint
+                constraintName="fk_book_copies_book_id"
+                baseTableName="book_copies"
+                baseColumnNames="book_id"
+                referencedTableName="books"
+                referencedColumnNames="id"/>
+    </changeSet>
+
+    <changeSet id="school-053-circulations" author="school">
+        <createTable tableName="circulations">
+            <column name="id" type="BIGINT" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="public_id" type="VARCHAR(36)">
+                <constraints nullable="false" unique="true"/>
+            </column>
+            <column name="tenant_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="book_copy_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="student_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="checked_out_at" type="DATE">
+                <constraints nullable="false"/>
+            </column>
+            <column name="due_date" type="DATE">
+                <constraints nullable="false"/>
+            </column>
+            <column name="returned_at" type="DATE"/>
+            <column name="fine_amount" type="DECIMAL(10,2)"/>
+            <column name="renewal_count" type="INT" defaultValueNumeric="0">
+                <constraints nullable="false"/>
+            </column>
+            <column name="last_renewed_at" type="DATE"/>
+            <column name="created_at" type="TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_by" type="VARCHAR(100)"/>
+            <column name="updated_at" type="TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="updated_by" type="VARCHAR(100)"/>
+            <column name="deleted" type="BOOLEAN" defaultValueBoolean="false">
+                <constraints nullable="false"/>
+            </column>
+            <column name="deleted_at" type="TIMESTAMP"/>
+            <column name="deleted_by" type="VARCHAR(100)"/>
+            <column name="version" type="BIGINT" defaultValueNumeric="0">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+        <sql>
+            ALTER TABLE circulations ADD CONSTRAINT chk_circulations_renewal_count CHECK (renewal_count &gt;= 0);
+        </sql>
+        <createIndex indexName="idx_circulations_tenant_id" tableName="circulations">
+            <column name="tenant_id"/>
+        </createIndex>
+        <createIndex indexName="idx_circulations_deleted" tableName="circulations">
+            <column name="deleted"/>
+        </createIndex>
+        <createIndex indexName="idx_circulations_book_copy_id" tableName="circulations">
+            <column name="book_copy_id"/>
+        </createIndex>
+        <createIndex indexName="idx_circulations_student_id" tableName="circulations">
+            <column name="student_id"/>
+        </createIndex>
+        <addForeignKeyConstraint
+                constraintName="fk_circulations_tenant_id"
+                baseTableName="circulations"
+                baseColumnNames="tenant_id"
+                referencedTableName="tenants"
+                referencedColumnNames="id"/>
+        <addForeignKeyConstraint
+                constraintName="fk_circulations_book_copy_id"
+                baseTableName="circulations"
+                baseColumnNames="book_copy_id"
+                referencedTableName="book_copies"
+                referencedColumnNames="id"/>
+        <addForeignKeyConstraint
+                constraintName="fk_circulations_student_id"
+                baseTableName="circulations"
+                baseColumnNames="student_id"
+                referencedTableName="students"
+                referencedColumnNames="id"/>
+    </changeSet>
+
+</databaseChangeLog>

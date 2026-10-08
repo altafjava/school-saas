@@ -29,13 +29,13 @@ public class Venue extends SoftDeletableEntity {
 	@Column(name = "name", nullable = false, length = 100)
 	private String name;
 
-	@Enumerated(EnumType.STRING)
-	@Column(name = "venue_type", nullable = false, length = 20)
-	private VenueType venueType;
-
 	// Null means the capacity is not recorded.
 	@Column(name = "capacity")
 	private Integer capacity;
+
+	@Enumerated(EnumType.STRING)
+	@Column(name = "venue_type", nullable = false, length = 20)
+	private VenueType venueType;
 
 	@Column(name = "active", nullable = false)
 	private boolean active;

@@ -22,10 +22,6 @@ import lombok.experimental.SuperBuilder;
 @NoArgsConstructor
 public class TimetableEntry extends SoftDeletableEntity {
 
-	@Enumerated(EnumType.STRING)
-	@Column(name = "day_of_week", nullable = false, length = 10)
-	private DayOfWeek dayOfWeek;
-
 	// FK to periods.id
 	@Column(name = "period_id", nullable = false)
 	private Long periodId;
@@ -45,6 +41,10 @@ public class TimetableEntry extends SoftDeletableEntity {
 	// FK to venues.id — optional; a slot without a venue takes part in no room-conflict check.
 	@Column(name = "venue_id")
 	private Long venueId;
+
+	@Enumerated(EnumType.STRING)
+	@Column(name = "day_of_week", nullable = false, length = 10)
+	private DayOfWeek dayOfWeek;
 
 	public static TimetableEntry create(DayOfWeek dayOfWeek, Long periodId, Long classroomId, Long subjectId,
 			Long teacherId, Long venueId) {

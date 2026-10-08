@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                            http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-5.0.xsd">
+
+    <!-- Replaces salary_structures'/payslips' fixed Basic/HRA/Transport/Other columns (a
+         specifically Indian pay-component shape) with a tenant-defined component catalog plus a
+         JSON breakdown per structure/payslip — see PayComponentDefinition, PayComponentAmount. -->
+    <changeSet id="school-048-pay-component-definitions" author="school">
+        <createTable tableName="pay_component_definitions">
+            <column name="id" type="BIGINT" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="public_id" type="VARCHAR(36)">
+                <constraints nullable="false" unique="true"/>
+            </column>
+            <column name="tenant_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="code" type="VARCHAR(50)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="name" type="VARCHAR(100)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="display_order" type="INT" defaultValueNumeric="0">
+                <constraints nullable="false"/>
+            </column>
+            <column name="type" type="VARCHAR(20)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="active" type="BOOLEAN" defaultValueBoolean="true">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_at" type="TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_by" type="VARCHAR(100)"/>
+            <column name="updated_at" type="TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="updated_by" type="VARCHAR(100)"/>
+            <column name="deleted" type="BOOLEAN" defaultValueBoolean="false">
+                <constraints nullable="false"/>
+            </column>
+            <column name="deleted_at" type="TIMESTAMP"/>
+            <column name="deleted_by" type="VARCHAR(100)"/>
+            <column name="version" type="BIGINT" defaultValueNumeric="0">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+        <sql>
+            ALTER TABLE pay_component_definitions
+                ADD COLUMN active_code VARCHAR(50)
+                GENERATED ALWAYS AS (CASE WHEN deleted = FALSE THEN code ELSE NULL END) STORED;
+        </sql>
+        <createIndex indexName="idx_pay_component_definitions_tenant_id" tableName="pay_component_definitions">
+            <column name="tenant_id"/>
+        </createIndex>
+        <createIndex indexName="idx_pay_component_definitions_deleted" tableName="pay_component_definitions">
+            <column name="deleted"/>
+        </createIndex>
+        <createIndex
+                indexName="uq_pay_component_definitions_tenant_active_code"
+                tableName="pay_component_definitions"
+                unique="true">
+            <column name="tenant_id"/>
+            <column name="active_code"/>
+        </createIndex>
+        <addForeignKeyConstraint
+                constraintName="fk_pay_component_definitions_tenant_id"
+                baseTableName="pay_component_definitions"
+                baseColumnNames="tenant_id"
+                referencedTableName="tenants"
+                referencedColumnNames="id"/>
+    </changeSet>
+
+</databaseChangeLog>

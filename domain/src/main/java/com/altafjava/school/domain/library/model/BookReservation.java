@@ -33,22 +33,22 @@ public class BookReservation extends SoftDeletableEntity {
 	@Column(name = "student_id", nullable = false)
 	private Long studentId;
 
-	@Column(name = "reserved_at", nullable = false)
-	private Instant reservedAt;
-
-	@Enumerated(EnumType.STRING)
-	@Column(name = "status", nullable = false, length = 20)
-	private ReservationStatus status;
-
 	// FK to book_copies.id — set while READY.
 	@Column(name = "held_copy_id")
 	private Long heldCopyId;
+
+	@Column(name = "reserved_at", nullable = false)
+	private Instant reservedAt;
 
 	@Column(name = "hold_expires_on")
 	private LocalDate holdExpiresOn;
 
 	@Column(name = "closed_at")
 	private Instant closedAt;
+
+	@Enumerated(EnumType.STRING)
+	@Column(name = "status", nullable = false, length = 20)
+	private ReservationStatus status;
 
 	public static BookReservation queue(Long bookId, Long studentId) {
 		return BookReservation.builder()

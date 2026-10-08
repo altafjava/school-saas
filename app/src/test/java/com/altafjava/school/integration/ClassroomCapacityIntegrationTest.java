@@ -142,7 +142,7 @@ class ClassroomCapacityIntegrationTest extends SchoolIntegrationTestBase {
 		// Regression: uq_scl_student_academic_year enforced uniqueness over every row regardless
 		// of the soft-delete flag, so withdrawing a student and re-enrolling them (even into a
 		// different classroom) for the same academic year hit a DB constraint violation against
-		// their own withdrawn row. See 051-classroom-link-soft-delete-unique-fix.xml.
+		// their own withdrawn row. See 009-classroom-roster.xml.
 		activateTenant(tenantA);
 		String academicYearPublicId = createAcademicYear("2024-25");
 		Classroom classroomX = classroomService.create("CLS-CAP-7", "Grade 5", "A", academicYearPublicId, null);

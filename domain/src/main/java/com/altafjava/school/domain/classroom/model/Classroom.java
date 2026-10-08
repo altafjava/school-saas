@@ -17,6 +17,19 @@ import lombok.experimental.SuperBuilder;
 @NoArgsConstructor
 public class Classroom extends SoftDeletableEntity {
 
+	// FK to teachers.id — stored as Long to avoid cross-entity coupling in domain layer
+	@Column(name = "class_teacher_id")
+	private Long classTeacherId;
+
+	// FK to academic_years.id — stored as Long to avoid cross-entity coupling in domain layer
+	@Column(name = "academic_year_id", nullable = false)
+	private Long academicYearId;
+
+	// FK to curricula.id — nullable; a classroom without one grades against the tenant's default
+	// grading scale (see GradingScaleService.resolveEffectiveThresholds).
+	@Column(name = "curriculum_id")
+	private Long curriculumId;
+
 	@Column(name = "class_code", nullable = false, length = 50)
 	private String classCode;
 
@@ -31,19 +44,6 @@ public class Classroom extends SoftDeletableEntity {
 	// legacy readers of this column working during the transition.
 	@Column(name = "academic_year", nullable = false, length = 20)
 	private String academicYear;
-
-	// FK to academic_years.id — stored as Long to avoid cross-entity coupling in domain layer
-	@Column(name = "academic_year_id", nullable = false)
-	private Long academicYearId;
-
-	// FK to teachers.id — stored as Long to avoid cross-entity coupling in domain layer
-	@Column(name = "class_teacher_id")
-	private Long classTeacherId;
-
-	// FK to curricula.id — nullable; a classroom without one grades against the tenant's default
-	// grading scale (see GradingScaleService.resolveEffectiveThresholds).
-	@Column(name = "curriculum_id")
-	private Long curriculumId;
 
 	// Nullable by design: every classroom that existed before this field was added has no
 	// configured capacity, and null must keep meaning "unlimited" rather than forcing a guessed

@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                            http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-5.0.xsd">
+
+    <changeSet id="school-024-fee-assignments" author="school">
+        <createTable tableName="fee_assignments">
+            <column name="id" type="BIGINT" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="public_id" type="VARCHAR(36)">
+                <constraints nullable="false" unique="true"/>
+            </column>
+            <column name="tenant_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="fee_structure_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <!-- Exactly one of student_id / classroom_id is set, matching `scope' — enforced by FeeAssignment.forStudent/forClassroom. -->
+            <column name="student_id" type="BIGINT"/>
+            <column name="classroom_id" type="BIGINT"/>
+            <column name="scope" type="VARCHAR(20)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="due_date" type="DATE"/>
+            <column name="grace_days" type="INT"/>
+            <column name="late_fee_percentage" type="DECIMAL(5,2)"/>
+            <column name="created_at" type="TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_by" type="VARCHAR(100)"/>
+            <column name="updated_at" type="TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="updated_by" type="VARCHAR(100)"/>
+            <column name="deleted" type="BOOLEAN" defaultValueBoolean="false">
+                <constraints nullable="false"/>
+            </column>
+            <column name="deleted_at" type="TIMESTAMP"/>
+            <column name="deleted_by" type="VARCHAR(100)"/>
+            <column name="version" type="BIGINT" defaultValueNumeric="0">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+        <sql>
+            ALTER TABLE fee_assignments
+                ADD COLUMN active_student_id BIGINT
+                GENERATED ALWAYS AS (CASE WHEN deleted = FALSE THEN student_id ELSE NULL END) STORED;
+        </sql>
+        <sql>
+            ALTER TABLE fee_assignments
+                ADD COLUMN active_classroom_id BIGINT
+                GENERATED ALWAYS AS (CASE WHEN deleted = FALSE THEN classroom_id ELSE NULL END) STORED;
+        </sql>
+        <createIndex indexName="idx_fa_tenant_id" tableName="fee_assignments">
+            <column name="tenant_id"/>
+        </createIndex>
+        <createIndex indexName="idx_fa_deleted" tableName="fee_assignments">
+            <column name="deleted"/>
+        </createIndex>
+        <createIndex indexName="idx_fa_fee_structure_id" tableName="fee_assignments">
+            <column name="fee_structure_id"/>
+        </createIndex>
+        <createIndex indexName="idx_fa_student_id" tableName="fee_assignments">
+            <column name="student_id"/>
+        </createIndex>
+        <createIndex indexName="idx_fa_classroom_id" tableName="fee_assignments">
+            <column name="classroom_id"/>
+        </createIndex>
+        <createIndex indexName="uq_fa_fee_structure_active_student" tableName="fee_assignments" unique="true">
+            <column name="fee_structure_id"/>
+            <column name="active_student_id"/>
+        </createIndex>
+        <createIndex indexName="uq_fa_fee_structure_active_classroom" tableName="fee_assignments" unique="true">
+            <column name="fee_structure_id"/>
+            <column name="active_classroom_id"/>
+        </createIndex>
+        <addForeignKeyConstraint
+                constraintName="fk_fa_tenant_id"
+                baseTableName="fee_assignments"
+                baseColumnNames="tenant_id"
+                referencedTableName="tenants"
+                referencedColumnNames="id"/>
+        <addForeignKeyConstraint
+                constraintName="fk_fa_fee_structure_id"
+                baseTableName="fee_assignments"
+                baseColumnNames="fee_structure_id"
+                referencedTableName="fee_structures"
+                referencedColumnNames="id"/>
+        <addForeignKeyConstraint
+                constraintName="fk_fa_student_id"
+                baseTableName="fee_assignments"
+                baseColumnNames="student_id"
+                referencedTableName="students"
+                referencedColumnNames="id"/>
+        <addForeignKeyConstraint
+                constraintName="fk_fa_classroom_id"
+                baseTableName="fee_assignments"
+                baseColumnNames="classroom_id"
+                referencedTableName="classrooms"
+                referencedColumnNames="id"/>
+    </changeSet>
+
+</databaseChangeLog>

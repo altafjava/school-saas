@@ -41,10 +41,6 @@ public class Payslip extends SoftDeletableEntity {
 	@Column(name = "pay_month", nullable = false)
 	private int payMonth;
 
-	@Convert(converter = PayComponentAmountListConverter.class)
-	@Column(name = "components_json", nullable = false)
-	private List<PayComponentAmount> components;
-
 	@Column(name = "gross_pay", nullable = false, precision = 12, scale = 2)
 	private BigDecimal grossPay;
 
@@ -57,15 +53,19 @@ public class Payslip extends SoftDeletableEntity {
 	@Column(name = "net_pay", nullable = false, precision = 12, scale = 2)
 	private BigDecimal netPay;
 
-	@Enumerated(EnumType.STRING)
-	@Column(name = "status", nullable = false, length = 20)
-	private PayslipStatus status;
-
 	@Column(name = "finalized_at")
 	private LocalDateTime finalizedAt;
 
 	@Column(name = "disbursed_at")
 	private LocalDateTime disbursedAt;
+
+	@Convert(converter = PayComponentAmountListConverter.class)
+	@Column(name = "components_json", nullable = false)
+	private List<PayComponentAmount> components;
+
+	@Enumerated(EnumType.STRING)
+	@Column(name = "status", nullable = false, length = 20)
+	private PayslipStatus status;
 
 	public static Payslip generate(Long employeeId, int payYear, int payMonth, SalarySnapshot snapshot,
 			PayrollComputation computation) {
