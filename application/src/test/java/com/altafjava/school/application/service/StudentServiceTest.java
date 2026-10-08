@@ -22,6 +22,8 @@ import com.altafjava.platform.core.exception.BusinessException;
 import com.altafjava.platform.core.tenant.TenantContext;
 import com.altafjava.platform.core.tenant.TenantType;
 import com.altafjava.platform.domain.numbering.model.ResetPeriod;
+import com.altafjava.school.application.lifecycle.LifecycleChange;
+import com.altafjava.school.application.lifecycle.LifecycleRecorder;
 import com.altafjava.school.domain.common.model.Address;
 import com.altafjava.school.domain.student.model.EnrollmentStatus;
 import com.altafjava.school.domain.student.model.Student;
@@ -34,12 +36,14 @@ class StudentServiceTest {
 	private StudentRepository studentRepository;
 	@Mock
 	private NumberSequenceService numberSequenceService;
+	@Mock
+	private LifecycleRecorder lifecycleRecorder;
 
 	private StudentService studentService;
 
 	@BeforeEach
 	void setUp() {
-		studentService = new StudentService(studentRepository, numberSequenceService);
+		studentService = new StudentService(studentRepository, numberSequenceService, lifecycleRecorder);
 		TenantContext.ForTesting.setCurrentTenant(1L, null, null, TenantType.SHARED);
 	}
 
@@ -79,7 +83,7 @@ class StudentServiceTest {
 		when(studentRepository.findByPublicIdAndTenantId(publicId, 1L)).thenReturn(Optional.of(student));
 		when(studentRepository.save(any(Student.class))).thenAnswer(inv -> inv.getArgument(0));
 
-		studentService.withdraw(publicId.toString());
+		studentService.withdraw(publicId.toString(), LifecycleChange.NONE);
 
 		ArgumentCaptor<Student> captor = ArgumentCaptor.forClass(Student.class);
 		verify(studentRepository).save(captor.capture());
@@ -96,7 +100,7 @@ class StudentServiceTest {
 		when(studentRepository.findByPublicIdAndTenantId(publicId, 1L)).thenReturn(Optional.of(student));
 		when(studentRepository.save(any(Student.class))).thenAnswer(inv -> inv.getArgument(0));
 
-		studentService.transfer(publicId.toString());
+		studentService.transfer(publicId.toString(), LifecycleChange.NONE);
 
 		ArgumentCaptor<Student> captor = ArgumentCaptor.forClass(Student.class);
 		verify(studentRepository).save(captor.capture());
@@ -113,7 +117,7 @@ class StudentServiceTest {
 		when(studentRepository.findByPublicIdAndTenantId(publicId, 1L)).thenReturn(Optional.of(student));
 		when(studentRepository.save(any(Student.class))).thenAnswer(inv -> inv.getArgument(0));
 
-		studentService.graduate(publicId.toString());
+		studentService.graduate(publicId.toString(), LifecycleChange.NONE);
 
 		ArgumentCaptor<Student> captor = ArgumentCaptor.forClass(Student.class);
 		verify(studentRepository).save(captor.capture());

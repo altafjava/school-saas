@@ -15,90 +15,90 @@ import com.altafjava.platform.core.security.AuthenticatedUser;
 import com.altafjava.platform.core.tenant.TenantContext;
 import com.altafjava.school.domain.academicyear.model.AcademicYear;
 import com.altafjava.school.domain.academicyear.repository.AcademicYearRepository;
+import com.altafjava.school.domain.employee.model.Employee;
+import com.altafjava.school.domain.employee.repository.EmployeeRepository;
 import com.altafjava.school.domain.leave.model.LeaveBalance;
 import com.altafjava.school.domain.leave.model.LeaveType;
 import com.altafjava.school.domain.leave.repository.LeaveBalanceRepository;
-import com.altafjava.school.domain.teacher.model.Teacher;
-import com.altafjava.school.domain.teacher.repository.TeacherRepository;
 
 @Service
 public class LeaveBalanceService {
 
 	private final LeaveBalanceRepository leaveBalanceRepository;
-	private final TeacherRepository teacherRepository;
+	private final EmployeeRepository employeeRepository;
 	private final AcademicYearRepository academicYearRepository;
 
-	public LeaveBalanceService(LeaveBalanceRepository leaveBalanceRepository, TeacherRepository teacherRepository,
+	public LeaveBalanceService(LeaveBalanceRepository leaveBalanceRepository, EmployeeRepository employeeRepository,
 			AcademicYearRepository academicYearRepository) {
 		this.leaveBalanceRepository = leaveBalanceRepository;
-		this.teacherRepository = teacherRepository;
+		this.employeeRepository = employeeRepository;
 		this.academicYearRepository = academicYearRepository;
 	}
 
 	@Transactional(readOnly = true)
-	public List<LeaveBalance> listForTeacher(String teacherPublicId, String academicYearPublicId) {
+	public List<LeaveBalance> listForEmployee(String employeePublicId, String academicYearPublicId) {
 		Long tenantId = TenantContext.getCurrentTenantId();
-		var teacher = teacherRepository.findByPublicIdAndTenantId(UUID.fromString(teacherPublicId), tenantId)
-				.orElseThrow(() -> new ResourceNotFoundException("Teacher not found: " + teacherPublicId));
+		var employee = employeeRepository.findByPublicIdAndTenantId(UUID.fromString(employeePublicId), tenantId)
+				.orElseThrow(() -> new ResourceNotFoundException("Employee not found: " + employeePublicId));
 		var academicYear = academicYearRepository
 				.findByPublicIdAndTenantId(UUID.fromString(academicYearPublicId), tenantId)
 				.orElseThrow(() -> new ResourceNotFoundException("Academic year not found: " + academicYearPublicId));
-		return leaveBalanceRepository.findAllByTeacherIdAndAcademicYearIdAndTenantId(teacher.getId(),
+		return leaveBalanceRepository.findAllByEmployeeIdAndAcademicYearIdAndTenantId(employee.getId(),
 				academicYear.getId(), tenantId);
 	}
 
 	@Transactional(readOnly = true)
-	public List<LeaveBalance> listForCurrentTeacher(String academicYearPublicId) {
+	public List<LeaveBalance> listForCurrentEmployee(String academicYearPublicId) {
 		Long tenantId = TenantContext.getCurrentTenantId();
-		Teacher teacher = resolveCurrentTeacher(tenantId);
+		Employee employee = resolveCurrentEmployee(tenantId);
 		var academicYear = academicYearRepository
 				.findByPublicIdAndTenantId(UUID.fromString(academicYearPublicId), tenantId)
 				.orElseThrow(() -> new ResourceNotFoundException("Academic year not found: " + academicYearPublicId));
-		return leaveBalanceRepository.findAllByTeacherIdAndAcademicYearIdAndTenantId(teacher.getId(),
+		return leaveBalanceRepository.findAllByEmployeeIdAndAcademicYearIdAndTenantId(employee.getId(),
 				academicYear.getId(), tenantId);
 	}
 
-	private Teacher resolveCurrentTeacher(Long tenantId) {
+	private Employee resolveCurrentEmployee(Long tenantId) {
 		Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 		if (authentication != null && authentication.getPrincipal() instanceof AuthenticatedUser user) {
-			return teacherRepository.findByUserIdAndTenantId(user.getId(), tenantId)
-					.orElseThrow(() -> new AccessDeniedException("No teacher record linked to the current user"));
+			return employeeRepository.findByUserIdAndTenantId(user.getId(), tenantId)
+					.orElseThrow(() -> new AccessDeniedException("No employee record linked to the current user"));
 		}
-		throw new AccessDeniedException("Authenticated principal missing — cannot resolve current teacher");
+		throw new AccessDeniedException("Authenticated principal missing — cannot resolve current employee");
 	}
 
 	@Transactional
-	public LeaveBalance allocateIfAbsent(Long teacherId, Long leaveTypeId, Long academicYearId,
+	public LeaveBalance allocateIfAbsent(Long employeeId, Long leaveTypeId, Long academicYearId,
 			BigDecimal allocatedDays) {
 		Long tenantId = TenantContext.getCurrentTenantId();
 		return leaveBalanceRepository
-				.findByTeacherIdAndLeaveTypeIdAndAcademicYearIdAndTenantId(teacherId, leaveTypeId, academicYearId,
+				.findByEmployeeIdAndLeaveTypeIdAndAcademicYearIdAndTenantId(employeeId, leaveTypeId, academicYearId,
 						tenantId)
 				.orElseGet(() -> leaveBalanceRepository
-						.save(LeaveBalance.allocate(teacherId, leaveTypeId, academicYearId, allocatedDays)));
+						.save(LeaveBalance.allocate(employeeId, leaveTypeId, academicYearId, allocatedDays)));
 	}
 
 	/**
 	 * Same idempotency as {@link #allocateIfAbsent}, additionally bringing forward a capped,
-	 * expiry-tracked portion of the teacher's remaining balance for this leave type from the
+	 * expiry-tracked portion of the employee's remaining balance for this leave type from the
 	 * academic year immediately before {@code academicYear} — only when {@code leaveType} has
 	 * carry-forward enabled and a prior balance actually exists. A no-op for an already-allocated
 	 * balance, matching {@link #allocateIfAbsent}'s idempotency (carry-forward is only ever applied
 	 * once, at initial allocation).
 	 */
 	@Transactional
-	public LeaveBalance allocateWithCarryForward(Teacher teacher, LeaveType leaveType, AcademicYear academicYear) {
+	public LeaveBalance allocateWithCarryForward(Employee employee, LeaveType leaveType, AcademicYear academicYear) {
 		Long tenantId = TenantContext.getCurrentTenantId();
 		Optional<LeaveBalance> existing = leaveBalanceRepository
-				.findByTeacherIdAndLeaveTypeIdAndAcademicYearIdAndTenantId(
-						teacher.getId(), leaveType.getId(), academicYear.getId(), tenantId);
+				.findByEmployeeIdAndLeaveTypeIdAndAcademicYearIdAndTenantId(
+						employee.getId(), leaveType.getId(), academicYear.getId(), tenantId);
 		if (existing.isPresent()) {
 			return existing.get();
 		}
-		LeaveBalance balance = LeaveBalance.allocate(teacher.getId(), leaveType.getId(), academicYear.getId(),
+		LeaveBalance balance = LeaveBalance.allocate(employee.getId(), leaveType.getId(), academicYear.getId(),
 				leaveType.getDefaultAnnualDays());
 		if (leaveType.isCarryForwardEnabled()) {
-			applyCarryForwardIfEligible(tenantId, teacher, leaveType, academicYear, balance);
+			applyCarryForwardIfEligible(tenantId, employee, leaveType, academicYear, balance);
 		}
 		return leaveBalanceRepository.save(balance);
 	}
@@ -123,12 +123,12 @@ public class LeaveBalanceService {
 		return forfeitedCount;
 	}
 
-	private void applyCarryForwardIfEligible(Long tenantId, Teacher teacher, LeaveType leaveType,
+	private void applyCarryForwardIfEligible(Long tenantId, Employee employee, LeaveType leaveType,
 			AcademicYear academicYear, LeaveBalance newBalance) {
 		academicYearRepository
 				.findFirstByTenantIdAndStartDateBeforeOrderByStartDateDesc(tenantId, academicYear.getStartDate())
 				.flatMap(previousYear -> leaveBalanceRepository
-						.findByTeacherIdAndLeaveTypeIdAndAcademicYearIdAndTenantId(teacher.getId(), leaveType.getId(),
+						.findByEmployeeIdAndLeaveTypeIdAndAcademicYearIdAndTenantId(employee.getId(), leaveType.getId(),
 								previousYear.getId(), tenantId))
 				.ifPresent(previousBalance -> {
 					BigDecimal carryDays = previousBalance.remainingDays().max(BigDecimal.ZERO);

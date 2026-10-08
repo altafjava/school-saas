@@ -98,4 +98,59 @@ class StudentTest {
 		assertEquals("STU-001", student.getStudentCode());
 		assertEquals(LocalDate.of(2010, 1, 1), student.getDateOfBirth());
 	}
+
+	@Test
+	void suspend_thenReinstate_roundTripsToActive() {
+		Student student = newStudent();
+
+		student.suspend();
+		assertEquals(EnrollmentStatus.SUSPENDED, student.getEnrollmentStatus());
+		student.reinstate();
+
+		assertEquals(EnrollmentStatus.ACTIVE, student.getEnrollmentStatus());
+	}
+
+	@Test
+	void suspend_whenNotActive_throws() {
+		Student student = newStudent();
+		student.suspend();
+
+		assertThrows(BusinessException.class, student::suspend);
+	}
+
+	@Test
+	void reinstate_whenNotSuspended_throws() {
+		assertThrows(BusinessException.class, newStudent()::reinstate);
+	}
+
+	@Test
+	void withdraw_fromSuspended_isAllowed() {
+		Student student = newStudent();
+		student.suspend();
+
+		student.withdraw();
+
+		assertEquals(EnrollmentStatus.WITHDRAWN, student.getEnrollmentStatus());
+	}
+
+	@Test
+	void graduate_fromSuspended_throws() {
+		Student student = newStudent();
+		student.suspend();
+
+		assertThrows(BusinessException.class, student::graduate);
+	}
+
+	@Test
+	void leavingTwice_isRejected_soTheRetentionClockCannotBeReset() {
+		for (java.util.function.Consumer<Student> exit : java.util.List.<java.util.function.Consumer<Student>>of(
+				Student::withdraw, Student::transfer)) {
+			Student student = newStudent();
+			student.withdraw();
+			java.time.Instant leftAt = student.getEnrollmentStatusChangedAt();
+
+			assertThrows(BusinessException.class, () -> exit.accept(student));
+			assertEquals(leftAt, student.getEnrollmentStatusChangedAt());
+		}
+	}
 }

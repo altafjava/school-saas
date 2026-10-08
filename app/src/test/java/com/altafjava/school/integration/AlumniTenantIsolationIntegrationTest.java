@@ -13,6 +13,7 @@ import com.altafjava.platform.application.service.TenantOnboardingService;
 import com.altafjava.platform.core.exception.ResourceNotFoundException;
 import com.altafjava.platform.core.tenant.TenantContext;
 import com.altafjava.platform.domain.tenant.model.Tenant;
+import com.altafjava.school.application.lifecycle.LifecycleChange;
 import com.altafjava.school.application.service.AlumniProfileService;
 import com.altafjava.school.application.service.StudentService;
 import com.altafjava.school.base.SchoolIntegrationTestBase;
@@ -64,7 +65,7 @@ class AlumniTenantIsolationIntegrationTest extends SchoolIntegrationTestBase {
 		activateTenant(tenantA);
 		Student student = studentService.enroll("STU-" + UUID.randomUUID().toString().substring(0, 6), "Alice",
 				"Smith", "alice@alumni.test", LocalDate.of(2008, 1, 1));
-		studentService.graduate(student.getPublicId().toString());
+		studentService.graduate(student.getPublicId().toString(), LifecycleChange.NONE);
 		var profile = alumniProfileService.create(student.getPublicId().toString(), 2026, "Software Engineer",
 				"alice@alumni-contact.test", "555-0100");
 		String profilePublicId = profile.getPublicId().toString();

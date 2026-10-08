@@ -3,6 +3,7 @@ package com.altafjava.school.application.service;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
@@ -23,14 +24,21 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import com.altafjava.platform.application.document.DocumentIssuanceService;
 import com.altafjava.platform.application.service.EmailService;
+import com.altafjava.platform.application.service.NumberSequenceService;
 import com.altafjava.platform.core.exception.BusinessException;
 import com.altafjava.platform.core.tenant.TenantContext;
 import com.altafjava.platform.core.tenant.TenantType;
+import com.altafjava.platform.domain.document.model.DocumentIssuance;
+import com.altafjava.school.application.admission.ApplicationFeePolicy;
+import com.altafjava.school.application.admission.OfferLetterIssuer;
+import com.altafjava.school.application.lifecycle.LifecycleRecorder;
 import com.altafjava.school.application.saga.AdmissionEnrollmentSaga;
 import com.altafjava.school.domain.admission.model.Admission;
 import com.altafjava.school.domain.admission.model.AdmissionDecision;
 import com.altafjava.school.domain.admission.model.AdmissionStatus;
+import com.altafjava.school.domain.admission.model.ApplicationFeeStatus;
 import com.altafjava.school.domain.admission.model.DecisionOutcome;
 import com.altafjava.school.domain.admission.repository.AdmissionDecisionRepository;
 import com.altafjava.school.domain.admission.repository.AdmissionRepository;
@@ -46,13 +54,24 @@ class AdmissionServiceTest {
 	private AdmissionEnrollmentSaga admissionEnrollmentSaga;
 	@Mock
 	private EmailService emailService;
+	@Mock
+	private LifecycleRecorder lifecycleRecorder;
+	@Mock
+	private ApplicationFeePolicy applicationFeePolicy;
+	@Mock
+	private NumberSequenceService numberSequenceService;
+	@Mock
+	private OfferLetterIssuer offerLetterIssuer;
+	@Mock
+	private DocumentIssuanceService documentIssuanceService;
 
 	private AdmissionService admissionService;
 
 	@BeforeEach
 	void setUp() {
 		admissionService = new AdmissionService(admissionRepository, admissionDecisionRepository,
-				admissionEnrollmentSaga, emailService);
+				admissionEnrollmentSaga, emailService, lifecycleRecorder, applicationFeePolicy, numberSequenceService,
+				offerLetterIssuer, documentIssuanceService);
 		TenantContext.ForTesting.setCurrentTenant(1L, null, null, TenantType.SHARED);
 	}
 
@@ -257,5 +276,89 @@ class AdmissionServiceTest {
 		Admission admission = admissionWithId(id, publicId, AdmissionStatus.UNDER_REVIEW);
 		admission.recordEntranceTestScore(score, BigDecimal.valueOf(100));
 		return admission;
+	}
+
+	@Test
+	void submit_withAConfiguredFee_startsWithAPendingApplicationFee() {
+		when(applicationFeePolicy.feeFor(1L)).thenReturn(Optional.of(new java.math.BigDecimal("300.00")));
+		when(admissionRepository.save(any(Admission.class))).thenAnswer(inv -> inv.getArgument(0));
+
+		Admission admission = admissionService.submit("Alice", "Smith", LocalDate.of(2015, 1, 1), "Bob", "Smith",
+				"bob@family.test", "555-1234", "Grade 3");
+
+		assertEquals(ApplicationFeeStatus.PENDING, admission.getApplicationFeeStatus());
+		assertEquals(0, new java.math.BigDecimal("300.00").compareTo(admission.getApplicationFeeAmount()));
+	}
+
+	@Test
+	void recordApplicationFeePayment_assignsAReceiptFromTheSharedSequence() {
+		UUID publicId = UUID.randomUUID();
+		Admission admission = Admission.submit("Alice", "Smith", LocalDate.of(2015, 1, 1), "Bob", "Smith",
+				"bob@family.test", "555-1234", "Grade 3", new java.math.BigDecimal("300.00"));
+		admission.setId(1L);
+		when(admissionRepository.findByPublicIdAndTenantId(publicId, 1L)).thenReturn(Optional.of(admission));
+		when(admissionRepository.save(any(Admission.class))).thenAnswer(inv -> inv.getArgument(0));
+		when(numberSequenceService.generateNext(eq(1L), eq("FEE_RECEIPT"), anyString(), anyInt(), any()))
+				.thenReturn("RCPT-2026-000007");
+
+		Admission result = admissionService.recordApplicationFeePayment(publicId.toString());
+
+		assertEquals(ApplicationFeeStatus.PAID, result.getApplicationFeeStatus());
+		assertEquals("RCPT-2026-000007", result.getApplicationFeeReceiptNumber());
+	}
+
+	@Test
+	void approval_issuesAnOfferLetterAndLinksIt() {
+		UUID publicId = UUID.randomUUID();
+		Admission admission = admissionWithId(1L, publicId, AdmissionStatus.SUBMITTED);
+		when(admissionRepository.findByPublicIdAndTenantId(publicId, 1L)).thenReturn(Optional.of(admission));
+		when(admissionRepository.save(any(Admission.class))).thenAnswer(inv -> inv.getArgument(0));
+		when(admissionDecisionRepository.save(any(AdmissionDecision.class))).thenAnswer(inv -> inv.getArgument(0));
+		DocumentIssuance letter = DocumentIssuance.create("ADMISSION_OFFER_LETTER", "ADMISSION", 1L, "Offer", "Alice",
+				null, null, "code", "key", null);
+		letter.setId(55L);
+		when(offerLetterIssuer.issue(eq(1L), eq(admission), any())).thenReturn(letter);
+
+		admissionService.requestApproval(publicId.toString(), "admin", null, "STU-100");
+
+		assertEquals(55L, admission.getOfferLetterIssuanceId());
+		verify(admissionEnrollmentSaga).enroll(eq(1L), eq("STU-100"));
+	}
+
+	@Test
+	void approval_stillEnrols_whenTheOfferLetterCannotBeIssued() {
+		UUID publicId = UUID.randomUUID();
+		Admission admission = admissionWithId(1L, publicId, AdmissionStatus.SUBMITTED);
+		when(admissionRepository.findByPublicIdAndTenantId(publicId, 1L)).thenReturn(Optional.of(admission));
+		when(admissionRepository.save(any(Admission.class))).thenAnswer(inv -> inv.getArgument(0));
+		when(admissionDecisionRepository.save(any(AdmissionDecision.class))).thenAnswer(inv -> inv.getArgument(0));
+		when(offerLetterIssuer.issue(any(), any(), any())).thenThrow(new IllegalStateException("storage down"));
+
+		admissionService.requestApproval(publicId.toString(), "admin", null, "STU-100");
+
+		assertEquals(AdmissionStatus.APPROVED, admission.getStatus());
+		assertEquals(null, admission.getOfferLetterIssuanceId());
+		verify(admissionEnrollmentSaga).enroll(eq(1L), eq("STU-100"));
+	}
+
+	@Test
+	void issueOfferLetter_beforeApproval_isRejected() {
+		UUID publicId = UUID.randomUUID();
+		Admission admission = admissionWithId(1L, publicId, AdmissionStatus.UNDER_REVIEW);
+		when(admissionRepository.findByPublicIdAndTenantId(publicId, 1L)).thenReturn(Optional.of(admission));
+
+		assertThrows(BusinessException.class, () -> admissionService.issueOfferLetter(publicId.toString()));
+
+		verify(offerLetterIssuer, never()).issue(any(), any(), any());
+	}
+
+	@Test
+	void downloadOfferLetter_withoutOne_isNotFound() {
+		UUID publicId = UUID.randomUUID();
+		Admission admission = admissionWithId(1L, publicId, AdmissionStatus.APPROVED);
+		when(admissionRepository.findByPublicIdAndTenantId(publicId, 1L)).thenReturn(Optional.of(admission));
+
+		assertThrows(com.altafjava.platform.core.exception.ResourceNotFoundException.class,
+				() -> admissionService.downloadOfferLetter(publicId.toString()));
 	}
 }

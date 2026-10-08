@@ -7,6 +7,7 @@ import org.springframework.stereotype.Service;
 import com.altafjava.platform.application.document.DocumentIssuanceService;
 import com.altafjava.platform.application.document.DocumentIssueRequest;
 import com.altafjava.platform.application.service.FileStorageService;
+import com.altafjava.platform.core.exception.BusinessException;
 import com.altafjava.platform.core.exception.ResourceNotFoundException;
 import com.altafjava.platform.core.tenant.TenantContext;
 import com.altafjava.platform.domain.document.model.DocumentIssuance;
@@ -14,10 +15,10 @@ import com.altafjava.school.application.document.SchoolDocumentTypes;
 import com.altafjava.school.application.document.StudentPlacementResolver;
 import com.altafjava.school.domain.department.model.Department;
 import com.altafjava.school.domain.department.repository.DepartmentRepository;
+import com.altafjava.school.domain.employee.model.Employee;
+import com.altafjava.school.domain.employee.repository.EmployeeRepository;
 import com.altafjava.school.domain.student.model.Student;
 import com.altafjava.school.domain.student.repository.StudentRepository;
-import com.altafjava.school.domain.teacher.model.Teacher;
-import com.altafjava.school.domain.teacher.repository.TeacherRepository;
 import lombok.RequiredArgsConstructor;
 
 /**
@@ -31,7 +32,7 @@ import lombok.RequiredArgsConstructor;
 public class IdCardService {
 
 	private final StudentRepository studentRepository;
-	private final TeacherRepository teacherRepository;
+	private final EmployeeRepository employeeRepository;
 	private final DepartmentRepository departmentRepository;
 	private final StudentPlacementResolver placementResolver;
 	private final FileStorageService fileStorageService;
@@ -55,22 +56,25 @@ public class IdCardService {
 				model, issuedByUserId));
 	}
 
-	public DocumentIssuance issueForTeacher(String teacherPublicId, Long issuedByUserId) {
+	public DocumentIssuance issueForEmployee(String employeePublicId, Long issuedByUserId) {
 		Long tenantId = TenantContext.getCurrentTenantId();
-		Teacher teacher = requireTeacher(tenantId, teacherPublicId);
+		Employee employee = requireEmployee(tenantId, employeePublicId);
+		if (!employee.isActive()) {
+			throw new BusinessException("A staff ID card cannot be issued to someone who has left the school");
+		}
 
 		Map<String, Object> model = new HashMap<>();
-		model.put("teacherName", teacher.getFirstName() + " " + teacher.getLastName());
-		model.put("employeeCode", teacher.getEmployeeCode());
-		model.put("department", teacher.getDepartmentId() == null ? ""
-				: departmentRepository.findByIdAndTenantId(teacher.getDepartmentId(), tenantId)
+		model.put("employeeName", employee.getFirstName() + " " + employee.getLastName());
+		model.put("employeeCode", employee.getEmployeeCode());
+		model.put("designation", employee.getDesignation() == null ? "" : employee.getDesignation());
+		model.put("department", employee.getDepartmentId() == null ? ""
+				: departmentRepository.findByIdAndTenantId(employee.getDepartmentId(), tenantId)
 						.map(Department::getName).orElse(""));
-		putPhoto(model, teacher.getPhotoFilePublicId());
+		putPhoto(model, employee.getPhotoFilePublicId());
 
-		return documentIssuanceService.issue(new DocumentIssueRequest(tenantId, SchoolDocumentTypes.TEACHER_ID_CARD,
-				SchoolDocumentTypes.OWNER_TEACHER, teacher.getId(), "Staff ID Card",
-				model.get("teacherName").toString(),
-				model, issuedByUserId));
+		return documentIssuanceService.issue(new DocumentIssueRequest(tenantId, SchoolDocumentTypes.STAFF_ID_CARD,
+				SchoolDocumentTypes.OWNER_EMPLOYEE, employee.getId(), "Staff ID Card",
+				model.get("employeeName").toString(), model, issuedByUserId));
 	}
 
 	public DocumentIssuance findStudentCard(String studentPublicId, String issuancePublicId) {
@@ -80,11 +84,11 @@ public class IdCardService {
 				student.getId());
 	}
 
-	public DocumentIssuance findTeacherCard(String teacherPublicId, String issuancePublicId) {
+	public DocumentIssuance findEmployeeCard(String employeePublicId, String issuancePublicId) {
 		Long tenantId = TenantContext.getCurrentTenantId();
-		Teacher teacher = requireTeacher(tenantId, teacherPublicId);
-		return documentIssuanceService.findForOwner(tenantId, issuancePublicId, SchoolDocumentTypes.OWNER_TEACHER,
-				teacher.getId());
+		Employee employee = requireEmployee(tenantId, employeePublicId);
+		return documentIssuanceService.findForOwner(tenantId, issuancePublicId, SchoolDocumentTypes.OWNER_EMPLOYEE,
+				employee.getId());
 	}
 
 	public byte[] downloadPdf(DocumentIssuance issuance) {
@@ -102,8 +106,8 @@ public class IdCardService {
 				.orElseThrow(() -> new ResourceNotFoundException("Student not found: " + studentPublicId));
 	}
 
-	private Teacher requireTeacher(Long tenantId, String teacherPublicId) {
-		return teacherRepository.findByPublicIdAndTenantId(UUID.fromString(teacherPublicId), tenantId)
-				.orElseThrow(() -> new ResourceNotFoundException("Teacher not found: " + teacherPublicId));
+	private Employee requireEmployee(Long tenantId, String employeePublicId) {
+		return employeeRepository.findByPublicIdAndTenantId(UUID.fromString(employeePublicId), tenantId)
+				.orElseThrow(() -> new ResourceNotFoundException("Employee not found: " + employeePublicId));
 	}
 }

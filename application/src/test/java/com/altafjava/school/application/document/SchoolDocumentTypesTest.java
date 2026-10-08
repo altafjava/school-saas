@@ -30,8 +30,9 @@ class SchoolDocumentTypesTest {
 	private final SchoolDocumentTypes types = new SchoolDocumentTypes();
 
 	private List<DocumentTypeDefinition> definitions() {
-		return List.of(types.studentIdCardDocumentType(), types.teacherIdCardDocumentType(),
-				types.certificateDocumentType(), types.reportCardDocumentType());
+		return List.of(types.studentIdCardDocumentType(), types.staffIdCardDocumentType(),
+				types.certificateDocumentType(), types.reportCardDocumentType(),
+				types.admissionOfferLetterDocumentType());
 	}
 
 	private static List<PlaceholderField> fullSchema(DocumentTypeDefinition definition) {
@@ -59,7 +60,7 @@ class SchoolDocumentTypesTest {
 	@Test
 	void idCards_areOneCardSizedPage() throws IOException {
 		for (DocumentTypeDefinition definition : List.of(types.studentIdCardDocumentType(),
-				types.teacherIdCardDocumentType())) {
+				types.staffIdCardDocumentType())) {
 			byte[] pdf = RENDERER.renderSample(definition.defaultTemplate().format(),
 					definition.defaultTemplate().content(), fullSchema(definition));
 

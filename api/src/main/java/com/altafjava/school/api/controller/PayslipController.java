@@ -38,12 +38,12 @@ public class PayslipController implements PayslipApi {
 	@GetMapping
 	@PreAuthorize("@permissionAuthorizationService.hasPermission('PAYSLIP_MANAGE')")
 	public ApiResponse<com.altafjava.platform.core.model.Page<PayslipResponse>> list(
-			@RequestParam(required = false) String teacherPublicId,
+			@RequestParam(required = false) String employeePublicId,
 			@RequestParam(defaultValue = "0") int page,
 			@RequestParam(defaultValue = "20") int size) {
 		Pageable pageable = pageableResolver.resolve(page, size);
-		Page<Payslip> payslips = teacherPublicId != null
-				? payslipService.listForTeacher(teacherPublicId, pageable)
+		Page<Payslip> payslips = employeePublicId != null
+				? payslipService.listForEmployee(employeePublicId, pageable)
 				: payslipService.listAll(pageable);
 		return ApiResponse.success(PlatformPageMapper.toPlatformPage(payslips.map(payslipMapper::toResponse)));
 	}

@@ -2,7 +2,11 @@ package com.altafjava.school.api.controller;
 
 import java.util.List;
 import jakarta.validation.Valid;
+import org.springframework.http.ContentDisposition;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -21,6 +25,7 @@ import com.altafjava.school.api.dto.request.DecideAdmissionRequest;
 import com.altafjava.school.api.dto.request.PublicAdmissionApplicationRequest;
 import com.altafjava.school.api.dto.request.RecordEntranceTestScoreRequest;
 import com.altafjava.school.api.dto.request.SubmitAdmissionRequest;
+import com.altafjava.school.api.dto.request.WaiveApplicationFeeRequest;
 import com.altafjava.school.api.dto.response.AdmissionResponse;
 import com.altafjava.school.api.mapper.AdmissionMapper;
 import com.altafjava.school.api.support.PlatformPageMapper;
@@ -152,5 +157,41 @@ public class AdmissionController implements AdmissionApi {
 	@PreAuthorize("@permissionAuthorizationService.hasPermission('ADMISSION_MANAGE')")
 	public ApiResponse<AdmissionResponse> promoteFromWaitlist(@PathVariable String publicId) {
 		return ApiResponse.success(admissionMapper.toResponse(admissionService.promoteFromWaitlist(publicId)));
+	}
+
+	@Override
+	@PatchMapping("/{publicId}/application-fee/payment")
+	@PreAuthorize("@permissionAuthorizationService.hasPermission('ADMISSION_FEE_MANAGE')")
+	public ApiResponse<AdmissionResponse> recordApplicationFee(@PathVariable String publicId) {
+		return ApiResponse.success(admissionMapper.toResponse(admissionService.recordApplicationFeePayment(publicId)));
+	}
+
+	@Override
+	@PatchMapping("/{publicId}/application-fee/waive")
+	@PreAuthorize("@permissionAuthorizationService.hasPermission('ADMISSION_FEE_MANAGE')")
+	public ApiResponse<AdmissionResponse> waiveApplicationFee(@PathVariable String publicId,
+			@Valid @RequestBody WaiveApplicationFeeRequest request) {
+		return ApiResponse
+				.success(admissionMapper.toResponse(admissionService.waiveApplicationFee(publicId, request.reason())));
+	}
+
+	@Override
+	@PostMapping("/{publicId}/offer-letter")
+	@PreAuthorize("@permissionAuthorizationService.hasPermission('ADMISSION_MANAGE')")
+	public ApiResponse<AdmissionResponse> issueOfferLetter(@PathVariable String publicId) {
+		return ApiResponse.success(admissionMapper.toResponse(admissionService.issueOfferLetter(publicId)));
+	}
+
+	// Not ApiResponse-wrapped: a PDF body with its own Content-Type, like every download endpoint.
+	@Override
+	@GetMapping("/{publicId}/offer-letter/download")
+	@PreAuthorize("@permissionAuthorizationService.hasPermission('ADMISSION_MANAGE')")
+	public ResponseEntity<byte[]> downloadOfferLetter(@PathVariable String publicId) {
+		return ResponseEntity.ok()
+				.contentType(MediaType.APPLICATION_PDF)
+				.header(HttpHeaders.CONTENT_DISPOSITION,
+						ContentDisposition.attachment().filename("offer-letter-" + publicId + ".pdf").build()
+								.toString())
+				.body(admissionService.downloadOfferLetter(publicId));
 	}
 }

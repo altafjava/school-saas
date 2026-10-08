@@ -6,6 +6,7 @@ import java.util.UUID;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import com.altafjava.school.domain.employee.model.EmployeeStatus;
 import com.altafjava.school.domain.teacher.model.Teacher;
 
 public interface TeacherRepository extends JpaRepository<Teacher, Long> {
@@ -23,6 +24,9 @@ public interface TeacherRepository extends JpaRepository<Teacher, Long> {
 	boolean existsByEmployeeCodeAndTenantId(String employeeCode, Long tenantId);
 
 	boolean existsByIdAndTenantId(Long id, Long tenantId);
+
+	// A teacher who has left cannot be given new classes or timetable slots.
+	boolean existsByIdAndTenantIdAndStatus(Long id, Long tenantId, EmployeeStatus status);
 
 	Optional<Teacher> findByIdAndTenantId(Long id, Long tenantId);
 

@@ -22,6 +22,7 @@ import com.altafjava.school.domain.classroom.model.StudentClassroomLink;
 import com.altafjava.school.domain.classroom.repository.ClassroomRepository;
 import com.altafjava.school.domain.classroom.repository.StudentClassroomLinkRepository;
 import com.altafjava.school.domain.curriculum.repository.CurriculumRepository;
+import com.altafjava.school.domain.employee.model.EmployeeStatus;
 import com.altafjava.school.domain.student.model.Student;
 import com.altafjava.school.domain.student.repository.StudentRepository;
 import com.altafjava.school.domain.teacher.repository.TeacherRepository;
@@ -69,7 +70,8 @@ public class ClassroomService {
 		AcademicYear academicYear = academicYearRepository
 				.findByPublicIdAndTenantId(UUID.fromString(academicYearPublicId), tenantId)
 				.orElseThrow(() -> new ResourceNotFoundException("Academic year not found: " + academicYearPublicId));
-		if (classTeacherId != null && !teacherRepository.existsByIdAndTenantId(classTeacherId, tenantId)) {
+		if (classTeacherId != null
+				&& !teacherRepository.existsByIdAndTenantIdAndStatus(classTeacherId, tenantId, EmployeeStatus.ACTIVE)) {
 			throw new ResourceNotFoundException("Teacher not found: " + classTeacherId);
 		}
 		Classroom classroom = Classroom.create(classCode, grade, section, academicYear.getId(),
@@ -81,7 +83,8 @@ public class ClassroomService {
 	public Classroom reassignTeacher(String publicId, Long classTeacherId) {
 		Classroom classroom = findByPublicId(publicId);
 		Long tenantId = TenantContext.getCurrentTenantId();
-		if (classTeacherId != null && !teacherRepository.existsByIdAndTenantId(classTeacherId, tenantId)) {
+		if (classTeacherId != null
+				&& !teacherRepository.existsByIdAndTenantIdAndStatus(classTeacherId, tenantId, EmployeeStatus.ACTIVE)) {
 			throw new ResourceNotFoundException("Teacher not found: " + classTeacherId);
 		}
 		classroom.reassignTeacher(classTeacherId);

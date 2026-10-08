@@ -23,6 +23,8 @@ import com.altafjava.platform.domain.notification.model.NotificationType;
 import com.altafjava.school.application.scheduler.support.TenantAdminNotifier;
 import com.altafjava.school.domain.academicyear.model.AcademicYear;
 import com.altafjava.school.domain.academicyear.repository.AcademicYearRepository;
+import com.altafjava.school.domain.employee.model.Employee;
+import com.altafjava.school.domain.employee.repository.EmployeeRepository;
 import com.altafjava.school.domain.leave.model.LeaveBalance;
 import com.altafjava.school.domain.leave.model.LeaveRequest;
 import com.altafjava.school.domain.leave.model.LeaveRequestStatus;
@@ -31,8 +33,6 @@ import com.altafjava.school.domain.leave.repository.LeaveBalanceRepository;
 import com.altafjava.school.domain.leave.repository.LeaveRequestRepository;
 import com.altafjava.school.domain.leave.repository.LeaveTypeRepository;
 import com.altafjava.school.domain.leave.service.LeaveDayCalculator;
-import com.altafjava.school.domain.teacher.model.Teacher;
-import com.altafjava.school.domain.teacher.repository.TeacherRepository;
 
 @Service
 public class LeaveRequestService {
@@ -40,7 +40,7 @@ public class LeaveRequestService {
 	private final LeaveRequestRepository leaveRequestRepository;
 	private final LeaveTypeRepository leaveTypeRepository;
 	private final LeaveBalanceRepository leaveBalanceRepository;
-	private final TeacherRepository teacherRepository;
+	private final EmployeeRepository employeeRepository;
 	private final AcademicYearRepository academicYearRepository;
 	private final TenantAdminNotifier tenantAdminNotifier;
 	private final NotificationService notificationService;
@@ -48,13 +48,13 @@ public class LeaveRequestService {
 	private final LeaveDayCalculator leaveDayCalculator = new LeaveDayCalculator();
 
 	public LeaveRequestService(LeaveRequestRepository leaveRequestRepository, LeaveTypeRepository leaveTypeRepository,
-			LeaveBalanceRepository leaveBalanceRepository, TeacherRepository teacherRepository,
+			LeaveBalanceRepository leaveBalanceRepository, EmployeeRepository employeeRepository,
 			AcademicYearRepository academicYearRepository, TenantAdminNotifier tenantAdminNotifier,
 			NotificationService notificationService, HolidayService holidayService) {
 		this.leaveRequestRepository = leaveRequestRepository;
 		this.leaveTypeRepository = leaveTypeRepository;
 		this.leaveBalanceRepository = leaveBalanceRepository;
-		this.teacherRepository = teacherRepository;
+		this.employeeRepository = employeeRepository;
 		this.academicYearRepository = academicYearRepository;
 		this.tenantAdminNotifier = tenantAdminNotifier;
 		this.notificationService = notificationService;
@@ -62,10 +62,10 @@ public class LeaveRequestService {
 	}
 
 	@Transactional(readOnly = true)
-	public Page<LeaveRequest> listForCurrentTeacher(Pageable pageable) {
+	public Page<LeaveRequest> listForCurrentEmployee(Pageable pageable) {
 		Long tenantId = TenantContext.getCurrentTenantId();
-		Teacher teacher = resolveCurrentTeacher(tenantId);
-		return leaveRequestRepository.findAllByTeacherIdAndTenantId(teacher.getId(), tenantId, pageable);
+		Employee employee = resolveCurrentEmployee(tenantId);
+		return leaveRequestRepository.findAllByEmployeeIdAndTenantId(employee.getId(), tenantId, pageable);
 	}
 
 	@Transactional(readOnly = true)
@@ -76,11 +76,11 @@ public class LeaveRequestService {
 	@Transactional
 	public LeaveRequest submit(String leaveTypePublicId, LocalDate startDate, LocalDate endDate, String reason) {
 		Long tenantId = TenantContext.getCurrentTenantId();
-		Teacher teacher = resolveCurrentTeacher(tenantId);
+		Employee employee = resolveCurrentEmployee(tenantId);
 		LeaveType leaveType = findLeaveType(tenantId, leaveTypePublicId);
 		AcademicYear academicYear = academicYearRepository.findByCurrentTrueAndTenantId(tenantId)
 				.orElseThrow(() -> new BusinessException("No current academic year configured for this tenant"));
-		if (teacher.isOnProbation(LocalDate.now()) && !leaveType.isAvailableDuringProbation()) {
+		if (employee.isOnProbation(LocalDate.now()) && !leaveType.isAvailableDuringProbation()) {
 			throw new BusinessException(
 					"Leave type '" + leaveType.getName() + "' is not available during probation");
 		}
@@ -89,14 +89,14 @@ public class LeaveRequestService {
 		BigDecimal daysRequested = leaveDayCalculator.calculateDays(startDate, endDate, holidayDates);
 
 		leaveBalanceRepository
-				.findByTeacherIdAndLeaveTypeIdAndAcademicYearIdAndTenantId(teacher.getId(), leaveType.getId(),
+				.findByEmployeeIdAndLeaveTypeIdAndAcademicYearIdAndTenantId(employee.getId(), leaveType.getId(),
 						academicYear.getId(), tenantId)
 				.ifPresent(balance -> validateSufficientBalance(balance, daysRequested));
 
-		LeaveRequest request = LeaveRequest.submit(teacher.getId(), leaveType.getId(), academicYear.getId(),
+		LeaveRequest request = LeaveRequest.submit(employee.getId(), leaveType.getId(), academicYear.getId(),
 				startDate, endDate, reason, daysRequested);
 		LeaveRequest saved = leaveRequestRepository.save(request);
-		notifyAdminsOfRequest(tenantId, teacher, leaveType, saved);
+		notifyAdminsOfRequest(tenantId, employee, leaveType, saved);
 		return saved;
 	}
 
@@ -105,15 +105,15 @@ public class LeaveRequestService {
 		Long tenantId = TenantContext.getCurrentTenantId();
 		LeaveRequest request = findRequest(tenantId, publicId);
 		LeaveBalance balance = leaveBalanceRepository
-				.findByTeacherIdAndLeaveTypeIdAndAcademicYearIdAndTenantId(request.getTeacherId(),
+				.findByEmployeeIdAndLeaveTypeIdAndAcademicYearIdAndTenantId(request.getEmployeeId(),
 						request.getLeaveTypeId(), request.getAcademicYearId(), tenantId)
 				.orElseThrow(() -> new BusinessException(
-						"No leave balance allocated for teacher " + request.getTeacherId()));
+						"No leave balance allocated for employee " + request.getEmployeeId()));
 		balance.deduct(request.getDaysRequested());
 		request.approve(resolveCurrentUserId());
 		leaveBalanceRepository.save(balance);
 		LeaveRequest saved = leaveRequestRepository.save(request);
-		notifyTeacherOfDecision(tenantId, saved, NotificationType.LEAVE_APPROVED, "Your leave request was approved");
+		notifyEmployeeOfDecision(tenantId, saved, NotificationType.LEAVE_APPROVED, "Your leave request was approved");
 		return saved;
 	}
 
@@ -123,7 +123,7 @@ public class LeaveRequestService {
 		LeaveRequest request = findRequest(tenantId, publicId);
 		request.reject(resolveCurrentUserId(), rejectionReason);
 		LeaveRequest saved = leaveRequestRepository.save(request);
-		notifyTeacherOfDecision(tenantId, saved, NotificationType.LEAVE_REJECTED, "Your leave request was rejected");
+		notifyEmployeeOfDecision(tenantId, saved, NotificationType.LEAVE_REJECTED, "Your leave request was rejected");
 		return saved;
 	}
 
@@ -131,15 +131,15 @@ public class LeaveRequestService {
 	public LeaveRequest cancel(String publicId) {
 		Long tenantId = TenantContext.getCurrentTenantId();
 		LeaveRequest request = findRequest(tenantId, publicId);
-		Teacher currentTeacher = resolveCurrentTeacher(tenantId);
-		if (!request.getTeacherId().equals(currentTeacher.getId())) {
-			throw new AccessDeniedException("Cannot cancel another teacher's leave request");
+		Employee currentEmployee = resolveCurrentEmployee(tenantId);
+		if (!request.getEmployeeId().equals(currentEmployee.getId())) {
+			throw new AccessDeniedException("Cannot cancel another employee's leave request");
 		}
 		boolean wasApproved = request.getStatus() == LeaveRequestStatus.APPROVED;
 		request.cancel();
 		if (wasApproved) {
 			leaveBalanceRepository
-					.findByTeacherIdAndLeaveTypeIdAndAcademicYearIdAndTenantId(request.getTeacherId(),
+					.findByEmployeeIdAndLeaveTypeIdAndAcademicYearIdAndTenantId(request.getEmployeeId(),
 							request.getLeaveTypeId(), request.getAcademicYearId(), tenantId)
 					.ifPresent(balance -> {
 						balance.credit(request.getDaysRequested());
@@ -167,10 +167,10 @@ public class LeaveRequestService {
 				.orElseThrow(() -> new ResourceNotFoundException("Leave request not found: " + publicId));
 	}
 
-	private Teacher resolveCurrentTeacher(Long tenantId) {
+	private Employee resolveCurrentEmployee(Long tenantId) {
 		Long userId = resolveCurrentUserId();
-		return teacherRepository.findByUserIdAndTenantId(userId, tenantId)
-				.orElseThrow(() -> new AccessDeniedException("No teacher record linked to the current user"));
+		return employeeRepository.findByUserIdAndTenantId(userId, tenantId)
+				.orElseThrow(() -> new AccessDeniedException("No employee record linked to the current user"));
 	}
 
 	private Long resolveCurrentUserId() {
@@ -181,22 +181,22 @@ public class LeaveRequestService {
 		throw new AccessDeniedException("Authenticated principal missing — cannot resolve leave request actor");
 	}
 
-	private void notifyAdminsOfRequest(Long tenantId, Teacher teacher, LeaveType leaveType, LeaveRequest request) {
-		String teacherName = teacher.getFirstName() + " " + teacher.getLastName();
+	private void notifyAdminsOfRequest(Long tenantId, Employee employee, LeaveType leaveType, LeaveRequest request) {
+		String employeeName = employee.getFirstName() + " " + employee.getLastName();
 		tenantAdminNotifier.notifyAll(tenantId, NotificationType.LEAVE_REQUESTED,
-				"Leave Request: " + teacherName,
-				teacherName + " requested " + request.getDaysRequested() + " day(s) of " + leaveType.getName(),
+				"Leave Request: " + employeeName,
+				employeeName + " requested " + request.getDaysRequested() + " day(s) of " + leaveType.getName(),
 				Map.of(
-						"teacherName", teacherName,
+						"employeeName", employeeName,
 						"leaveTypeName", leaveType.getName(),
 						"startDate", request.getStartDate().toString(),
 						"endDate", request.getEndDate().toString(),
 						"daysRequested", request.getDaysRequested().toString()));
 	}
 
-	private void notifyTeacherOfDecision(Long tenantId, LeaveRequest request, NotificationType type, String message) {
-		teacherRepository.findByIdAndTenantId(request.getTeacherId(), tenantId)
-				.map(Teacher::getUserId)
+	private void notifyEmployeeOfDecision(Long tenantId, LeaveRequest request, NotificationType type, String message) {
+		employeeRepository.findByIdAndTenantId(request.getEmployeeId(), tenantId)
+				.map(Employee::getUserId)
 				.ifPresent(userId -> notificationService.send(SendNotificationCommand.builder()
 						.tenantId(tenantId)
 						.userId(userId)

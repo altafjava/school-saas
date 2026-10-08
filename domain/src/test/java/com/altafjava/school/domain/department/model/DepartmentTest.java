@@ -27,12 +27,12 @@ class DepartmentTest {
 	}
 
 	@Test
-	void assignHeadTeacher_setsHeadTeacherId() {
+	void assignHeadEmployee_setsHeadEmployeeId() {
 		Department department = Department.create("Science", "SCI", null);
 
-		department.assignHeadTeacher(42L);
+		department.assignHeadEmployee(42L);
 
-		assertEquals(42L, department.getHeadTeacherId());
+		assertEquals(42L, department.getHeadEmployeeId());
 	}
 
 	@Test

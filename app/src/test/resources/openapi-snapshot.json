@@ -241,6 +241,9 @@
     "name" : "Route Custom Field",
     "description" : "APIs for managing Route Custom Field operations.\n\n**Tenant Scope**: All endpoints are tenant-scoped via X-Tenant-ID header.\n**Auth**: JWT Bearer token required on all endpoints unless marked public."
   }, {
+    "name" : "Fee Adjustments",
+    "description" : "Discounts, installment plans and refunds applied on top of fee structures.\n\n**Tenant Scope**: All endpoints are tenant-scoped via X-Tenant-ID header.\n**Auth**: JWT Bearer token required on all endpoints."
+  }, {
     "name" : "Academic Year",
     "description" : "APIs for managing Academic Year operations.\n\n**Tenant Scope**: All endpoints are tenant-scoped via X-Tenant-ID header.\n**Auth**: JWT Bearer token required on all endpoints unless marked public."
   }, {
@@ -343,6 +346,9 @@
     "name" : "Fee Payment Webhook",
     "description" : "Inbound payment-gateway callback — permitAll(), since a gateway cannot present a JWT. Trust is established via gateway signature verification instead of @PreAuthorize; the tenant is resolved from the path, not a caller-supplied header."
   }, {
+    "name" : "Lifecycle",
+    "description" : "Read-only, append-only history of a person's journey: application, enrollment, status changes, alumni.\n\n**Tenant Scope**: All endpoints are tenant-scoped via X-Tenant-ID header.\n**Auth**: JWT Bearer token required on all endpoints."
+  }, {
     "name" : "Period Attendance",
     "description" : "APIs for managing Period Attendance operations.\n\n**Tenant Scope**: All endpoints are tenant-scoped via X-Tenant-ID header.\n**Auth**: JWT Bearer token required on all endpoints unless marked public."
   }, {
@@ -369,6 +375,9 @@
   }, {
     "name" : "Admission",
     "description" : "APIs for managing Admission operations.\n\n**Tenant Scope**: All endpoints are tenant-scoped via X-Tenant-ID header.\n**Auth**: JWT Bearer token required on all endpoints unless marked public."
+  }, {
+    "name" : "Staff ID Card",
+    "description" : "Issues and downloads a employee ID card via the platform's Document Template Engine.\n\n**Tenant Scope**: All endpoints are tenant-scoped via X-Tenant-ID header.\n**Auth**: JWT Bearer token required on all endpoints."
   }, {
     "name" : "Student Pickup",
     "description" : "APIs for answering whether an adult may collect a student.\n\n**Tenant Scope**: All endpoints are tenant-scoped via X-Tenant-ID header.\n**Auth**: JWT Bearer token required on all endpoints."
@@ -412,6 +421,12 @@
     "name" : "Salary Structure",
     "description" : "APIs for managing Salary Structure operations.\n\n**Tenant Scope**: All endpoints are tenant-scoped via X-Tenant-ID header.\n**Auth**: JWT Bearer token required on all endpoints unless marked public."
   }, {
+    "name" : "Admission Settings",
+    "description" : "School-wide admission settings, such as the application fee.\n\n**Tenant Scope**: All endpoints are tenant-scoped via X-Tenant-ID header.\n**Auth**: JWT Bearer token required on all endpoints."
+  }, {
+    "name" : "Employee",
+    "description" : "HR records for all staff — teaching and non-teaching. A teacher's public id is also its employee public id, so every operation here works for teachers too.\n\n**Tenant Scope**: All endpoints are tenant-scoped via X-Tenant-ID header.\n**Auth**: JWT Bearer token required on all endpoints."
+  }, {
     "name" : "Critical Errors",
     "description" : "Admin endpoints for viewing and resolving critical error records"
   }, {
@@ -447,9 +462,6 @@
   }, {
     "name" : "Session Management",
     "description" : "View and revoke active login sessions for the current user"
-  }, {
-    "name" : "Teacher ID Card",
-    "description" : "Issues and downloads a teacher ID card via the platform's Document Template Engine.\n\n**Tenant Scope**: All endpoints are tenant-scoped via X-Tenant-ID header.\n**Auth**: JWT Bearer token required on all endpoints."
   }, {
     "name" : "Tenant Security Settings",
     "description" : "Endpoints for managing tenant-specific security configurations (e.g., password policies, session timeouts)"
@@ -1607,6 +1619,129 @@
               "*/*" : {
                 "schema" : {
                   "$ref" : "#/components/schemas/ApiResponseListCustomFieldValueResponse"
+                }
+              }
+            }
+          }
+        },
+        "security" : [ {
+          "bearerAuth" : [ ]
+        }, {
+          "tenantHeader" : [ ]
+        } ]
+      }
+    },
+    "/api/v1/students/{studentPublicId}/fee-installment-plans/{feeStructurePublicId}" : {
+      "get" : {
+        "tags" : [ "Fee Adjustments" ],
+        "summary" : "Get a student's installment plan for a fee structure",
+        "operationId" : "feeinstallment_get",
+        "parameters" : [ {
+          "name" : "studentPublicId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "name" : "feeStructurePublicId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiResponseListFeeInstallmentResponse"
+                }
+              }
+            }
+          }
+        },
+        "security" : [ {
+          "bearerAuth" : [ ]
+        }, {
+          "tenantHeader" : [ ]
+        } ]
+      },
+      "put" : {
+        "tags" : [ "Fee Adjustments" ],
+        "summary" : "Set (replace) a student's installment plan",
+        "operationId" : "feeinstallment_set",
+        "parameters" : [ {
+          "name" : "studentPublicId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "name" : "feeStructurePublicId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/SetFeeInstallmentPlanRequest"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiResponseListFeeInstallmentResponse"
+                }
+              }
+            }
+          }
+        },
+        "security" : [ {
+          "bearerAuth" : [ ]
+        }, {
+          "tenantHeader" : [ ]
+        } ]
+      },
+      "delete" : {
+        "tags" : [ "Fee Adjustments" ],
+        "summary" : "Remove a student's installment plan",
+        "operationId" : "feeinstallment_remove",
+        "parameters" : [ {
+          "name" : "studentPublicId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "name" : "feeStructurePublicId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiResponseVoid"
                 }
               }
             }
@@ -3332,6 +3467,62 @@
               "*/*" : {
                 "schema" : {
                   "$ref" : "#/components/schemas/ApiResponseListCustomFieldValueResponse"
+                }
+              }
+            }
+          }
+        },
+        "security" : [ {
+          "bearerAuth" : [ ]
+        }, {
+          "tenantHeader" : [ ]
+        } ]
+      }
+    },
+    "/api/v1/admission-settings" : {
+      "get" : {
+        "tags" : [ "Admission Settings" ],
+        "summary" : "Get",
+        "operationId" : "admissionsettings_get",
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiResponseAdmissionSettingsResponse"
+                }
+              }
+            }
+          }
+        },
+        "security" : [ {
+          "bearerAuth" : [ ]
+        }, {
+          "tenantHeader" : [ ]
+        } ]
+      },
+      "put" : {
+        "tags" : [ "Admission Settings" ],
+        "summary" : "Update",
+        "operationId" : "admissionsettings_update",
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/UpdateAdmissionSettingsRequest"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiResponseAdmissionSettingsResponse"
                 }
               }
             }
@@ -5416,38 +5607,6 @@
         } ]
       }
     },
-    "/api/v1/teachers/{teacherPublicId}/id-card" : {
-      "post" : {
-        "tags" : [ "Teacher ID Card" ],
-        "summary" : "Issue",
-        "operationId" : "teacheridcard_issue",
-        "parameters" : [ {
-          "name" : "teacherPublicId",
-          "in" : "path",
-          "required" : true,
-          "schema" : {
-            "type" : "string"
-          }
-        } ],
-        "responses" : {
-          "201" : {
-            "description" : "Created",
-            "content" : {
-              "*/*" : {
-                "schema" : {
-                  "$ref" : "#/components/schemas/ApiResponseIssuedDocumentResponse"
-                }
-              }
-            }
-          }
-        },
-        "security" : [ {
-          "bearerAuth" : [ ]
-        }, {
-          "tenantHeader" : [ ]
-        } ]
-      }
-    },
     "/api/v1/system/auth/login" : {
       "post" : {
         "tags" : [ "System Administration" ],
@@ -6050,6 +6209,78 @@
         } ]
       }
     },
+    "/api/v1/students/{studentPublicId}/fee-discounts" : {
+      "get" : {
+        "tags" : [ "Fee Adjustments" ],
+        "summary" : "List a student's fee discounts",
+        "operationId" : "feediscount_list",
+        "parameters" : [ {
+          "name" : "studentPublicId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiResponseListFeeDiscountResponse"
+                }
+              }
+            }
+          }
+        },
+        "security" : [ {
+          "bearerAuth" : [ ]
+        }, {
+          "tenantHeader" : [ ]
+        } ]
+      },
+      "post" : {
+        "tags" : [ "Fee Adjustments" ],
+        "summary" : "Grant a fee discount",
+        "operationId" : "feediscount_grant",
+        "parameters" : [ {
+          "name" : "studentPublicId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/GrantFeeDiscountRequest"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "201" : {
+            "description" : "Created",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiResponseFeeDiscountResponse"
+                }
+              }
+            }
+          }
+        },
+        "security" : [ {
+          "bearerAuth" : [ ]
+        }, {
+          "tenantHeader" : [ ]
+        } ]
+      }
+    },
     "/api/v1/students/{studentPublicId}/emergency-contacts" : {
       "get" : {
         "tags" : [ "Student Emergency Contacts" ],
@@ -6501,10 +6732,10 @@
     "/api/v1/salary-structures" : {
       "get" : {
         "tags" : [ "Salary Structure" ],
-        "summary" : "List for teacher",
-        "operationId" : "salarystructure_listForTeacher",
+        "summary" : "List for employee",
+        "operationId" : "salarystructure_listForEmployee",
         "parameters" : [ {
-          "name" : "teacherPublicId",
+          "name" : "employeePublicId",
           "in" : "query",
           "required" : true,
           "schema" : {
@@ -6550,7 +6781,7 @@
       "post" : {
         "tags" : [ "Salary Structure" ],
         "summary" : "Create",
-        "description" : "Creates a teacher's salary structure from a tenant-defined set of pay components (see Pay Component Definition) — every component code must exist and be active in the tenant's catalog; there is no fixed Basic/HRA/Transport shape, so this works for any region's pay-component naming.",
+        "description" : "Creates a employee's salary structure from a tenant-defined set of pay components (see Pay Component Definition) — every component code must exist and be active in the tenant's catalog; there is no fixed Basic/HRA/Transport shape, so this works for any region's pay-component naming.",
         "operationId" : "salarystructure_create",
         "requestBody" : {
           "content" : {
@@ -8107,7 +8338,7 @@
       "post" : {
         "tags" : [ "Leave Request" ],
         "summary" : "Submit",
-        "description" : "Requests leave for a date range. Days requested exclude holidays and are validated against the leave type's probation-eligibility rule for the requesting teacher.",
+        "description" : "Requests leave for a date range. Days requested exclude holidays and are validated against the leave type's probation-eligibility rule for the requesting employee.",
         "operationId" : "leaverequest_submit",
         "requestBody" : {
           "content" : {
@@ -8954,6 +9185,78 @@
         } ]
       }
     },
+    "/api/v1/fee-payments/{paymentPublicId}/refunds" : {
+      "get" : {
+        "tags" : [ "Fee Adjustments" ],
+        "summary" : "List refunds of a fee payment",
+        "operationId" : "feerefund_listForPayment",
+        "parameters" : [ {
+          "name" : "paymentPublicId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiResponseListFeeRefundResponse"
+                }
+              }
+            }
+          }
+        },
+        "security" : [ {
+          "bearerAuth" : [ ]
+        }, {
+          "tenantHeader" : [ ]
+        } ]
+      },
+      "post" : {
+        "tags" : [ "Fee Adjustments" ],
+        "summary" : "Refund (part of) a fee payment",
+        "operationId" : "feerefund_refund",
+        "parameters" : [ {
+          "name" : "paymentPublicId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/RefundFeePaymentRequest"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "201" : {
+            "description" : "Created",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiResponseFeeRefundResponse"
+                }
+              }
+            }
+          }
+        },
+        "security" : [ {
+          "bearerAuth" : [ ]
+        }, {
+          "tenantHeader" : [ ]
+        } ]
+      }
+    },
     "/api/v1/fee-payments/webhooks/{tenantPublicId}/{providerType}" : {
       "post" : {
         "tags" : [ "Fee Payment Webhook" ],
@@ -9364,6 +9667,129 @@
               "*/*" : {
                 "schema" : {
                   "$ref" : "#/components/schemas/ApiResponseEventRegistrationResponse"
+                }
+              }
+            }
+          }
+        },
+        "security" : [ {
+          "bearerAuth" : [ ]
+        }, {
+          "tenantHeader" : [ ]
+        } ]
+      }
+    },
+    "/api/v1/employees" : {
+      "get" : {
+        "tags" : [ "Employee" ],
+        "summary" : "List",
+        "operationId" : "employee_list",
+        "parameters" : [ {
+          "name" : "category",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "type" : "string",
+            "enum" : [ "TEACHING", "ADMINISTRATIVE", "SUPPORT", "OTHER" ]
+          }
+        }, {
+          "name" : "status",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "type" : "string",
+            "enum" : [ "ACTIVE", "RESIGNED", "TERMINATED", "RETIRED" ]
+          }
+        }, {
+          "name" : "page",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int32",
+            "default" : 0
+          }
+        }, {
+          "name" : "size",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int32",
+            "default" : 20
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiResponsePageEmployeeResponse"
+                }
+              }
+            }
+          }
+        },
+        "security" : [ {
+          "bearerAuth" : [ ]
+        }, {
+          "tenantHeader" : [ ]
+        } ]
+      },
+      "post" : {
+        "tags" : [ "Employee" ],
+        "summary" : "Hire a non-teaching employee",
+        "operationId" : "employee_hire",
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/CreateEmployeeRequest"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "201" : {
+            "description" : "Created",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiResponseEmployeeResponse"
+                }
+              }
+            }
+          }
+        },
+        "security" : [ {
+          "bearerAuth" : [ ]
+        }, {
+          "tenantHeader" : [ ]
+        } ]
+      }
+    },
+    "/api/v1/employees/{employeePublicId}/id-card" : {
+      "post" : {
+        "tags" : [ "Staff ID Card" ],
+        "summary" : "Issue",
+        "operationId" : "employeeidcard_issue",
+        "parameters" : [ {
+          "name" : "employeePublicId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "201" : {
+            "description" : "Created",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiResponseIssuedDocumentResponse"
                 }
               }
             }
@@ -12457,6 +12883,38 @@
         } ]
       }
     },
+    "/api/v1/admissions/{publicId}/offer-letter" : {
+      "post" : {
+        "tags" : [ "Admission" ],
+        "summary" : "Issue or re-issue the offer letter",
+        "operationId" : "admission_issueOfferLetter",
+        "parameters" : [ {
+          "name" : "publicId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiResponseAdmissionResponse"
+                }
+              }
+            }
+          }
+        },
+        "security" : [ {
+          "bearerAuth" : [ ]
+        }, {
+          "tenantHeader" : [ ]
+        } ]
+      }
+    },
     "/api/v1/admissions/{publicId}/entrance-test-score" : {
       "post" : {
         "tags" : [ "Admission" ],
@@ -15397,290 +15855,6 @@
         } ]
       }
     },
-    "/api/v1/teachers/{publicId}/probation" : {
-      "patch" : {
-        "tags" : [ "Teacher" ],
-        "summary" : "Set probation period",
-        "operationId" : "teacher_setProbationPeriod",
-        "parameters" : [ {
-          "name" : "publicId",
-          "in" : "path",
-          "required" : true,
-          "schema" : {
-            "type" : "string"
-          }
-        } ],
-        "requestBody" : {
-          "content" : {
-            "application/json" : {
-              "schema" : {
-                "$ref" : "#/components/schemas/SetTeacherProbationRequest"
-              }
-            }
-          },
-          "required" : true
-        },
-        "responses" : {
-          "200" : {
-            "description" : "OK",
-            "content" : {
-              "*/*" : {
-                "schema" : {
-                  "$ref" : "#/components/schemas/ApiResponseTeacherResponse"
-                }
-              }
-            }
-          }
-        },
-        "security" : [ {
-          "bearerAuth" : [ ]
-        }, {
-          "tenantHeader" : [ ]
-        } ]
-      }
-    },
-    "/api/v1/teachers/{publicId}/probation/end" : {
-      "patch" : {
-        "tags" : [ "Teacher" ],
-        "summary" : "End probation",
-        "operationId" : "teacher_endProbation",
-        "parameters" : [ {
-          "name" : "publicId",
-          "in" : "path",
-          "required" : true,
-          "schema" : {
-            "type" : "string"
-          }
-        } ],
-        "responses" : {
-          "200" : {
-            "description" : "OK",
-            "content" : {
-              "*/*" : {
-                "schema" : {
-                  "$ref" : "#/components/schemas/ApiResponseTeacherResponse"
-                }
-              }
-            }
-          }
-        },
-        "security" : [ {
-          "bearerAuth" : [ ]
-        }, {
-          "tenantHeader" : [ ]
-        } ]
-      }
-    },
-    "/api/v1/teachers/{publicId}/photo" : {
-      "patch" : {
-        "tags" : [ "Teacher" ],
-        "summary" : "Update photo",
-        "operationId" : "teacher_updatePhoto",
-        "parameters" : [ {
-          "name" : "publicId",
-          "in" : "path",
-          "required" : true,
-          "schema" : {
-            "type" : "string"
-          }
-        } ],
-        "requestBody" : {
-          "content" : {
-            "application/json" : {
-              "schema" : {
-                "$ref" : "#/components/schemas/UpdatePhotoRequest"
-              }
-            }
-          },
-          "required" : true
-        },
-        "responses" : {
-          "200" : {
-            "description" : "OK",
-            "content" : {
-              "*/*" : {
-                "schema" : {
-                  "$ref" : "#/components/schemas/ApiResponseTeacherResponse"
-                }
-              }
-            }
-          }
-        },
-        "security" : [ {
-          "bearerAuth" : [ ]
-        }, {
-          "tenantHeader" : [ ]
-        } ]
-      }
-    },
-    "/api/v1/teachers/{publicId}/phone" : {
-      "patch" : {
-        "tags" : [ "Teacher" ],
-        "summary" : "Update phone",
-        "operationId" : "teacher_updatePhone",
-        "parameters" : [ {
-          "name" : "publicId",
-          "in" : "path",
-          "required" : true,
-          "schema" : {
-            "type" : "string"
-          }
-        } ],
-        "requestBody" : {
-          "content" : {
-            "application/json" : {
-              "schema" : {
-                "$ref" : "#/components/schemas/UpdatePhoneRequest"
-              }
-            }
-          },
-          "required" : true
-        },
-        "responses" : {
-          "200" : {
-            "description" : "OK",
-            "content" : {
-              "*/*" : {
-                "schema" : {
-                  "$ref" : "#/components/schemas/ApiResponseTeacherResponse"
-                }
-              }
-            }
-          }
-        },
-        "security" : [ {
-          "bearerAuth" : [ ]
-        }, {
-          "tenantHeader" : [ ]
-        } ]
-      }
-    },
-    "/api/v1/teachers/{publicId}/hr-details" : {
-      "patch" : {
-        "tags" : [ "Teacher" ],
-        "summary" : "Update hr details",
-        "operationId" : "teacher_updateHrDetails",
-        "parameters" : [ {
-          "name" : "publicId",
-          "in" : "path",
-          "required" : true,
-          "schema" : {
-            "type" : "string"
-          }
-        } ],
-        "requestBody" : {
-          "content" : {
-            "application/json" : {
-              "schema" : {
-                "$ref" : "#/components/schemas/UpdateTeacherHrDetailsRequest"
-              }
-            }
-          },
-          "required" : true
-        },
-        "responses" : {
-          "200" : {
-            "description" : "OK",
-            "content" : {
-              "*/*" : {
-                "schema" : {
-                  "$ref" : "#/components/schemas/ApiResponseTeacherResponse"
-                }
-              }
-            }
-          }
-        },
-        "security" : [ {
-          "bearerAuth" : [ ]
-        }, {
-          "tenantHeader" : [ ]
-        } ]
-      }
-    },
-    "/api/v1/teachers/{publicId}/contact-details" : {
-      "patch" : {
-        "tags" : [ "Teacher" ],
-        "summary" : "Update contact details",
-        "operationId" : "teacher_updateContactDetails",
-        "parameters" : [ {
-          "name" : "publicId",
-          "in" : "path",
-          "required" : true,
-          "schema" : {
-            "type" : "string"
-          }
-        } ],
-        "requestBody" : {
-          "content" : {
-            "application/json" : {
-              "schema" : {
-                "$ref" : "#/components/schemas/UpdateTeacherContactDetailsRequest"
-              }
-            }
-          },
-          "required" : true
-        },
-        "responses" : {
-          "200" : {
-            "description" : "OK",
-            "content" : {
-              "*/*" : {
-                "schema" : {
-                  "$ref" : "#/components/schemas/ApiResponseTeacherResponse"
-                }
-              }
-            }
-          }
-        },
-        "security" : [ {
-          "bearerAuth" : [ ]
-        }, {
-          "tenantHeader" : [ ]
-        } ]
-      }
-    },
-    "/api/v1/teachers/{publicId}/address" : {
-      "patch" : {
-        "tags" : [ "Teacher" ],
-        "summary" : "Update address",
-        "operationId" : "teacher_updateAddress",
-        "parameters" : [ {
-          "name" : "publicId",
-          "in" : "path",
-          "required" : true,
-          "schema" : {
-            "type" : "string"
-          }
-        } ],
-        "requestBody" : {
-          "content" : {
-            "application/json" : {
-              "schema" : {
-                "$ref" : "#/components/schemas/AddressRequest"
-              }
-            }
-          },
-          "required" : true
-        },
-        "responses" : {
-          "200" : {
-            "description" : "OK",
-            "content" : {
-              "*/*" : {
-                "schema" : {
-                  "$ref" : "#/components/schemas/ApiResponseTeacherResponse"
-                }
-              }
-            }
-          }
-        },
-        "security" : [ {
-          "bearerAuth" : [ ]
-        }, {
-          "tenantHeader" : [ ]
-        } ]
-      }
-    },
     "/api/v1/subjects/{publicId}/deactivate" : {
       "patch" : {
         "tags" : [ "Subject" ],
@@ -15743,6 +15917,55 @@
               "*/*" : {
                 "schema" : {
                   "$ref" : "#/components/schemas/ApiResponseSubjectResponse"
+                }
+              }
+            }
+          }
+        },
+        "security" : [ {
+          "bearerAuth" : [ ]
+        }, {
+          "tenantHeader" : [ ]
+        } ]
+      }
+    },
+    "/api/v1/students/{studentPublicId}/fee-discounts/{discountPublicId}/revoke" : {
+      "patch" : {
+        "tags" : [ "Fee Adjustments" ],
+        "summary" : "Revoke a fee discount",
+        "operationId" : "feediscount_revoke",
+        "parameters" : [ {
+          "name" : "studentPublicId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "name" : "discountPublicId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/RevokeFeeDiscountRequest"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiResponseFeeDiscountResponse"
                 }
               }
             }
@@ -15905,6 +16128,15 @@
             "type" : "string"
           }
         } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/LifecycleChangeRequest"
+              }
+            }
+          }
+        },
         "responses" : {
           "200" : {
             "description" : "OK",
@@ -15937,6 +16169,97 @@
             "type" : "string"
           }
         } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/LifecycleChangeRequest"
+              }
+            }
+          }
+        },
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiResponseStudentResponse"
+                }
+              }
+            }
+          }
+        },
+        "security" : [ {
+          "bearerAuth" : [ ]
+        }, {
+          "tenantHeader" : [ ]
+        } ]
+      }
+    },
+    "/api/v1/students/{publicId}/suspend" : {
+      "patch" : {
+        "tags" : [ "Student" ],
+        "summary" : "Suspend",
+        "operationId" : "student_suspend",
+        "parameters" : [ {
+          "name" : "publicId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/LifecycleChangeRequest"
+              }
+            }
+          }
+        },
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiResponseStudentResponse"
+                }
+              }
+            }
+          }
+        },
+        "security" : [ {
+          "bearerAuth" : [ ]
+        }, {
+          "tenantHeader" : [ ]
+        } ]
+      }
+    },
+    "/api/v1/students/{publicId}/reinstate" : {
+      "patch" : {
+        "tags" : [ "Student" ],
+        "summary" : "Reinstate a suspended student",
+        "operationId" : "student_reinstate",
+        "parameters" : [ {
+          "name" : "publicId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/LifecycleChangeRequest"
+              }
+            }
+          }
+        },
         "responses" : {
           "200" : {
             "description" : "OK",
@@ -16053,6 +16376,15 @@
             "type" : "string"
           }
         } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/LifecycleChangeRequest"
+              }
+            }
+          }
+        },
         "responses" : {
           "200" : {
             "description" : "OK",
@@ -16937,7 +17269,7 @@
       "patch" : {
         "tags" : [ "Leave Request" ],
         "summary" : "Approve",
-        "description" : "Approves the request and atomically deducts the days from the teacher's leave balance for that type and academic year.",
+        "description" : "Approves the request and atomically deducts the days from the employee's leave balance for that type and academic year.",
         "operationId" : "leaverequest_approve",
         "parameters" : [ {
           "name" : "publicId",
@@ -18253,6 +18585,332 @@
         } ]
       }
     },
+    "/api/v1/employees/{publicId}/probation" : {
+      "patch" : {
+        "tags" : [ "Employee" ],
+        "summary" : "Set probation period",
+        "operationId" : "employee_setProbationPeriod",
+        "parameters" : [ {
+          "name" : "publicId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/SetEmployeeProbationRequest"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiResponseEmployeeResponse"
+                }
+              }
+            }
+          }
+        },
+        "security" : [ {
+          "bearerAuth" : [ ]
+        }, {
+          "tenantHeader" : [ ]
+        } ]
+      }
+    },
+    "/api/v1/employees/{publicId}/probation/end" : {
+      "patch" : {
+        "tags" : [ "Employee" ],
+        "summary" : "End probation",
+        "operationId" : "employee_endProbation",
+        "parameters" : [ {
+          "name" : "publicId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiResponseEmployeeResponse"
+                }
+              }
+            }
+          }
+        },
+        "security" : [ {
+          "bearerAuth" : [ ]
+        }, {
+          "tenantHeader" : [ ]
+        } ]
+      }
+    },
+    "/api/v1/employees/{publicId}/photo" : {
+      "patch" : {
+        "tags" : [ "Employee" ],
+        "summary" : "Update photo",
+        "operationId" : "employee_updatePhoto",
+        "parameters" : [ {
+          "name" : "publicId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/UpdatePhotoRequest"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiResponseEmployeeResponse"
+                }
+              }
+            }
+          }
+        },
+        "security" : [ {
+          "bearerAuth" : [ ]
+        }, {
+          "tenantHeader" : [ ]
+        } ]
+      }
+    },
+    "/api/v1/employees/{publicId}/phone" : {
+      "patch" : {
+        "tags" : [ "Employee" ],
+        "summary" : "Update phone",
+        "operationId" : "employee_updatePhone",
+        "parameters" : [ {
+          "name" : "publicId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/UpdatePhoneRequest"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiResponseEmployeeResponse"
+                }
+              }
+            }
+          }
+        },
+        "security" : [ {
+          "bearerAuth" : [ ]
+        }, {
+          "tenantHeader" : [ ]
+        } ]
+      }
+    },
+    "/api/v1/employees/{publicId}/hr-details" : {
+      "patch" : {
+        "tags" : [ "Employee" ],
+        "summary" : "Update HR details",
+        "operationId" : "employee_updateHrDetails",
+        "parameters" : [ {
+          "name" : "publicId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/UpdateEmployeeHrDetailsRequest"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiResponseEmployeeResponse"
+                }
+              }
+            }
+          }
+        },
+        "security" : [ {
+          "bearerAuth" : [ ]
+        }, {
+          "tenantHeader" : [ ]
+        } ]
+      }
+    },
+    "/api/v1/employees/{publicId}/exit" : {
+      "patch" : {
+        "tags" : [ "Employee" ],
+        "summary" : "Record that the employee has left the school",
+        "operationId" : "employee_exit",
+        "parameters" : [ {
+          "name" : "publicId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/ExitEmployeeRequest"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiResponseEmployeeResponse"
+                }
+              }
+            }
+          }
+        },
+        "security" : [ {
+          "bearerAuth" : [ ]
+        }, {
+          "tenantHeader" : [ ]
+        } ]
+      }
+    },
+    "/api/v1/employees/{publicId}/contact-details" : {
+      "patch" : {
+        "tags" : [ "Employee" ],
+        "summary" : "Update contact details",
+        "operationId" : "employee_updateContactDetails",
+        "parameters" : [ {
+          "name" : "publicId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/UpdateEmployeeContactDetailsRequest"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiResponseEmployeeResponse"
+                }
+              }
+            }
+          }
+        },
+        "security" : [ {
+          "bearerAuth" : [ ]
+        }, {
+          "tenantHeader" : [ ]
+        } ]
+      }
+    },
+    "/api/v1/employees/{publicId}/address" : {
+      "patch" : {
+        "tags" : [ "Employee" ],
+        "summary" : "Update address",
+        "operationId" : "employee_updateAddress",
+        "parameters" : [ {
+          "name" : "publicId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/AddressRequest"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiResponseEmployeeResponse"
+                }
+              }
+            }
+          }
+        },
+        "security" : [ {
+          "bearerAuth" : [ ]
+        }, {
+          "tenantHeader" : [ ]
+        } ]
+      }
+    },
     "/api/v1/discipline-incidents/{publicId}/action" : {
       "patch" : {
         "tags" : [ "Discipline Incident" ],
@@ -18367,11 +19025,11 @@
         } ]
       }
     },
-    "/api/v1/departments/{publicId}/head-teacher" : {
+    "/api/v1/departments/{publicId}/head-employee" : {
       "patch" : {
         "tags" : [ "Department" ],
-        "summary" : "Assign head teacher",
-        "operationId" : "department_assignHeadTeacher",
+        "summary" : "Assign head employee",
+        "operationId" : "department_assignHeadEmployee",
         "parameters" : [ {
           "name" : "publicId",
           "in" : "path",
@@ -18384,7 +19042,7 @@
           "content" : {
             "application/json" : {
               "schema" : {
-                "$ref" : "#/components/schemas/AssignHeadTeacherRequest"
+                "$ref" : "#/components/schemas/AssignHeadEmployeeRequest"
               }
             }
           },
@@ -20069,6 +20727,80 @@
         } ]
       }
     },
+    "/api/v1/admissions/{publicId}/application-fee/waive" : {
+      "patch" : {
+        "tags" : [ "Admission" ],
+        "summary" : "Waive the application fee",
+        "operationId" : "admission_waiveApplicationFee",
+        "parameters" : [ {
+          "name" : "publicId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/WaiveApplicationFeeRequest"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiResponseAdmissionResponse"
+                }
+              }
+            }
+          }
+        },
+        "security" : [ {
+          "bearerAuth" : [ ]
+        }, {
+          "tenantHeader" : [ ]
+        } ]
+      }
+    },
+    "/api/v1/admissions/{publicId}/application-fee/payment" : {
+      "patch" : {
+        "tags" : [ "Admission" ],
+        "summary" : "Record the application fee as paid",
+        "operationId" : "admission_recordApplicationFee",
+        "parameters" : [ {
+          "name" : "publicId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiResponseAdmissionResponse"
+                }
+              }
+            }
+          }
+        },
+        "security" : [ {
+          "bearerAuth" : [ ]
+        }, {
+          "tenantHeader" : [ ]
+        } ]
+      }
+    },
     "/api/v1/admin/tax/exempt-certificates/{id}/review" : {
       "patch" : {
         "tags" : [ "admin-tax-controller" ],
@@ -21353,46 +22085,6 @@
         } ]
       }
     },
-    "/api/v1/teachers/{teacherPublicId}/id-card/{issuancePublicId}/download" : {
-      "get" : {
-        "tags" : [ "Teacher ID Card" ],
-        "summary" : "Download",
-        "operationId" : "teacheridcard_download",
-        "parameters" : [ {
-          "name" : "teacherPublicId",
-          "in" : "path",
-          "required" : true,
-          "schema" : {
-            "type" : "string"
-          }
-        }, {
-          "name" : "issuancePublicId",
-          "in" : "path",
-          "required" : true,
-          "schema" : {
-            "type" : "string"
-          }
-        } ],
-        "responses" : {
-          "200" : {
-            "description" : "OK",
-            "content" : {
-              "*/*" : {
-                "schema" : {
-                  "type" : "string",
-                  "format" : "byte"
-                }
-              }
-            }
-          }
-        },
-        "security" : [ {
-          "bearerAuth" : [ ]
-        }, {
-          "tenantHeader" : [ ]
-        } ]
-      }
-    },
     "/api/v1/teachers/{publicId}" : {
       "get" : {
         "tags" : [ "Teacher" ],
@@ -21413,45 +22105,6 @@
               "*/*" : {
                 "schema" : {
                   "$ref" : "#/components/schemas/ApiResponseTeacherResponse"
-                }
-              }
-            }
-          }
-        },
-        "security" : [ {
-          "bearerAuth" : [ ]
-        }, {
-          "tenantHeader" : [ ]
-        } ]
-      }
-    },
-    "/api/v1/teachers/{publicId}/leave-balances" : {
-      "get" : {
-        "tags" : [ "Leave Balance" ],
-        "summary" : "For teacher",
-        "operationId" : "leavebalance_forTeacher",
-        "parameters" : [ {
-          "name" : "publicId",
-          "in" : "path",
-          "required" : true,
-          "schema" : {
-            "type" : "string"
-          }
-        }, {
-          "name" : "academicYearPublicId",
-          "in" : "query",
-          "required" : true,
-          "schema" : {
-            "type" : "string"
-          }
-        } ],
-        "responses" : {
-          "200" : {
-            "description" : "OK",
-            "content" : {
-              "*/*" : {
-                "schema" : {
-                  "$ref" : "#/components/schemas/ApiResponseListLeaveBalanceResponse"
                 }
               }
             }
@@ -21761,6 +22414,38 @@
         } ]
       }
     },
+    "/api/v1/students/{studentPublicId}/lifecycle" : {
+      "get" : {
+        "tags" : [ "Lifecycle" ],
+        "summary" : "Student timeline, including the admission it came from",
+        "operationId" : "lifecycle_student",
+        "parameters" : [ {
+          "name" : "studentPublicId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiResponseListLifecycleTransitionResponse"
+                }
+              }
+            }
+          }
+        },
+        "security" : [ {
+          "bearerAuth" : [ ]
+        }, {
+          "tenantHeader" : [ ]
+        } ]
+      }
+    },
     "/api/v1/students/{studentPublicId}/id-card/{issuancePublicId}/download" : {
       "get" : {
         "tags" : [ "Student ID Card" ],
@@ -21789,6 +22474,38 @@
                 "schema" : {
                   "type" : "string",
                   "format" : "byte"
+                }
+              }
+            }
+          }
+        },
+        "security" : [ {
+          "bearerAuth" : [ ]
+        }, {
+          "tenantHeader" : [ ]
+        } ]
+      }
+    },
+    "/api/v1/students/{studentPublicId}/fee-refunds" : {
+      "get" : {
+        "tags" : [ "Fee Adjustments" ],
+        "summary" : "List a student's refunds",
+        "operationId" : "feerefund_listForStudent",
+        "parameters" : [ {
+          "name" : "studentPublicId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiResponseListFeeRefundResponse"
                 }
               }
             }
@@ -22563,7 +23280,7 @@
         "summary" : "List",
         "operationId" : "payslip_list",
         "parameters" : [ {
-          "name" : "teacherPublicId",
+          "name" : "employeePublicId",
           "in" : "query",
           "required" : false,
           "schema" : {
@@ -22995,7 +23712,7 @@
       "get" : {
         "tags" : [ "Leave Request" ],
         "summary" : "List mine",
-        "description" : "Lists the current teacher's own leave requests.",
+        "description" : "Lists the current employee's own leave requests.",
         "operationId" : "leaverequest_listMine",
         "parameters" : [ {
           "name" : "page",
@@ -23038,8 +23755,8 @@
     "/api/v1/leave-requests/my/balances" : {
       "get" : {
         "tags" : [ "Leave Balance" ],
-        "summary" : "For current teacher",
-        "operationId" : "leavebalance_forCurrentTeacher",
+        "summary" : "For current employee",
+        "operationId" : "leavebalance_forCurrentEmployee",
         "parameters" : [ {
           "name" : "academicYearPublicId",
           "in" : "query",
@@ -23674,6 +24391,117 @@
               "*/*" : {
                 "schema" : {
                   "$ref" : "#/components/schemas/ApiResponseListExamTypeDefinitionResponse"
+                }
+              }
+            }
+          }
+        },
+        "security" : [ {
+          "bearerAuth" : [ ]
+        }, {
+          "tenantHeader" : [ ]
+        } ]
+      }
+    },
+    "/api/v1/employees/{publicId}" : {
+      "get" : {
+        "tags" : [ "Employee" ],
+        "summary" : "Get",
+        "operationId" : "employee_get",
+        "parameters" : [ {
+          "name" : "publicId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiResponseEmployeeResponse"
+                }
+              }
+            }
+          }
+        },
+        "security" : [ {
+          "bearerAuth" : [ ]
+        }, {
+          "tenantHeader" : [ ]
+        } ]
+      }
+    },
+    "/api/v1/employees/{publicId}/leave-balances" : {
+      "get" : {
+        "tags" : [ "Leave Balance" ],
+        "summary" : "For employee",
+        "operationId" : "leavebalance_forEmployee",
+        "parameters" : [ {
+          "name" : "publicId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "name" : "academicYearPublicId",
+          "in" : "query",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiResponseListLeaveBalanceResponse"
+                }
+              }
+            }
+          }
+        },
+        "security" : [ {
+          "bearerAuth" : [ ]
+        }, {
+          "tenantHeader" : [ ]
+        } ]
+      }
+    },
+    "/api/v1/employees/{employeePublicId}/id-card/{issuancePublicId}/download" : {
+      "get" : {
+        "tags" : [ "Staff ID Card" ],
+        "summary" : "Download",
+        "operationId" : "employeeidcard_download",
+        "parameters" : [ {
+          "name" : "employeePublicId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "name" : "issuancePublicId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "type" : "string",
+                  "format" : "byte"
                 }
               }
             }
@@ -25370,6 +26198,39 @@
         } ]
       }
     },
+    "/api/v1/admissions/{publicId}/offer-letter/download" : {
+      "get" : {
+        "tags" : [ "Admission" ],
+        "summary" : "Download the current offer letter",
+        "operationId" : "admission_downloadOfferLetter",
+        "parameters" : [ {
+          "name" : "publicId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "type" : "string",
+                  "format" : "byte"
+                }
+              }
+            }
+          }
+        },
+        "security" : [ {
+          "bearerAuth" : [ ]
+        }, {
+          "tenantHeader" : [ ]
+        } ]
+      }
+    },
     "/api/v1/admissions/{publicId}/custom-fields/grouped" : {
       "get" : {
         "tags" : [ "Admission Custom Field" ],
@@ -25390,6 +26251,38 @@
               "*/*" : {
                 "schema" : {
                   "$ref" : "#/components/schemas/ApiResponseListFieldGroupResponse"
+                }
+              }
+            }
+          }
+        },
+        "security" : [ {
+          "bearerAuth" : [ ]
+        }, {
+          "tenantHeader" : [ ]
+        } ]
+      }
+    },
+    "/api/v1/admissions/{admissionPublicId}/lifecycle" : {
+      "get" : {
+        "tags" : [ "Lifecycle" ],
+        "summary" : "Admission timeline",
+        "operationId" : "lifecycle_admission",
+        "parameters" : [ {
+          "name" : "admissionPublicId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiResponseListLifecycleTransitionResponse"
                 }
               }
             }
@@ -28719,6 +29612,94 @@
           }
         }
       },
+      "FeeInstallmentSlotRequest" : {
+        "type" : "object",
+        "default" : null,
+        "description" : "One installment: when it is due and its share of the net fee",
+        "properties" : {
+          "dueDate" : {
+            "type" : "string",
+            "format" : "date"
+          },
+          "percentage" : {
+            "type" : "number",
+            "maximum" : 100,
+            "minimum" : 0.01
+          }
+        },
+        "required" : [ "dueDate", "percentage" ]
+      },
+      "SetFeeInstallmentPlanRequest" : {
+        "type" : "object",
+        "properties" : {
+          "count" : {
+            "type" : "integer",
+            "format" : "int32",
+            "default" : "",
+            "description" : "Number of equal installments (2-24); use instead of schedule",
+            "maximum" : 24,
+            "minimum" : 2
+          },
+          "firstDueDate" : {
+            "type" : "string",
+            "format" : "date",
+            "default" : "",
+            "description" : "Due date of the first equal installment"
+          },
+          "intervalMonths" : {
+            "type" : "integer",
+            "format" : "int32",
+            "default" : "",
+            "description" : "Months between equal installments, default 1",
+            "maximum" : 12,
+            "minimum" : 1
+          },
+          "schedule" : {
+            "type" : "array",
+            "default" : "",
+            "description" : "Explicit due dates and percentage shares, totalling 100",
+            "items" : {
+              "$ref" : "#/components/schemas/FeeInstallmentSlotRequest"
+            }
+          }
+        }
+      },
+      "ApiResponseListFeeInstallmentResponse" : {
+        "type" : "object",
+        "properties" : {
+          "success" : {
+            "type" : "boolean"
+          },
+          "data" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/FeeInstallmentResponse"
+            }
+          },
+          "error" : {
+            "$ref" : "#/components/schemas/Error"
+          },
+          "meta" : {
+            "$ref" : "#/components/schemas/Meta"
+          }
+        }
+      },
+      "FeeInstallmentResponse" : {
+        "type" : "object",
+        "properties" : {
+          "sequenceNumber" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "dueDate" : {
+            "type" : "string",
+            "format" : "date"
+          },
+          "sharePercentage" : {
+            "type" : "number"
+          }
+        }
+      },
       "EmergencyContactRequest" : {
         "type" : "object",
         "properties" : {
@@ -29596,6 +30577,42 @@
           }
         },
         "required" : [ "enabled" ]
+      },
+      "UpdateAdmissionSettingsRequest" : {
+        "type" : "object",
+        "properties" : {
+          "applicationFeeAmount" : {
+            "type" : "number",
+            "default" : "",
+            "description" : "Fee charged per application; null or 0 charges no fee. Applies to applications submitted from now on.",
+            "minimum" : 0
+          }
+        }
+      },
+      "AdmissionSettingsResponse" : {
+        "type" : "object",
+        "properties" : {
+          "applicationFeeAmount" : {
+            "type" : "number"
+          }
+        }
+      },
+      "ApiResponseAdmissionSettingsResponse" : {
+        "type" : "object",
+        "properties" : {
+          "success" : {
+            "type" : "boolean"
+          },
+          "data" : {
+            "$ref" : "#/components/schemas/AdmissionSettingsResponse"
+          },
+          "error" : {
+            "$ref" : "#/components/schemas/Error"
+          },
+          "meta" : {
+            "$ref" : "#/components/schemas/Meta"
+          }
+        }
       },
       "TaxJurisdictionRequest" : {
         "type" : "object",
@@ -31041,6 +32058,9 @@
             "type" : "integer",
             "format" : "int64"
           },
+          "designation" : {
+            "type" : "string"
+          },
           "qualification" : {
             "type" : "string"
           },
@@ -31050,59 +32070,14 @@
           "address" : {
             "$ref" : "#/components/schemas/AddressResponse"
           },
+          "status" : {
+            "type" : "string"
+          },
           "probationEndDate" : {
             "type" : "string",
             "format" : "date"
           },
           "photoFilePublicId" : {
-            "type" : "string"
-          }
-        }
-      },
-      "ApiResponseIssuedDocumentResponse" : {
-        "type" : "object",
-        "properties" : {
-          "success" : {
-            "type" : "boolean"
-          },
-          "data" : {
-            "$ref" : "#/components/schemas/IssuedDocumentResponse"
-          },
-          "error" : {
-            "$ref" : "#/components/schemas/Error"
-          },
-          "meta" : {
-            "$ref" : "#/components/schemas/Meta"
-          }
-        }
-      },
-      "IssuedDocumentResponse" : {
-        "type" : "object",
-        "properties" : {
-          "publicId" : {
-            "type" : "string"
-          },
-          "documentType" : {
-            "type" : "string"
-          },
-          "title" : {
-            "type" : "string"
-          },
-          "verificationCode" : {
-            "type" : "string"
-          },
-          "issuedAt" : {
-            "type" : "string",
-            "format" : "date-time"
-          },
-          "revoked" : {
-            "type" : "boolean"
-          },
-          "revokedAt" : {
-            "type" : "string",
-            "format" : "date-time"
-          },
-          "revocationReason" : {
             "type" : "string"
           }
         }
@@ -31743,6 +32718,142 @@
           }
         }
       },
+      "ApiResponseIssuedDocumentResponse" : {
+        "type" : "object",
+        "properties" : {
+          "success" : {
+            "type" : "boolean"
+          },
+          "data" : {
+            "$ref" : "#/components/schemas/IssuedDocumentResponse"
+          },
+          "error" : {
+            "$ref" : "#/components/schemas/Error"
+          },
+          "meta" : {
+            "$ref" : "#/components/schemas/Meta"
+          }
+        }
+      },
+      "IssuedDocumentResponse" : {
+        "type" : "object",
+        "properties" : {
+          "publicId" : {
+            "type" : "string"
+          },
+          "documentType" : {
+            "type" : "string"
+          },
+          "title" : {
+            "type" : "string"
+          },
+          "verificationCode" : {
+            "type" : "string"
+          },
+          "issuedAt" : {
+            "type" : "string",
+            "format" : "date-time"
+          },
+          "revoked" : {
+            "type" : "boolean"
+          },
+          "revokedAt" : {
+            "type" : "string",
+            "format" : "date-time"
+          },
+          "revocationReason" : {
+            "type" : "string"
+          }
+        }
+      },
+      "GrantFeeDiscountRequest" : {
+        "type" : "object",
+        "properties" : {
+          "feeStructurePublicId" : {
+            "type" : "string",
+            "maxLength" : 36,
+            "minLength" : 0
+          },
+          "type" : {
+            "type" : "string",
+            "enum" : [ "PERCENTAGE", "FIXED" ]
+          },
+          "value" : {
+            "type" : "number",
+            "minimum" : 0.01
+          },
+          "category" : {
+            "type" : "string",
+            "minLength" : 1,
+            "pattern" : "^[A-Za-z][A-Za-z0-9_]{1,49}$"
+          },
+          "reason" : {
+            "type" : "string",
+            "maxLength" : 500,
+            "minLength" : 0
+          }
+        },
+        "required" : [ "category", "feeStructurePublicId", "reason", "type", "value" ]
+      },
+      "ApiResponseFeeDiscountResponse" : {
+        "type" : "object",
+        "properties" : {
+          "success" : {
+            "type" : "boolean"
+          },
+          "data" : {
+            "$ref" : "#/components/schemas/FeeDiscountResponse"
+          },
+          "error" : {
+            "$ref" : "#/components/schemas/Error"
+          },
+          "meta" : {
+            "$ref" : "#/components/schemas/Meta"
+          }
+        }
+      },
+      "FeeDiscountResponse" : {
+        "type" : "object",
+        "properties" : {
+          "publicId" : {
+            "type" : "string"
+          },
+          "feeStructureId" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "discountType" : {
+            "type" : "string"
+          },
+          "discountValue" : {
+            "type" : "number"
+          },
+          "category" : {
+            "type" : "string"
+          },
+          "reason" : {
+            "type" : "string"
+          },
+          "active" : {
+            "type" : "boolean"
+          },
+          "grantedAt" : {
+            "type" : "string",
+            "format" : "date-time"
+          },
+          "grantedByUserId" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "revokedAt" : {
+            "type" : "string",
+            "format" : "date-time"
+          },
+          "revocationReason" : {
+            "type" : "string"
+          }
+        }
+      },
       "UploadStudentDocumentRequest" : {
         "type" : "object",
         "properties" : {
@@ -31936,7 +33047,7 @@
       "CreateSalaryStructureRequest" : {
         "type" : "object",
         "properties" : {
-          "teacherPublicId" : {
+          "employeePublicId" : {
             "type" : "string",
             "minLength" : 1
           },
@@ -31952,7 +33063,7 @@
             "format" : "date"
           }
         },
-        "required" : [ "components", "effectiveFrom", "teacherPublicId" ]
+        "required" : [ "components", "effectiveFrom", "employeePublicId" ]
       },
       "PayComponentAmountRequest" : {
         "type" : "object",
@@ -32009,7 +33120,7 @@
           "publicId" : {
             "type" : "string"
           },
-          "teacherId" : {
+          "employeeId" : {
             "type" : "integer",
             "format" : "int64"
           },
@@ -33403,7 +34514,7 @@
           "publicId" : {
             "type" : "string"
           },
-          "teacherId" : {
+          "employeeId" : {
             "type" : "integer",
             "format" : "int64"
           },
@@ -34201,6 +35312,75 @@
           }
         }
       },
+      "RefundFeePaymentRequest" : {
+        "type" : "object",
+        "properties" : {
+          "amount" : {
+            "type" : "number",
+            "minimum" : 0.01
+          },
+          "reason" : {
+            "type" : "string",
+            "maxLength" : 500,
+            "minLength" : 0
+          }
+        },
+        "required" : [ "amount", "reason" ]
+      },
+      "ApiResponseFeeRefundResponse" : {
+        "type" : "object",
+        "properties" : {
+          "success" : {
+            "type" : "boolean"
+          },
+          "data" : {
+            "$ref" : "#/components/schemas/FeeRefundResponse"
+          },
+          "error" : {
+            "$ref" : "#/components/schemas/Error"
+          },
+          "meta" : {
+            "$ref" : "#/components/schemas/Meta"
+          }
+        }
+      },
+      "FeeRefundResponse" : {
+        "type" : "object",
+        "properties" : {
+          "publicId" : {
+            "type" : "string"
+          },
+          "amount" : {
+            "type" : "number"
+          },
+          "reason" : {
+            "type" : "string"
+          },
+          "method" : {
+            "type" : "string"
+          },
+          "status" : {
+            "type" : "string"
+          },
+          "creditNoteNumber" : {
+            "type" : "string"
+          },
+          "gatewayRefundReference" : {
+            "type" : "string"
+          },
+          "failureReason" : {
+            "type" : "string"
+          },
+          "refundedAt" : {
+            "type" : "string",
+            "format" : "date-time"
+          },
+          "refundedByUserId" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        }
+      },
       "CreateFeeChargeRequest" : {
         "type" : "object",
         "properties" : {
@@ -34532,6 +35712,123 @@
           }
         }
       },
+      "CreateEmployeeRequest" : {
+        "type" : "object",
+        "properties" : {
+          "staffCategory" : {
+            "type" : "string",
+            "default" : "",
+            "description" : "ADMINISTRATIVE, SUPPORT or OTHER; teaching staff are hired as teachers",
+            "enum" : [ "TEACHING", "ADMINISTRATIVE", "SUPPORT", "OTHER" ]
+          },
+          "employeeCode" : {
+            "type" : "string",
+            "maxLength" : 50,
+            "minLength" : 0
+          },
+          "firstName" : {
+            "type" : "string",
+            "maxLength" : 100,
+            "minLength" : 0
+          },
+          "lastName" : {
+            "type" : "string",
+            "maxLength" : 100,
+            "minLength" : 0
+          },
+          "email" : {
+            "type" : "string",
+            "format" : "email",
+            "maxLength" : 255,
+            "minLength" : 0
+          },
+          "joinDate" : {
+            "type" : "string",
+            "format" : "date"
+          }
+        },
+        "required" : [ "email", "firstName", "joinDate", "lastName", "staffCategory" ]
+      },
+      "ApiResponseEmployeeResponse" : {
+        "type" : "object",
+        "properties" : {
+          "success" : {
+            "type" : "boolean"
+          },
+          "data" : {
+            "$ref" : "#/components/schemas/EmployeeResponse"
+          },
+          "error" : {
+            "$ref" : "#/components/schemas/Error"
+          },
+          "meta" : {
+            "$ref" : "#/components/schemas/Meta"
+          }
+        }
+      },
+      "EmployeeResponse" : {
+        "type" : "object",
+        "properties" : {
+          "publicId" : {
+            "type" : "string"
+          },
+          "employeeCode" : {
+            "type" : "string"
+          },
+          "firstName" : {
+            "type" : "string"
+          },
+          "lastName" : {
+            "type" : "string"
+          },
+          "email" : {
+            "type" : "string"
+          },
+          "phone" : {
+            "type" : "string"
+          },
+          "joinDate" : {
+            "type" : "string",
+            "format" : "date"
+          },
+          "departmentId" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "designation" : {
+            "type" : "string"
+          },
+          "qualification" : {
+            "type" : "string"
+          },
+          "employmentType" : {
+            "type" : "string"
+          },
+          "staffCategory" : {
+            "type" : "string"
+          },
+          "status" : {
+            "type" : "string"
+          },
+          "address" : {
+            "$ref" : "#/components/schemas/AddressResponse"
+          },
+          "probationEndDate" : {
+            "type" : "string",
+            "format" : "date"
+          },
+          "exitDate" : {
+            "type" : "string",
+            "format" : "date"
+          },
+          "exitReason" : {
+            "type" : "string"
+          },
+          "photoFilePublicId" : {
+            "type" : "string"
+          }
+        }
+      },
       "CreateDocumentTemplateRequest" : {
         "type" : "object",
         "properties" : {
@@ -34769,7 +36066,7 @@
           "description" : {
             "type" : "string"
           },
-          "headTeacherId" : {
+          "headEmployeeId" : {
             "type" : "integer",
             "format" : "int64"
           },
@@ -37228,6 +38525,23 @@
           "meritRank" : {
             "type" : "integer",
             "format" : "int32"
+          },
+          "applicationFeeStatus" : {
+            "type" : "string",
+            "enum" : [ "NOT_REQUIRED", "PENDING", "PAID", "WAIVED" ]
+          },
+          "applicationFeeAmount" : {
+            "type" : "number"
+          },
+          "applicationFeeReceiptNumber" : {
+            "type" : "string"
+          },
+          "applicationFeePaidAt" : {
+            "type" : "string",
+            "format" : "date-time"
+          },
+          "hasOfferLetter" : {
+            "type" : "boolean"
           }
         }
       },
@@ -38723,15 +40037,62 @@
           }
         }
       },
-      "SetTeacherProbationRequest" : {
+      "AssignSubjectCurriculumRequest" : {
         "type" : "object",
         "properties" : {
-          "probationEndDate" : {
+          "curriculumPublicId" : {
+            "type" : "string",
+            "minLength" : 1
+          }
+        },
+        "required" : [ "curriculumPublicId" ]
+      },
+      "RevokeFeeDiscountRequest" : {
+        "type" : "object",
+        "properties" : {
+          "reason" : {
+            "type" : "string",
+            "maxLength" : 500,
+            "minLength" : 0
+          }
+        },
+        "required" : [ "reason" ]
+      },
+      "RejectDocumentRequest" : {
+        "type" : "object",
+        "properties" : {
+          "rejectionReason" : {
+            "type" : "string",
+            "maxLength" : 500,
+            "minLength" : 0
+          }
+        },
+        "required" : [ "rejectionReason" ]
+      },
+      "RevokeDocumentRequest" : {
+        "type" : "object",
+        "properties" : {
+          "reason" : {
+            "type" : "string",
+            "maxLength" : 500,
+            "minLength" : 0
+          }
+        },
+        "required" : [ "reason" ]
+      },
+      "LifecycleChangeRequest" : {
+        "type" : "object",
+        "properties" : {
+          "reason" : {
+            "type" : "string",
+            "maxLength" : 500,
+            "minLength" : 0
+          },
+          "effectiveOn" : {
             "type" : "string",
             "format" : "date"
           }
-        },
-        "required" : [ "probationEndDate" ]
+        }
       },
       "UpdatePhotoRequest" : {
         "type" : "object",
@@ -38753,24 +40114,7 @@
           }
         }
       },
-      "UpdateTeacherHrDetailsRequest" : {
-        "type" : "object",
-        "properties" : {
-          "departmentPublicId" : {
-            "type" : "string"
-          },
-          "qualification" : {
-            "type" : "string",
-            "maxLength" : 255,
-            "minLength" : 0
-          },
-          "employmentType" : {
-            "type" : "string",
-            "enum" : [ "FULL_TIME", "PART_TIME", "CONTRACT", "VISITING" ]
-          }
-        }
-      },
-      "UpdateTeacherContactDetailsRequest" : {
+      "UpdateStudentContactDetailsRequest" : {
         "type" : "object",
         "properties" : {
           "firstName" : {
@@ -38788,9 +40132,13 @@
             "format" : "email",
             "maxLength" : 255,
             "minLength" : 0
+          },
+          "dateOfBirth" : {
+            "type" : "string",
+            "format" : "date"
           }
         },
-        "required" : [ "email", "firstName", "lastName" ]
+        "required" : [ "dateOfBirth", "firstName", "lastName" ]
       },
       "AddressRequest" : {
         "type" : "object",
@@ -38825,64 +40173,6 @@
             "pattern" : "^[A-Z]{2}$"
           }
         }
-      },
-      "AssignSubjectCurriculumRequest" : {
-        "type" : "object",
-        "properties" : {
-          "curriculumPublicId" : {
-            "type" : "string",
-            "minLength" : 1
-          }
-        },
-        "required" : [ "curriculumPublicId" ]
-      },
-      "RejectDocumentRequest" : {
-        "type" : "object",
-        "properties" : {
-          "rejectionReason" : {
-            "type" : "string",
-            "maxLength" : 500,
-            "minLength" : 0
-          }
-        },
-        "required" : [ "rejectionReason" ]
-      },
-      "RevokeDocumentRequest" : {
-        "type" : "object",
-        "properties" : {
-          "reason" : {
-            "type" : "string",
-            "maxLength" : 500,
-            "minLength" : 0
-          }
-        },
-        "required" : [ "reason" ]
-      },
-      "UpdateStudentContactDetailsRequest" : {
-        "type" : "object",
-        "properties" : {
-          "firstName" : {
-            "type" : "string",
-            "maxLength" : 100,
-            "minLength" : 0
-          },
-          "lastName" : {
-            "type" : "string",
-            "maxLength" : 100,
-            "minLength" : 0
-          },
-          "email" : {
-            "type" : "string",
-            "format" : "email",
-            "maxLength" : 255,
-            "minLength" : 0
-          },
-          "dateOfBirth" : {
-            "type" : "string",
-            "format" : "date"
-          }
-        },
-        "required" : [ "dateOfBirth", "firstName", "lastName" ]
       },
       "SupersedeSalaryStructureRequest" : {
         "type" : "object",
@@ -38971,7 +40261,7 @@
           "publicId" : {
             "type" : "string"
           },
-          "teacherId" : {
+          "employeeId" : {
             "type" : "integer",
             "format" : "int64"
           },
@@ -39249,6 +40539,81 @@
         },
         "required" : [ "eventDate", "title" ]
       },
+      "SetEmployeeProbationRequest" : {
+        "type" : "object",
+        "properties" : {
+          "probationEndDate" : {
+            "type" : "string",
+            "format" : "date"
+          }
+        },
+        "required" : [ "probationEndDate" ]
+      },
+      "UpdateEmployeeHrDetailsRequest" : {
+        "type" : "object",
+        "properties" : {
+          "departmentPublicId" : {
+            "type" : "string"
+          },
+          "designation" : {
+            "type" : "string",
+            "maxLength" : 100,
+            "minLength" : 0
+          },
+          "qualification" : {
+            "type" : "string",
+            "maxLength" : 255,
+            "minLength" : 0
+          },
+          "employmentType" : {
+            "type" : "string",
+            "enum" : [ "FULL_TIME", "PART_TIME", "CONTRACT", "VISITING" ]
+          }
+        }
+      },
+      "ExitEmployeeRequest" : {
+        "type" : "object",
+        "properties" : {
+          "status" : {
+            "type" : "string",
+            "default" : "",
+            "description" : "RESIGNED, TERMINATED or RETIRED",
+            "enum" : [ "ACTIVE", "RESIGNED", "TERMINATED", "RETIRED" ]
+          },
+          "exitDate" : {
+            "type" : "string",
+            "format" : "date"
+          },
+          "reason" : {
+            "type" : "string",
+            "maxLength" : 500,
+            "minLength" : 0
+          }
+        },
+        "required" : [ "exitDate", "status" ]
+      },
+      "UpdateEmployeeContactDetailsRequest" : {
+        "type" : "object",
+        "properties" : {
+          "firstName" : {
+            "type" : "string",
+            "maxLength" : 100,
+            "minLength" : 0
+          },
+          "lastName" : {
+            "type" : "string",
+            "maxLength" : 100,
+            "minLength" : 0
+          },
+          "email" : {
+            "type" : "string",
+            "format" : "email",
+            "maxLength" : 255,
+            "minLength" : 0
+          }
+        },
+        "required" : [ "email", "firstName", "lastName" ]
+      },
       "RecordDisciplineActionRequest" : {
         "type" : "object",
         "properties" : {
@@ -39281,15 +40646,15 @@
         },
         "required" : [ "code", "name" ]
       },
-      "AssignHeadTeacherRequest" : {
+      "AssignHeadEmployeeRequest" : {
         "type" : "object",
         "properties" : {
-          "headTeacherPublicId" : {
+          "headEmployeePublicId" : {
             "type" : "string",
             "minLength" : 1
           }
         },
-        "required" : [ "headTeacherPublicId" ]
+        "required" : [ "headEmployeePublicId" ]
       },
       "UpdateCustomFieldDefinitionRequest" : {
         "type" : "object",
@@ -39607,6 +40972,17 @@
           }
         },
         "required" : [ "decidedBy", "outcome" ]
+      },
+      "WaiveApplicationFeeRequest" : {
+        "type" : "object",
+        "properties" : {
+          "reason" : {
+            "type" : "string",
+            "maxLength" : 500,
+            "minLength" : 0
+          }
+        },
+        "required" : [ "reason" ]
       },
       "TaxExemptCertificateReviewRequest" : {
         "type" : "object",
@@ -40634,55 +42010,6 @@
           }
         }
       },
-      "ApiResponseListLeaveBalanceResponse" : {
-        "type" : "object",
-        "properties" : {
-          "success" : {
-            "type" : "boolean"
-          },
-          "data" : {
-            "type" : "array",
-            "items" : {
-              "$ref" : "#/components/schemas/LeaveBalanceResponse"
-            }
-          },
-          "error" : {
-            "$ref" : "#/components/schemas/Error"
-          },
-          "meta" : {
-            "$ref" : "#/components/schemas/Meta"
-          }
-        }
-      },
-      "LeaveBalanceResponse" : {
-        "type" : "object",
-        "properties" : {
-          "publicId" : {
-            "type" : "string"
-          },
-          "teacherId" : {
-            "type" : "integer",
-            "format" : "int64"
-          },
-          "leaveTypeId" : {
-            "type" : "integer",
-            "format" : "int64"
-          },
-          "academicYearId" : {
-            "type" : "integer",
-            "format" : "int64"
-          },
-          "allocatedDays" : {
-            "type" : "number"
-          },
-          "usedDays" : {
-            "type" : "number"
-          },
-          "remainingDays" : {
-            "type" : "number"
-          }
-        }
-      },
       "ApiResponseListFieldGroupResponse" : {
         "type" : "object",
         "properties" : {
@@ -40973,6 +42300,95 @@
           }
         }
       },
+      "ApiResponseListLifecycleTransitionResponse" : {
+        "type" : "object",
+        "properties" : {
+          "success" : {
+            "type" : "boolean"
+          },
+          "data" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/LifecycleTransitionResponse"
+            }
+          },
+          "error" : {
+            "$ref" : "#/components/schemas/Error"
+          },
+          "meta" : {
+            "$ref" : "#/components/schemas/Meta"
+          }
+        }
+      },
+      "LifecycleTransitionResponse" : {
+        "type" : "object",
+        "properties" : {
+          "publicId" : {
+            "type" : "string"
+          },
+          "fromStage" : {
+            "type" : "string"
+          },
+          "toStage" : {
+            "type" : "string"
+          },
+          "reason" : {
+            "type" : "string"
+          },
+          "effectiveOn" : {
+            "type" : "string",
+            "format" : "date"
+          },
+          "recordedAt" : {
+            "type" : "string",
+            "format" : "date-time"
+          },
+          "recordedByUserId" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        }
+      },
+      "ApiResponseListFeeRefundResponse" : {
+        "type" : "object",
+        "properties" : {
+          "success" : {
+            "type" : "boolean"
+          },
+          "data" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/FeeRefundResponse"
+            }
+          },
+          "error" : {
+            "$ref" : "#/components/schemas/Error"
+          },
+          "meta" : {
+            "$ref" : "#/components/schemas/Meta"
+          }
+        }
+      },
+      "ApiResponseListFeeDiscountResponse" : {
+        "type" : "object",
+        "properties" : {
+          "success" : {
+            "type" : "boolean"
+          },
+          "data" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/FeeDiscountResponse"
+            }
+          },
+          "error" : {
+            "$ref" : "#/components/schemas/Error"
+          },
+          "meta" : {
+            "$ref" : "#/components/schemas/Meta"
+          }
+        }
+      },
       "ApiResponseListEmergencyContactResponse" : {
         "type" : "object",
         "properties" : {
@@ -41212,10 +42628,19 @@
           "feeStructureName" : {
             "type" : "string"
           },
+          "grossAmount" : {
+            "type" : "number"
+          },
+          "discountAmount" : {
+            "type" : "number"
+          },
           "amountDue" : {
             "type" : "number"
           },
           "amountPaid" : {
+            "type" : "number"
+          },
+          "refundedAmount" : {
             "type" : "number"
           },
           "outstandingBalance" : {
@@ -41230,6 +42655,37 @@
           "dueDate" : {
             "type" : "string",
             "format" : "date"
+          },
+          "installments" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/InstallmentStatusResponse"
+            }
+          }
+        }
+      },
+      "InstallmentStatusResponse" : {
+        "type" : "object",
+        "properties" : {
+          "sequenceNumber" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "dueDate" : {
+            "type" : "string",
+            "format" : "date"
+          },
+          "amount" : {
+            "type" : "number"
+          },
+          "paidAmount" : {
+            "type" : "number"
+          },
+          "outstandingAmount" : {
+            "type" : "number"
+          },
+          "state" : {
+            "type" : "string"
           }
         }
       },
@@ -42497,6 +43953,55 @@
           }
         }
       },
+      "ApiResponseListLeaveBalanceResponse" : {
+        "type" : "object",
+        "properties" : {
+          "success" : {
+            "type" : "boolean"
+          },
+          "data" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/LeaveBalanceResponse"
+            }
+          },
+          "error" : {
+            "$ref" : "#/components/schemas/Error"
+          },
+          "meta" : {
+            "$ref" : "#/components/schemas/Meta"
+          }
+        }
+      },
+      "LeaveBalanceResponse" : {
+        "type" : "object",
+        "properties" : {
+          "publicId" : {
+            "type" : "string"
+          },
+          "employeeId" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "leaveTypeId" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "academicYearId" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "allocatedDays" : {
+            "type" : "number"
+          },
+          "usedDays" : {
+            "type" : "number"
+          },
+          "remainingDays" : {
+            "type" : "number"
+          }
+        }
+      },
       "ApiResponseListLanguageResponse" : {
         "type" : "object",
         "properties" : {
@@ -43252,6 +44757,46 @@
             "type" : "array",
             "items" : {
               "$ref" : "#/components/schemas/EventRegistrationResponse"
+            }
+          },
+          "pageNumber" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "pageSize" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "totalElements" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        }
+      },
+      "ApiResponsePageEmployeeResponse" : {
+        "type" : "object",
+        "properties" : {
+          "success" : {
+            "type" : "boolean"
+          },
+          "data" : {
+            "$ref" : "#/components/schemas/PageEmployeeResponse"
+          },
+          "error" : {
+            "$ref" : "#/components/schemas/Error"
+          },
+          "meta" : {
+            "$ref" : "#/components/schemas/Meta"
+          }
+        }
+      },
+      "PageEmployeeResponse" : {
+        "type" : "object",
+        "properties" : {
+          "content" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/EmployeeResponse"
             }
           },
           "pageNumber" : {

@@ -14,7 +14,7 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import com.altafjava.platform.api.dto.response.ApiResponse;
 import com.altafjava.school.api.controller.api.DepartmentApi;
-import com.altafjava.school.api.dto.request.AssignHeadTeacherRequest;
+import com.altafjava.school.api.dto.request.AssignHeadEmployeeRequest;
 import com.altafjava.school.api.dto.request.CreateDepartmentRequest;
 import com.altafjava.school.api.dto.request.UpdateDepartmentRequest;
 import com.altafjava.school.api.dto.response.DepartmentResponse;
@@ -75,12 +75,12 @@ public class DepartmentController implements DepartmentApi {
 	}
 
 	@Override
-	@PatchMapping("/{publicId}/head-teacher")
+	@PatchMapping("/{publicId}/head-employee")
 	@PreAuthorize("@permissionAuthorizationService.hasPermission('DEPARTMENT_MANAGE')")
-	public ApiResponse<DepartmentResponse> assignHeadTeacher(@PathVariable String publicId,
-			@Valid @RequestBody AssignHeadTeacherRequest request) {
+	public ApiResponse<DepartmentResponse> assignHeadEmployee(@PathVariable String publicId,
+			@Valid @RequestBody AssignHeadEmployeeRequest request) {
 		return ApiResponse.success(departmentMapper
-				.toResponse(departmentService.assignHeadTeacher(publicId, request.headTeacherPublicId())));
+				.toResponse(departmentService.assignHeadEmployee(publicId, request.headEmployeePublicId())));
 	}
 
 	@Override

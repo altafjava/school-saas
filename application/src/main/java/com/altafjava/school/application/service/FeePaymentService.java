@@ -27,10 +27,16 @@ import com.altafjava.school.application.security.StudentDataAccessGuard;
 import com.altafjava.school.domain.classroom.repository.StudentClassroomLinkRepository;
 import com.altafjava.school.domain.fee.model.FeeAssignment;
 import com.altafjava.school.domain.fee.model.FeeBalance;
+import com.altafjava.school.domain.fee.model.FeeDiscount;
+import com.altafjava.school.domain.fee.model.FeeInstallment;
 import com.altafjava.school.domain.fee.model.FeePayment;
+import com.altafjava.school.domain.fee.model.FeeRefund;
 import com.altafjava.school.domain.fee.model.FeeStructure;
 import com.altafjava.school.domain.fee.repository.FeeAssignmentRepository;
+import com.altafjava.school.domain.fee.repository.FeeDiscountRepository;
+import com.altafjava.school.domain.fee.repository.FeeInstallmentRepository;
 import com.altafjava.school.domain.fee.repository.FeePaymentRepository;
+import com.altafjava.school.domain.fee.repository.FeeRefundRepository;
 import com.altafjava.school.domain.fee.repository.FeeStructureRepository;
 import com.altafjava.school.domain.fee.service.FeeBalanceCalculator;
 import com.altafjava.school.domain.student.model.Student;
@@ -48,12 +54,17 @@ public class FeePaymentService {
 	private final StudentClassroomLinkRepository studentClassroomLinkRepository;
 	private final StudentDataAccessGuard studentDataAccessGuard;
 	private final NumberSequenceService numberSequenceService;
+	private final FeeDiscountRepository feeDiscountRepository;
+	private final FeeInstallmentRepository feeInstallmentRepository;
+	private final FeeRefundRepository feeRefundRepository;
 	private final FeeBalanceCalculator feeBalanceCalculator = new FeeBalanceCalculator();
 
 	public FeePaymentService(FeePaymentRepository feePaymentRepository, StudentRepository studentRepository,
 			FeeStructureRepository feeStructureRepository, FeeAssignmentRepository feeAssignmentRepository,
 			StudentClassroomLinkRepository studentClassroomLinkRepository,
-			StudentDataAccessGuard studentDataAccessGuard, NumberSequenceService numberSequenceService) {
+			StudentDataAccessGuard studentDataAccessGuard, NumberSequenceService numberSequenceService,
+			FeeDiscountRepository feeDiscountRepository, FeeInstallmentRepository feeInstallmentRepository,
+			FeeRefundRepository feeRefundRepository) {
 		this.feePaymentRepository = feePaymentRepository;
 		this.studentRepository = studentRepository;
 		this.feeStructureRepository = feeStructureRepository;
@@ -61,6 +72,9 @@ public class FeePaymentService {
 		this.studentClassroomLinkRepository = studentClassroomLinkRepository;
 		this.studentDataAccessGuard = studentDataAccessGuard;
 		this.numberSequenceService = numberSequenceService;
+		this.feeDiscountRepository = feeDiscountRepository;
+		this.feeInstallmentRepository = feeInstallmentRepository;
+		this.feeRefundRepository = feeRefundRepository;
 	}
 
 	@Transactional(readOnly = true)
@@ -95,12 +109,14 @@ public class FeePaymentService {
 		List<FeeStructure> feeStructures = feeStructureRepository
 				.findAllByIdInAndTenantId(new ArrayList<>(assignmentsByFeeStructureId.keySet()), tenantId);
 		List<FeePayment> payments = feePaymentRepository.findByStudentId(tenantId, student.getId());
+		AdjustmentIndex adjustments = loadAdjustments(tenantId, List.of(student.getId()));
 		LocalDate today = LocalDate.now();
 
 		return feeStructures.stream()
 				.map(feeStructure -> feeBalanceCalculator.calculate(feeStructure,
 						assignmentsByFeeStructureId.get(feeStructure.getId()),
-						totalPaidFor(payments, feeStructure.getId()), today))
+						totalPaidFor(payments, feeStructure.getId()),
+						adjustments.of(student.getId(), feeStructure.getId()), today))
 				.toList();
 	}
 
@@ -153,6 +169,7 @@ public class FeePaymentService {
 				.findByStudentIdIn(tenantId, studentIds).stream()
 				.collect(Collectors.groupingBy(FeePayment::getStudentId));
 
+		AdjustmentIndex adjustments = loadAdjustments(tenantId, studentIds);
 		LocalDate today = LocalDate.now();
 		Map<Long, List<FeeBalance>> result = new HashMap<>();
 		for (Long studentId : studentIds) {
@@ -162,13 +179,47 @@ public class FeePaymentService {
 						FeeStructure structure = feeStructuresById.get(entry.getKey());
 						return structure == null ? null
 								: feeBalanceCalculator.calculate(structure, entry.getValue(),
-										totalPaidFor(payments, structure.getId()), today);
+										totalPaidFor(payments, structure.getId()),
+										adjustments.of(studentId, structure.getId()), today);
 					})
 					.filter(Objects::nonNull)
 					.toList();
 			result.put(studentId, balances);
 		}
 		return result;
+	}
+
+	// Three IN-queries however many students: discounts, installment plans, completed refunds.
+	private AdjustmentIndex loadAdjustments(Long tenantId, List<Long> studentIds) {
+		return new AdjustmentIndex(feeDiscountRepository.findActiveByStudentIdIn(tenantId, studentIds),
+				feeInstallmentRepository.findByStudentIdIn(tenantId, studentIds),
+				feeRefundRepository.findCompletedByStudentIdIn(tenantId, studentIds));
+	}
+
+	private record StudentStructure(Long studentId, Long feeStructureId) {
+	}
+
+	private static final class AdjustmentIndex {
+
+		private final Map<StudentStructure, List<FeeDiscount>> discounts;
+		private final Map<StudentStructure, List<FeeInstallment>> installments;
+		private final Map<StudentStructure, BigDecimal> refunded;
+
+		AdjustmentIndex(List<FeeDiscount> discounts, List<FeeInstallment> installments, List<FeeRefund> refunds) {
+			this.discounts = discounts.stream().collect(Collectors
+					.groupingBy(d -> new StudentStructure(d.getStudentId(), d.getFeeStructureId())));
+			this.installments = installments.stream().collect(Collectors
+					.groupingBy(i -> new StudentStructure(i.getStudentId(), i.getFeeStructureId())));
+			this.refunded = refunds.stream().collect(Collectors.groupingBy(
+					r -> new StudentStructure(r.getStudentId(), r.getFeeStructureId()),
+					Collectors.reducing(BigDecimal.ZERO, FeeRefund::getAmount, BigDecimal::add)));
+		}
+
+		FeeBalanceCalculator.Adjustments of(Long studentId, Long feeStructureId) {
+			StudentStructure key = new StudentStructure(studentId, feeStructureId);
+			return new FeeBalanceCalculator.Adjustments(discounts.get(key), refunded.get(key),
+					installments.get(key));
+		}
 	}
 
 	private Map<Long, Long> resolveCurrentClassroomIds(Long tenantId, List<Long> studentIds) {

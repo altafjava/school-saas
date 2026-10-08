@@ -22,16 +22,16 @@ public interface LeaveRequestApi {
 			@RequestParam(defaultValue = "0") int page,
 			@RequestParam(defaultValue = "20") int size);
 
-	@Operation(summary = "List mine", operationId = "leaverequest_listMine", description = "Lists the current teacher's own leave requests.")
+	@Operation(summary = "List mine", operationId = "leaverequest_listMine", description = "Lists the current employee's own leave requests.")
 	public ApiResponse<com.altafjava.platform.core.model.Page<LeaveRequestResponse>> listMine(
 			@RequestParam(defaultValue = "0") int page,
 			@RequestParam(defaultValue = "20") int size);
 
 	@Operation(summary = "Submit", operationId = "leaverequest_submit", description = "Requests leave for a date range. Days requested exclude holidays and are validated "
-			+ "against the leave type's probation-eligibility rule for the requesting teacher.")
+			+ "against the leave type's probation-eligibility rule for the requesting employee.")
 	public ApiResponse<LeaveRequestResponse> submit(@Valid @RequestBody SubmitLeaveRequestRequest request);
 
-	@Operation(summary = "Approve", operationId = "leaverequest_approve", description = "Approves the request and atomically deducts the days from the teacher's leave balance "
+	@Operation(summary = "Approve", operationId = "leaverequest_approve", description = "Approves the request and atomically deducts the days from the employee's leave balance "
 			+ "for that type and academic year.")
 	public ApiResponse<LeaveRequestResponse> approve(@PathVariable String publicId);
 

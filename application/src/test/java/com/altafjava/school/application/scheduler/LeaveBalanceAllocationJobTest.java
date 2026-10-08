@@ -27,10 +27,12 @@ import com.altafjava.platform.domain.scheduler.model.TriggerType;
 import com.altafjava.school.application.service.LeaveBalanceService;
 import com.altafjava.school.domain.academicyear.model.AcademicYear;
 import com.altafjava.school.domain.academicyear.repository.AcademicYearRepository;
+import com.altafjava.school.domain.employee.model.Employee;
+import com.altafjava.school.domain.employee.model.EmployeeStatus;
+import com.altafjava.school.domain.employee.model.StaffCategory;
+import com.altafjava.school.domain.employee.repository.EmployeeRepository;
 import com.altafjava.school.domain.leave.model.LeaveType;
 import com.altafjava.school.domain.leave.repository.LeaveTypeRepository;
-import com.altafjava.school.domain.teacher.model.Teacher;
-import com.altafjava.school.domain.teacher.repository.TeacherRepository;
 
 @ExtendWith(MockitoExtension.class)
 class LeaveBalanceAllocationJobTest {
@@ -40,7 +42,7 @@ class LeaveBalanceAllocationJobTest {
 	@Mock
 	private LeaveTypeRepository leaveTypeRepository;
 	@Mock
-	private TeacherRepository teacherRepository;
+	private EmployeeRepository employeeRepository;
 	@Mock
 	private LeaveBalanceService leaveBalanceService;
 
@@ -48,7 +50,7 @@ class LeaveBalanceAllocationJobTest {
 
 	@BeforeEach
 	void setUp() {
-		job = new LeaveBalanceAllocationJob(academicYearRepository, leaveTypeRepository, teacherRepository,
+		job = new LeaveBalanceAllocationJob(academicYearRepository, leaveTypeRepository, employeeRepository,
 				leaveBalanceService);
 		TenantContext.ForTesting.setCurrentTenant(1L, null, null, TenantType.SHARED);
 	}
@@ -74,7 +76,7 @@ class LeaveBalanceAllocationJobTest {
 	}
 
 	@Test
-	void execute_allocatesEveryActiveLeaveTypeToEveryTeacher() {
+	void execute_allocatesEveryActiveLeaveTypeToEveryEmployee() {
 		AcademicYear academicYear = AcademicYear.create("2026-27", LocalDate.of(2026, 4, 1),
 				LocalDate.of(2027, 3, 31), true);
 		academicYear.setId(30L);
@@ -82,20 +84,21 @@ class LeaveBalanceAllocationJobTest {
 		sick.setId(20L);
 		LeaveType casual = LeaveType.create("Casual Leave", BigDecimal.valueOf(6));
 		casual.setId(21L);
-		Teacher teacherA = Teacher.create("EMP-1", "Jane", "Doe", "jane@school.test", null);
-		teacherA.setId(10L);
-		Teacher teacherB = Teacher.create("EMP-2", "Sam", "Lee", "sam@school.test", null);
-		teacherB.setId(11L);
+		Employee employeeA = Employee.create(StaffCategory.SUPPORT, "EMP-1", "Jane", "Doe", "jane@school.test", null);
+		employeeA.setId(10L);
+		Employee employeeB = Employee.create(StaffCategory.SUPPORT, "EMP-2", "Sam", "Lee", "sam@school.test", null);
+		employeeB.setId(11L);
 		when(academicYearRepository.findByCurrentTrueAndTenantId(1L)).thenReturn(Optional.of(academicYear));
 		when(leaveTypeRepository.findAllByTenantIdAndActiveTrue(1L)).thenReturn(List.of(sick, casual));
-		when(teacherRepository.findAllByTenantId(1L)).thenReturn(List.of(teacherA, teacherB));
+		when(employeeRepository.findAllByTenantIdAndStatus(1L, EmployeeStatus.ACTIVE))
+				.thenReturn(List.of(employeeA, employeeB));
 
 		JobExecutionResult result = job.execute(context());
 
-		verify(leaveBalanceService, times(1)).allocateWithCarryForward(teacherA, sick, academicYear);
-		verify(leaveBalanceService, times(1)).allocateWithCarryForward(teacherB, sick, academicYear);
-		verify(leaveBalanceService, times(1)).allocateWithCarryForward(teacherA, casual, academicYear);
-		verify(leaveBalanceService, times(1)).allocateWithCarryForward(teacherB, casual, academicYear);
+		verify(leaveBalanceService, times(1)).allocateWithCarryForward(employeeA, sick, academicYear);
+		verify(leaveBalanceService, times(1)).allocateWithCarryForward(employeeB, sick, academicYear);
+		verify(leaveBalanceService, times(1)).allocateWithCarryForward(employeeA, casual, academicYear);
+		verify(leaveBalanceService, times(1)).allocateWithCarryForward(employeeB, casual, academicYear);
 		assertEquals(new JobExecutionResult.Success(Map.of("allocated", 4), null), result);
 	}
 }

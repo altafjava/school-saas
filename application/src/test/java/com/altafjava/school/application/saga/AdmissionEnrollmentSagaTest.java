@@ -25,6 +25,7 @@ import com.altafjava.platform.application.saga.SagaLifecycleService;
 import com.altafjava.platform.core.tenant.TenantContext;
 import com.altafjava.platform.core.tenant.TenantType;
 import com.altafjava.platform.domain.saga.repository.SagaLogRepository;
+import com.altafjava.school.application.lifecycle.LifecycleRecorder;
 import com.altafjava.school.application.scheduler.support.TenantAdminNotifier;
 import com.altafjava.school.application.service.GuardianService;
 import com.altafjava.school.application.service.StudentService;
@@ -59,6 +60,8 @@ class AdmissionEnrollmentSagaTest {
 	private GuardianRepository guardianRepository;
 	@Mock
 	private StudentGuardianLinkRepository studentGuardianLinkRepository;
+	@Mock
+	private LifecycleRecorder lifecycleRecorder;
 
 	private AdmissionEnrollmentSaga saga;
 
@@ -66,7 +69,7 @@ class AdmissionEnrollmentSagaTest {
 	void setUp() {
 		saga = new AdmissionEnrollmentSaga(sagaLifecycleService, sagaLogRepository, admissionRepository,
 				studentService, guardianService, tenantAdminNotifier, studentRepository, guardianRepository,
-				studentGuardianLinkRepository);
+				studentGuardianLinkRepository, lifecycleRecorder);
 		TenantContext.ForTesting.setCurrentTenant(1L, UUID.randomUUID(), null, TenantType.SHARED);
 	}
 
@@ -115,7 +118,7 @@ class AdmissionEnrollmentSagaTest {
 		when(sagaLifecycleService.startSaga(any(), any(), eq(4))).thenReturn(UUID.randomUUID());
 		when(admissionRepository.findByIdAndTenantId(1L, 1L)).thenReturn(Optional.of(admission));
 		when(admissionRepository.save(any(Admission.class))).thenAnswer(inv -> inv.getArgument(0));
-		when(studentService.enroll(eq("STU-100"), any(), any(), any(), any())).thenReturn(student);
+		when(studentService.enroll(eq("STU-100"), any(), any(), any(), any(), any())).thenReturn(student);
 		when(guardianService.create(any(), any(), any(), any(), any())).thenReturn(guardian);
 		when(guardianService.linkToStudent(any(), any(), any(), eq(true)))
 				.thenReturn(StudentGuardianLink.create(10L, 20L,
@@ -136,7 +139,7 @@ class AdmissionEnrollmentSagaTest {
 		when(sagaLifecycleService.startSaga(any(), any(), eq(4))).thenReturn(UUID.randomUUID());
 		when(admissionRepository.findByIdAndTenantId(1L, 1L)).thenReturn(Optional.of(admission));
 		when(admissionRepository.save(any(Admission.class))).thenAnswer(inv -> inv.getArgument(0));
-		when(studentService.enroll(eq("STU-100"), any(), any(), any(), any()))
+		when(studentService.enroll(eq("STU-100"), any(), any(), any(), any(), any()))
 				.thenThrow(new com.altafjava.platform.core.exception.BusinessException(
 						"Student code already exists: STU-100"));
 		when(sagaLogRepository.findById(any())).thenReturn(Optional.empty());

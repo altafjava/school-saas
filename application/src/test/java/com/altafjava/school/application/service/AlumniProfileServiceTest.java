@@ -18,6 +18,7 @@ import com.altafjava.platform.core.exception.BusinessException;
 import com.altafjava.platform.core.exception.ResourceNotFoundException;
 import com.altafjava.platform.core.tenant.TenantContext;
 import com.altafjava.platform.core.tenant.TenantType;
+import com.altafjava.school.application.lifecycle.LifecycleRecorder;
 import com.altafjava.school.domain.alumni.model.AlumniProfile;
 import com.altafjava.school.domain.alumni.repository.AlumniProfileRepository;
 import com.altafjava.school.domain.student.model.Student;
@@ -32,12 +33,14 @@ class AlumniProfileServiceTest {
 	private AlumniProfileRepository alumniProfileRepository;
 	@Mock
 	private StudentRepository studentRepository;
+	@Mock
+	private LifecycleRecorder lifecycleRecorder;
 
 	private AlumniProfileService alumniProfileService;
 
 	@BeforeEach
 	void setUp() {
-		alumniProfileService = new AlumniProfileService(alumniProfileRepository, studentRepository);
+		alumniProfileService = new AlumniProfileService(alumniProfileRepository, studentRepository, lifecycleRecorder);
 		TenantContext.ForTesting.setCurrentTenant(1L, null, null, TenantType.SHARED);
 	}
 

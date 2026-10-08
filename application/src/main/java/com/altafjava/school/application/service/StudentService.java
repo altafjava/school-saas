@@ -3,6 +3,7 @@ package com.altafjava.school.application.service;
 import java.time.LocalDate;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.function.Consumer;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -12,6 +13,8 @@ import com.altafjava.platform.core.exception.BusinessException;
 import com.altafjava.platform.core.exception.ResourceNotFoundException;
 import com.altafjava.platform.core.tenant.TenantContext;
 import com.altafjava.platform.domain.numbering.model.ResetPeriod;
+import com.altafjava.school.application.lifecycle.LifecycleChange;
+import com.altafjava.school.application.lifecycle.LifecycleRecorder;
 import com.altafjava.school.domain.common.model.Address;
 import com.altafjava.school.domain.common.service.PhoneNumberValidator;
 import com.altafjava.school.domain.student.model.EnrollmentStatus;
@@ -25,11 +28,14 @@ public class StudentService {
 
 	private final StudentRepository studentRepository;
 	private final NumberSequenceService numberSequenceService;
+	private final LifecycleRecorder lifecycleRecorder;
 	private final PhoneNumberValidator phoneNumberValidator = new PhoneNumberValidator();
 
-	public StudentService(StudentRepository studentRepository, NumberSequenceService numberSequenceService) {
+	public StudentService(StudentRepository studentRepository, NumberSequenceService numberSequenceService,
+			LifecycleRecorder lifecycleRecorder) {
 		this.studentRepository = studentRepository;
 		this.numberSequenceService = numberSequenceService;
+		this.lifecycleRecorder = lifecycleRecorder;
 	}
 
 	@Transactional(readOnly = true)
@@ -56,13 +62,26 @@ public class StudentService {
 	@Transactional
 	public Student enroll(String studentCode, String firstName, String lastName,
 			String email, LocalDate dateOfBirth) {
+		return enroll(studentCode, firstName, lastName, email, dateOfBirth, null);
+	}
+
+	/** {@code sourceAdmissionId} is set when the student comes from an approved admission. */
+	@Transactional
+	public Student enroll(String studentCode, String firstName, String lastName,
+			String email, LocalDate dateOfBirth, Long sourceAdmissionId) {
 		Long tenantId = TenantContext.getCurrentTenantId();
 		String resolvedCode = resolveStudentCode(tenantId, studentCode);
 		if (studentRepository.existsByStudentCodeAndTenantId(resolvedCode, tenantId)) {
 			throw new BusinessException("Student code already exists: " + resolvedCode);
 		}
-		Student student = Student.create(resolvedCode, firstName, lastName, email, dateOfBirth);
-		return studentRepository.save(student);
+		Student student = studentRepository
+				.save(Student.create(resolvedCode, firstName, lastName, email, dateOfBirth));
+		if (sourceAdmissionId != null) {
+			lifecycleRecorder.enrolledFromAdmission(sourceAdmissionId, student.getId(), LifecycleChange.NONE);
+		} else {
+			lifecycleRecorder.student(student.getId(), null, EnrollmentStatus.ACTIVE, LifecycleChange.NONE);
+		}
+		return student;
 	}
 
 	// A caller-supplied studentCode is an explicit override; omitting it defers to the tenant's
@@ -75,24 +94,37 @@ public class StudentService {
 	}
 
 	@Transactional
-	public Student withdraw(String publicId) {
-		Student student = findByPublicId(publicId);
-		student.withdraw();
-		return studentRepository.save(student);
+	public Student withdraw(String publicId, LifecycleChange change) {
+		return changeStatus(publicId, change, Student::withdraw);
 	}
 
 	@Transactional
-	public Student transfer(String publicId) {
-		Student student = findByPublicId(publicId);
-		student.transfer();
-		return studentRepository.save(student);
+	public Student transfer(String publicId, LifecycleChange change) {
+		return changeStatus(publicId, change, Student::transfer);
 	}
 
 	@Transactional
-	public Student graduate(String publicId) {
+	public Student graduate(String publicId, LifecycleChange change) {
+		return changeStatus(publicId, change, Student::graduate);
+	}
+
+	@Transactional
+	public Student suspend(String publicId, LifecycleChange change) {
+		return changeStatus(publicId, change, Student::suspend);
+	}
+
+	@Transactional
+	public Student reinstate(String publicId, LifecycleChange change) {
+		return changeStatus(publicId, change, Student::reinstate);
+	}
+
+	private Student changeStatus(String publicId, LifecycleChange change, Consumer<Student> transition) {
 		Student student = findByPublicId(publicId);
-		student.graduate();
-		return studentRepository.save(student);
+		EnrollmentStatus before = student.getEnrollmentStatus();
+		transition.accept(student);
+		Student saved = studentRepository.save(student);
+		lifecycleRecorder.student(saved.getId(), before, saved.getEnrollmentStatus(), change);
+		return saved;
 	}
 
 	@Transactional

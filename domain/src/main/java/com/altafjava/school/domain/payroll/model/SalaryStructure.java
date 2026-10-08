@@ -17,8 +17,8 @@ import lombok.Setter;
 import lombok.experimental.SuperBuilder;
 
 /**
- * A teacher's compensation terms as of {@link #effectiveFrom}. At most one structure is
- * {@link #active} per teacher at a time — {@code SalaryStructureService} deactivates the previous
+ * A employee's compensation terms as of {@link #effectiveFrom}. At most one structure is
+ * {@link #active} per employee at a time — {@code SalaryStructureService} deactivates the previous
  * one when a new one is created, mirroring how {@code Term}/{@code AcademicYear} flip {@code current}.
  *
  * <p>
@@ -34,8 +34,8 @@ import lombok.experimental.SuperBuilder;
 @NoArgsConstructor
 public class SalaryStructure extends SoftDeletableEntity {
 
-	@Column(name = "teacher_id", nullable = false)
-	private Long teacherId;
+	@Column(name = "employee_id", nullable = false)
+	private Long employeeId;
 
 	@Convert(converter = PayComponentAmountListConverter.class)
 	@Column(name = "components_json", nullable = false)
@@ -47,7 +47,7 @@ public class SalaryStructure extends SoftDeletableEntity {
 	@Column(name = "active", nullable = false)
 	private boolean active;
 
-	public static SalaryStructure create(Long teacherId, List<PayComponentAmount> components,
+	public static SalaryStructure create(Long employeeId, List<PayComponentAmount> components,
 			LocalDate effectiveFrom) {
 		if (components == null || components.isEmpty()) {
 			throw new BusinessException("At least one pay component is required");
@@ -57,7 +57,7 @@ public class SalaryStructure extends SoftDeletableEntity {
 			throw new BusinessException("Total earning components must be greater than zero");
 		}
 		return SalaryStructure.builder()
-				.teacherId(teacherId)
+				.employeeId(employeeId)
 				.components(components)
 				.effectiveFrom(effectiveFrom)
 				.active(true)

@@ -86,7 +86,7 @@ class SalaryStructureCrudE2ETest extends SchoolIntegrationTestBase {
 				.contentType(ContentType.JSON)
 				.body("""
 						{
-						  "teacherPublicId": "%s",
+						  "employeePublicId": "%s",
 						  "components": [
 						    {"code": "BASIC", "amount": 50000.00},
 						    {"code": "HRA", "amount": 10000.00},
@@ -115,7 +115,7 @@ class SalaryStructureCrudE2ETest extends SchoolIntegrationTestBase {
 				.contentType(ContentType.JSON)
 				.body("""
 						{
-						  "teacherPublicId": "%s",
+						  "employeePublicId": "%s",
 						  "components": [
 						    {"code": "BASIC", "amount": 40000.00}
 						  ],
@@ -163,7 +163,7 @@ class SalaryStructureCrudE2ETest extends SchoolIntegrationTestBase {
 	void listSalaryStructures_withoutJwt_returns401() {
 		given()
 				.header("X-Tenant-ID", tenantId)
-				.queryParam("teacherPublicId", UUID.randomUUID().toString())
+				.queryParam("employeePublicId", UUID.randomUUID().toString())
 				.contentType(ContentType.JSON)
 				.when()
 				.get("/api/v1/salary-structures")
@@ -181,7 +181,7 @@ class SalaryStructureCrudE2ETest extends SchoolIntegrationTestBase {
 				.contentType(ContentType.JSON)
 				.body("""
 						{
-						  "teacherPublicId": "%s",
+						  "employeePublicId": "%s",
 						  "components": [
 						    {"code": "BASIC", "amount": 50000.00}
 						  ],
@@ -204,7 +204,7 @@ class SalaryStructureCrudE2ETest extends SchoolIntegrationTestBase {
 				.contentType(ContentType.JSON)
 				.body("""
 						{
-						  "teacherPublicId": "%s",
+						  "employeePublicId": "%s",
 						  "components": [
 						    {"code": "BASIC", "amount": 45000.00}
 						  ],

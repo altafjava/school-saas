@@ -63,5 +63,9 @@
     <include file="db/domain/changesets/056-tenant-admin-phase1-permissions.xml"/>
     <include file="db/domain/changesets/057-guardian-pickup-custody-emergency-contacts.xml"/>
     <include file="db/domain/changesets/058-tenant-admin-guardian-safety-permissions.xml"/>
+    <include file="db/domain/changesets/059-lifecycle-transitions.xml"/>
+    <include file="db/domain/changesets/060-fee-discounts-installments-refunds.xml"/>
+    <include file="db/domain/changesets/061-admission-application-fee-offer-letter.xml"/>
+    <include file="db/domain/changesets/062-employees.xml"/>
 
 </databaseChangeLog>

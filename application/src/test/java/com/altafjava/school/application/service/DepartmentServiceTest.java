@@ -18,8 +18,9 @@ import com.altafjava.platform.core.tenant.TenantContext;
 import com.altafjava.platform.core.tenant.TenantType;
 import com.altafjava.school.domain.department.model.Department;
 import com.altafjava.school.domain.department.repository.DepartmentRepository;
-import com.altafjava.school.domain.teacher.model.Teacher;
-import com.altafjava.school.domain.teacher.repository.TeacherRepository;
+import com.altafjava.school.domain.employee.model.Employee;
+import com.altafjava.school.domain.employee.model.StaffCategory;
+import com.altafjava.school.domain.employee.repository.EmployeeRepository;
 
 @ExtendWith(MockitoExtension.class)
 class DepartmentServiceTest {
@@ -27,13 +28,13 @@ class DepartmentServiceTest {
 	@Mock
 	private DepartmentRepository departmentRepository;
 	@Mock
-	private TeacherRepository teacherRepository;
+	private EmployeeRepository employeeRepository;
 
 	private DepartmentService departmentService;
 
 	@BeforeEach
 	void setUp() {
-		departmentService = new DepartmentService(departmentRepository, teacherRepository);
+		departmentService = new DepartmentService(departmentRepository, employeeRepository);
 		TenantContext.ForTesting.setCurrentTenant(1L, null, null, TenantType.SHARED);
 	}
 
@@ -60,20 +61,20 @@ class DepartmentServiceTest {
 	}
 
 	@Test
-	void assignHeadTeacher_resolvesTeacherAndAssignsId() {
+	void assignHeadEmployee_resolvesEmployeeAndAssignsId() {
 		UUID departmentPublicId = UUID.randomUUID();
-		UUID teacherPublicId = UUID.randomUUID();
+		UUID employeePublicId = UUID.randomUUID();
 		Department department = Department.create("Science", "SCI", null);
-		Teacher teacher = Teacher.create("EMP-1", "Jane", "Doe", "jane@school.test", null);
-		teacher.setId(7L);
+		Employee employee = Employee.create(StaffCategory.SUPPORT, "EMP-1", "Jane", "Doe", "jane@school.test", null);
+		employee.setId(7L);
 		when(departmentRepository.findByPublicIdAndTenantId(departmentPublicId, 1L))
 				.thenReturn(Optional.of(department));
-		when(teacherRepository.findByPublicIdAndTenantId(teacherPublicId, 1L)).thenReturn(Optional.of(teacher));
+		when(employeeRepository.findByPublicIdAndTenantId(employeePublicId, 1L)).thenReturn(Optional.of(employee));
 		when(departmentRepository.save(any(Department.class))).thenAnswer(inv -> inv.getArgument(0));
 
-		Department updated = assertDoesNotThrow(() -> departmentService.assignHeadTeacher(
-				departmentPublicId.toString(), teacherPublicId.toString()));
+		Department updated = assertDoesNotThrow(() -> departmentService.assignHeadEmployee(
+				departmentPublicId.toString(), employeePublicId.toString()));
 
-		assertEquals(7L, updated.getHeadTeacherId());
+		assertEquals(7L, updated.getHeadEmployeeId());
 	}
 }

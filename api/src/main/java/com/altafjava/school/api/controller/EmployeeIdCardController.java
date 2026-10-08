@@ -16,20 +16,20 @@ import org.springframework.web.bind.annotation.RestController;
 import com.altafjava.platform.api.dto.response.ApiResponse;
 import com.altafjava.platform.core.security.AuthenticatedUser;
 import com.altafjava.platform.domain.document.model.DocumentIssuance;
-import com.altafjava.school.api.controller.api.TeacherIdCardApi;
+import com.altafjava.school.api.controller.api.EmployeeIdCardApi;
 import com.altafjava.school.api.dto.response.IssuedDocumentResponse;
 import com.altafjava.school.api.mapper.IssuedDocumentMapper;
 import com.altafjava.school.api.ratelimit.RateLimited;
 import com.altafjava.school.application.idcard.IdCardService;
 
 @RestController
-@RequestMapping("/api/v1/teachers/{teacherPublicId}/id-card")
-public class TeacherIdCardController implements TeacherIdCardApi {
+@RequestMapping("/api/v1/employees/{employeePublicId}/id-card")
+public class EmployeeIdCardController implements EmployeeIdCardApi {
 
 	private final IdCardService idCardService;
 	private final IssuedDocumentMapper issuedDocumentMapper;
 
-	public TeacherIdCardController(IdCardService idCardService, IssuedDocumentMapper issuedDocumentMapper) {
+	public EmployeeIdCardController(IdCardService idCardService, IssuedDocumentMapper issuedDocumentMapper) {
 		this.idCardService = idCardService;
 		this.issuedDocumentMapper = issuedDocumentMapper;
 	}
@@ -38,10 +38,10 @@ public class TeacherIdCardController implements TeacherIdCardApi {
 	@PostMapping
 	@ResponseStatus(HttpStatus.CREATED)
 	@PreAuthorize("@permissionAuthorizationService.hasPermission('ID_CARD_ISSUE')")
-	@RateLimited(key = "teacher-id-card-issue", capacity = 60, periodMinutes = 60)
-	public ApiResponse<IssuedDocumentResponse> issue(@PathVariable String teacherPublicId,
+	@RateLimited(key = "staff-id-card-issue", capacity = 60, periodMinutes = 60)
+	public ApiResponse<IssuedDocumentResponse> issue(@PathVariable String employeePublicId,
 			@AuthenticationPrincipal AuthenticatedUser user) {
-		DocumentIssuance issuance = idCardService.issueForTeacher(teacherPublicId, user.getId());
+		DocumentIssuance issuance = idCardService.issueForEmployee(employeePublicId, user.getId());
 		return ApiResponse.success(issuedDocumentMapper.toResponse(issuance));
 	}
 
@@ -50,9 +50,9 @@ public class TeacherIdCardController implements TeacherIdCardApi {
 	@Override
 	@GetMapping("/{issuancePublicId}/download")
 	@PreAuthorize("@permissionAuthorizationService.hasPermission('ID_CARD_ISSUE')")
-	public ResponseEntity<byte[]> download(@PathVariable String teacherPublicId,
+	public ResponseEntity<byte[]> download(@PathVariable String employeePublicId,
 			@PathVariable String issuancePublicId) {
-		DocumentIssuance issuance = idCardService.findTeacherCard(teacherPublicId, issuancePublicId);
+		DocumentIssuance issuance = idCardService.findEmployeeCard(employeePublicId, issuancePublicId);
 		byte[] pdf = idCardService.downloadPdf(issuance);
 		return ResponseEntity.ok()
 				.contentType(MediaType.APPLICATION_PDF)

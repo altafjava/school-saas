@@ -7,21 +7,23 @@ import org.springframework.stereotype.Component;
 import com.altafjava.platform.application.service.report.provider.ReportDataProvider;
 import com.altafjava.platform.core.tenant.TenantContext;
 import com.altafjava.school.domain.department.repository.DepartmentRepository;
+import com.altafjava.school.domain.employee.model.EmployeeStatus;
+import com.altafjava.school.domain.employee.model.StaffCategory;
+import com.altafjava.school.domain.employee.repository.EmployeeRepository;
 import com.altafjava.school.domain.leave.model.LeaveRequestStatus;
 import com.altafjava.school.domain.leave.repository.LeaveRequestRepository;
-import com.altafjava.school.domain.teacher.repository.TeacherRepository;
 
 /** HR summary: one aggregate row, computed from single COUNT queries. */
 @Component
 public class HrDashboardDataProvider implements ReportDataProvider {
 
-	private final TeacherRepository teacherRepository;
+	private final EmployeeRepository employeeRepository;
 	private final DepartmentRepository departmentRepository;
 	private final LeaveRequestRepository leaveRequestRepository;
 
-	public HrDashboardDataProvider(TeacherRepository teacherRepository, DepartmentRepository departmentRepository,
+	public HrDashboardDataProvider(EmployeeRepository employeeRepository, DepartmentRepository departmentRepository,
 			LeaveRequestRepository leaveRequestRepository) {
-		this.teacherRepository = teacherRepository;
+		this.employeeRepository = employeeRepository;
 		this.departmentRepository = departmentRepository;
 		this.leaveRequestRepository = leaveRequestRepository;
 	}
@@ -31,7 +33,9 @@ public class HrDashboardDataProvider implements ReportDataProvider {
 		Long tenantId = TenantContext.getCurrentTenantId();
 
 		Map<String, Object> row = new LinkedHashMap<>();
-		row.put("teacherCount", teacherRepository.countByTenantId(tenantId));
+		row.put("teacherCount", employeeRepository.countByTenantIdAndStaffCategoryAndStatus(tenantId,
+				StaffCategory.TEACHING, EmployeeStatus.ACTIVE));
+		row.put("employeeCount", employeeRepository.countByTenantIdAndStatus(tenantId, EmployeeStatus.ACTIVE));
 		row.put("departmentCount", departmentRepository.countByTenantId(tenantId));
 		row.put("pendingLeaveRequestCount",
 				leaveRequestRepository.countByTenantIdAndStatus(tenantId, LeaveRequestStatus.PENDING));

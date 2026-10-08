@@ -245,7 +245,7 @@ class HrLeaveTenantIsolationIntegrationTest extends SchoolIntegrationTestBase {
 		LeaveRequest approved = leaveRequestService.approve(request.getPublicId().toString());
 
 		assertEquals(LeaveRequestStatus.APPROVED, approved.getStatus());
-		List<LeaveBalance> balances = leaveBalanceService.listForTeacher(
+		List<LeaveBalance> balances = leaveBalanceService.listForEmployee(
 				fixtureA.teacher().getPublicId().toString(), fixtureA.academicYear().getPublicId().toString());
 		assertEquals(0, BigDecimal.valueOf(9).compareTo(balances.get(0).remainingDays()));
 	}

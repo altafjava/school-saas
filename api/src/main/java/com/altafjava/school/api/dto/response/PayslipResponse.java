@@ -6,7 +6,7 @@ import java.util.List;
 
 public record PayslipResponse(
 		String publicId,
-		Long teacherId,
+		Long employeeId,
 		int payYear,
 		int payMonth,
 		List<PayComponentAmountResponse> components,

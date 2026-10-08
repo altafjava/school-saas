@@ -10,17 +10,17 @@ import com.altafjava.platform.core.exception.ResourceNotFoundException;
 import com.altafjava.platform.core.tenant.TenantContext;
 import com.altafjava.school.domain.department.model.Department;
 import com.altafjava.school.domain.department.repository.DepartmentRepository;
-import com.altafjava.school.domain.teacher.repository.TeacherRepository;
+import com.altafjava.school.domain.employee.repository.EmployeeRepository;
 
 @Service
 public class DepartmentService {
 
 	private final DepartmentRepository departmentRepository;
-	private final TeacherRepository teacherRepository;
+	private final EmployeeRepository employeeRepository;
 
-	public DepartmentService(DepartmentRepository departmentRepository, TeacherRepository teacherRepository) {
+	public DepartmentService(DepartmentRepository departmentRepository, EmployeeRepository employeeRepository) {
 		this.departmentRepository = departmentRepository;
-		this.teacherRepository = teacherRepository;
+		this.employeeRepository = employeeRepository;
 	}
 
 	@Transactional(readOnly = true)
@@ -52,12 +52,12 @@ public class DepartmentService {
 	}
 
 	@Transactional
-	public Department assignHeadTeacher(String publicId, String headTeacherPublicId) {
+	public Department assignHeadEmployee(String publicId, String headEmployeePublicId) {
 		Long tenantId = TenantContext.getCurrentTenantId();
 		Department department = findByPublicId(publicId);
-		var headTeacher = teacherRepository.findByPublicIdAndTenantId(UUID.fromString(headTeacherPublicId), tenantId)
-				.orElseThrow(() -> new ResourceNotFoundException("Teacher not found: " + headTeacherPublicId));
-		department.assignHeadTeacher(headTeacher.getId());
+		var headEmployee = employeeRepository.findByPublicIdAndTenantId(UUID.fromString(headEmployeePublicId), tenantId)
+				.orElseThrow(() -> new ResourceNotFoundException("Employee not found: " + headEmployeePublicId));
+		department.assignHeadEmployee(headEmployee.getId());
 		return departmentRepository.save(department);
 	}
 

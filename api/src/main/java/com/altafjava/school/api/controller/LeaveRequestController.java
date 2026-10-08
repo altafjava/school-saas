@@ -56,7 +56,7 @@ public class LeaveRequestController implements LeaveRequestApi {
 			@RequestParam(defaultValue = "0") int page,
 			@RequestParam(defaultValue = "20") int size) {
 		return ApiResponse.success(PlatformPageMapper
-				.toPlatformPage(leaveRequestService.listForCurrentTeacher(pageableResolver.resolve(page, size))
+				.toPlatformPage(leaveRequestService.listForCurrentEmployee(pageableResolver.resolve(page, size))
 						.map(leaveRequestMapper::toResponse)));
 	}
 

@@ -2,6 +2,7 @@ package com.altafjava.school.api.controller.api;
 
 import java.util.List;
 import jakarta.validation.Valid;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -10,6 +11,7 @@ import com.altafjava.school.api.dto.request.DecideAdmissionRequest;
 import com.altafjava.school.api.dto.request.PublicAdmissionApplicationRequest;
 import com.altafjava.school.api.dto.request.RecordEntranceTestScoreRequest;
 import com.altafjava.school.api.dto.request.SubmitAdmissionRequest;
+import com.altafjava.school.api.dto.request.WaiveApplicationFeeRequest;
 import com.altafjava.school.api.dto.response.AdmissionResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
@@ -63,4 +65,17 @@ public interface AdmissionApi {
 
 	@Operation(summary = "Promote from waitlist", operationId = "admission_promoteFromWaitlist")
 	public ApiResponse<AdmissionResponse> promoteFromWaitlist(@PathVariable String publicId);
+
+	@Operation(summary = "Record the application fee as paid", operationId = "admission_recordApplicationFee")
+	public ApiResponse<AdmissionResponse> recordApplicationFee(@PathVariable String publicId);
+
+	@Operation(summary = "Waive the application fee", operationId = "admission_waiveApplicationFee")
+	public ApiResponse<AdmissionResponse> waiveApplicationFee(@PathVariable String publicId,
+			@Valid @RequestBody WaiveApplicationFeeRequest request);
+
+	@Operation(summary = "Issue or re-issue the offer letter", operationId = "admission_issueOfferLetter")
+	public ApiResponse<AdmissionResponse> issueOfferLetter(@PathVariable String publicId);
+
+	@Operation(summary = "Download the current offer letter", operationId = "admission_downloadOfferLetter")
+	public ResponseEntity<byte[]> downloadOfferLetter(@PathVariable String publicId);
 }

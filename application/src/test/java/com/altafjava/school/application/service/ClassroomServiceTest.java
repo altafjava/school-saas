@@ -32,6 +32,7 @@ import com.altafjava.school.domain.classroom.model.StudentClassroomLink;
 import com.altafjava.school.domain.classroom.repository.ClassroomRepository;
 import com.altafjava.school.domain.classroom.repository.StudentClassroomLinkRepository;
 import com.altafjava.school.domain.curriculum.repository.CurriculumRepository;
+import com.altafjava.school.domain.employee.model.EmployeeStatus;
 import com.altafjava.school.domain.student.model.Student;
 import com.altafjava.school.domain.student.repository.StudentRepository;
 import com.altafjava.school.domain.teacher.repository.TeacherRepository;
@@ -77,7 +78,7 @@ class ClassroomServiceTest {
 
 	@Test
 	void create_withNonExistentClassTeacherId_throwsResourceNotFound() {
-		when(teacherRepository.existsByIdAndTenantId(99L, 1L)).thenReturn(false);
+		when(teacherRepository.existsByIdAndTenantIdAndStatus(99L, 1L, EmployeeStatus.ACTIVE)).thenReturn(false);
 
 		assertThrows(ResourceNotFoundException.class,
 				() -> classroomService.create("CLS-001", "Grade 5", "A", ACADEMIC_YEAR_PUBLIC_ID.toString(), 99L));
@@ -87,7 +88,7 @@ class ClassroomServiceTest {
 
 	@Test
 	void create_withExistingClassTeacherId_succeeds() {
-		when(teacherRepository.existsByIdAndTenantId(5L, 1L)).thenReturn(true);
+		when(teacherRepository.existsByIdAndTenantIdAndStatus(5L, 1L, EmployeeStatus.ACTIVE)).thenReturn(true);
 		when(classroomRepository.save(any(Classroom.class))).thenAnswer(inv -> inv.getArgument(0));
 
 		assertDoesNotThrow(
@@ -116,7 +117,7 @@ class ClassroomServiceTest {
 		UUID classroomPublicId = UUID.randomUUID();
 		Classroom classroom = classroomWithPublicId(classroomPublicId, 1L);
 		when(classroomRepository.findByPublicIdAndTenantId(classroomPublicId, 1L)).thenReturn(Optional.of(classroom));
-		when(teacherRepository.existsByIdAndTenantId(5L, 1L)).thenReturn(true);
+		when(teacherRepository.existsByIdAndTenantIdAndStatus(5L, 1L, EmployeeStatus.ACTIVE)).thenReturn(true);
 		when(classroomRepository.save(any(Classroom.class))).thenAnswer(inv -> inv.getArgument(0));
 
 		Classroom updated = classroomService.reassignTeacher(classroomPublicId.toString(), 5L);
@@ -129,7 +130,7 @@ class ClassroomServiceTest {
 		UUID classroomPublicId = UUID.randomUUID();
 		Classroom classroom = classroomWithPublicId(classroomPublicId, 1L);
 		when(classroomRepository.findByPublicIdAndTenantId(classroomPublicId, 1L)).thenReturn(Optional.of(classroom));
-		when(teacherRepository.existsByIdAndTenantId(99L, 1L)).thenReturn(false);
+		when(teacherRepository.existsByIdAndTenantIdAndStatus(99L, 1L, EmployeeStatus.ACTIVE)).thenReturn(false);
 
 		assertThrows(ResourceNotFoundException.class,
 				() -> classroomService.reassignTeacher(classroomPublicId.toString(), 99L));

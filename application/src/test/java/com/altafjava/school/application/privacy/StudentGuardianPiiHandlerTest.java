@@ -23,6 +23,7 @@ import com.altafjava.school.domain.counseling.repository.CounselingSessionReposi
 import com.altafjava.school.domain.discipline.model.DisciplineIncident;
 import com.altafjava.school.domain.discipline.model.IncidentSeverity;
 import com.altafjava.school.domain.discipline.repository.DisciplineIncidentRepository;
+import com.altafjava.school.domain.employee.repository.EmployeeRepository;
 import com.altafjava.school.domain.guardian.model.Guardian;
 import com.altafjava.school.domain.guardian.repository.EmergencyContactRepository;
 import com.altafjava.school.domain.guardian.repository.GuardianRepository;
@@ -52,13 +53,15 @@ class StudentGuardianPiiHandlerTest {
 	private EmergencyContactRepository emergencyContactRepository;
 	@Mock
 	private DocumentIssuanceService documentIssuanceService;
+	@Mock
+	private EmployeeRepository employeeRepository;
 
 	private StudentGuardianPiiHandler piiHandler;
 
 	private void newHandler() {
 		piiHandler = new StudentGuardianPiiHandler(studentRepository, guardianRepository, healthRecordRepository,
 				medicalIncidentRepository, disciplineIncidentRepository, counselingSessionRepository,
-				emergencyContactRepository, documentIssuanceService);
+				emergencyContactRepository, documentIssuanceService, employeeRepository);
 	}
 
 	private Student studentWithId(Long id) {

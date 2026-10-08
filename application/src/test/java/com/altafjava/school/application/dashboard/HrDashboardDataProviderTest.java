@@ -13,15 +13,17 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import com.altafjava.platform.core.tenant.TenantContext;
 import com.altafjava.platform.core.tenant.TenantType;
 import com.altafjava.school.domain.department.repository.DepartmentRepository;
+import com.altafjava.school.domain.employee.model.EmployeeStatus;
+import com.altafjava.school.domain.employee.model.StaffCategory;
+import com.altafjava.school.domain.employee.repository.EmployeeRepository;
 import com.altafjava.school.domain.leave.model.LeaveRequestStatus;
 import com.altafjava.school.domain.leave.repository.LeaveRequestRepository;
-import com.altafjava.school.domain.teacher.repository.TeacherRepository;
 
 @ExtendWith(MockitoExtension.class)
 class HrDashboardDataProviderTest {
 
 	@Mock
-	private TeacherRepository teacherRepository;
+	private EmployeeRepository employeeRepository;
 	@Mock
 	private DepartmentRepository departmentRepository;
 	@Mock
@@ -31,7 +33,7 @@ class HrDashboardDataProviderTest {
 
 	@BeforeEach
 	void setUp() {
-		provider = new HrDashboardDataProvider(teacherRepository, departmentRepository, leaveRequestRepository);
+		provider = new HrDashboardDataProvider(employeeRepository, departmentRepository, leaveRequestRepository);
 		TenantContext.ForTesting.setCurrentTenant(1L, null, null, TenantType.SHARED);
 	}
 
@@ -42,7 +44,9 @@ class HrDashboardDataProviderTest {
 
 	@Test
 	void fetchData_returnsSingleSummaryRow() {
-		when(teacherRepository.countByTenantId(1L)).thenReturn(45L);
+		when(employeeRepository.countByTenantIdAndStatus(1L, EmployeeStatus.ACTIVE)).thenReturn(45L);
+		when(employeeRepository.countByTenantIdAndStaffCategoryAndStatus(1L, StaffCategory.TEACHING,
+				EmployeeStatus.ACTIVE)).thenReturn(30L);
 		when(departmentRepository.countByTenantId(1L)).thenReturn(6L);
 		when(leaveRequestRepository.countByTenantIdAndStatus(1L, LeaveRequestStatus.PENDING)).thenReturn(4L);
 
@@ -50,7 +54,8 @@ class HrDashboardDataProviderTest {
 
 		assertEquals(1, result.size());
 		Map<String, Object> row = result.get(0);
-		assertEquals(45L, row.get("teacherCount"));
+		assertEquals(45L, row.get("employeeCount"));
+		assertEquals(30L, row.get("teacherCount"));
 		assertEquals(6L, row.get("departmentCount"));
 		assertEquals(4L, row.get("pendingLeaveRequestCount"));
 	}

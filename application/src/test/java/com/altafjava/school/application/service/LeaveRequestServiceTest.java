@@ -33,6 +33,9 @@ import com.altafjava.platform.core.tenant.TenantType;
 import com.altafjava.school.application.scheduler.support.TenantAdminNotifier;
 import com.altafjava.school.domain.academicyear.model.AcademicYear;
 import com.altafjava.school.domain.academicyear.repository.AcademicYearRepository;
+import com.altafjava.school.domain.employee.model.Employee;
+import com.altafjava.school.domain.employee.model.StaffCategory;
+import com.altafjava.school.domain.employee.repository.EmployeeRepository;
 import com.altafjava.school.domain.leave.model.LeaveBalance;
 import com.altafjava.school.domain.leave.model.LeaveRequest;
 import com.altafjava.school.domain.leave.model.LeaveRequestStatus;
@@ -40,8 +43,6 @@ import com.altafjava.school.domain.leave.model.LeaveType;
 import com.altafjava.school.domain.leave.repository.LeaveBalanceRepository;
 import com.altafjava.school.domain.leave.repository.LeaveRequestRepository;
 import com.altafjava.school.domain.leave.repository.LeaveTypeRepository;
-import com.altafjava.school.domain.teacher.model.Teacher;
-import com.altafjava.school.domain.teacher.repository.TeacherRepository;
 
 @ExtendWith(MockitoExtension.class)
 class LeaveRequestServiceTest {
@@ -56,7 +57,7 @@ class LeaveRequestServiceTest {
 	@Mock
 	private LeaveBalanceRepository leaveBalanceRepository;
 	@Mock
-	private TeacherRepository teacherRepository;
+	private EmployeeRepository employeeRepository;
 	@Mock
 	private AcademicYearRepository academicYearRepository;
 	@Mock
@@ -71,7 +72,7 @@ class LeaveRequestServiceTest {
 	@BeforeEach
 	void setUp() {
 		leaveRequestService = new LeaveRequestService(leaveRequestRepository, leaveTypeRepository,
-				leaveBalanceRepository, teacherRepository, academicYearRepository, tenantAdminNotifier,
+				leaveBalanceRepository, employeeRepository, academicYearRepository, tenantAdminNotifier,
 				notificationService, holidayService);
 		TenantContext.ForTesting.setCurrentTenant(1L, null, null, TenantType.SHARED);
 	}
@@ -89,11 +90,11 @@ class LeaveRequestServiceTest {
 				.setAuthentication(new UsernamePasswordAuthenticationToken(principal, null, List.of()));
 	}
 
-	private Teacher teacherWithId(long id) {
-		Teacher teacher = Teacher.create("EMP-1", "Jane", "Doe", "jane@school.test", null);
-		teacher.setId(id);
-		teacher.setUserId(CURRENT_USER_ID);
-		return teacher;
+	private Employee employeeWithId(long id) {
+		Employee employee = Employee.create(StaffCategory.SUPPORT, "EMP-1", "Jane", "Doe", "jane@school.test", null);
+		employee.setId(id);
+		employee.setUserId(CURRENT_USER_ID);
+		return employee;
 	}
 
 	private LeaveType leaveTypeWithId(long id) {
@@ -112,36 +113,36 @@ class LeaveRequestServiceTest {
 	@Test
 	void submit_withNoExistingBalance_succeedsAndNotifiesAdmins() {
 		authenticateAsUser(CURRENT_USER_ID);
-		Teacher teacher = teacherWithId(10L);
+		Employee employee = employeeWithId(10L);
 		LeaveType leaveType = leaveTypeWithId(20L);
 		AcademicYear academicYear = academicYearWithId(30L);
-		when(teacherRepository.findByUserIdAndTenantId(CURRENT_USER_ID, 1L)).thenReturn(Optional.of(teacher));
+		when(employeeRepository.findByUserIdAndTenantId(CURRENT_USER_ID, 1L)).thenReturn(Optional.of(employee));
 		when(leaveTypeRepository.findByPublicIdAndTenantId(LEAVE_TYPE_PUBLIC_ID, 1L))
 				.thenReturn(Optional.of(leaveType));
 		when(academicYearRepository.findByCurrentTrueAndTenantId(1L)).thenReturn(Optional.of(academicYear));
-		when(leaveBalanceRepository.findByTeacherIdAndLeaveTypeIdAndAcademicYearIdAndTenantId(10L, 20L, 30L, 1L))
+		when(leaveBalanceRepository.findByEmployeeIdAndLeaveTypeIdAndAcademicYearIdAndTenantId(10L, 20L, 30L, 1L))
 				.thenReturn(Optional.empty());
 		when(leaveRequestRepository.save(any(LeaveRequest.class))).thenAnswer(inv -> inv.getArgument(0));
 
 		LeaveRequest request = assertDoesNotThrow(() -> leaveRequestService.submit(LEAVE_TYPE_PUBLIC_ID.toString(),
 				LocalDate.now().plusDays(1), LocalDate.now().plusDays(2), "Personal"));
 
-		assertEquals(10L, request.getTeacherId());
+		assertEquals(10L, request.getEmployeeId());
 		verify(tenantAdminNotifier, times(1)).notifyAll(eq(1L), any(), any(), any(), any());
 	}
 
 	@Test
 	void submit_withInsufficientBalance_throwsBusinessException() {
 		authenticateAsUser(CURRENT_USER_ID);
-		Teacher teacher = teacherWithId(10L);
+		Employee employee = employeeWithId(10L);
 		LeaveType leaveType = leaveTypeWithId(20L);
 		AcademicYear academicYear = academicYearWithId(30L);
 		LeaveBalance balance = LeaveBalance.allocate(10L, 20L, 30L, BigDecimal.ONE);
-		when(teacherRepository.findByUserIdAndTenantId(CURRENT_USER_ID, 1L)).thenReturn(Optional.of(teacher));
+		when(employeeRepository.findByUserIdAndTenantId(CURRENT_USER_ID, 1L)).thenReturn(Optional.of(employee));
 		when(leaveTypeRepository.findByPublicIdAndTenantId(LEAVE_TYPE_PUBLIC_ID, 1L))
 				.thenReturn(Optional.of(leaveType));
 		when(academicYearRepository.findByCurrentTrueAndTenantId(1L)).thenReturn(Optional.of(academicYear));
-		when(leaveBalanceRepository.findByTeacherIdAndLeaveTypeIdAndAcademicYearIdAndTenantId(10L, 20L, 30L, 1L))
+		when(leaveBalanceRepository.findByEmployeeIdAndLeaveTypeIdAndAcademicYearIdAndTenantId(10L, 20L, 30L, 1L))
 				.thenReturn(Optional.of(balance));
 
 		assertThrows(BusinessException.class, () -> leaveRequestService.submit(LEAVE_TYPE_PUBLIC_ID.toString(),
@@ -158,10 +159,10 @@ class LeaveRequestServiceTest {
 				LocalDate.now().plusDays(2), "Personal", BigDecimal.valueOf(2));
 		LeaveBalance balance = LeaveBalance.allocate(10L, 20L, 30L, BigDecimal.TEN);
 		when(leaveRequestRepository.findByPublicIdAndTenantId(requestPublicId, 1L)).thenReturn(Optional.of(request));
-		when(leaveBalanceRepository.findByTeacherIdAndLeaveTypeIdAndAcademicYearIdAndTenantId(10L, 20L, 30L, 1L))
+		when(leaveBalanceRepository.findByEmployeeIdAndLeaveTypeIdAndAcademicYearIdAndTenantId(10L, 20L, 30L, 1L))
 				.thenReturn(Optional.of(balance));
 		when(leaveRequestRepository.save(any(LeaveRequest.class))).thenAnswer(inv -> inv.getArgument(0));
-		when(teacherRepository.findByIdAndTenantId(10L, 1L)).thenReturn(Optional.of(teacherWithId(10L)));
+		when(employeeRepository.findByIdAndTenantId(10L, 1L)).thenReturn(Optional.of(employeeWithId(10L)));
 
 		LeaveRequest approved = assertDoesNotThrow(() -> leaveRequestService.approve(requestPublicId.toString()));
 
@@ -175,21 +176,21 @@ class LeaveRequestServiceTest {
 		LeaveRequest request = LeaveRequest.submit(10L, 20L, 30L, LocalDate.now().plusDays(1),
 				LocalDate.now().plusDays(2), "Personal", BigDecimal.valueOf(2));
 		when(leaveRequestRepository.findByPublicIdAndTenantId(requestPublicId, 1L)).thenReturn(Optional.of(request));
-		when(leaveBalanceRepository.findByTeacherIdAndLeaveTypeIdAndAcademicYearIdAndTenantId(10L, 20L, 30L, 1L))
+		when(leaveBalanceRepository.findByEmployeeIdAndLeaveTypeIdAndAcademicYearIdAndTenantId(10L, 20L, 30L, 1L))
 				.thenReturn(Optional.empty());
 
 		assertThrows(BusinessException.class, () -> leaveRequestService.approve(requestPublicId.toString()));
 	}
 
 	@Test
-	void cancel_byOwningTeacher_succeeds() {
+	void cancel_byOwningEmployee_succeeds() {
 		UUID requestPublicId = UUID.randomUUID();
 		authenticateAsUser(CURRENT_USER_ID);
 		LeaveRequest request = LeaveRequest.submit(10L, 20L, 30L, LocalDate.now().plusDays(3),
 				LocalDate.now().plusDays(4), "Personal", BigDecimal.valueOf(2));
 		when(leaveRequestRepository.findByPublicIdAndTenantId(requestPublicId, 1L)).thenReturn(Optional.of(request));
-		when(teacherRepository.findByUserIdAndTenantId(CURRENT_USER_ID, 1L))
-				.thenReturn(Optional.of(teacherWithId(10L)));
+		when(employeeRepository.findByUserIdAndTenantId(CURRENT_USER_ID, 1L))
+				.thenReturn(Optional.of(employeeWithId(10L)));
 		when(leaveRequestRepository.save(any(LeaveRequest.class))).thenAnswer(inv -> inv.getArgument(0));
 
 		LeaveRequest cancelled = assertDoesNotThrow(() -> leaveRequestService.cancel(requestPublicId.toString()));
@@ -198,14 +199,14 @@ class LeaveRequestServiceTest {
 	}
 
 	@Test
-	void cancel_byNonOwningTeacher_throwsAccessDenied() {
+	void cancel_byNonOwningEmployee_throwsAccessDenied() {
 		UUID requestPublicId = UUID.randomUUID();
 		authenticateAsUser(CURRENT_USER_ID);
 		LeaveRequest request = LeaveRequest.submit(999L, 20L, 30L, LocalDate.now().plusDays(3),
 				LocalDate.now().plusDays(4), "Personal", BigDecimal.valueOf(2));
 		when(leaveRequestRepository.findByPublicIdAndTenantId(requestPublicId, 1L)).thenReturn(Optional.of(request));
-		when(teacherRepository.findByUserIdAndTenantId(CURRENT_USER_ID, 1L))
-				.thenReturn(Optional.of(teacherWithId(10L)));
+		when(employeeRepository.findByUserIdAndTenantId(CURRENT_USER_ID, 1L))
+				.thenReturn(Optional.of(employeeWithId(10L)));
 
 		assertThrows(AccessDeniedException.class, () -> leaveRequestService.cancel(requestPublicId.toString()));
 		verify(leaveRequestRepository, never()).save(any());
@@ -221,9 +222,9 @@ class LeaveRequestServiceTest {
 		LeaveBalance balance = LeaveBalance.allocate(10L, 20L, 30L, BigDecimal.TEN);
 		balance.deduct(request.getDaysRequested());
 		when(leaveRequestRepository.findByPublicIdAndTenantId(requestPublicId, 1L)).thenReturn(Optional.of(request));
-		when(teacherRepository.findByUserIdAndTenantId(CURRENT_USER_ID, 1L))
-				.thenReturn(Optional.of(teacherWithId(10L)));
-		when(leaveBalanceRepository.findByTeacherIdAndLeaveTypeIdAndAcademicYearIdAndTenantId(10L, 20L, 30L, 1L))
+		when(employeeRepository.findByUserIdAndTenantId(CURRENT_USER_ID, 1L))
+				.thenReturn(Optional.of(employeeWithId(10L)));
+		when(leaveBalanceRepository.findByEmployeeIdAndLeaveTypeIdAndAcademicYearIdAndTenantId(10L, 20L, 30L, 1L))
 				.thenReturn(Optional.of(balance));
 		when(leaveRequestRepository.save(any(LeaveRequest.class))).thenAnswer(inv -> inv.getArgument(0));
 

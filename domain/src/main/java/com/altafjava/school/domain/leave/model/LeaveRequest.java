@@ -25,8 +25,8 @@ import lombok.experimental.SuperBuilder;
 @NoArgsConstructor
 public class LeaveRequest extends SoftDeletableEntity {
 
-	@Column(name = "teacher_id", nullable = false)
-	private Long teacherId;
+	@Column(name = "employee_id", nullable = false)
+	private Long employeeId;
 
 	@Column(name = "leave_type_id", nullable = false)
 	private Long leaveTypeId;
@@ -64,13 +64,13 @@ public class LeaveRequest extends SoftDeletableEntity {
 
 	// daysRequested is precomputed by the caller (LeaveDayCalculator, given the tenant's holiday
 	// calendar) rather than derived here — this entity has no way to reach holiday data itself.
-	public static LeaveRequest submit(Long teacherId, Long leaveTypeId, Long academicYearId, LocalDate startDate,
+	public static LeaveRequest submit(Long employeeId, Long leaveTypeId, Long academicYearId, LocalDate startDate,
 			LocalDate endDate, String reason, BigDecimal daysRequested) {
 		if (endDate.isBefore(startDate)) {
 			throw new BusinessException("Leave end date cannot be before the start date");
 		}
 		return LeaveRequest.builder()
-				.teacherId(teacherId)
+				.employeeId(employeeId)
 				.leaveTypeId(leaveTypeId)
 				.academicYearId(academicYearId)
 				.startDate(startDate)

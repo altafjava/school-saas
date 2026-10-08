@@ -17,16 +17,16 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 @SecurityRequirement(name = "tenantHeader")
 public interface SalaryStructureApi {
 
-	@Operation(summary = "List for teacher", operationId = "salarystructure_listForTeacher")
-	public ApiResponse<com.altafjava.platform.core.model.Page<SalaryStructureResponse>> listForTeacher(
-			@RequestParam String teacherPublicId,
+	@Operation(summary = "List for employee", operationId = "salarystructure_listForEmployee")
+	public ApiResponse<com.altafjava.platform.core.model.Page<SalaryStructureResponse>> listForEmployee(
+			@RequestParam String employeePublicId,
 			@RequestParam(defaultValue = "0") int page,
 			@RequestParam(defaultValue = "20") int size);
 
 	@Operation(summary = "Get", operationId = "salarystructure_get")
 	public ApiResponse<SalaryStructureResponse> get(@PathVariable String publicId);
 
-	@Operation(summary = "Create", operationId = "salarystructure_create", description = "Creates a teacher's salary structure from a tenant-defined set of pay components "
+	@Operation(summary = "Create", operationId = "salarystructure_create", description = "Creates a employee's salary structure from a tenant-defined set of pay components "
 			+ "(see Pay Component Definition) — every component code must exist and be active in the "
 			+ "tenant's catalog; there is no fixed Basic/HRA/Transport shape, so this works for any region's "
 			+ "pay-component naming.")

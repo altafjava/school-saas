@@ -46,12 +46,12 @@ public class SalaryStructureController implements SalaryStructureApi {
 	@Override
 	@GetMapping
 	@PreAuthorize("@permissionAuthorizationService.hasPermission('SALARY_STRUCTURE_MANAGE')")
-	public ApiResponse<com.altafjava.platform.core.model.Page<SalaryStructureResponse>> listForTeacher(
-			@RequestParam String teacherPublicId,
+	public ApiResponse<com.altafjava.platform.core.model.Page<SalaryStructureResponse>> listForEmployee(
+			@RequestParam String employeePublicId,
 			@RequestParam(defaultValue = "0") int page,
 			@RequestParam(defaultValue = "20") int size) {
 		return ApiResponse.success(PlatformPageMapper.toPlatformPage(
-				salaryStructureService.listForTeacher(teacherPublicId, pageableResolver.resolve(page, size))
+				salaryStructureService.listForEmployee(employeePublicId, pageableResolver.resolve(page, size))
 						.map(salaryStructureMapper::toResponse)));
 	}
 
@@ -68,12 +68,12 @@ public class SalaryStructureController implements SalaryStructureApi {
 	@PreAuthorize("@permissionAuthorizationService.hasPermission('SALARY_STRUCTURE_MANAGE')")
 	public ApiResponse<SalaryStructureResponse> create(@Valid @RequestBody CreateSalaryStructureRequest request) {
 		return ApiResponse
-				.success(salaryStructureMapper.toResponse(salaryStructureService.create(request.teacherPublicId(),
+				.success(salaryStructureMapper.toResponse(salaryStructureService.create(request.employeePublicId(),
 						toAmountsByCode(request.components()), request.effectiveFrom())));
 	}
 
 	// Narrow PATCH: the current active structure is superseded by a new one (never edited in
-	// place), mirroring SalaryStructureService's one-active-per-teacher invariant.
+	// place), mirroring SalaryStructureService's one-active-per-employee invariant.
 	@Override
 	@PatchMapping("/{publicId}/supersede")
 	@PreAuthorize("@permissionAuthorizationService.hasPermission('SALARY_STRUCTURE_MANAGE')")

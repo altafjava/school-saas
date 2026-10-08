@@ -7,6 +7,7 @@ import com.altafjava.platform.application.saga.SagaLifecycleService;
 import com.altafjava.platform.core.exception.ResourceNotFoundException;
 import com.altafjava.platform.core.tenant.TenantContext;
 import com.altafjava.platform.domain.saga.repository.SagaLogRepository;
+import com.altafjava.school.application.lifecycle.LifecycleRecorder;
 import com.altafjava.school.application.scheduler.support.TenantAdminNotifier;
 import com.altafjava.school.application.service.GuardianService;
 import com.altafjava.school.application.service.StudentService;
@@ -66,11 +67,13 @@ public class AdmissionEnrollmentSaga extends SagaCoordinator {
 	private final StudentRepository studentRepository;
 	private final GuardianRepository guardianRepository;
 	private final StudentGuardianLinkRepository studentGuardianLinkRepository;
+	private final LifecycleRecorder lifecycleRecorder;
 
 	public AdmissionEnrollmentSaga(SagaLifecycleService sagaLifecycleService, SagaLogRepository sagaLogRepository,
 			AdmissionRepository admissionRepository, StudentService studentService, GuardianService guardianService,
 			TenantAdminNotifier tenantAdminNotifier, StudentRepository studentRepository,
-			GuardianRepository guardianRepository, StudentGuardianLinkRepository studentGuardianLinkRepository) {
+			GuardianRepository guardianRepository, StudentGuardianLinkRepository studentGuardianLinkRepository,
+			LifecycleRecorder lifecycleRecorder) {
 		super(sagaLifecycleService, sagaLogRepository);
 		this.admissionRepository = admissionRepository;
 		this.studentService = studentService;
@@ -79,6 +82,7 @@ public class AdmissionEnrollmentSaga extends SagaCoordinator {
 		this.studentRepository = studentRepository;
 		this.guardianRepository = guardianRepository;
 		this.studentGuardianLinkRepository = studentGuardianLinkRepository;
+		this.lifecycleRecorder = lifecycleRecorder;
 	}
 
 	// Deliberately not @Transactional — see the Javadoc note above and
@@ -104,7 +108,7 @@ public class AdmissionEnrollmentSaga extends SagaCoordinator {
 		try {
 			startStep(sagaId, STEP_ENROLL_STUDENT);
 			Student student = studentService.enroll(studentCode, admission.getApplicantFirstName(),
-					admission.getApplicantLastName(), null, admission.getApplicantDateOfBirth());
+					admission.getApplicantLastName(), null, admission.getApplicantDateOfBirth(), admission.getId());
 			admission.recordEnrolledStudent(student.getId());
 			admission = admissionRepository.save(admission);
 			completeStep(sagaId, STEP_ENROLL_STUDENT, "studentId=" + student.getId());
@@ -191,6 +195,8 @@ public class AdmissionEnrollmentSaga extends SagaCoordinator {
 								studentRepository.save(student);
 							});
 				}
+				lifecycleRecorder.enrollmentRolledBack(admission.getId(), admission.getEnrolledStudentId(),
+						"Enrollment saga compensated");
 				admission.revertEnrollment();
 				admissionRepository.save(admission);
 			}

@@ -17,7 +17,7 @@ import com.altafjava.school.domain.payroll.model.SalarySnapshot;
  * <p>
  * Loss-of-pay basis: {@code unpaidApprovedLeaveInMonth} must already be filtered by the caller to
  * {@code LeaveRequest}s with {@code status = APPROVED} whose {@code LeaveType.paid} is {@code false}
- * (see {@code PayslipService}) — this system has no teacher attendance/absence tracking independent
+ * (see {@code PayslipService}) — this system has no employee attendance/absence tracking independent
  * of leave, so an explicit paid/unpaid flag on the leave type is the only honest signal available;
  * days requested against a paid leave type are never treated as loss-of-pay.
  */

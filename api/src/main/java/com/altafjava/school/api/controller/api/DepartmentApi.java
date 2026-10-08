@@ -5,7 +5,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
 import com.altafjava.platform.api.dto.response.ApiResponse;
-import com.altafjava.school.api.dto.request.AssignHeadTeacherRequest;
+import com.altafjava.school.api.dto.request.AssignHeadEmployeeRequest;
 import com.altafjava.school.api.dto.request.CreateDepartmentRequest;
 import com.altafjava.school.api.dto.request.UpdateDepartmentRequest;
 import com.altafjava.school.api.dto.response.DepartmentResponse;
@@ -33,9 +33,9 @@ public interface DepartmentApi {
 	public ApiResponse<DepartmentResponse> updateDetails(@PathVariable String publicId,
 			@Valid @RequestBody UpdateDepartmentRequest request);
 
-	@Operation(summary = "Assign head teacher", operationId = "department_assignHeadTeacher")
-	public ApiResponse<DepartmentResponse> assignHeadTeacher(@PathVariable String publicId,
-			@Valid @RequestBody AssignHeadTeacherRequest request);
+	@Operation(summary = "Assign head employee", operationId = "department_assignHeadEmployee")
+	public ApiResponse<DepartmentResponse> assignHeadEmployee(@PathVariable String publicId,
+			@Valid @RequestBody AssignHeadEmployeeRequest request);
 
 	@Operation(summary = "Deactivate", operationId = "department_deactivate")
 	public ApiResponse<DepartmentResponse> deactivate(@PathVariable String publicId);
