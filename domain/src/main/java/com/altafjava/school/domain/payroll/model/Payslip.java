@@ -19,8 +19,8 @@ import lombok.Setter;
 import lombok.experimental.SuperBuilder;
 
 /**
- * One per teacher per calendar month. The pay-component breakdown is a snapshot copied from the
- * teacher's {@link SalaryStructure} at generation time (see {@link SalarySnapshot}) — a later
+ * One per employee per calendar month. The pay-component breakdown is a snapshot copied from the
+ * employee's {@link SalaryStructure} at generation time (see {@link SalarySnapshot}) — a later
  * revision to that structure must never change an already-generated payslip.
  */
 @Entity
@@ -32,8 +32,8 @@ import lombok.experimental.SuperBuilder;
 @NoArgsConstructor
 public class Payslip extends SoftDeletableEntity {
 
-	@Column(name = "teacher_id", nullable = false)
-	private Long teacherId;
+	@Column(name = "employee_id", nullable = false)
+	private Long employeeId;
 
 	@Column(name = "pay_year", nullable = false)
 	private int payYear;
@@ -67,10 +67,10 @@ public class Payslip extends SoftDeletableEntity {
 	@Column(name = "disbursed_at")
 	private LocalDateTime disbursedAt;
 
-	public static Payslip generate(Long teacherId, int payYear, int payMonth, SalarySnapshot snapshot,
+	public static Payslip generate(Long employeeId, int payYear, int payMonth, SalarySnapshot snapshot,
 			PayrollComputation computation) {
 		return Payslip.builder()
-				.teacherId(teacherId)
+				.employeeId(employeeId)
 				.payYear(payYear)
 				.payMonth(payMonth)
 				.components(snapshot.components())

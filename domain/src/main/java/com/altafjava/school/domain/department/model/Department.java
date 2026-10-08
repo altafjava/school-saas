@@ -28,9 +28,9 @@ public class Department extends SoftDeletableEntity {
 	@Column(name = "description", length = 500)
 	private String description;
 
-	// FK to teachers.id — nullable, a department need not have a head assigned yet.
-	@Column(name = "head_teacher_id")
-	private Long headTeacherId;
+	// FK to employees.id — nullable, a department need not have a head assigned yet.
+	@Column(name = "head_employee_id")
+	private Long headEmployeeId;
 
 	@Column(name = "active", nullable = false)
 	private boolean active;
@@ -50,8 +50,8 @@ public class Department extends SoftDeletableEntity {
 		this.description = description;
 	}
 
-	public void assignHeadTeacher(Long headTeacherId) {
-		this.headTeacherId = headTeacherId;
+	public void assignHeadEmployee(Long headEmployeeId) {
+		this.headEmployeeId = headEmployeeId;
 	}
 
 	public void activate() {

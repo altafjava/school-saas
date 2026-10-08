@@ -11,6 +11,8 @@ import com.altafjava.school.domain.counseling.model.CounselingSession;
 import com.altafjava.school.domain.counseling.repository.CounselingSessionRepository;
 import com.altafjava.school.domain.discipline.model.DisciplineIncident;
 import com.altafjava.school.domain.discipline.repository.DisciplineIncidentRepository;
+import com.altafjava.school.domain.employee.model.Employee;
+import com.altafjava.school.domain.employee.repository.EmployeeRepository;
 import com.altafjava.school.domain.guardian.model.EmergencyContact;
 import com.altafjava.school.domain.guardian.model.Guardian;
 import com.altafjava.school.domain.guardian.repository.EmergencyContactRepository;
@@ -47,6 +49,7 @@ public class StudentGuardianPiiHandler implements DomainPiiHandler {
 	private final CounselingSessionRepository counselingSessionRepository;
 	private final EmergencyContactRepository emergencyContactRepository;
 	private final DocumentIssuanceService documentIssuanceService;
+	private final EmployeeRepository employeeRepository;
 
 	public StudentGuardianPiiHandler(
 			StudentRepository studentRepository,
@@ -56,7 +59,7 @@ public class StudentGuardianPiiHandler implements DomainPiiHandler {
 			DisciplineIncidentRepository disciplineIncidentRepository,
 			CounselingSessionRepository counselingSessionRepository,
 			EmergencyContactRepository emergencyContactRepository,
-			DocumentIssuanceService documentIssuanceService) {
+			DocumentIssuanceService documentIssuanceService, EmployeeRepository employeeRepository) {
 		this.studentRepository = studentRepository;
 		this.guardianRepository = guardianRepository;
 		this.healthRecordRepository = healthRecordRepository;
@@ -65,6 +68,7 @@ public class StudentGuardianPiiHandler implements DomainPiiHandler {
 		this.counselingSessionRepository = counselingSessionRepository;
 		this.emergencyContactRepository = emergencyContactRepository;
 		this.documentIssuanceService = documentIssuanceService;
+		this.employeeRepository = employeeRepository;
 	}
 
 	@Override
@@ -75,6 +79,12 @@ public class StudentGuardianPiiHandler implements DomainPiiHandler {
 			student.erasePii();
 			student.softDelete("gdpr-dsar-erasure");
 			studentRepository.save(student);
+		});
+		// Erased in place, never soft-deleted: payslips and leave history must stay joinable for
+		// statutory retention; only the person's identifying data goes.
+		employeeRepository.findByUserIdAndTenantId(userId, tenantId).ifPresent(employee -> {
+			employee.erasePii();
+			employeeRepository.save(employee);
 		});
 		guardianRepository.findByUserIdAndTenantId(userId, tenantId).ifPresent(guardian -> {
 			guardian.erasePii();
@@ -131,6 +141,8 @@ public class StudentGuardianPiiHandler implements DomainPiiHandler {
 					.findAllByStudentIdAndTenantIdOrderByPriorityAsc(student.getId(), tenantId).stream()
 					.map(this::toEmergencyContactExport).toList());
 		});
+		employeeRepository.findByUserIdAndTenantId(userId, tenantId)
+				.ifPresent(employee -> data.put("employee", toEmployeeExport(employee)));
 		guardianRepository.findByUserIdAndTenantId(userId, tenantId)
 				.ifPresent(guardian -> data.put("guardian", toGuardianExport(guardian)));
 		return data;
@@ -187,6 +199,19 @@ public class StudentGuardianPiiHandler implements DomainPiiHandler {
 		export.put("email", student.getEmail());
 		export.put("phone", student.getPhone());
 		export.put("dateOfBirth", student.getDateOfBirth());
+		return export;
+	}
+
+	private Map<String, Object> toEmployeeExport(Employee employee) {
+		Map<String, Object> export = new HashMap<>();
+		export.put("publicId", employee.getPublicId().toString());
+		export.put("employeeCode", employee.getEmployeeCode());
+		export.put("firstName", employee.getFirstName());
+		export.put("lastName", employee.getLastName());
+		export.put("email", employee.getEmail());
+		export.put("phone", employee.getPhone());
+		export.put("joinDate", employee.getJoinDate());
+		export.put("designation", employee.getDesignation());
 		return export;
 	}
 

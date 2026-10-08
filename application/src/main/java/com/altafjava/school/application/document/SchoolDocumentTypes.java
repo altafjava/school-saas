@@ -18,12 +18,14 @@ import com.altafjava.school.domain.certificate.model.CertificateType;
 public class SchoolDocumentTypes {
 
 	public static final String STUDENT_ID_CARD = "STUDENT_ID_CARD";
-	public static final String TEACHER_ID_CARD = "TEACHER_ID_CARD";
+	public static final String STAFF_ID_CARD = "STAFF_ID_CARD";
 	public static final String CERTIFICATE = CertificateType.DOCUMENT_TYPE_FAMILY;
 	public static final String REPORT_CARD = "REPORT_CARD";
+	public static final String ADMISSION_OFFER_LETTER = "ADMISSION_OFFER_LETTER";
 
 	public static final String OWNER_STUDENT = "STUDENT";
-	public static final String OWNER_TEACHER = "TEACHER";
+	public static final String OWNER_EMPLOYEE = "EMPLOYEE";
+	public static final String OWNER_ADMISSION = "ADMISSION";
 
 	@Bean
 	DocumentTypeDefinition studentIdCardDocumentType() {
@@ -37,14 +39,14 @@ public class SchoolDocumentTypes {
 	}
 
 	@Bean
-	DocumentTypeDefinition teacherIdCardDocumentType() {
-		return new DocumentTypeDefinition(TEACHER_ID_CARD, "Staff ID card", List.of(
-				PlaceholderField.text("teacherName", "Name"),
+	DocumentTypeDefinition staffIdCardDocumentType() {
+		return new DocumentTypeDefinition(STAFF_ID_CARD, "Staff ID card", List.of(
+				PlaceholderField.text("employeeName", "Name"),
 				PlaceholderField.text("employeeCode", "Employee code"),
 				PlaceholderField.text("department", "Department"),
+				PlaceholderField.text("designation", "Designation"),
 				PlaceholderField.image("photo", "Photo")),
-				DefaultDocumentTemplate.classpath(DocumentTemplateFormat.SVG,
-						"document-templates/teacher-id-card.svg"));
+				DefaultDocumentTemplate.classpath(DocumentTemplateFormat.SVG, "document-templates/staff-id-card.svg"));
 	}
 
 	// One registration serves every CERTIFICATE.<code> type a tenant defines.
@@ -58,6 +60,20 @@ public class SchoolDocumentTypes {
 				PlaceholderField.text("academicYear", "Academic year"),
 				PlaceholderField.text("admissionDate", "Admission date")),
 				DefaultDocumentTemplate.classpath(DocumentTemplateFormat.HTML, "document-templates/certificate.html"));
+	}
+
+	@Bean
+	DocumentTypeDefinition admissionOfferLetterDocumentType() {
+		return new DocumentTypeDefinition(ADMISSION_OFFER_LETTER, "Admission offer letter", List.of(
+				PlaceholderField.text("applicantName", "Applicant name"),
+				PlaceholderField.text("guardianName", "Guardian name"),
+				PlaceholderField.text("appliedGrade", "Grade offered"),
+				PlaceholderField.text("applicationReference", "Application reference"),
+				PlaceholderField.text("offerDate", "Offer date"),
+				PlaceholderField.flag("hasFeeReceipt", "Application fee was paid"),
+				PlaceholderField.text("feeReceiptNumber", "Application fee receipt number")),
+				DefaultDocumentTemplate.classpath(DocumentTemplateFormat.HTML,
+						"document-templates/admission-offer-letter.html"));
 	}
 
 	@Bean

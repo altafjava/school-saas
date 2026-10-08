@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en">
+<head>
+<title>{{documentTitle}}</title>
+<style>
+  @page { size: A4; margin: 22mm 20mm 20mm 20mm; }
+  body { font-family: 'Noto Sans'; font-size: 11pt; color: #1f2933; line-height: 1.6; }
+  .header { border-bottom: 2pt solid #1e3a5f; padding-bottom: 4mm; margin-bottom: 10mm; }
+  .header td { vertical-align: middle; }
+  .logo { height: 18mm; }
+  .tenant { font-size: 16pt; font-weight: bold; color: #1e3a5f; }
+  h1 { font-size: 17pt; color: #1e3a5f; margin: 0 0 6mm 0; }
+  .meta { color: #52606d; font-size: 9.5pt; margin-bottom: 8mm; }
+  .box { border: 1pt solid #1e3a5f; padding: 4mm 5mm; margin: 6mm 0; }
+  .box td { padding: 1mm 4mm 1mm 0; }
+  .label { color: #52606d; }
+  .signature { margin-top: 22mm; border-top: 0.8pt solid #1f2933; width: 60mm; padding-top: 1.5mm; }
+  .footer { margin-top: 12mm; font-size: 8.5pt; color: #6e7781; }
+  .qr { width: 22mm; height: 22mm; }
+</style>
+</head>
+<body>
+<table class="header" style="width: 100%">
+  <tr>
+    {{#tenantLogo}}<td style="width: 22mm"><img class="logo" src="{{tenantLogo}}" alt="logo"/></td>{{/tenantLogo}}
+    <td><div class="tenant">{{tenantName}}</div></td>
+  </tr>
+</table>
+
+<h1>{{documentTitle}}</h1>
+<div class="meta">Date: {{offerDate}} &#160;·&#160; Reference: {{applicationReference}}</div>
+
+<p>Dear {{guardianName}},</p>
+<p>We are pleased to offer <strong>{{applicantName}}</strong> admission to <strong>{{tenantName}}</strong>
+for <strong>{{appliedGrade}}</strong>. Congratulations on this achievement.</p>
+
+<table class="box">
+  <tr><td class="label">Applicant</td><td>{{applicantName}}</td></tr>
+  <tr><td class="label">Grade offered</td><td>{{appliedGrade}}</td></tr>
+  <tr><td class="label">Application reference</td><td>{{applicationReference}}</td></tr>
+  {{#hasFeeReceipt}}<tr><td class="label">Application fee receipt</td><td>{{feeReceiptNumber}}</td></tr>{{/hasFeeReceipt}}
+</table>
+
+<p>The school office will contact you with the enrolment steps and the fee schedule. Please keep this
+letter; its authenticity can be confirmed with the verification code below.</p>
+
+<div class="signature">Principal</div>
+
+<table class="footer" style="width: 100%">
+  <tr>
+    <td>Issued {{issuedOn}}<br/>Verification code: {{verificationCode}}</td>
+    <td style="text-align: right">{{#verificationQr}}<img class="qr" src="{{verificationQr}}" alt="verification QR code"/>{{/verificationQr}}</td>
+  </tr>
+</table>
+</body>
+</html>

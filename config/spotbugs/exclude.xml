@@ -312,4 +312,34 @@
         <Method name="&lt;init&gt;"/>
         <Bug pattern="EI_EXPOSE_REP2"/>
     </Match>
+    <!--
+      Phase 2 additions (2026-10-08): the same EI_EXPOSE_REP/REP2 detector noise as above — constructor
+      injection into a controller, and DTO records holding lists the mapper builds and nobody mutates.
+    -->
+    <Match>
+        <Class name="com.altafjava.school.api.controller.EmployeeIdCardController"/>
+        <Method name="&lt;init&gt;"/>
+        <Bug pattern="EI_EXPOSE_REP2"/>
+    </Match>
+    <Match>
+        <Class name="com.altafjava.school.api.dto.request.SetFeeInstallmentPlanRequest"/>
+        <Bug pattern="EI_EXPOSE_REP"/>
+    </Match>
+    <Match>
+        <Class name="com.altafjava.school.api.dto.request.SetFeeInstallmentPlanRequest"/>
+        <Bug pattern="EI_EXPOSE_REP2"/>
+    </Match>
+    <Match>
+        <Class name="com.altafjava.school.api.dto.response.FeeBalanceResponse"/>
+        <Bug pattern="EI_EXPOSE_REP"/>
+    </Match>
+    <Match>
+        <Class name="com.altafjava.school.api.dto.response.FeeBalanceResponse"/>
+        <Bug pattern="EI_EXPOSE_REP2"/>
+    </Match>
+    <Match>
+        <Class name="com.altafjava.school.application.service.AdmissionService"/>
+        <Method name="&lt;init&gt;"/>
+        <Bug pattern="EI_EXPOSE_REP2"/>
+    </Match>
 </FindBugsFilter>

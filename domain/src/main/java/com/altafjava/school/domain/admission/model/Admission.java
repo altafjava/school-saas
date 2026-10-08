@@ -13,6 +13,7 @@ import org.hibernate.annotations.SQLRestriction;
 import com.altafjava.platform.core.exception.BusinessException;
 import com.altafjava.platform.core.model.SoftDeletableEntity;
 import com.altafjava.platform.core.security.annotation.Pii;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
@@ -86,10 +87,44 @@ public class Admission extends SoftDeletableEntity {
 	@Column(name = "merit_rank")
 	private Integer meritRank;
 
+	// The fee amount is frozen when the application is submitted: changing the school's fee later
+	// must not retroactively change what an applicant already owes.
+	@Enumerated(EnumType.STRING)
+	@Column(name = "application_fee_status", nullable = false, length = 20)
+	@Builder.Default
+	private ApplicationFeeStatus applicationFeeStatus = ApplicationFeeStatus.NOT_REQUIRED;
+
+	@Column(name = "application_fee_amount", precision = 12, scale = 2)
+	private BigDecimal applicationFeeAmount;
+
+	@Column(name = "application_fee_receipt_number", length = 100)
+	private String applicationFeeReceiptNumber;
+
+	@Column(name = "application_fee_paid_at")
+	private Instant applicationFeePaidAt;
+
+	@Column(name = "application_fee_waiver_reason", length = 500)
+	private String applicationFeeWaiverReason;
+
+	// FK to platform document_issuances.id — the current offer letter; earlier ones are revoked.
+	@Column(name = "offer_letter_issuance_id")
+	private Long offerLetterIssuanceId;
+
 	public static Admission submit(String applicantFirstName, String applicantLastName,
 			LocalDate applicantDateOfBirth, String guardianFirstName, String guardianLastName,
 			String guardianEmail, String guardianPhone, String appliedGrade) {
+		return submit(applicantFirstName, applicantLastName, applicantDateOfBirth, guardianFirstName,
+				guardianLastName, guardianEmail, guardianPhone, appliedGrade, null);
+	}
+
+	/** {@code applicationFee} null or zero means no fee is charged for this application. */
+	public static Admission submit(String applicantFirstName, String applicantLastName,
+			LocalDate applicantDateOfBirth, String guardianFirstName, String guardianLastName,
+			String guardianEmail, String guardianPhone, String appliedGrade, BigDecimal applicationFee) {
+		boolean feeRequired = applicationFee != null && applicationFee.signum() > 0;
 		return Admission.builder()
+				.applicationFeeStatus(feeRequired ? ApplicationFeeStatus.PENDING : ApplicationFeeStatus.NOT_REQUIRED)
+				.applicationFeeAmount(feeRequired ? applicationFee : null)
 				.applicantFirstName(applicantFirstName)
 				.applicantLastName(applicantLastName)
 				.applicantDateOfBirth(applicantDateOfBirth)
@@ -108,12 +143,53 @@ public class Admission extends SoftDeletableEntity {
 			throw new BusinessException(
 					"Admission must be SUBMITTED to move under review, was " + this.status);
 		}
+		requireApplicationFeeCleared();
 		this.status = AdmissionStatus.UNDER_REVIEW;
 	}
 
 	public void approve() {
 		requireDecidable();
+		requireApplicationFeeCleared();
 		this.status = AdmissionStatus.APPROVED;
+	}
+
+	public boolean isApplicationFeeCleared() {
+		return this.applicationFeeStatus != ApplicationFeeStatus.PENDING;
+	}
+
+	public void recordApplicationFeePayment(String receiptNumber) {
+		requireFeePending("record a payment for");
+		this.applicationFeeStatus = ApplicationFeeStatus.PAID;
+		this.applicationFeeReceiptNumber = receiptNumber;
+		this.applicationFeePaidAt = Instant.now();
+	}
+
+	public void waiveApplicationFee(String reason) {
+		requireFeePending("waive");
+		this.applicationFeeStatus = ApplicationFeeStatus.WAIVED;
+		this.applicationFeeWaiverReason = reason;
+	}
+
+	public void recordOfferLetter(Long issuanceId) {
+		if (this.status != AdmissionStatus.APPROVED && this.status != AdmissionStatus.ENROLLED) {
+			throw new BusinessException("An offer letter can only be issued for an approved admission, was "
+					+ this.status);
+		}
+		this.offerLetterIssuanceId = issuanceId;
+	}
+
+	private void requireApplicationFeeCleared() {
+		if (!isApplicationFeeCleared()) {
+			throw new BusinessException("The application fee of " + this.applicationFeeAmount
+					+ " must be paid or waived before this application can proceed");
+		}
+	}
+
+	private void requireFeePending(String action) {
+		if (this.applicationFeeStatus != ApplicationFeeStatus.PENDING) {
+			throw new BusinessException("Cannot " + action + " an application fee that is "
+					+ this.applicationFeeStatus);
+		}
 	}
 
 	public void reject() {

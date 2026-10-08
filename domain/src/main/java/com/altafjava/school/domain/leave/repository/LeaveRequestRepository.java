@@ -17,7 +17,7 @@ public interface LeaveRequestRepository extends JpaRepository<LeaveRequest, Long
 
 	Page<LeaveRequest> findAllByTenantId(Long tenantId, Pageable pageable);
 
-	Page<LeaveRequest> findAllByTeacherIdAndTenantId(Long teacherId, Long tenantId, Pageable pageable);
+	Page<LeaveRequest> findAllByEmployeeIdAndTenantId(Long employeeId, Long tenantId, Pageable pageable);
 
 	Optional<LeaveRequest> findByPublicIdAndTenantId(UUID publicId, Long tenantId);
 
@@ -33,10 +33,10 @@ public interface LeaveRequestRepository extends JpaRepository<LeaveRequest, Long
 	// Feeds PayrollCalculator's loss-of-pay computation (see PayslipService) — leaveTypeIds is
 	// pre-filtered by the caller to unpaid leave types only; date range overlap (rather than an
 	// exact match) is required because a request can span a month boundary.
-	@Query("SELECT lr FROM LeaveRequest lr WHERE lr.tenantId = :tenantId AND lr.teacherId = :teacherId "
+	@Query("SELECT lr FROM LeaveRequest lr WHERE lr.tenantId = :tenantId AND lr.employeeId = :employeeId "
 			+ "AND lr.status = :status AND lr.leaveTypeId IN :leaveTypeIds "
 			+ "AND lr.startDate <= :monthEnd AND lr.endDate >= :monthStart")
-	List<LeaveRequest> findOverlappingByTeacherIdAndStatusAndLeaveTypeIdIn(@Param("teacherId") Long teacherId,
+	List<LeaveRequest> findOverlappingByEmployeeIdAndStatusAndLeaveTypeIdIn(@Param("employeeId") Long employeeId,
 			@Param("tenantId") Long tenantId, @Param("status") LeaveRequestStatus status,
 			@Param("leaveTypeIds") List<Long> leaveTypeIds, @Param("monthStart") LocalDate monthStart,
 			@Param("monthEnd") LocalDate monthEnd);

@@ -198,4 +198,77 @@ class AdmissionTest {
 
 		assertThrows(BusinessException.class, admission::promoteFromWaitlist);
 	}
+
+	private Admission submittedWithFee(String fee) {
+		return Admission.submit("Alice", "Smith", LocalDate.of(2015, 1, 1), "Bob", "Smith", "bob@family.test",
+				"555-1234", "Grade 3", new BigDecimal(fee));
+	}
+
+	@Test
+	void submit_withoutAFee_isNotRequired() {
+		assertEquals(ApplicationFeeStatus.NOT_REQUIRED, submitted().getApplicationFeeStatus());
+		assertNull(submitted().getApplicationFeeAmount());
+		assertEquals(ApplicationFeeStatus.NOT_REQUIRED, submittedWithFee("0").getApplicationFeeStatus());
+	}
+
+	@Test
+	void submit_withAFee_isPendingAndFreezesTheAmount() {
+		Admission admission = submittedWithFee("250.00");
+
+		assertEquals(ApplicationFeeStatus.PENDING, admission.getApplicationFeeStatus());
+		assertEquals(0, new BigDecimal("250.00").compareTo(admission.getApplicationFeeAmount()));
+	}
+
+	@Test
+	void pendingFee_blocksReviewAndApproval() {
+		Admission admission = submittedWithFee("250.00");
+
+		assertThrows(BusinessException.class, admission::markUnderReview);
+		assertThrows(BusinessException.class, admission::approve);
+		assertEquals(AdmissionStatus.SUBMITTED, admission.getStatus());
+	}
+
+	@Test
+	void recordedPayment_clearsTheFeeAndKeepsTheReceipt() {
+		Admission admission = submittedWithFee("250.00");
+
+		admission.recordApplicationFeePayment("RCPT-2026-000001");
+		admission.markUnderReview();
+
+		assertEquals(ApplicationFeeStatus.PAID, admission.getApplicationFeeStatus());
+		assertEquals("RCPT-2026-000001", admission.getApplicationFeeReceiptNumber());
+		assertEquals(AdmissionStatus.UNDER_REVIEW, admission.getStatus());
+	}
+
+	@Test
+	void waivedFee_clearsTheFeeAndKeepsTheReason() {
+		Admission admission = submittedWithFee("250.00");
+
+		admission.waiveApplicationFee("Staff ward");
+		admission.approve();
+
+		assertEquals(ApplicationFeeStatus.WAIVED, admission.getApplicationFeeStatus());
+		assertEquals("Staff ward", admission.getApplicationFeeWaiverReason());
+	}
+
+	@Test
+	void fee_canOnlyBeSettledOnce() {
+		Admission admission = submittedWithFee("250.00");
+		admission.recordApplicationFeePayment("R-1");
+
+		assertThrows(BusinessException.class, () -> admission.recordApplicationFeePayment("R-2"));
+		assertThrows(BusinessException.class, () -> admission.waiveApplicationFee("late"));
+		assertThrows(BusinessException.class, () -> submitted().recordApplicationFeePayment("R-3"));
+	}
+
+	@Test
+	void offerLetter_isOnlyForApprovedAdmissions() {
+		Admission admission = submitted();
+
+		assertThrows(BusinessException.class, () -> admission.recordOfferLetter(5L));
+		admission.approve();
+		admission.recordOfferLetter(5L);
+
+		assertEquals(5L, admission.getOfferLetterIssuanceId());
+	}
 }

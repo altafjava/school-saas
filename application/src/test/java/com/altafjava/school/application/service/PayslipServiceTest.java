@@ -23,6 +23,7 @@ import com.altafjava.platform.core.exception.BusinessException;
 import com.altafjava.platform.core.exception.ResourceNotFoundException;
 import com.altafjava.platform.core.tenant.TenantContext;
 import com.altafjava.platform.core.tenant.TenantType;
+import com.altafjava.school.domain.employee.repository.EmployeeRepository;
 import com.altafjava.school.domain.leave.model.LeaveRequestStatus;
 import com.altafjava.school.domain.leave.model.LeaveType;
 import com.altafjava.school.domain.leave.repository.LeaveRequestRepository;
@@ -35,7 +36,6 @@ import com.altafjava.school.domain.payroll.model.PayslipStatus;
 import com.altafjava.school.domain.payroll.model.SalaryStructure;
 import com.altafjava.school.domain.payroll.repository.PayslipRepository;
 import com.altafjava.school.domain.payroll.repository.SalaryStructureRepository;
-import com.altafjava.school.domain.teacher.repository.TeacherRepository;
 
 @ExtendWith(MockitoExtension.class)
 class PayslipServiceTest {
@@ -49,14 +49,14 @@ class PayslipServiceTest {
 	@Mock
 	private LeaveTypeRepository leaveTypeRepository;
 	@Mock
-	private TeacherRepository teacherRepository;
+	private EmployeeRepository employeeRepository;
 
 	private PayslipService payslipService;
 
 	@BeforeEach
 	void setUp() {
 		payslipService = new PayslipService(payslipRepository, salaryStructureRepository, leaveRequestRepository,
-				leaveTypeRepository, teacherRepository);
+				leaveTypeRepository, employeeRepository);
 		TenantContext.ForTesting.setCurrentTenant(1L, null, null, TenantType.SHARED);
 	}
 
@@ -82,9 +82,9 @@ class PayslipServiceTest {
 	@Test
 	void generate_withActiveStructureAndNoUnpaidLeave_savesDraftPayslip() {
 		YearMonth payMonth = YearMonth.of(2026, 6);
-		when(payslipRepository.existsByTeacherIdAndPayYearAndPayMonthAndTenantId(10L, 2026, 6, 1L))
+		when(payslipRepository.existsByEmployeeIdAndPayYearAndPayMonthAndTenantId(10L, 2026, 6, 1L))
 				.thenReturn(false);
-		when(salaryStructureRepository.findByTeacherIdAndActiveTrueAndTenantId(10L, 1L))
+		when(salaryStructureRepository.findByEmployeeIdAndActiveTrueAndTenantId(10L, 1L))
 				.thenReturn(Optional.of(activeStructure()));
 		when(leaveTypeRepository.findAllByTenantIdAndPaidFalse(1L)).thenReturn(List.of());
 		when(payslipRepository.save(any(Payslip.class))).thenAnswer(inv -> inv.getArgument(0));
@@ -94,7 +94,7 @@ class PayslipServiceTest {
 		assertEquals(PayslipStatus.DRAFT, payslip.getStatus());
 		assertEquals(0, BigDecimal.valueOf(62500).compareTo(payslip.getGrossPay()));
 		assertEquals(0, BigDecimal.ZERO.compareTo(payslip.getLossOfPayDays()));
-		verify(leaveRequestRepository, never()).findOverlappingByTeacherIdAndStatusAndLeaveTypeIdIn(any(), any(),
+		verify(leaveRequestRepository, never()).findOverlappingByEmployeeIdAndStatusAndLeaveTypeIdIn(any(), any(),
 				any(), any(), any(), any());
 	}
 
@@ -104,35 +104,35 @@ class PayslipServiceTest {
 		LeaveType unpaidType = LeaveType.create("Unpaid Leave", BigDecimal.ZERO);
 		unpaidType.setId(99L);
 		unpaidType.markUnpaid();
-		when(payslipRepository.existsByTeacherIdAndPayYearAndPayMonthAndTenantId(10L, 2026, 6, 1L))
+		when(payslipRepository.existsByEmployeeIdAndPayYearAndPayMonthAndTenantId(10L, 2026, 6, 1L))
 				.thenReturn(false);
-		when(salaryStructureRepository.findByTeacherIdAndActiveTrueAndTenantId(10L, 1L))
+		when(salaryStructureRepository.findByEmployeeIdAndActiveTrueAndTenantId(10L, 1L))
 				.thenReturn(Optional.of(activeStructure()));
 		when(leaveTypeRepository.findAllByTenantIdAndPaidFalse(1L)).thenReturn(List.of(unpaidType));
-		when(leaveRequestRepository.findOverlappingByTeacherIdAndStatusAndLeaveTypeIdIn(10L, 1L,
+		when(leaveRequestRepository.findOverlappingByEmployeeIdAndStatusAndLeaveTypeIdIn(10L, 1L,
 				LeaveRequestStatus.APPROVED, List.of(99L), LocalDate.of(2026, 6, 1), LocalDate.of(2026, 6, 30)))
 				.thenReturn(List.of());
 		when(payslipRepository.save(any(Payslip.class))).thenAnswer(inv -> inv.getArgument(0));
 
 		payslipService.generate(10L, payMonth);
 
-		verify(leaveRequestRepository).findOverlappingByTeacherIdAndStatusAndLeaveTypeIdIn(eq(10L), eq(1L),
+		verify(leaveRequestRepository).findOverlappingByEmployeeIdAndStatusAndLeaveTypeIdIn(eq(10L), eq(1L),
 				eq(LeaveRequestStatus.APPROVED), eq(List.of(99L)), eq(LocalDate.of(2026, 6, 1)),
 				eq(LocalDate.of(2026, 6, 30)));
 	}
 
 	@Test
 	void generate_withoutActiveSalaryStructure_throwsBusinessException() {
-		when(payslipRepository.existsByTeacherIdAndPayYearAndPayMonthAndTenantId(10L, 2026, 6, 1L))
+		when(payslipRepository.existsByEmployeeIdAndPayYearAndPayMonthAndTenantId(10L, 2026, 6, 1L))
 				.thenReturn(false);
-		when(salaryStructureRepository.findByTeacherIdAndActiveTrueAndTenantId(10L, 1L)).thenReturn(Optional.empty());
+		when(salaryStructureRepository.findByEmployeeIdAndActiveTrueAndTenantId(10L, 1L)).thenReturn(Optional.empty());
 
 		assertThrows(BusinessException.class, () -> payslipService.generate(10L, YearMonth.of(2026, 6)));
 	}
 
 	@Test
 	void generate_whenPayslipAlreadyExists_throwsBusinessException() {
-		when(payslipRepository.existsByTeacherIdAndPayYearAndPayMonthAndTenantId(10L, 2026, 6, 1L))
+		when(payslipRepository.existsByEmployeeIdAndPayYearAndPayMonthAndTenantId(10L, 2026, 6, 1L))
 				.thenReturn(true);
 
 		assertThrows(BusinessException.class, () -> payslipService.generate(10L, YearMonth.of(2026, 6)));

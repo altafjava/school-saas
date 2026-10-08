@@ -15,7 +15,7 @@ public interface PayslipApi {
 
 	@Operation(summary = "List", operationId = "payslip_list")
 	public ApiResponse<com.altafjava.platform.core.model.Page<PayslipResponse>> list(
-			@RequestParam(required = false) String teacherPublicId,
+			@RequestParam(required = false) String employeePublicId,
 			@RequestParam(defaultValue = "0") int page,
 			@RequestParam(defaultValue = "20") int size);
 

@@ -9,9 +9,9 @@ import com.altafjava.school.domain.payroll.model.SalaryStructure;
 
 public interface SalaryStructureRepository extends JpaRepository<SalaryStructure, Long> {
 
-	Optional<SalaryStructure> findByTeacherIdAndActiveTrueAndTenantId(Long teacherId, Long tenantId);
+	Optional<SalaryStructure> findByEmployeeIdAndActiveTrueAndTenantId(Long employeeId, Long tenantId);
 
-	Page<SalaryStructure> findAllByTeacherIdAndTenantId(Long teacherId, Long tenantId, Pageable pageable);
+	Page<SalaryStructure> findAllByEmployeeIdAndTenantId(Long employeeId, Long tenantId, Pageable pageable);
 
 	Optional<SalaryStructure> findByPublicIdAndTenantId(UUID publicId, Long tenantId);
 }

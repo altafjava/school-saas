@@ -12,33 +12,33 @@ import org.springframework.transaction.annotation.Transactional;
 import com.altafjava.platform.core.exception.BusinessException;
 import com.altafjava.platform.core.exception.ResourceNotFoundException;
 import com.altafjava.platform.core.tenant.TenantContext;
+import com.altafjava.school.domain.employee.model.Employee;
+import com.altafjava.school.domain.employee.repository.EmployeeRepository;
 import com.altafjava.school.domain.payroll.model.PayComponentAmount;
 import com.altafjava.school.domain.payroll.model.PayComponentDefinition;
 import com.altafjava.school.domain.payroll.model.SalaryStructure;
 import com.altafjava.school.domain.payroll.repository.PayComponentDefinitionRepository;
 import com.altafjava.school.domain.payroll.repository.SalaryStructureRepository;
-import com.altafjava.school.domain.teacher.model.Teacher;
-import com.altafjava.school.domain.teacher.repository.TeacherRepository;
 
 @Service
 public class SalaryStructureService {
 
 	private final SalaryStructureRepository salaryStructureRepository;
-	private final TeacherRepository teacherRepository;
+	private final EmployeeRepository employeeRepository;
 	private final PayComponentDefinitionRepository payComponentDefinitionRepository;
 
 	public SalaryStructureService(SalaryStructureRepository salaryStructureRepository,
-			TeacherRepository teacherRepository, PayComponentDefinitionRepository payComponentDefinitionRepository) {
+			EmployeeRepository employeeRepository, PayComponentDefinitionRepository payComponentDefinitionRepository) {
 		this.salaryStructureRepository = salaryStructureRepository;
-		this.teacherRepository = teacherRepository;
+		this.employeeRepository = employeeRepository;
 		this.payComponentDefinitionRepository = payComponentDefinitionRepository;
 	}
 
 	@Transactional(readOnly = true)
-	public Page<SalaryStructure> listForTeacher(String teacherPublicId, Pageable pageable) {
+	public Page<SalaryStructure> listForEmployee(String employeePublicId, Pageable pageable) {
 		Long tenantId = TenantContext.getCurrentTenantId();
-		Teacher teacher = findTeacher(tenantId, teacherPublicId);
-		return salaryStructureRepository.findAllByTeacherIdAndTenantId(teacher.getId(), tenantId, pageable);
+		Employee employee = findEmployee(tenantId, employeePublicId);
+		return salaryStructureRepository.findAllByEmployeeIdAndTenantId(employee.getId(), tenantId, pageable);
 	}
 
 	@Transactional(readOnly = true)
@@ -54,11 +54,11 @@ public class SalaryStructureService {
 	 *                                   are resolved from the tenant's catalog, never the caller.
 	 */
 	@Transactional
-	public SalaryStructure create(String teacherPublicId, Map<String, BigDecimal> componentAmountsByCode,
+	public SalaryStructure create(String employeePublicId, Map<String, BigDecimal> componentAmountsByCode,
 			LocalDate effectiveFrom) {
 		Long tenantId = TenantContext.getCurrentTenantId();
-		Teacher teacher = findTeacher(tenantId, teacherPublicId);
-		return supersedeForTeacher(tenantId, teacher.getId(), componentAmountsByCode, effectiveFrom);
+		Employee employee = findEmployee(tenantId, employeePublicId);
+		return supersedeForEmployee(tenantId, employee.getId(), componentAmountsByCode, effectiveFrom);
 	}
 
 	@Transactional
@@ -69,23 +69,23 @@ public class SalaryStructureService {
 				.findByPublicIdAndTenantId(UUID.fromString(currentStructurePublicId), tenantId)
 				.orElseThrow(
 						() -> new ResourceNotFoundException("Salary structure not found: " + currentStructurePublicId));
-		return supersedeForTeacher(tenantId, current.getTeacherId(), componentAmountsByCode, effectiveFrom);
+		return supersedeForEmployee(tenantId, current.getEmployeeId(), componentAmountsByCode, effectiveFrom);
 	}
 
 	/**
-	 * At most one salary structure may be active per teacher. Deactivates any existing active
+	 * At most one salary structure may be active per employee. Deactivates any existing active
 	 * structure before saving the new one, mirroring how {@code AcademicYearService} flips the
 	 * previous {@code current} academic year.
 	 */
-	private SalaryStructure supersedeForTeacher(Long tenantId, Long teacherId,
+	private SalaryStructure supersedeForEmployee(Long tenantId, Long employeeId,
 			Map<String, BigDecimal> componentAmountsByCode, LocalDate effectiveFrom) {
 		List<PayComponentAmount> components = resolveComponents(tenantId, componentAmountsByCode);
-		salaryStructureRepository.findByTeacherIdAndActiveTrueAndTenantId(teacherId, tenantId)
+		salaryStructureRepository.findByEmployeeIdAndActiveTrueAndTenantId(employeeId, tenantId)
 				.ifPresent(existing -> {
 					existing.deactivate();
 					salaryStructureRepository.save(existing);
 				});
-		SalaryStructure structure = SalaryStructure.create(teacherId, components, effectiveFrom);
+		SalaryStructure structure = SalaryStructure.create(employeeId, components, effectiveFrom);
 		return salaryStructureRepository.save(structure);
 	}
 
@@ -107,8 +107,8 @@ public class SalaryStructureService {
 				.toList();
 	}
 
-	private Teacher findTeacher(Long tenantId, String teacherPublicId) {
-		return teacherRepository.findByPublicIdAndTenantId(UUID.fromString(teacherPublicId), tenantId)
-				.orElseThrow(() -> new ResourceNotFoundException("Teacher not found: " + teacherPublicId));
+	private Employee findEmployee(Long tenantId, String employeePublicId) {
+		return employeeRepository.findByPublicIdAndTenantId(UUID.fromString(employeePublicId), tenantId)
+				.orElseThrow(() -> new ResourceNotFoundException("Employee not found: " + employeePublicId));
 	}
 }

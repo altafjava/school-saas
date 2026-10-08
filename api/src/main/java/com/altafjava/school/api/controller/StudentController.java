@@ -25,6 +25,7 @@ import com.altafjava.platform.api.dto.response.ApiResponse;
 import com.altafjava.school.api.controller.api.StudentApi;
 import com.altafjava.school.api.dto.request.AddressRequest;
 import com.altafjava.school.api.dto.request.CreateStudentRequest;
+import com.altafjava.school.api.dto.request.LifecycleChangeRequest;
 import com.altafjava.school.api.dto.request.UpdatePhoneRequest;
 import com.altafjava.school.api.dto.request.UpdatePhotoRequest;
 import com.altafjava.school.api.dto.request.UpdateStudentContactDetailsRequest;
@@ -47,6 +48,7 @@ import com.altafjava.school.api.mapper.StudentMapper;
 import com.altafjava.school.api.ratelimit.RateLimited;
 import com.altafjava.school.api.support.PlatformPageMapper;
 import com.altafjava.school.api.support.SpringDataPageableResolver;
+import com.altafjava.school.application.lifecycle.LifecycleChange;
 import com.altafjava.school.application.service.AttendanceService;
 import com.altafjava.school.application.service.FeePaymentService;
 import com.altafjava.school.application.service.GpaResult;
@@ -158,22 +160,45 @@ public class StudentController implements StudentApi {
 	@Override
 	@PatchMapping("/{publicId}/withdraw")
 	@PreAuthorize("@permissionAuthorizationService.hasPermission('STUDENT_MANAGE')")
-	public ApiResponse<StudentResponse> withdraw(@PathVariable String publicId) {
-		return ApiResponse.success(studentMapper.toResponse(studentService.withdraw(publicId)));
+	public ApiResponse<StudentResponse> withdraw(@PathVariable String publicId,
+			@RequestBody(required = false) @Valid LifecycleChangeRequest request) {
+		return ApiResponse.success(studentMapper.toResponse(studentService.withdraw(publicId, toChange(request))));
 	}
 
 	@Override
 	@PatchMapping("/{publicId}/transfer")
 	@PreAuthorize("@permissionAuthorizationService.hasPermission('STUDENT_MANAGE')")
-	public ApiResponse<StudentResponse> transfer(@PathVariable String publicId) {
-		return ApiResponse.success(studentMapper.toResponse(studentService.transfer(publicId)));
+	public ApiResponse<StudentResponse> transfer(@PathVariable String publicId,
+			@RequestBody(required = false) @Valid LifecycleChangeRequest request) {
+		return ApiResponse.success(studentMapper.toResponse(studentService.transfer(publicId, toChange(request))));
 	}
 
 	@Override
 	@PatchMapping("/{publicId}/graduate")
 	@PreAuthorize("@permissionAuthorizationService.hasPermission('STUDENT_MANAGE')")
-	public ApiResponse<StudentResponse> graduate(@PathVariable String publicId) {
-		return ApiResponse.success(studentMapper.toResponse(studentService.graduate(publicId)));
+	public ApiResponse<StudentResponse> graduate(@PathVariable String publicId,
+			@RequestBody(required = false) @Valid LifecycleChangeRequest request) {
+		return ApiResponse.success(studentMapper.toResponse(studentService.graduate(publicId, toChange(request))));
+	}
+
+	@Override
+	@PatchMapping("/{publicId}/suspend")
+	@PreAuthorize("@permissionAuthorizationService.hasPermission('STUDENT_MANAGE')")
+	public ApiResponse<StudentResponse> suspend(@PathVariable String publicId,
+			@RequestBody(required = false) @Valid LifecycleChangeRequest request) {
+		return ApiResponse.success(studentMapper.toResponse(studentService.suspend(publicId, toChange(request))));
+	}
+
+	@Override
+	@PatchMapping("/{publicId}/reinstate")
+	@PreAuthorize("@permissionAuthorizationService.hasPermission('STUDENT_MANAGE')")
+	public ApiResponse<StudentResponse> reinstate(@PathVariable String publicId,
+			@RequestBody(required = false) @Valid LifecycleChangeRequest request) {
+		return ApiResponse.success(studentMapper.toResponse(studentService.reinstate(publicId, toChange(request))));
+	}
+
+	private static LifecycleChange toChange(LifecycleChangeRequest request) {
+		return request == null ? LifecycleChange.NONE : new LifecycleChange(request.reason(), request.effectiveOn());
 	}
 
 	@Override

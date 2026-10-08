@@ -8,7 +8,7 @@ import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 
 public record CreateSalaryStructureRequest(
-		@NotBlank String teacherPublicId,
+		@NotBlank String employeePublicId,
 		@NotEmpty @Valid List<PayComponentAmountRequest> components,
 		@NotNull LocalDate effectiveFrom) {
 

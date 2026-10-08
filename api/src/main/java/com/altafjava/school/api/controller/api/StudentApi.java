@@ -11,6 +11,7 @@ import org.springframework.web.multipart.MultipartFile;
 import com.altafjava.platform.api.dto.response.ApiResponse;
 import com.altafjava.school.api.dto.request.AddressRequest;
 import com.altafjava.school.api.dto.request.CreateStudentRequest;
+import com.altafjava.school.api.dto.request.LifecycleChangeRequest;
 import com.altafjava.school.api.dto.request.UpdatePhoneRequest;
 import com.altafjava.school.api.dto.request.UpdatePhotoRequest;
 import com.altafjava.school.api.dto.request.UpdateStudentContactDetailsRequest;
@@ -48,13 +49,24 @@ public interface StudentApi {
 	public ApiResponse<StudentResponse> enroll(@Valid @RequestBody CreateStudentRequest request);
 
 	@Operation(summary = "Withdraw", operationId = "student_withdraw")
-	public ApiResponse<StudentResponse> withdraw(@PathVariable String publicId);
+	public ApiResponse<StudentResponse> withdraw(@PathVariable String publicId,
+			@RequestBody(required = false) @Valid LifecycleChangeRequest request);
 
 	@Operation(summary = "Transfer", operationId = "student_transfer")
-	public ApiResponse<StudentResponse> transfer(@PathVariable String publicId);
+	public ApiResponse<StudentResponse> transfer(@PathVariable String publicId,
+			@RequestBody(required = false) @Valid LifecycleChangeRequest request);
 
 	@Operation(summary = "Graduate", operationId = "student_graduate")
-	public ApiResponse<StudentResponse> graduate(@PathVariable String publicId);
+	public ApiResponse<StudentResponse> graduate(@PathVariable String publicId,
+			@RequestBody(required = false) @Valid LifecycleChangeRequest request);
+
+	@Operation(summary = "Suspend", operationId = "student_suspend")
+	public ApiResponse<StudentResponse> suspend(@PathVariable String publicId,
+			@RequestBody(required = false) @Valid LifecycleChangeRequest request);
+
+	@Operation(summary = "Reinstate a suspended student", operationId = "student_reinstate")
+	public ApiResponse<StudentResponse> reinstate(@PathVariable String publicId,
+			@RequestBody(required = false) @Valid LifecycleChangeRequest request);
 
 	@Operation(summary = "Update contact details", operationId = "student_updateContactDetails")
 	public ApiResponse<StudentResponse> updateContactDetails(@PathVariable String publicId,

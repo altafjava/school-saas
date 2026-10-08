@@ -8,6 +8,8 @@ import org.springframework.transaction.annotation.Transactional;
 import com.altafjava.platform.core.exception.BusinessException;
 import com.altafjava.platform.core.exception.ResourceNotFoundException;
 import com.altafjava.platform.core.tenant.TenantContext;
+import com.altafjava.school.application.lifecycle.LifecycleChange;
+import com.altafjava.school.application.lifecycle.LifecycleRecorder;
 import com.altafjava.school.domain.alumni.model.AlumniProfile;
 import com.altafjava.school.domain.alumni.repository.AlumniProfileRepository;
 import com.altafjava.school.domain.student.model.EnrollmentStatus;
@@ -19,9 +21,11 @@ public class AlumniProfileService {
 
 	private final AlumniProfileRepository alumniProfileRepository;
 	private final StudentRepository studentRepository;
+	private final LifecycleRecorder lifecycleRecorder;
 
 	public AlumniProfileService(AlumniProfileRepository alumniProfileRepository,
-			StudentRepository studentRepository) {
+			StudentRepository studentRepository, LifecycleRecorder lifecycleRecorder) {
+		this.lifecycleRecorder = lifecycleRecorder;
 		this.alumniProfileRepository = alumniProfileRepository;
 		this.studentRepository = studentRepository;
 	}
@@ -54,7 +58,9 @@ public class AlumniProfileService {
 
 		AlumniProfile profile = AlumniProfile.create(student.getId(), graduationYear, currentOccupation,
 				contactEmail, contactPhone);
-		return alumniProfileRepository.save(profile);
+		AlumniProfile saved = alumniProfileRepository.save(profile);
+		lifecycleRecorder.alumnus(student.getId(), LifecycleChange.NONE);
+		return saved;
 	}
 
 	@Transactional

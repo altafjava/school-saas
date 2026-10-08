@@ -10,15 +10,16 @@ import com.altafjava.platform.domain.scheduler.model.JobExecutionContext;
 import com.altafjava.platform.domain.scheduler.model.JobExecutionResult;
 import com.altafjava.school.application.service.LeaveBalanceService;
 import com.altafjava.school.domain.academicyear.repository.AcademicYearRepository;
+import com.altafjava.school.domain.employee.model.EmployeeStatus;
+import com.altafjava.school.domain.employee.repository.EmployeeRepository;
 import com.altafjava.school.domain.leave.repository.LeaveTypeRepository;
-import com.altafjava.school.domain.teacher.repository.TeacherRepository;
 import lombok.extern.slf4j.Slf4j;
 
 /**
  * Runs 30 minutes after {@link AcademicYearRolloverJob} on April 1st. Allocates each active leave
- * type's default annual days to every teacher for the (by then, already rolled-over) current
+ * type's default annual days to every employee for the (by then, already rolled-over) current
  * academic year — idempotent, since {@link LeaveBalanceService#allocateIfAbsent} skips any
- * (teacher, leave type, academic year) tuple that already has a balance row.
+ * (employee, leave type, academic year) tuple that already has a balance row.
  */
 @Slf4j
 @Component
@@ -27,15 +28,15 @@ public class LeaveBalanceAllocationJob implements JobExecutionStrategy {
 
 	private final AcademicYearRepository academicYearRepository;
 	private final LeaveTypeRepository leaveTypeRepository;
-	private final TeacherRepository teacherRepository;
+	private final EmployeeRepository employeeRepository;
 	private final LeaveBalanceService leaveBalanceService;
 
 	public LeaveBalanceAllocationJob(AcademicYearRepository academicYearRepository,
-			LeaveTypeRepository leaveTypeRepository, TeacherRepository teacherRepository,
+			LeaveTypeRepository leaveTypeRepository, EmployeeRepository employeeRepository,
 			LeaveBalanceService leaveBalanceService) {
 		this.academicYearRepository = academicYearRepository;
 		this.leaveTypeRepository = leaveTypeRepository;
-		this.teacherRepository = teacherRepository;
+		this.employeeRepository = employeeRepository;
 		this.leaveBalanceService = leaveBalanceService;
 	}
 
@@ -67,12 +68,12 @@ public class LeaveBalanceAllocationJob implements JobExecutionStrategy {
 		}
 
 		var activeLeaveTypes = leaveTypeRepository.findAllByTenantIdAndActiveTrue(tenantId);
-		var teachers = teacherRepository.findAllByTenantId(tenantId);
+		var employees = employeeRepository.findAllByTenantIdAndStatus(tenantId, EmployeeStatus.ACTIVE);
 
 		int allocated = 0;
 		for (var leaveType : activeLeaveTypes) {
-			for (var teacher : teachers) {
-				leaveBalanceService.allocateWithCarryForward(teacher, leaveType, academicYear);
+			for (var employee : employees) {
+				leaveBalanceService.allocateWithCarryForward(employee, leaveType, academicYear);
 				allocated++;
 			}
 		}

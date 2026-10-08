@@ -6,7 +6,7 @@ import java.time.LocalDateTime;
 
 public record LeaveRequestResponse(
 		String publicId,
-		Long teacherId,
+		Long employeeId,
 		Long leaveTypeId,
 		LocalDate startDate,
 		LocalDate endDate,

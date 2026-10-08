@@ -39,7 +39,7 @@ public class LeaveType extends SoftDeletableEntity {
 	@Column(name = "paid", nullable = false)
 	private boolean paid;
 
-	// Whether a probationary teacher may request this leave type — defaults true so existing leave
+	// Whether a probationary employee may request this leave type — defaults true so existing leave
 	// types keep their prior (implicit) behavior of being available to everyone.
 	@Column(name = "available_during_probation", nullable = false)
 	private boolean availableDuringProbation;

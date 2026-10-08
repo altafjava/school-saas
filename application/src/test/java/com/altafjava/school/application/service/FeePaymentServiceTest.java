@@ -26,7 +26,10 @@ import com.altafjava.school.domain.classroom.repository.StudentClassroomLinkRepo
 import com.altafjava.school.domain.fee.model.FeeAssignment;
 import com.altafjava.school.domain.fee.model.FeePayment;
 import com.altafjava.school.domain.fee.repository.FeeAssignmentRepository;
+import com.altafjava.school.domain.fee.repository.FeeDiscountRepository;
+import com.altafjava.school.domain.fee.repository.FeeInstallmentRepository;
 import com.altafjava.school.domain.fee.repository.FeePaymentRepository;
+import com.altafjava.school.domain.fee.repository.FeeRefundRepository;
 import com.altafjava.school.domain.fee.repository.FeeStructureRepository;
 import com.altafjava.school.domain.student.repository.StudentRepository;
 
@@ -47,6 +50,12 @@ class FeePaymentServiceTest {
 	private StudentDataAccessGuard studentDataAccessGuard;
 	@Mock
 	private NumberSequenceService numberSequenceService;
+	@Mock
+	private FeeDiscountRepository feeDiscountRepository;
+	@Mock
+	private FeeInstallmentRepository feeInstallmentRepository;
+	@Mock
+	private FeeRefundRepository feeRefundRepository;
 
 	private FeePaymentService feePaymentService;
 
@@ -54,7 +63,7 @@ class FeePaymentServiceTest {
 	void setUp() {
 		feePaymentService = new FeePaymentService(feePaymentRepository, studentRepository, feeStructureRepository,
 				feeAssignmentRepository, studentClassroomLinkRepository, studentDataAccessGuard,
-				numberSequenceService);
+				numberSequenceService, feeDiscountRepository, feeInstallmentRepository, feeRefundRepository);
 		TenantContext.ForTesting.setCurrentTenant(1L, null, null, TenantType.SHARED);
 	}
 
@@ -123,6 +132,7 @@ class FeePaymentServiceTest {
 	void calculateBalance_withPartialPayment_returnsOutstandingBalance() {
 		var student = com.altafjava.school.domain.student.model.Student.create(
 				"STU-1", "Alice", "Smith", "alice@school.test", null);
+		student.setId(1L);
 		var feeStructure = com.altafjava.school.domain.fee.model.FeeStructure.create(
 				"Tuition", BigDecimal.valueOf(1000), com.altafjava.school.domain.fee.model.FeeFrequency.MONTHLY,
 				"Standard");
@@ -149,6 +159,7 @@ class FeePaymentServiceTest {
 	void calculateBalance_pastDueDateAndGracePeriod_includesLateFeeInOutstanding() {
 		var student = com.altafjava.school.domain.student.model.Student.create(
 				"STU-2", "Carol", "White", "carol@school.test", null);
+		student.setId(2L);
 		var feeStructure = com.altafjava.school.domain.fee.model.FeeStructure.create(
 				"Tuition", BigDecimal.valueOf(1000), com.altafjava.school.domain.fee.model.FeeFrequency.MONTHLY,
 				"Standard");

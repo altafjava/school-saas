@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                            http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-5.0.xsd">
+
+    <!-- Phase 2.3 — application fee and offer letter on admissions. Existing applications were taken
+         without a fee, so they start NOT_REQUIRED and are never blocked retroactively. -->
+    <changeSet id="school-151-admission-application-fee-offer-letter" author="school">
+        <addColumn tableName="admissions">
+            <column name="application_fee_status" type="VARCHAR(20)" defaultValue="NOT_REQUIRED">
+                <constraints nullable="false"/>
+            </column>
+            <column name="application_fee_amount" type="DECIMAL(12,2)"/>
+            <column name="application_fee_receipt_number" type="VARCHAR(100)"/>
+            <column name="application_fee_paid_at" type="TIMESTAMP"/>
+            <column name="application_fee_waiver_reason" type="VARCHAR(500)"/>
+            <column name="offer_letter_issuance_id" type="BIGINT"/>
+        </addColumn>
+        <addForeignKeyConstraint constraintName="fk_admissions_offer_letter_issuance_id"
+                baseTableName="admissions" baseColumnNames="offer_letter_issuance_id"
+                referencedTableName="document_issuances" referencedColumnNames="id"/>
+        <sql>
+            ALTER TABLE admissions ADD CONSTRAINT chk_admissions_fee_consistency
+            CHECK ((application_fee_status = 'NOT_REQUIRED' AND application_fee_amount IS NULL)
+                OR (application_fee_status &lt;&gt; 'NOT_REQUIRED' AND application_fee_amount IS NOT NULL))
+        </sql>
+    </changeSet>
+
+    <changeSet id="school-152-tenant-admin-admission-fee-permission" author="school">
+        <sql>
+            UPDATE roles
+            SET permissions_json = JSON_MERGE_PRESERVE(permissions_json, '["ADMISSION_FEE_MANAGE"]')
+            WHERE name = 'TENANT_ADMIN';
+        </sql>
+    </changeSet>
+
+</databaseChangeLog>

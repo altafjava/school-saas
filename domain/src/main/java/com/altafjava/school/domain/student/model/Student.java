@@ -85,12 +85,10 @@ public class Student extends SoftDeletableEntity {
 				.build();
 	}
 
+	/** Leaving the school is final: only an enrolled or suspended student can withdraw or transfer. */
 	public void withdraw() {
-		if (this.enrollmentStatus == EnrollmentStatus.GRADUATED) {
-			throw new BusinessException("Cannot withdraw a graduated student");
-		}
-		this.enrollmentStatus = EnrollmentStatus.WITHDRAWN;
-		this.enrollmentStatusChangedAt = Instant.now();
+		requireCurrentlyAttending("withdraw");
+		moveTo(EnrollmentStatus.WITHDRAWN);
 	}
 
 	/**
@@ -99,19 +97,39 @@ public class Student extends SoftDeletableEntity {
 	 * into one "withdrawn" bucket.
 	 */
 	public void transfer() {
-		if (this.enrollmentStatus == EnrollmentStatus.GRADUATED) {
-			throw new BusinessException("Cannot transfer a graduated student");
-		}
-		this.enrollmentStatus = EnrollmentStatus.TRANSFERRED;
-		this.enrollmentStatusChangedAt = Instant.now();
+		requireCurrentlyAttending("transfer");
+		moveTo(EnrollmentStatus.TRANSFERRED);
 	}
 
 	public void graduate() {
-		if (this.enrollmentStatus == EnrollmentStatus.WITHDRAWN
-				|| this.enrollmentStatus == EnrollmentStatus.TRANSFERRED) {
-			throw new BusinessException("Cannot graduate a " + this.enrollmentStatus.name().toLowerCase() + " student");
+		if (this.enrollmentStatus != EnrollmentStatus.ACTIVE) {
+			throw new BusinessException("Only an active student can graduate, was " + this.enrollmentStatus);
 		}
-		this.enrollmentStatus = EnrollmentStatus.GRADUATED;
+		moveTo(EnrollmentStatus.GRADUATED);
+	}
+
+	public void suspend() {
+		if (this.enrollmentStatus != EnrollmentStatus.ACTIVE) {
+			throw new BusinessException("Only an active student can be suspended, was " + this.enrollmentStatus);
+		}
+		moveTo(EnrollmentStatus.SUSPENDED);
+	}
+
+	public void reinstate() {
+		if (this.enrollmentStatus != EnrollmentStatus.SUSPENDED) {
+			throw new BusinessException("Only a suspended student can be reinstated, was " + this.enrollmentStatus);
+		}
+		moveTo(EnrollmentStatus.ACTIVE);
+	}
+
+	private void requireCurrentlyAttending(String action) {
+		if (this.enrollmentStatus != EnrollmentStatus.ACTIVE && this.enrollmentStatus != EnrollmentStatus.SUSPENDED) {
+			throw new BusinessException("Cannot " + action + " a student who is " + this.enrollmentStatus);
+		}
+	}
+
+	private void moveTo(EnrollmentStatus status) {
+		this.enrollmentStatus = status;
 		this.enrollmentStatusChangedAt = Instant.now();
 	}
 

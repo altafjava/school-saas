@@ -26,14 +26,15 @@ import com.altafjava.platform.domain.scheduler.model.JobExecutionContext;
 import com.altafjava.platform.domain.scheduler.model.JobExecutionResult;
 import com.altafjava.platform.domain.scheduler.model.TriggerType;
 import com.altafjava.school.application.service.PayslipService;
-import com.altafjava.school.domain.teacher.model.Teacher;
-import com.altafjava.school.domain.teacher.repository.TeacherRepository;
+import com.altafjava.school.domain.employee.model.Employee;
+import com.altafjava.school.domain.employee.model.StaffCategory;
+import com.altafjava.school.domain.employee.repository.EmployeeRepository;
 
 @ExtendWith(MockitoExtension.class)
 class PayslipGenerationJobTest {
 
 	@Mock
-	private TeacherRepository teacherRepository;
+	private EmployeeRepository employeeRepository;
 	@Mock
 	private PayslipService payslipService;
 
@@ -41,7 +42,7 @@ class PayslipGenerationJobTest {
 
 	@BeforeEach
 	void setUp() {
-		job = new PayslipGenerationJob(teacherRepository, payslipService);
+		job = new PayslipGenerationJob(employeeRepository, payslipService);
 		TenantContext.ForTesting.setCurrentTenant(1L, null, null, TenantType.SHARED);
 	}
 
@@ -55,16 +56,17 @@ class PayslipGenerationJobTest {
 				TriggerType.SCHEDULED, null, Instant.now(), null);
 	}
 
-	private Teacher teacher(long id) {
-		Teacher teacher = Teacher.create("EMP-" + id, "Jane", "Doe", "jane" + id + "@school.test",
+	private Employee employee(long id) {
+		Employee employee = Employee.create(StaffCategory.SUPPORT, "EMP-" + id, "Jane", "Doe",
+				"jane" + id + "@school.test",
 				LocalDate.of(2020, 1, 1));
-		teacher.setId(id);
-		return teacher;
+		employee.setId(id);
+		return employee;
 	}
 
 	@Test
-	void execute_generatesPayslipForEveryTeacher() {
-		when(teacherRepository.findAllByTenantId(1L)).thenReturn(List.of(teacher(10L), teacher(11L)));
+	void execute_generatesPayslipForEveryEmployee() {
+		when(employeeRepository.findAllEmployedSince(org.mockito.ArgumentMatchers.eq(1L), org.mockito.ArgumentMatchers.any())).thenReturn(List.of(employee(10L), employee(11L)));
 
 		JobExecutionResult result = job.execute(context());
 
@@ -75,9 +77,9 @@ class PayslipGenerationJobTest {
 	}
 
 	@Test
-	void execute_skipsTeacherWithoutActiveSalaryStructureRatherThanFailing() {
-		when(teacherRepository.findAllByTenantId(1L)).thenReturn(List.of(teacher(10L), teacher(11L)));
-		doThrow(new BusinessException("No active salary structure for teacher 10")).when(payslipService)
+	void execute_skipsEmployeeWithoutActiveSalaryStructureRatherThanFailing() {
+		when(employeeRepository.findAllEmployedSince(org.mockito.ArgumentMatchers.eq(1L), org.mockito.ArgumentMatchers.any())).thenReturn(List.of(employee(10L), employee(11L)));
+		doThrow(new BusinessException("No active salary structure for employee 10")).when(payslipService)
 				.generate(eq(10L), any(YearMonth.class));
 
 		JobExecutionResult result = job.execute(context());
@@ -86,8 +88,8 @@ class PayslipGenerationJobTest {
 	}
 
 	@Test
-	void execute_withNoTeachers_returnsZeroCounts() {
-		when(teacherRepository.findAllByTenantId(1L)).thenReturn(List.of());
+	void execute_withNoEmployees_returnsZeroCounts() {
+		when(employeeRepository.findAllEmployedSince(org.mockito.ArgumentMatchers.eq(1L), org.mockito.ArgumentMatchers.any())).thenReturn(List.of());
 
 		JobExecutionResult result = job.execute(context());
 

@@ -4,6 +4,7 @@ import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.LocalDate;
 import com.altafjava.school.domain.admission.model.AdmissionStatus;
+import com.altafjava.school.domain.admission.model.ApplicationFeeStatus;
 
 public record AdmissionResponse(
 		String publicId,
@@ -19,5 +20,10 @@ public record AdmissionResponse(
 		Instant submittedAt,
 		BigDecimal entranceTestScore,
 		BigDecimal entranceTestMaxScore,
-		Integer meritRank) {
+		Integer meritRank,
+		ApplicationFeeStatus applicationFeeStatus,
+		BigDecimal applicationFeeAmount,
+		String applicationFeeReceiptNumber,
+		Instant applicationFeePaidAt,
+		boolean hasOfferLetter) {
 }

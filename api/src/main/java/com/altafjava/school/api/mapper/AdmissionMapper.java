@@ -10,5 +10,6 @@ import com.altafjava.school.domain.admission.model.Admission;
 public interface AdmissionMapper {
 
 	@Mapping(target = "publicId", expression = "java(admission.getPublicId().toString())")
+	@Mapping(target = "hasOfferLetter", expression = "java(admission.getOfferLetterIssuanceId() != null)")
 	AdmissionResponse toResponse(Admission admission);
 }

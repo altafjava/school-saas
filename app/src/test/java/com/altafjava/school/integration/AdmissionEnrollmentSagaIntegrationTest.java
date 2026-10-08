@@ -19,6 +19,7 @@ import com.altafjava.school.application.service.StudentService;
 import com.altafjava.school.base.SchoolIntegrationTestBase;
 import com.altafjava.school.config.TestPaymentConfig;
 import com.altafjava.school.config.TestRedisConfig;
+import com.altafjava.school.config.TestStorageConfig;
 import com.altafjava.school.domain.admission.model.Admission;
 import com.altafjava.school.domain.admission.model.AdmissionStatus;
 import com.altafjava.school.domain.admission.repository.AdmissionRepository;
@@ -34,7 +35,7 @@ import com.altafjava.school.domain.student.repository.StudentRepository;
  * to APPROVED rather than a broken half-enrolled state — the literal "compensable steps" claim
  * from ROADMAP.md Phase 3, not a paraphrase of it.
  */
-@Import({ TestRedisConfig.class, TestPaymentConfig.class })
+@Import({ TestRedisConfig.class, TestPaymentConfig.class, TestStorageConfig.class })
 class AdmissionEnrollmentSagaIntegrationTest extends SchoolIntegrationTestBase {
 
 	@Autowired

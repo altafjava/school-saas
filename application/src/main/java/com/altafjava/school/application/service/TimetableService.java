@@ -11,6 +11,7 @@ import com.altafjava.platform.core.exception.BusinessException;
 import com.altafjava.platform.core.exception.ResourceNotFoundException;
 import com.altafjava.platform.core.tenant.TenantContext;
 import com.altafjava.school.domain.classroom.repository.ClassroomRepository;
+import com.altafjava.school.domain.employee.model.EmployeeStatus;
 import com.altafjava.school.domain.subject.repository.SubjectRepository;
 import com.altafjava.school.domain.teacher.repository.TeacherRepository;
 import com.altafjava.school.domain.timetable.model.TimetableEntry;
@@ -70,7 +71,7 @@ public class TimetableService {
 		if (!subjectRepository.existsByIdAndTenantId(subjectId, tenantId)) {
 			throw new ResourceNotFoundException("Subject not found: " + subjectId);
 		}
-		if (!teacherRepository.existsByIdAndTenantId(teacherId, tenantId)) {
+		if (!teacherRepository.existsByIdAndTenantIdAndStatus(teacherId, tenantId, EmployeeStatus.ACTIVE)) {
 			throw new ResourceNotFoundException("Teacher not found: " + teacherId);
 		}
 		if (timetableEntryRepository.existsByTenantIdAndDayOfWeekAndPeriodIdAndClassroomId(tenantId, dayOfWeek,

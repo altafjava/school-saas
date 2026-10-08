@@ -22,6 +22,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import com.altafjava.platform.application.document.DocumentIssuanceService;
 import com.altafjava.platform.application.document.DocumentIssueRequest;
 import com.altafjava.platform.application.service.FileStorageService;
+import com.altafjava.platform.core.exception.BusinessException;
 import com.altafjava.platform.core.exception.ResourceNotFoundException;
 import com.altafjava.platform.core.tenant.TenantContext;
 import com.altafjava.platform.core.tenant.TenantType;
@@ -34,10 +35,12 @@ import com.altafjava.school.domain.classroom.model.StudentClassroomLink;
 import com.altafjava.school.domain.classroom.repository.ClassroomRepository;
 import com.altafjava.school.domain.classroom.repository.StudentClassroomLinkRepository;
 import com.altafjava.school.domain.department.repository.DepartmentRepository;
+import com.altafjava.school.domain.employee.model.Employee;
+import com.altafjava.school.domain.employee.model.EmployeeStatus;
+import com.altafjava.school.domain.employee.model.StaffCategory;
+import com.altafjava.school.domain.employee.repository.EmployeeRepository;
 import com.altafjava.school.domain.student.model.Student;
 import com.altafjava.school.domain.student.repository.StudentRepository;
-import com.altafjava.school.domain.teacher.model.Teacher;
-import com.altafjava.school.domain.teacher.repository.TeacherRepository;
 
 @ExtendWith(MockitoExtension.class)
 class IdCardServiceTest {
@@ -53,7 +56,7 @@ class IdCardServiceTest {
 	@Mock
 	private AcademicYearRepository academicYearRepository;
 	@Mock
-	private TeacherRepository teacherRepository;
+	private EmployeeRepository employeeRepository;
 	@Mock
 	private DepartmentRepository departmentRepository;
 	@Mock
@@ -67,7 +70,7 @@ class IdCardServiceTest {
 	void setUp() {
 		StudentPlacementResolver placementResolver = new StudentPlacementResolver(studentClassroomLinkRepository,
 				classroomRepository, academicYearRepository);
-		idCardService = new IdCardService(studentRepository, teacherRepository, departmentRepository,
+		idCardService = new IdCardService(studentRepository, employeeRepository, departmentRepository,
 				placementResolver, fileStorageService, documentIssuanceService);
 		TenantContext.ForTesting.setCurrentTenant(1L, null, null, TenantType.SHARED);
 	}
@@ -150,18 +153,31 @@ class IdCardServiceTest {
 	}
 
 	@Test
-	void issueForTeacher_buildsTheStaffCardModel() {
+	void issueForEmployee_buildsTheStaffCardModel_forAnyKindOfStaff() {
 		UUID publicId = UUID.randomUUID();
-		Teacher teacher = Teacher.create("EMP-1", "Sam", "Lee", "sam@school.test", LocalDate.of(2020, 1, 1));
-		teacher.setId(50L);
-		teacher.setPublicId(publicId);
-		when(teacherRepository.findByPublicIdAndTenantId(publicId, 1L)).thenReturn(Optional.of(teacher));
+		Employee driver = Employee.create(StaffCategory.SUPPORT, "EMP-1", "Sam", "Lee", "sam@school.test",
+				LocalDate.of(2020, 1, 1));
+		driver.setId(50L);
+		driver.assignHrDetails(null, "Bus Driver", null, null);
+		when(employeeRepository.findByPublicIdAndTenantId(publicId, 1L)).thenReturn(Optional.of(driver));
 
-		idCardService.issueForTeacher(publicId.toString(), ISSUER);
+		idCardService.issueForEmployee(publicId.toString(), ISSUER);
 
-		Map<String, Object> model = issuedModel(SchoolDocumentTypes.TEACHER_ID_CARD, "TEACHER", 50L);
-		assertEquals("Sam Lee", model.get("teacherName"));
+		Map<String, Object> model = issuedModel(SchoolDocumentTypes.STAFF_ID_CARD, "EMPLOYEE", 50L);
+		assertEquals("Sam Lee", model.get("employeeName"));
 		assertEquals("EMP-1", model.get("employeeCode"));
+		assertEquals("Bus Driver", model.get("designation"));
+	}
+
+	@Test
+	void issueForEmployee_toSomeoneWhoHasLeft_isRefused() {
+		UUID publicId = UUID.randomUUID();
+		Employee leaver = Employee.create(StaffCategory.SUPPORT, "EMP-2", "Old", "Hand", "old@school.test",
+				LocalDate.of(2018, 1, 1));
+		leaver.exit(EmployeeStatus.RETIRED, LocalDate.now(), null);
+		when(employeeRepository.findByPublicIdAndTenantId(publicId, 1L)).thenReturn(Optional.of(leaver));
+
+		assertThrows(BusinessException.class, () -> idCardService.issueForEmployee(publicId.toString(), ISSUER));
 	}
 
 	@Test

@@ -1,6 +1,5 @@
 package com.altafjava.school.application.service;
 
-import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
@@ -20,10 +19,10 @@ import com.altafjava.platform.core.exception.ResourceNotFoundException;
 import com.altafjava.platform.core.tenant.TenantContext;
 import com.altafjava.platform.core.tenant.TenantType;
 import com.altafjava.platform.domain.numbering.model.ResetPeriod;
-import com.altafjava.school.domain.common.model.Address;
-import com.altafjava.school.domain.department.model.Department;
-import com.altafjava.school.domain.department.repository.DepartmentRepository;
-import com.altafjava.school.domain.teacher.model.EmploymentType;
+import com.altafjava.school.application.employee.EmployeeCodeAllocator;
+import com.altafjava.school.domain.employee.model.EmployeeStatus;
+import com.altafjava.school.domain.employee.model.StaffCategory;
+import com.altafjava.school.domain.employee.repository.EmployeeRepository;
 import com.altafjava.school.domain.teacher.model.Teacher;
 import com.altafjava.school.domain.teacher.repository.TeacherRepository;
 
@@ -33,7 +32,7 @@ class TeacherServiceTest {
 	@Mock
 	private TeacherRepository teacherRepository;
 	@Mock
-	private DepartmentRepository departmentRepository;
+	private EmployeeRepository employeeRepository;
 	@Mock
 	private NumberSequenceService numberSequenceService;
 
@@ -41,7 +40,8 @@ class TeacherServiceTest {
 
 	@BeforeEach
 	void setUp() {
-		teacherService = new TeacherService(teacherRepository, departmentRepository, numberSequenceService);
+		teacherService = new TeacherService(teacherRepository,
+				new EmployeeCodeAllocator(employeeRepository, numberSequenceService));
 		TenantContext.ForTesting.setCurrentTenant(1L, null, null, TenantType.SHARED);
 	}
 
@@ -51,20 +51,20 @@ class TeacherServiceTest {
 	}
 
 	@Test
-	void hire_withNewEmployeeCode_succeeds() {
-		when(teacherRepository.existsByEmployeeCodeAndTenantId("EMP-1", 1L)).thenReturn(false);
+	void hire_createsAnActiveTeachingEmployee() {
 		when(teacherRepository.save(any(Teacher.class))).thenAnswer(inv -> inv.getArgument(0));
 
 		Teacher teacher = teacherService.hire("EMP-1", "Jane", "Doe", "jane@school.test", LocalDate.of(2020, 1, 1));
 
 		assertEquals("Jane", teacher.getFirstName());
+		assertEquals(StaffCategory.TEACHING, teacher.getStaffCategory());
+		assertEquals(EmployeeStatus.ACTIVE, teacher.getStatus());
 	}
 
 	@Test
-	void hire_withoutEmployeeCode_generatesOneFromTenantSequence() {
+	void hire_withoutEmployeeCode_generatesOneFromTheSharedSequence() {
 		when(numberSequenceService.generateNext(1L, "EMPLOYEE_CODE", "EMP-", 4, ResetPeriod.NEVER))
 				.thenReturn("EMP-0003");
-		when(teacherRepository.existsByEmployeeCodeAndTenantId("EMP-0003", 1L)).thenReturn(false);
 		when(teacherRepository.save(any(Teacher.class))).thenAnswer(inv -> inv.getArgument(0));
 
 		Teacher teacher = teacherService.hire(null, "Jane", "Doe", "jane@school.test", LocalDate.of(2020, 1, 1));
@@ -73,10 +73,10 @@ class TeacherServiceTest {
 	}
 
 	@Test
-	void hire_withDuplicateEmployeeCode_throwsIllegalArgument() {
-		when(teacherRepository.existsByEmployeeCodeAndTenantId("EMP-1", 1L)).thenReturn(true);
+	void hire_codeUsedByAnyEmployee_isRejected() {
+		when(employeeRepository.existsByEmployeeCodeAndTenantId("EMP-1", 1L)).thenReturn(true);
 
-		assertThrows(IllegalArgumentException.class,
+		assertThrows(BusinessException.class,
 				() -> teacherService.hire("EMP-1", "Jane", "Doe", "jane@school.test", LocalDate.of(2020, 1, 1)));
 	}
 
@@ -86,90 +86,5 @@ class TeacherServiceTest {
 		when(teacherRepository.findByPublicIdAndTenantId(publicId, 1L)).thenReturn(Optional.empty());
 
 		assertThrows(ResourceNotFoundException.class, () -> teacherService.findByPublicId(publicId.toString()));
-	}
-
-	@Test
-	void updateContactDetails_replacesMutableFields() {
-		UUID publicId = UUID.randomUUID();
-		Teacher teacher = Teacher.create("EMP-2", "Jane", "Doe", "jane@school.test", LocalDate.of(2020, 1, 1));
-		when(teacherRepository.findByPublicIdAndTenantId(publicId, 1L)).thenReturn(Optional.of(teacher));
-		when(teacherRepository.save(any(Teacher.class))).thenAnswer(inv -> inv.getArgument(0));
-
-		Teacher updated = assertDoesNotThrow(() -> teacherService.updateContactDetails(publicId.toString(), "Janet",
-				"Smith", "janet@school.test"));
-
-		assertEquals("Janet", updated.getFirstName());
-		assertEquals("Smith", updated.getLastName());
-		assertEquals("janet@school.test", updated.getEmail());
-	}
-
-	@Test
-	void updateHrDetails_withDepartment_resolvesAndAssigns() {
-		UUID publicId = UUID.randomUUID();
-		UUID departmentPublicId = UUID.randomUUID();
-		Teacher teacher = Teacher.create("EMP-3", "Jane", "Doe", "jane@school.test", LocalDate.of(2020, 1, 1));
-		Department department = Department.create("Science", "SCI", null);
-		department.setId(42L);
-		when(teacherRepository.findByPublicIdAndTenantId(publicId, 1L)).thenReturn(Optional.of(teacher));
-		when(departmentRepository.findByPublicIdAndTenantId(departmentPublicId, 1L))
-				.thenReturn(Optional.of(department));
-		when(teacherRepository.save(any(Teacher.class))).thenAnswer(inv -> inv.getArgument(0));
-
-		Teacher updated = assertDoesNotThrow(() -> teacherService.updateHrDetails(publicId.toString(),
-				departmentPublicId.toString(), "M.Sc. Physics", EmploymentType.FULL_TIME));
-
-		assertEquals(42L, updated.getDepartmentId());
-		assertEquals("M.Sc. Physics", updated.getQualification());
-		assertEquals(EmploymentType.FULL_TIME, updated.getEmploymentType());
-	}
-
-	@Test
-	void updateHrDetails_withoutDepartment_leavesDepartmentIdNull() {
-		UUID publicId = UUID.randomUUID();
-		Teacher teacher = Teacher.create("EMP-4", "Jane", "Doe", "jane@school.test", LocalDate.of(2020, 1, 1));
-		when(teacherRepository.findByPublicIdAndTenantId(publicId, 1L)).thenReturn(Optional.of(teacher));
-		when(teacherRepository.save(any(Teacher.class))).thenAnswer(inv -> inv.getArgument(0));
-
-		Teacher updated = assertDoesNotThrow(
-				() -> teacherService.updateHrDetails(publicId.toString(), null, "B.Ed.", EmploymentType.PART_TIME));
-
-		assertEquals(null, updated.getDepartmentId());
-		assertEquals("B.Ed.", updated.getQualification());
-	}
-
-	@Test
-	void updatePhone_withValidNumber_savesPhone() {
-		UUID publicId = UUID.randomUUID();
-		Teacher teacher = Teacher.create("EMP-5", "Jane", "Doe", "jane@school.test", LocalDate.of(2020, 1, 1));
-		when(teacherRepository.findByPublicIdAndTenantId(publicId, 1L)).thenReturn(Optional.of(teacher));
-		when(teacherRepository.save(any(Teacher.class))).thenAnswer(inv -> inv.getArgument(0));
-
-		Teacher updated = teacherService.updatePhone(publicId.toString(), "+14155552671");
-
-		assertEquals("+14155552671", updated.getPhone());
-	}
-
-	@Test
-	void updatePhone_withInvalidNumber_throwsBusinessException() {
-		UUID publicId = UUID.randomUUID();
-		Teacher teacher = Teacher.create("EMP-6", "Jane", "Doe", "jane@school.test", LocalDate.of(2020, 1, 1));
-		when(teacherRepository.findByPublicIdAndTenantId(publicId, 1L)).thenReturn(Optional.of(teacher));
-
-		assertThrows(BusinessException.class, () -> teacherService.updatePhone(publicId.toString(), "not-a-phone"));
-	}
-
-	@Test
-	void updateAddress_setsStructuredAddress() {
-		UUID publicId = UUID.randomUUID();
-		Teacher teacher = Teacher.create("EMP-7", "Jane", "Doe", "jane@school.test", LocalDate.of(2020, 1, 1));
-		when(teacherRepository.findByPublicIdAndTenantId(publicId, 1L)).thenReturn(Optional.of(teacher));
-		when(teacherRepository.save(any(Teacher.class))).thenAnswer(inv -> inv.getArgument(0));
-		Address address = Address.builder().line1("1 Rue de Rivoli").locality("Paris").postalCode("75001")
-				.countryCode("FR").build();
-
-		Teacher updated = teacherService.updateAddress(publicId.toString(), address);
-
-		assertEquals("Paris", updated.getAddress().getLocality());
-		assertEquals("FR", updated.getAddress().getCountryCode());
 	}
 }

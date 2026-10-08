@@ -11,9 +11,11 @@ public record TeacherResponse(
 		String phone,
 		LocalDate joinDate,
 		Long departmentId,
+		String designation,
 		String qualification,
 		String employmentType,
 		AddressResponse address,
+		String status,
 		LocalDate probationEndDate,
 		String photoFilePublicId) {
 }

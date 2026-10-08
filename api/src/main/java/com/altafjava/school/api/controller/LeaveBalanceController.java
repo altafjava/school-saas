@@ -24,11 +24,11 @@ public class LeaveBalanceController implements LeaveBalanceApi {
 	}
 
 	@Override
-	@GetMapping("/api/v1/teachers/{publicId}/leave-balances")
+	@GetMapping("/api/v1/employees/{publicId}/leave-balances")
 	@PreAuthorize("@permissionAuthorizationService.hasPermission('LEAVE_BALANCE_MANAGE')")
-	public ApiResponse<List<LeaveBalanceResponse>> forTeacher(@PathVariable String publicId,
+	public ApiResponse<List<LeaveBalanceResponse>> forEmployee(@PathVariable String publicId,
 			@RequestParam String academicYearPublicId) {
-		return ApiResponse.success(leaveBalanceService.listForTeacher(publicId, academicYearPublicId).stream()
+		return ApiResponse.success(leaveBalanceService.listForEmployee(publicId, academicYearPublicId).stream()
 				.map(leaveBalanceMapper::toResponse)
 				.toList());
 	}
@@ -36,8 +36,8 @@ public class LeaveBalanceController implements LeaveBalanceApi {
 	@Override
 	@GetMapping("/api/v1/leave-requests/my/balances")
 	@PreAuthorize("@permissionAuthorizationService.hasPermission('LEAVE_SELF_SERVICE')")
-	public ApiResponse<List<LeaveBalanceResponse>> forCurrentTeacher(@RequestParam String academicYearPublicId) {
-		return ApiResponse.success(leaveBalanceService.listForCurrentTeacher(academicYearPublicId).stream()
+	public ApiResponse<List<LeaveBalanceResponse>> forCurrentEmployee(@RequestParam String academicYearPublicId) {
+		return ApiResponse.success(leaveBalanceService.listForCurrentEmployee(academicYearPublicId).stream()
 				.map(leaveBalanceMapper::toResponse)
 				.toList());
 	}

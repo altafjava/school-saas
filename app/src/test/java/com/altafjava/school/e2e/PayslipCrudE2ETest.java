@@ -99,7 +99,7 @@ class PayslipCrudE2ETest extends SchoolIntegrationTestBase {
 				.contentType(ContentType.JSON)
 				.body("""
 						{
-						  "teacherPublicId": "%s",
+						  "employeePublicId": "%s",
 						  "components": [
 						    {"code": "BASIC", "amount": 50000.00},
 						    {"code": "HRA", "amount": 10000.00},

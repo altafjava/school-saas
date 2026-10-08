@@ -8,13 +8,13 @@ import com.altafjava.school.domain.leave.model.LeaveBalance;
 
 public interface LeaveBalanceRepository extends JpaRepository<LeaveBalance, Long> {
 
-	List<LeaveBalance> findAllByTeacherIdAndAcademicYearIdAndTenantId(Long teacherId, Long academicYearId,
+	List<LeaveBalance> findAllByEmployeeIdAndAcademicYearIdAndTenantId(Long employeeId, Long academicYearId,
 			Long tenantId);
 
-	Optional<LeaveBalance> findByTeacherIdAndLeaveTypeIdAndAcademicYearIdAndTenantId(Long teacherId,
+	Optional<LeaveBalance> findByEmployeeIdAndLeaveTypeIdAndAcademicYearIdAndTenantId(Long employeeId,
 			Long leaveTypeId, Long academicYearId, Long tenantId);
 
-	boolean existsByTeacherIdAndLeaveTypeIdAndAcademicYearIdAndTenantId(Long teacherId, Long leaveTypeId,
+	boolean existsByEmployeeIdAndLeaveTypeIdAndAcademicYearIdAndTenantId(Long employeeId, Long leaveTypeId,
 			Long academicYearId, Long tenantId);
 
 	// Drives LeaveCarryForwardExpiryJob — every balance tenant-wide with a carry-forward expiry

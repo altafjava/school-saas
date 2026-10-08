@@ -17,6 +17,7 @@ import com.altafjava.platform.core.exception.ResourceNotFoundException;
 import com.altafjava.platform.core.tenant.TenantContext;
 import com.altafjava.platform.core.tenant.TenantType;
 import com.altafjava.school.domain.classroom.repository.ClassroomRepository;
+import com.altafjava.school.domain.employee.model.EmployeeStatus;
 import com.altafjava.school.domain.subject.repository.SubjectRepository;
 import com.altafjava.school.domain.teacher.repository.TeacherRepository;
 import com.altafjava.school.domain.timetable.model.TimetableEntry;
@@ -55,7 +56,7 @@ class TimetableServiceTest {
 		when(periodRepository.existsByIdAndTenantId(1L, 1L)).thenReturn(true);
 		when(classroomRepository.existsByIdAndTenantId(2L, 1L)).thenReturn(true);
 		when(subjectRepository.existsByIdAndTenantId(3L, 1L)).thenReturn(true);
-		when(teacherRepository.existsByIdAndTenantId(4L, 1L)).thenReturn(true);
+		when(teacherRepository.existsByIdAndTenantIdAndStatus(4L, 1L, EmployeeStatus.ACTIVE)).thenReturn(true);
 	}
 
 	@Test
@@ -112,7 +113,7 @@ class TimetableServiceTest {
 		when(periodRepository.existsByIdAndTenantId(5L, 1L)).thenReturn(true);
 		when(classroomRepository.existsByIdAndTenantId(2L, 1L)).thenReturn(true);
 		when(subjectRepository.existsByIdAndTenantId(3L, 1L)).thenReturn(true);
-		when(teacherRepository.existsByIdAndTenantId(4L, 1L)).thenReturn(true);
+		when(teacherRepository.existsByIdAndTenantIdAndStatus(4L, 1L, EmployeeStatus.ACTIVE)).thenReturn(true);
 		when(timetableEntryRepository.existsByTenantIdAndDayOfWeekAndPeriodIdAndClassroomId(1L, DayOfWeek.MONDAY, 5L,
 				2L)).thenReturn(false);
 		when(timetableEntryRepository.existsByTenantIdAndDayOfWeekAndPeriodIdAndTeacherId(1L, DayOfWeek.MONDAY, 5L,

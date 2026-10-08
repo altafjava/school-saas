@@ -34,7 +34,7 @@ class SalaryStructureTest {
 		SalaryStructure structure = structure();
 
 		assertTrue(structure.isActive());
-		assertEquals(1L, structure.getTeacherId());
+		assertEquals(1L, structure.getEmployeeId());
 	}
 
 	@Test

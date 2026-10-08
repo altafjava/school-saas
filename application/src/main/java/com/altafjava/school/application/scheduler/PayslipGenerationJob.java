@@ -12,26 +12,26 @@ import com.altafjava.platform.core.tenant.TenantContext;
 import com.altafjava.platform.domain.scheduler.model.JobExecutionContext;
 import com.altafjava.platform.domain.scheduler.model.JobExecutionResult;
 import com.altafjava.school.application.service.PayslipService;
-import com.altafjava.school.domain.teacher.model.Teacher;
-import com.altafjava.school.domain.teacher.repository.TeacherRepository;
+import com.altafjava.school.domain.employee.model.Employee;
+import com.altafjava.school.domain.employee.repository.EmployeeRepository;
 import lombok.extern.slf4j.Slf4j;
 
 /**
  * Runs at 01:00 on the 1st of each month, for the just-completed month. Drafts a {@link
- * com.altafjava.school.domain.payroll.model.Payslip} for every teacher in the tenant —
- * teachers with no active salary structure, or that already have a payslip for the month
+ * com.altafjava.school.domain.payroll.model.Payslip} for every employee in the tenant —
+ * employees with no active salary structure, or that already have a payslip for the month
  * (re-run after a partial failure), are skipped rather than failing the whole job.
  */
 @Slf4j
 @Component
-@ScheduledJob(name = "PayslipGeneration", group = "school", description = "Generates draft payslips for every active teacher for the completed month", cronExpression = "0 0 1 1 * ?", tenantScoped = true, retryEnabled = true, maxRetries = 2)
+@ScheduledJob(name = "PayslipGeneration", group = "school", description = "Generates draft payslips for every active employee for the completed month", cronExpression = "0 0 1 1 * ?", tenantScoped = true, retryEnabled = true, maxRetries = 2)
 public class PayslipGenerationJob implements JobExecutionStrategy {
 
-	private final TeacherRepository teacherRepository;
+	private final EmployeeRepository employeeRepository;
 	private final PayslipService payslipService;
 
-	public PayslipGenerationJob(TeacherRepository teacherRepository, PayslipService payslipService) {
-		this.teacherRepository = teacherRepository;
+	public PayslipGenerationJob(EmployeeRepository employeeRepository, PayslipService payslipService) {
+		this.employeeRepository = employeeRepository;
 		this.payslipService = payslipService;
 	}
 
@@ -58,11 +58,12 @@ public class PayslipGenerationJob implements JobExecutionStrategy {
 		log.info("action=payslip-generation tenantId={} payMonth={} executionId={}", tenantId, payMonth,
 				ctx.executionId());
 
-		List<Teacher> teachers = teacherRepository.findAllByTenantId(tenantId);
+		// Includes anyone who left during the pay month: they are still owed their final payslip.
+		List<Employee> employees = employeeRepository.findAllEmployedSince(tenantId, payMonth.atDay(1));
 		int generated = 0;
 		int skipped = 0;
-		for (Teacher teacher : teachers) {
-			if (generateForTeacher(teacher, payMonth)) {
+		for (Employee employee : employees) {
+			if (generateForEmployee(employee, payMonth)) {
 				generated++;
 			} else {
 				skipped++;
@@ -74,12 +75,12 @@ public class PayslipGenerationJob implements JobExecutionStrategy {
 		return new JobExecutionResult.Success(Map.of("generated", generated, "skipped", skipped), null);
 	}
 
-	private boolean generateForTeacher(Teacher teacher, YearMonth payMonth) {
+	private boolean generateForEmployee(Employee employee, YearMonth payMonth) {
 		try {
-			payslipService.generate(teacher.getId(), payMonth);
+			payslipService.generate(employee.getId(), payMonth);
 			return true;
 		} catch (BusinessException e) {
-			log.warn("action=payslip-generation-skipped teacherId={} payMonth={} reason={}", teacher.getId(),
+			log.warn("action=payslip-generation-skipped employeeId={} payMonth={} reason={}", employee.getId(),
 					payMonth, e.getMessage());
 			return false;
 		}

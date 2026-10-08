@@ -22,8 +22,8 @@ import lombok.experimental.SuperBuilder;
 @NoArgsConstructor
 public class LeaveBalance extends SoftDeletableEntity {
 
-	@Column(name = "teacher_id", nullable = false)
-	private Long teacherId;
+	@Column(name = "employee_id", nullable = false)
+	private Long employeeId;
 
 	@Column(name = "leave_type_id", nullable = false)
 	private Long leaveTypeId;
@@ -45,10 +45,10 @@ public class LeaveBalance extends SoftDeletableEntity {
 	@Column(name = "carry_forward_expires_at")
 	private LocalDate carryForwardExpiresAt;
 
-	public static LeaveBalance allocate(Long teacherId, Long leaveTypeId, Long academicYearId,
+	public static LeaveBalance allocate(Long employeeId, Long leaveTypeId, Long academicYearId,
 			BigDecimal allocatedDays) {
 		return LeaveBalance.builder()
-				.teacherId(teacherId)
+				.employeeId(employeeId)
 				.leaveTypeId(leaveTypeId)
 				.academicYearId(academicYearId)
 				.allocatedDays(allocatedDays)
