@@ -183,12 +183,4 @@
         </createIndex>
     </changeSet>
 
-    <changeSet id="school-167-venue-and-substitution-permissions" author="school">
-        <sql>
-            UPDATE roles
-            SET permissions_json = JSON_MERGE_PRESERVE(permissions_json, '["VENUE_MANAGE", "SUBSTITUTION_MANAGE"]')
-            WHERE name IN ('TENANT_ADMIN', 'ACADEMIC');
-        </sql>
-    </changeSet>
-
 </databaseChangeLog>

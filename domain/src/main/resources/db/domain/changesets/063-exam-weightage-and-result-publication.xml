@@ -33,12 +33,4 @@
         </createIndex>
     </changeSet>
 
-    <changeSet id="school-160-exam-result-publish-permission" author="school">
-        <sql>
-            UPDATE roles
-            SET permissions_json = JSON_MERGE_PRESERVE(permissions_json, '["EXAM_RESULT_PUBLISH"]')
-            WHERE name IN ('TENANT_ADMIN', 'PRINCIPAL', 'ACADEMIC');
-        </sql>
-    </changeSet>
-
 </databaseChangeLog>

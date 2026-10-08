@@ -118,19 +118,4 @@
         </createIndex>
     </changeSet>
 
-    <!-- Hosting is self-service (the service checks the caller is the host), so it goes to the staff
-         roles, not TENANT_ADMIN; approving anyone's visit is the separate VISITOR_REQUEST_APPROVE. -->
-    <changeSet id="school-172-visitor-request-permissions" author="school">
-        <sql>
-            UPDATE roles
-            SET permissions_json = JSON_MERGE_PRESERVE(permissions_json, '["VISITOR_REQUEST_SELF_SERVICE"]')
-            WHERE name IN ('TEACHER', 'PRINCIPAL', 'FINANCE', 'HR', 'ACADEMIC');
-        </sql>
-        <sql>
-            UPDATE roles
-            SET permissions_json = JSON_MERGE_PRESERVE(permissions_json, '["VISITOR_REQUEST_APPROVE"]')
-            WHERE name IN ('TENANT_ADMIN', 'PRINCIPAL');
-        </sql>
-    </changeSet>
-
 </databaseChangeLog>

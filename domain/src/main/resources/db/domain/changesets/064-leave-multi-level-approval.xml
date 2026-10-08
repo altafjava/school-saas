@@ -100,15 +100,4 @@
         </createIndex>
     </changeSet>
 
-    <!-- Reviewing is the department head's own approval, like the other self-service permissions: it
-         goes to the staff roles (the service still checks the caller really heads that department),
-         not to TENANT_ADMIN, which decides through LEAVE_REQUEST_MANAGE. -->
-    <changeSet id="school-163-leave-request-review-permission" author="school">
-        <sql>
-            UPDATE roles
-            SET permissions_json = JSON_MERGE_PRESERVE(permissions_json, '["LEAVE_REQUEST_REVIEW"]')
-            WHERE name IN ('TEACHER', 'PRINCIPAL', 'FINANCE', 'HR', 'ACADEMIC');
-        </sql>
-    </changeSet>
-
 </databaseChangeLog>

@@ -49,8 +49,6 @@
     <include file="db/domain/changesets/042-leave-carry-forward-probation.xml"/>
     <include file="db/domain/changesets/043-fee-late-fee-policy.xml"/>
     <include file="db/domain/changesets/044-report-card-template-remarks.xml"/>
-    <include file="db/domain/changesets/045-tenant-admin-school-permissions.xml"/>
-    <include file="db/domain/changesets/046-backfill-tenant-roles.xml"/>
     <include file="db/domain/changesets/047-custom-field-grouping-visibility.xml"/>
     <include file="db/domain/changesets/048-pay-component-definitions.xml"/>
     <include file="db/domain/changesets/049-exam-type-definitions.xml"/>
@@ -60,9 +58,7 @@
     <include file="db/domain/changesets/053-health-record-history.xml"/>
     <include file="db/domain/changesets/054-photo-and-roll-number.xml"/>
     <include file="db/domain/changesets/055-student-documents.xml"/>
-    <include file="db/domain/changesets/056-tenant-admin-phase1-permissions.xml"/>
     <include file="db/domain/changesets/057-guardian-pickup-custody-emergency-contacts.xml"/>
-    <include file="db/domain/changesets/058-tenant-admin-guardian-safety-permissions.xml"/>
     <include file="db/domain/changesets/059-lifecycle-transitions.xml"/>
     <include file="db/domain/changesets/060-fee-discounts-installments-refunds.xml"/>
     <include file="db/domain/changesets/061-admission-application-fee-offer-letter.xml"/>

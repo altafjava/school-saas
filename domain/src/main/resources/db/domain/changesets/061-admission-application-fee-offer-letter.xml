@@ -28,12 +28,4 @@
         </sql>
     </changeSet>
 
-    <changeSet id="school-152-tenant-admin-admission-fee-permission" author="school">
-        <sql>
-            UPDATE roles
-            SET permissions_json = JSON_MERGE_PRESERVE(permissions_json, '["ADMISSION_FEE_MANAGE"]')
-            WHERE name = 'TENANT_ADMIN';
-        </sql>
-    </changeSet>
-
 </databaseChangeLog>

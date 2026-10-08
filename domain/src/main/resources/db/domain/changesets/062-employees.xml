@@ -231,12 +231,4 @@
                 referencedTableName="employees" referencedColumnNames="id"/>
     </changeSet>
 
-    <changeSet id="school-158-employee-permissions" author="school">
-        <sql>
-            UPDATE roles
-            SET permissions_json = JSON_MERGE_PRESERVE(permissions_json, '["EMPLOYEE_READ", "EMPLOYEE_MANAGE"]')
-            WHERE name = 'TENANT_ADMIN';
-        </sql>
-    </changeSet>
-
 </databaseChangeLog>

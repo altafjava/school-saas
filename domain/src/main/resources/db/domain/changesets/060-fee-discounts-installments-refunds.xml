@@ -225,13 +225,4 @@
         </createIndex>
     </changeSet>
 
-    <changeSet id="school-150-tenant-admin-fee-adjustment-permissions" author="school">
-        <sql>
-            UPDATE roles
-            SET permissions_json = JSON_MERGE_PRESERVE(permissions_json,
-                '["FEE_DISCOUNT_MANAGE", "FEE_INSTALLMENT_MANAGE", "FEE_REFUND_MANAGE"]')
-            WHERE name = 'TENANT_ADMIN';
-        </sql>
-    </changeSet>
-
 </databaseChangeLog>

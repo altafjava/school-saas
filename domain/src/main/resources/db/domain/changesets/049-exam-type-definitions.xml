@@ -87,18 +87,4 @@
         </createIndex>
     </changeSet>
 
-    <!-- Grants the new EXAM_TYPE_MANAGE permission to TENANT_ADMIN — the global (tenant_id IS
-         NULL) template for tenants provisioned from now on, and every already-provisioned
-         tenant's own editable TENANT_ADMIN role copy alike (see 048-pay-component-definitions.xml
-         for the identical pattern used for PAY_COMPONENT_MANAGE/HR). Idempotent: skips any row
-         that already has the permission. -->
-    <changeSet id="school-049-grant-exam-type-manage-to-tenant-admin" author="school">
-        <sql>
-            UPDATE roles
-            SET permissions_json = JSON_ARRAY_APPEND(permissions_json, '$', 'EXAM_TYPE_MANAGE')
-            WHERE name = 'TENANT_ADMIN'
-              AND NOT JSON_CONTAINS(permissions_json, '"EXAM_TYPE_MANAGE"');
-        </sql>
-    </changeSet>
-
 </databaseChangeLog>

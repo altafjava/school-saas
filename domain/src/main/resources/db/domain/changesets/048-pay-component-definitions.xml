@@ -96,18 +96,4 @@
         <dropColumn tableName="payslips" columnName="other_deductions"/>
     </changeSet>
 
-    <!-- Grants the new PAY_COMPONENT_MANAGE permission to every HR role row — the global
-         (tenant_id IS NULL) template for tenants provisioned from now on, and every
-         already-provisioned tenant's own editable HR role copy alike (see
-         046-backfill-tenant-roles.xml for why per-tenant copies exist and don't inherit template
-         changes automatically). Idempotent: skips any row that already has the permission. -->
-    <changeSet id="school-048-grant-pay-component-manage-to-hr" author="school">
-        <sql>
-            UPDATE roles
-            SET permissions_json = JSON_ARRAY_APPEND(permissions_json, '$', 'PAY_COMPONENT_MANAGE')
-            WHERE name = 'HR'
-              AND NOT JSON_CONTAINS(permissions_json, '"PAY_COMPONENT_MANAGE"');
-        </sql>
-    </changeSet>
-
 </databaseChangeLog>
