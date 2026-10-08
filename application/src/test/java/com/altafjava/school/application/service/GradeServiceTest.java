@@ -11,15 +11,18 @@ import static org.mockito.Mockito.when;
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import com.altafjava.platform.core.exception.BusinessException;
 import com.altafjava.platform.core.exception.ResourceNotFoundException;
 import com.altafjava.platform.core.tenant.TenantContext;
 import com.altafjava.platform.core.tenant.TenantType;
+import com.altafjava.school.application.security.ExamResultVisibilityPolicy;
 import com.altafjava.school.application.security.StudentDataAccessGuard;
 import com.altafjava.school.application.security.TeacherClassroomScopeResolver;
 import com.altafjava.school.domain.curriculum.model.GradingScaleThreshold;
@@ -29,6 +32,7 @@ import com.altafjava.school.domain.grade.model.Grade;
 import com.altafjava.school.domain.grade.model.GradeCorrection;
 import com.altafjava.school.domain.grade.repository.GradeCorrectionRepository;
 import com.altafjava.school.domain.grade.repository.GradeRepository;
+import com.altafjava.school.domain.student.model.Student;
 import com.altafjava.school.domain.student.repository.StudentRepository;
 
 @ExtendWith(MockitoExtension.class)
@@ -48,13 +52,15 @@ class GradeServiceTest {
 	private StudentDataAccessGuard studentDataAccessGuard;
 	@Mock
 	private TeacherClassroomScopeResolver teacherClassroomScopeResolver;
+	@Mock
+	private ExamResultVisibilityPolicy examResultVisibilityPolicy;
 
 	private GradeService gradeService;
 
 	@BeforeEach
 	void setUp() {
 		gradeService = new GradeService(gradeRepository, gradeCorrectionRepository, studentRepository, examRepository,
-				gradingScaleService, studentDataAccessGuard, teacherClassroomScopeResolver);
+				gradingScaleService, studentDataAccessGuard, teacherClassroomScopeResolver, examResultVisibilityPolicy);
 		TenantContext.ForTesting.setCurrentTenant(1L, null, null, TenantType.SHARED);
 	}
 
@@ -87,7 +93,7 @@ class GradeServiceTest {
 	@Test
 	void record_duplicateForSameStudentExam_throwsIllegalArgument() {
 		Exam exam = Exam.create("Midterm", 5L, 10L, null, BigDecimal.valueOf(100), null,
-				1L);
+				1L, Exam.FULL_WEIGHTAGE);
 		when(studentRepository.existsByIdAndTenantId(1L, 1L)).thenReturn(true);
 		when(examRepository.findByIdAndTenantId(2L, 1L)).thenReturn(Optional.of(exam));
 		when(gradeRepository.existsByStudentIdAndExamIdAndTenantId(1L, 2L, 1L)).thenReturn(true);
@@ -99,7 +105,7 @@ class GradeServiceTest {
 	@Test
 	void record_withValidReferences_computesLetterGradeFromDefaultScale() {
 		Exam exam = Exam.create("Midterm", 5L, 10L, null, BigDecimal.valueOf(100), null,
-				1L);
+				1L, Exam.FULL_WEIGHTAGE);
 		List<GradingScaleThreshold> thresholds = List.of(
 				GradingScaleThreshold.create(1L, "A", new BigDecimal("90"), new BigDecimal("4.0")),
 				GradingScaleThreshold.create(1L, "F", BigDecimal.ZERO, BigDecimal.ZERO));
@@ -165,7 +171,7 @@ class GradeServiceTest {
 		grade.setId(100L);
 		grade.setPublicId(java.util.UUID.fromString("11111111-1111-1111-1111-111111111111"));
 		Exam exam = Exam.create("Midterm", 5L, 10L, null, BigDecimal.valueOf(100), null,
-				1L);
+				1L, Exam.FULL_WEIGHTAGE);
 		List<GradingScaleThreshold> thresholds = List.of(
 				GradingScaleThreshold.create(1L, "A", new BigDecimal("90"), new BigDecimal("4.0")),
 				GradingScaleThreshold.create(1L, "F", BigDecimal.ZERO, BigDecimal.ZERO));
@@ -186,5 +192,95 @@ class GradeServiceTest {
 		assertEquals("D", correction.getOldGradeLetter());
 		assertEquals(BigDecimal.valueOf(95), correction.getNewMarks());
 		assertEquals("A", correction.getNewGradeLetter());
+	}
+
+	private Exam publishedExam() {
+		Exam exam = Exam.create("Midterm", 5L, 10L, null, BigDecimal.valueOf(100), null, 1L, Exam.FULL_WEIGHTAGE);
+		exam.complete();
+		exam.publishResults("registrar");
+		return exam;
+	}
+
+	private Grade gradeOf(UUID publicId) {
+		Grade grade = Grade.create(1L, 5L, 2L, BigDecimal.valueOf(60), "D", "teacher");
+		grade.setPublicId(publicId);
+		return grade;
+	}
+
+	@Test
+	void findByPublicId_asStaff_returnsGradeWithoutOwnershipOrPublicationChecks() {
+		UUID publicId = UUID.randomUUID();
+		when(gradeRepository.findByPublicIdAndTenantId(publicId, 1L)).thenReturn(Optional.of(gradeOf(publicId)));
+		when(examResultVisibilityPolicy.canSeeUnpublishedResults()).thenReturn(true);
+
+		assertEquals(publicId, gradeService.findByPublicId(publicId.toString()).getPublicId());
+
+		verify(studentDataAccessGuard, never()).assertCanView(any(), any());
+	}
+
+	@Test
+	void findByPublicId_asStudentOfPublishedExam_returnsGrade() {
+		UUID publicId = UUID.randomUUID();
+		Student student = Student.create("STU-1", "Alice", "Smith", "alice@school.test", null);
+		student.setPublicId(UUID.randomUUID());
+		when(gradeRepository.findByPublicIdAndTenantId(publicId, 1L)).thenReturn(Optional.of(gradeOf(publicId)));
+		when(studentRepository.findByIdAndTenantId(1L, 1L)).thenReturn(Optional.of(student));
+		when(examRepository.findByIdAndTenantId(2L, 1L)).thenReturn(Optional.of(publishedExam()));
+
+		assertEquals(publicId, gradeService.findByPublicId(publicId.toString()).getPublicId());
+
+		verify(studentDataAccessGuard).assertCanView(1L, student.getPublicId().toString());
+	}
+
+	@Test
+	void findByPublicId_asStudentOfUnpublishedExam_throwsNotFound() {
+		UUID publicId = UUID.randomUUID();
+		Student student = Student.create("STU-1", "Alice", "Smith", "alice@school.test", null);
+		student.setPublicId(UUID.randomUUID());
+		Exam unpublished = Exam.create("Midterm", 5L, 10L, null, BigDecimal.valueOf(100), null, 1L,
+				Exam.FULL_WEIGHTAGE);
+		when(gradeRepository.findByPublicIdAndTenantId(publicId, 1L)).thenReturn(Optional.of(gradeOf(publicId)));
+		when(studentRepository.findByIdAndTenantId(1L, 1L)).thenReturn(Optional.of(student));
+		when(examRepository.findByIdAndTenantId(2L, 1L)).thenReturn(Optional.of(unpublished));
+
+		assertThrows(ResourceNotFoundException.class, () -> gradeService.findByPublicId(publicId.toString()));
+	}
+
+	@Test
+	void getStudentGrades_asStaff_listsEveryGrade() {
+		when(studentRepository.findByPublicIdAndTenantId(any(), any())).thenReturn(Optional.of(
+				Student.create("STU-1", "Alice", "Smith", "alice@school.test", null)));
+		when(examResultVisibilityPolicy.canSeeUnpublishedResults()).thenReturn(true);
+
+		gradeService.getStudentGrades("11111111-1111-1111-1111-111111111111",
+				org.springframework.data.domain.PageRequest.of(0, 20));
+
+		verify(gradeRepository).findByStudentIdAndTenantId(any(), any(), any());
+		verify(gradeRepository, never()).findPublishedByStudentId(any(), any(), any());
+	}
+
+	@Test
+	void getStudentGrades_asStudentOrGuardian_listsPublishedGradesOnly() {
+		when(studentRepository.findByPublicIdAndTenantId(any(), any())).thenReturn(Optional.of(
+				Student.create("STU-1", "Alice", "Smith", "alice@school.test", null)));
+		when(examResultVisibilityPolicy.canSeeUnpublishedResults()).thenReturn(false);
+
+		gradeService.getStudentGrades("11111111-1111-1111-1111-111111111111",
+				org.springframework.data.domain.PageRequest.of(0, 20));
+
+		verify(gradeRepository).findPublishedByStudentId(any(), any(), any());
+		verify(gradeRepository, never()).findByStudentIdAndTenantId(any(), any(), any());
+	}
+
+	@Test
+	void record_forCancelledExam_throwsBusinessException() {
+		Exam exam = Exam.create("Midterm", 5L, 10L, null, BigDecimal.valueOf(100), null, 1L, Exam.FULL_WEIGHTAGE);
+		exam.cancel();
+		when(studentRepository.existsByIdAndTenantId(1L, 1L)).thenReturn(true);
+		when(examRepository.findByIdAndTenantId(2L, 1L)).thenReturn(Optional.of(exam));
+
+		assertThrows(BusinessException.class, () -> gradeService.record(1L, 2L, BigDecimal.valueOf(85), "teacher"));
+
+		verify(gradeRepository, never()).save(any());
 	}
 }

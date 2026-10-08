@@ -1,7 +1,10 @@
 package com.altafjava.school.domain.student.model;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import java.time.LocalDate;
 import org.junit.jupiter.api.Test;
 import com.altafjava.platform.core.exception.BusinessException;
@@ -152,5 +155,62 @@ class StudentTest {
 			assertThrows(BusinessException.class, () -> exit.accept(student));
 			assertEquals(leftAt, student.getEnrollmentStatusChangedAt());
 		}
+	}
+
+	private Student studentWithId(long id) {
+		Student student = newStudent();
+		student.setId(id);
+		return student;
+	}
+
+	@Test
+	void isSiblingOf_studentsInTheSameGroup_isTrueBothWays() {
+		Student alice = studentWithId(1L);
+		Student bob = studentWithId(2L);
+		alice.joinSiblingGroup(9L);
+		bob.joinSiblingGroup(9L);
+
+		assertTrue(alice.isSiblingOf(bob));
+		assertTrue(bob.isSiblingOf(alice));
+	}
+
+	@Test
+	void isSiblingOf_studentsInDifferentGroupsOrNone_isFalse() {
+		Student alice = studentWithId(1L);
+		Student bob = studentWithId(2L);
+
+		assertFalse(alice.isSiblingOf(bob));
+
+		alice.joinSiblingGroup(9L);
+		bob.joinSiblingGroup(10L);
+		assertFalse(alice.isSiblingOf(bob));
+	}
+
+	@Test
+	void isSiblingOf_aStudentIsNeverTheirOwnSibling() {
+		Student alice = studentWithId(1L);
+		alice.joinSiblingGroup(9L);
+
+		assertFalse(alice.isSiblingOf(alice));
+	}
+
+	@Test
+	void leaveSiblingGroup_clearsMembership() {
+		Student alice = studentWithId(1L);
+		alice.joinSiblingGroup(9L);
+
+		alice.leaveSiblingGroup();
+
+		assertNull(alice.getSiblingGroupId());
+	}
+
+	@Test
+	void erasePii_removesTheStudentFromTheirFamily() {
+		Student alice = studentWithId(1L);
+		alice.joinSiblingGroup(9L);
+
+		alice.erasePii();
+
+		assertNull(alice.getSiblingGroupId());
 	}
 }

@@ -99,7 +99,7 @@ class ExamTenantIsolationIntegrationTest extends SchoolIntegrationTestBase {
 				"CLS-" + UUID.randomUUID().toString().substring(0, 6), "Grade 5", "A", academicYearPublicId, null);
 		Subject subject = subjectService.create("MATH-" + UUID.randomUUID().toString().substring(0, 6), "Math", null);
 		examService.schedule("Midterm", subject.getId(), classroom.getId(), LocalDateTime.now().plusDays(7),
-				BigDecimal.valueOf(100), null, examTypeIdFor("MIDTERM"));
+				BigDecimal.valueOf(100), null, examTypeIdFor("MIDTERM"), Exam.FULL_WEIGHTAGE);
 
 		activateTenant(tenantB);
 		Page<Exam> tenantBExams = examService.listExams(PageRequest.of(0, 100));
@@ -119,7 +119,7 @@ class ExamTenantIsolationIntegrationTest extends SchoolIntegrationTestBase {
 				null);
 		Exam exam = examService.schedule("Final", subject.getId(), classroom.getId(),
 				LocalDateTime.now().plusDays(14), BigDecimal.valueOf(100), null,
-				examTypeIdFor("FINAL"));
+				examTypeIdFor("FINAL"), Exam.FULL_WEIGHTAGE);
 		String publicId = exam.getPublicId().toString();
 
 		activateTenant(tenantB);

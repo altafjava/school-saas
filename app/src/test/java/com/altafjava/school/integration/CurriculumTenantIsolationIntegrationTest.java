@@ -211,7 +211,7 @@ class CurriculumTenantIsolationIntegrationTest extends SchoolIntegrationTestBase
 				"nora-" + suffix + "@school.test", LocalDate.of(2010, 4, 4));
 
 		Exam exam = Exam.create("Final", subject.getId(), classroom.getId(), LocalDateTime.now(),
-				BigDecimal.valueOf(100), null, examTypeIdFor("FINAL"));
+				BigDecimal.valueOf(100), null, examTypeIdFor("FINAL"), Exam.FULL_WEIGHTAGE);
 		exam = examRepository.save(exam);
 
 		Grade grade = gradeService.record(student.getId(), exam.getId(), BigDecimal.valueOf(95), "teacher");
@@ -241,7 +241,7 @@ class CurriculumTenantIsolationIntegrationTest extends SchoolIntegrationTestBase
 				"ravi-" + suffix + "@school.test", LocalDate.of(2012, 1, 1));
 
 		Exam exam = Exam.create("Final", subject.getId(), classroom.getId(), LocalDateTime.now(),
-				BigDecimal.valueOf(100), null, examTypeIdFor("FINAL"));
+				BigDecimal.valueOf(100), null, examTypeIdFor("FINAL"), Exam.FULL_WEIGHTAGE);
 		exam = examRepository.save(exam);
 
 		Grade grade = gradeService.record(student.getId(), exam.getId(), BigDecimal.valueOf(95), "teacher");
@@ -270,10 +270,10 @@ class CurriculumTenantIsolationIntegrationTest extends SchoolIntegrationTestBase
 
 		Exam examA = examRepository.save(Exam.create("Test 1", subject.getId(), classroom.getId(),
 				LocalDateTime.of(2026, 5, 1, 9, 0), BigDecimal.valueOf(100), null,
-				examTypeIdFor("UNIT_TEST")));
+				examTypeIdFor("UNIT_TEST"), Exam.FULL_WEIGHTAGE));
 		Exam examB = examRepository.save(Exam.create("Test 2", subject.getId(), classroom.getId(),
 				LocalDateTime.of(2026, 5, 2, 9, 0), BigDecimal.valueOf(100), null,
-				examTypeIdFor("UNIT_TEST")));
+				examTypeIdFor("UNIT_TEST"), Exam.FULL_WEIGHTAGE));
 		gradeService.record(student.getId(), examA.getId(), BigDecimal.valueOf(95), "teacher");
 		gradeService.record(student.getId(), examB.getId(), BigDecimal.valueOf(85), "teacher");
 

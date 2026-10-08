@@ -30,6 +30,8 @@ dependencies {
     // Per-operation rate limiting on the highest-cost endpoints — see RateLimitAspect.
     implementation libs.bucket4j.core
     implementation libs.aspectjweaver
+    // HttpServletRequest, to read the sort parameter — the servlet container supplies it at runtime.
+    compileOnly 'jakarta.servlet:jakarta.servlet-api'
 
     annotationProcessor libs.mapstruct.processor
     annotationProcessor libs.lombok.mapstruct.binding

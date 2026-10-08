@@ -42,14 +42,23 @@ public class TimetableEntry extends SoftDeletableEntity {
 	@Column(name = "teacher_id", nullable = false)
 	private Long teacherId;
 
+	// FK to venues.id — optional; a slot without a venue takes part in no room-conflict check.
+	@Column(name = "venue_id")
+	private Long venueId;
+
 	public static TimetableEntry create(DayOfWeek dayOfWeek, Long periodId, Long classroomId, Long subjectId,
-			Long teacherId) {
+			Long teacherId, Long venueId) {
 		return TimetableEntry.builder()
 				.dayOfWeek(dayOfWeek)
 				.periodId(periodId)
 				.classroomId(classroomId)
 				.subjectId(subjectId)
 				.teacherId(teacherId)
+				.venueId(venueId)
 				.build();
+	}
+
+	public void assignVenue(Long venueId) {
+		this.venueId = venueId;
 	}
 }

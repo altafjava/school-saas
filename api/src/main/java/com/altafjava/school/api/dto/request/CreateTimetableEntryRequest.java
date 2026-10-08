@@ -8,5 +8,6 @@ public record CreateTimetableEntryRequest(
 		@NotNull Long periodId,
 		@NotNull Long classroomId,
 		@NotNull Long subjectId,
-		@NotNull Long teacherId) {
+		@NotNull Long teacherId,
+		String venuePublicId) {
 }

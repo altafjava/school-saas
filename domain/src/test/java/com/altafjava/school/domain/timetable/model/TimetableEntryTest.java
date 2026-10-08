@@ -8,7 +8,7 @@ class TimetableEntryTest {
 
 	@Test
 	void create_setsAllFields() {
-		TimetableEntry entry = TimetableEntry.create(DayOfWeek.MONDAY, 1L, 2L, 3L, 4L);
+		TimetableEntry entry = TimetableEntry.create(DayOfWeek.MONDAY, 1L, 2L, 3L, 4L, null);
 
 		assertEquals(DayOfWeek.MONDAY, entry.getDayOfWeek());
 		assertEquals(1L, entry.getPeriodId());

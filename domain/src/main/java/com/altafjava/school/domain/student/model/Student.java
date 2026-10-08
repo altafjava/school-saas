@@ -73,6 +73,10 @@ public class Student extends SoftDeletableEntity {
 	@Column(name = "photo_file_public_id")
 	private UUID photoFilePublicId;
 
+	// FK to sibling_groups.id — null while the student has no siblings at the school.
+	@Column(name = "sibling_group_id")
+	private Long siblingGroupId;
+
 	public static Student create(String studentCode, String firstName, String lastName,
 			String email, LocalDate dateOfBirth) {
 		return Student.builder()
@@ -150,6 +154,18 @@ public class Student extends SoftDeletableEntity {
 		this.address = Address.copyOf(address);
 	}
 
+	public void joinSiblingGroup(Long siblingGroupId) {
+		this.siblingGroupId = siblingGroupId;
+	}
+
+	public void leaveSiblingGroup() {
+		this.siblingGroupId = null;
+	}
+
+	public boolean isSiblingOf(Student other) {
+		return siblingGroupId != null && siblingGroupId.equals(other.siblingGroupId) && !equals(other);
+	}
+
 	public void updatePhoto(UUID photoFilePublicId) {
 		this.photoFilePublicId = photoFilePublicId;
 	}
@@ -165,5 +181,6 @@ public class Student extends SoftDeletableEntity {
 		this.phone = null;
 		this.address = null;
 		this.photoFilePublicId = null;
+		this.siblingGroupId = null;
 	}
 }

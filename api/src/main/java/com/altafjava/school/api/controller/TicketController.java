@@ -20,6 +20,7 @@ import com.altafjava.school.api.dto.request.ResolveTicketRequest;
 import com.altafjava.school.api.dto.response.TicketResponse;
 import com.altafjava.school.api.mapper.TicketMapper;
 import com.altafjava.school.api.support.PlatformPageMapper;
+import com.altafjava.school.api.support.SortableBy;
 import com.altafjava.school.api.support.SpringDataPageableResolver;
 import com.altafjava.school.application.service.TicketService;
 import com.altafjava.school.domain.helpdesk.model.TicketCategory;
@@ -53,6 +54,7 @@ public class TicketController implements TicketApi {
 	@Override
 	@GetMapping
 	@PreAuthorize("@permissionAuthorizationService.hasPermission('TICKET_MANAGE')")
+	@SortableBy({ "status", "category", "subject" })
 	public ApiResponse<com.altafjava.platform.core.model.Page<TicketResponse>> search(
 			@RequestParam(required = false) TicketStatus status,
 			@RequestParam(required = false) TicketCategory category,

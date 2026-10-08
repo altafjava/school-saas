@@ -22,6 +22,7 @@ import com.altafjava.school.api.dto.response.EventResponse;
 import com.altafjava.school.api.mapper.EventMapper;
 import com.altafjava.school.api.mapper.EventRegistrationMapper;
 import com.altafjava.school.api.support.PlatformPageMapper;
+import com.altafjava.school.api.support.SortableBy;
 import com.altafjava.school.api.support.SpringDataPageableResolver;
 import com.altafjava.school.application.service.EventRegistrationService;
 import com.altafjava.school.application.service.EventService;
@@ -50,6 +51,7 @@ public class EventController implements EventApi {
 	@Override
 	@GetMapping
 	@PreAuthorize("@permissionAuthorizationService.hasPermission('EVENT_READ')")
+	@SortableBy({ "title", "eventDate" })
 	public ApiResponse<com.altafjava.platform.core.model.Page<EventResponse>> list(
 			@RequestParam(defaultValue = "0") int page,
 			@RequestParam(defaultValue = "20") int size) {

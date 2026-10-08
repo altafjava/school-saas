@@ -47,6 +47,28 @@ public class BookCopy extends SoftDeletableEntity {
 		this.status = BookCopyStatus.CHECKED_OUT;
 	}
 
+	/** The reserving member picks up the copy that was set aside for them. */
+	public void checkoutHeld() {
+		if (this.status != BookCopyStatus.ON_HOLD) {
+			throw new BusinessException("Book copy " + copyCode + " is not on hold (status " + status + ")");
+		}
+		this.status = BookCopyStatus.CHECKED_OUT;
+	}
+
+	public void hold() {
+		if (this.status != BookCopyStatus.AVAILABLE) {
+			throw new BusinessException("Book copy " + copyCode + " cannot be held (status " + status + ")");
+		}
+		this.status = BookCopyStatus.ON_HOLD;
+	}
+
+	public void releaseHold() {
+		if (this.status != BookCopyStatus.ON_HOLD) {
+			throw new BusinessException("Book copy " + copyCode + " is not on hold (status " + status + ")");
+		}
+		this.status = BookCopyStatus.AVAILABLE;
+	}
+
 	public void returnCopy() {
 		if (this.status != BookCopyStatus.CHECKED_OUT) {
 			throw new BusinessException("Book copy " + copyCode + " is not checked out (status " + status + ")");

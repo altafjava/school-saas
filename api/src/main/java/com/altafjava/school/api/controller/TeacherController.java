@@ -18,6 +18,7 @@ import com.altafjava.school.api.dto.response.TeacherResponse;
 import com.altafjava.school.api.mapper.AddressMapper;
 import com.altafjava.school.api.mapper.TeacherMapper;
 import com.altafjava.school.api.support.PlatformPageMapper;
+import com.altafjava.school.api.support.SortableBy;
 import com.altafjava.school.api.support.SpringDataPageableResolver;
 import com.altafjava.school.application.service.TeacherService;
 
@@ -42,6 +43,7 @@ public class TeacherController implements TeacherApi {
 	@Override
 	@GetMapping
 	@PreAuthorize("@permissionAuthorizationService.hasPermission('TEACHER_MANAGE')")
+	@SortableBy({ "employeeCode", "firstName", "lastName", "joinDate", "status" })
 	public ApiResponse<com.altafjava.platform.core.model.Page<TeacherResponse>> list(
 			@RequestParam(defaultValue = "0") int page,
 			@RequestParam(defaultValue = "20") int size) {

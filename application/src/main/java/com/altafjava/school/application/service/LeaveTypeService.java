@@ -91,6 +91,13 @@ public class LeaveTypeService {
 	}
 
 	@Transactional
+	public LeaveType configureApprovalLevels(String publicId, int approvalLevels) {
+		LeaveType leaveType = findByPublicId(publicId);
+		leaveType.configureApprovalLevels(approvalLevels);
+		return leaveTypeRepository.save(leaveType);
+	}
+
+	@Transactional
 	public LeaveType configureCarryForward(String publicId, boolean enabled, BigDecimal maxCarryForwardDays,
 			Integer carryForwardExpiryMonths) {
 		LeaveType leaveType = findByPublicId(publicId);

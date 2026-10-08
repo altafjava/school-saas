@@ -70,4 +70,12 @@ public class CirculationController implements CirculationApi {
 		return ApiResponse
 				.success(circulationMapper.toResponse(circulationService.returnBook(publicId, request.returnedAt())));
 	}
+
+	@Override
+	@PatchMapping("/{publicId}/renew")
+	@PreAuthorize("@permissionAuthorizationService.hasPermission('CIRCULATION_MANAGE')")
+	@RequireIdempotencyKey
+	public ApiResponse<CirculationResponse> renew(@PathVariable String publicId) {
+		return ApiResponse.success(circulationMapper.toResponse(circulationService.renew(publicId)));
+	}
 }

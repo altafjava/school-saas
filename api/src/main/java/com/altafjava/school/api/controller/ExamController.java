@@ -3,6 +3,7 @@ package com.altafjava.school.api.controller;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -13,13 +14,16 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import com.altafjava.platform.api.dto.response.ApiResponse;
+import com.altafjava.platform.core.security.AuthenticatedUser;
 import com.altafjava.school.api.controller.api.ExamApi;
 import com.altafjava.school.api.dto.request.AssignExamTermRequest;
 import com.altafjava.school.api.dto.request.RescheduleExamRequest;
+import com.altafjava.school.api.dto.request.ReweightExamRequest;
 import com.altafjava.school.api.dto.request.ScheduleExamRequest;
 import com.altafjava.school.api.dto.response.ExamResponse;
 import com.altafjava.school.api.mapper.ExamMapper;
 import com.altafjava.school.api.support.PlatformPageMapper;
+import com.altafjava.school.api.support.SortableBy;
 import com.altafjava.school.api.support.SpringDataPageableResolver;
 import com.altafjava.school.application.service.ExamService;
 
@@ -41,6 +45,7 @@ public class ExamController implements ExamApi {
 	@Override
 	@GetMapping
 	@PreAuthorize("@permissionAuthorizationService.hasPermission('EXAM_COMPLETE')")
+	@SortableBy({ "title", "scheduledAt", "status", "maxMarks" })
 	public ApiResponse<com.altafjava.platform.core.model.Page<ExamResponse>> list(
 			@RequestParam(defaultValue = "0") int page,
 			@RequestParam(defaultValue = "20") int size) {
@@ -68,7 +73,8 @@ public class ExamController implements ExamApi {
 				request.scheduledAt(),
 				request.maxMarks(),
 				request.termId(),
-				request.examTypeId())));
+				request.examTypeId(),
+				request.weightage())));
 	}
 
 	@Override
@@ -85,6 +91,29 @@ public class ExamController implements ExamApi {
 	public ApiResponse<ExamResponse> assignTerm(@PathVariable String publicId,
 			@Valid @RequestBody AssignExamTermRequest request) {
 		return ApiResponse.success(examMapper.toResponse(examService.assignTerm(publicId, request.termId())));
+	}
+
+	@Override
+	@PatchMapping("/{publicId}/weightage")
+	@PreAuthorize("@permissionAuthorizationService.hasPermission('EXAM_WRITE')")
+	public ApiResponse<ExamResponse> reweight(@PathVariable String publicId,
+			@Valid @RequestBody ReweightExamRequest request) {
+		return ApiResponse.success(examMapper.toResponse(examService.reweight(publicId, request.weightage())));
+	}
+
+	@Override
+	@PostMapping("/{publicId}/results/publish")
+	@PreAuthorize("@permissionAuthorizationService.hasPermission('EXAM_RESULT_PUBLISH')")
+	public ApiResponse<ExamResponse> publishResults(@PathVariable String publicId,
+			@AuthenticationPrincipal AuthenticatedUser user) {
+		return ApiResponse.success(examMapper.toResponse(examService.publishResults(publicId, user.getUsername())));
+	}
+
+	@Override
+	@PostMapping("/{publicId}/results/withdraw")
+	@PreAuthorize("@permissionAuthorizationService.hasPermission('EXAM_RESULT_PUBLISH')")
+	public ApiResponse<ExamResponse> withdrawResults(@PathVariable String publicId) {
+		return ApiResponse.success(examMapper.toResponse(examService.withdrawResults(publicId)));
 	}
 
 	@Override

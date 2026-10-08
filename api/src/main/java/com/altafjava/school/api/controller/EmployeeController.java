@@ -26,6 +26,7 @@ import com.altafjava.school.api.dto.response.EmployeeResponse;
 import com.altafjava.school.api.mapper.AddressMapper;
 import com.altafjava.school.api.mapper.EmployeeMapper;
 import com.altafjava.school.api.support.PlatformPageMapper;
+import com.altafjava.school.api.support.SortableBy;
 import com.altafjava.school.api.support.SpringDataPageableResolver;
 import com.altafjava.school.application.service.EmployeeService;
 import com.altafjava.school.domain.employee.model.EmployeeStatus;
@@ -45,6 +46,7 @@ public class EmployeeController implements EmployeeApi {
 	@Override
 	@GetMapping
 	@PreAuthorize("@permissionAuthorizationService.hasPermission('EMPLOYEE_READ')")
+	@SortableBy({ "employeeCode", "firstName", "lastName", "joinDate", "status", "staffCategory" })
 	public ApiResponse<com.altafjava.platform.core.model.Page<EmployeeResponse>> list(
 			@RequestParam(required = false) StaffCategory category,
 			@RequestParam(required = false) EmployeeStatus status,

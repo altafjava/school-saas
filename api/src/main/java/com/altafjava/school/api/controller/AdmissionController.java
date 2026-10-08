@@ -20,6 +20,7 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import com.altafjava.platform.api.dto.response.ApiResponse;
 import com.altafjava.platform.core.exception.BusinessException;
+import com.altafjava.platform.core.idempotency.RequireIdempotencyKey;
 import com.altafjava.school.api.controller.api.AdmissionApi;
 import com.altafjava.school.api.dto.request.DecideAdmissionRequest;
 import com.altafjava.school.api.dto.request.PublicAdmissionApplicationRequest;
@@ -29,6 +30,7 @@ import com.altafjava.school.api.dto.request.WaiveApplicationFeeRequest;
 import com.altafjava.school.api.dto.response.AdmissionResponse;
 import com.altafjava.school.api.mapper.AdmissionMapper;
 import com.altafjava.school.api.support.PlatformPageMapper;
+import com.altafjava.school.api.support.SortableBy;
 import com.altafjava.school.api.support.SpringDataPageableResolver;
 import com.altafjava.school.application.service.AdmissionService;
 import com.altafjava.school.domain.admission.model.DecisionOutcome;
@@ -63,6 +65,7 @@ public class AdmissionController implements AdmissionApi {
 	@Override
 	@GetMapping
 	@PreAuthorize("@permissionAuthorizationService.hasPermission('ADMISSION_MANAGE')")
+	@SortableBy({ "applicantFirstName", "applicantLastName", "appliedGrade", "status", "submittedAt" })
 	public ApiResponse<com.altafjava.platform.core.model.Page<AdmissionResponse>> list(
 			@RequestParam(defaultValue = "0") int page,
 			@RequestParam(defaultValue = "20") int size) {
@@ -82,6 +85,7 @@ public class AdmissionController implements AdmissionApi {
 	@PostMapping
 	@ResponseStatus(HttpStatus.CREATED)
 	@PreAuthorize("@permissionAuthorizationService.hasPermission('ADMISSION_MANAGE')")
+	@RequireIdempotencyKey
 	public ApiResponse<AdmissionResponse> submit(@Valid @RequestBody SubmitAdmissionRequest request) {
 		return ApiResponse.success(admissionMapper.toResponse(admissionService.submit(
 				request.applicantFirstName(),
@@ -97,6 +101,7 @@ public class AdmissionController implements AdmissionApi {
 	@Override
 	@PostMapping("/apply")
 	@ResponseStatus(HttpStatus.CREATED)
+	@RequireIdempotencyKey
 	public ApiResponse<AdmissionResponse> apply(@Valid @RequestBody PublicAdmissionApplicationRequest request) {
 		return ApiResponse.success(admissionMapper.toResponse(admissionService.submit(
 				request.applicantFirstName(),
@@ -119,6 +124,7 @@ public class AdmissionController implements AdmissionApi {
 	@Override
 	@PatchMapping("/{publicId}/decision")
 	@PreAuthorize("@permissionAuthorizationService.hasPermission('ADMISSION_MANAGE')")
+	@RequireIdempotencyKey
 	public ApiResponse<AdmissionResponse> decide(@PathVariable String publicId,
 			@Valid @RequestBody DecideAdmissionRequest request) {
 		if (request.outcome() != DecisionOutcome.APPROVED) {
@@ -162,6 +168,7 @@ public class AdmissionController implements AdmissionApi {
 	@Override
 	@PatchMapping("/{publicId}/application-fee/payment")
 	@PreAuthorize("@permissionAuthorizationService.hasPermission('ADMISSION_FEE_MANAGE')")
+	@RequireIdempotencyKey
 	public ApiResponse<AdmissionResponse> recordApplicationFee(@PathVariable String publicId) {
 		return ApiResponse.success(admissionMapper.toResponse(admissionService.recordApplicationFeePayment(publicId)));
 	}
@@ -178,6 +185,7 @@ public class AdmissionController implements AdmissionApi {
 	@Override
 	@PostMapping("/{publicId}/offer-letter")
 	@PreAuthorize("@permissionAuthorizationService.hasPermission('ADMISSION_MANAGE')")
+	@RequireIdempotencyKey
 	public ApiResponse<AdmissionResponse> issueOfferLetter(@PathVariable String publicId) {
 		return ApiResponse.success(admissionMapper.toResponse(admissionService.issueOfferLetter(publicId)));
 	}

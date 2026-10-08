@@ -1,6 +1,5 @@
 package com.altafjava.school.application.service;
 
-import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.List;
@@ -14,6 +13,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import com.altafjava.platform.core.exception.ResourceNotFoundException;
 import com.altafjava.platform.core.tenant.TenantContext;
+import com.altafjava.school.application.security.ExamResultVisibilityPolicy;
 import com.altafjava.school.application.security.StudentDataAccessGuard;
 import com.altafjava.school.domain.academicyear.model.AcademicYear;
 import com.altafjava.school.domain.academicyear.repository.AcademicYearRepository;
@@ -23,6 +23,7 @@ import com.altafjava.school.domain.exam.repository.ExamRepository;
 import com.altafjava.school.domain.grade.model.Grade;
 import com.altafjava.school.domain.grade.repository.GradeRepository;
 import com.altafjava.school.domain.grade.service.GpaCalculator;
+import com.altafjava.school.domain.grade.service.GpaCalculator.WeightedPoints;
 import com.altafjava.school.domain.grade.service.GradeCalculator;
 import com.altafjava.school.domain.student.model.Student;
 import com.altafjava.school.domain.student.repository.StudentRepository;
@@ -30,10 +31,11 @@ import com.altafjava.school.domain.term.model.Term;
 import com.altafjava.school.domain.term.repository.TermRepository;
 
 /**
- * GPA rollup — unweighted average of each recorded {@code Grade}'s resolved points (via the
- * grading scale effective for that grade's classroom at calculation time, see
+ * GPA rollup — average of each recorded {@code Grade}'s resolved points weighted by its exam's
+ * weightage (via the grading scale effective for that grade's classroom at calculation time, see
  * {@code GradingScaleService.resolveEffectiveThresholds} — GPA reflects the currently effective
  * scale, the same pragmatic assumption {@code GradeCalculator} already makes for letter grades).
+ * Callers who may not see unpublished results get a GPA over published exams only.
  * Term/year windows are applied as a date-range filter on {@code Exam.scheduledAt}, mirroring
  * {@code ReportCardService}'s existing approach rather than relying on the nullable
  * {@code Exam.termId}.
@@ -48,13 +50,14 @@ public class StudentGpaService {
 	private final StudentRepository studentRepository;
 	private final StudentDataAccessGuard studentDataAccessGuard;
 	private final GradingScaleService gradingScaleService;
+	private final ExamResultVisibilityPolicy examResultVisibilityPolicy;
 	private final GradeCalculator gradeCalculator = new GradeCalculator();
 	private final GpaCalculator gpaCalculator = new GpaCalculator();
 
 	public StudentGpaService(GradeRepository gradeRepository, ExamRepository examRepository,
 			TermRepository termRepository, AcademicYearRepository academicYearRepository,
 			StudentRepository studentRepository, StudentDataAccessGuard studentDataAccessGuard,
-			GradingScaleService gradingScaleService) {
+			GradingScaleService gradingScaleService, ExamResultVisibilityPolicy examResultVisibilityPolicy) {
 		this.gradeRepository = gradeRepository;
 		this.examRepository = examRepository;
 		this.termRepository = termRepository;
@@ -62,6 +65,7 @@ public class StudentGpaService {
 		this.studentRepository = studentRepository;
 		this.studentDataAccessGuard = studentDataAccessGuard;
 		this.gradingScaleService = gradingScaleService;
+		this.examResultVisibilityPolicy = examResultVisibilityPolicy;
 	}
 
 	@Transactional(readOnly = true)
@@ -89,20 +93,18 @@ public class StudentGpaService {
 	public GpaResult calculateCumulativeGpa(String studentPublicId) {
 		Long tenantId = TenantContext.getCurrentTenantId();
 		Student student = resolveStudent(tenantId, studentPublicId);
-		List<BigDecimal> points = examinedGrades(tenantId, student.getId())
-				.map(this::resolvePoints)
+		return toResult(examinedGrades(tenantId, student.getId())
+				.map(this::resolveWeightedPoints)
 				.flatMap(Optional::stream)
-				.toList();
-		return toResult(points);
+				.toList());
 	}
 
 	private GpaResult calculateGpaForRange(Long tenantId, Long studentId, LocalDateTime start, LocalDateTime end) {
-		List<BigDecimal> points = examinedGrades(tenantId, studentId)
+		return toResult(examinedGrades(tenantId, studentId)
 				.filter(gradedExam -> withinRange(gradedExam.exam(), start, end))
-				.map(this::resolvePoints)
+				.map(this::resolveWeightedPoints)
 				.flatMap(Optional::stream)
-				.toList();
-		return toResult(points);
+				.toList());
 	}
 
 	private boolean withinRange(Exam exam, LocalDateTime start, LocalDateTime end) {
@@ -117,20 +119,24 @@ public class StudentGpaService {
 		}
 		Map<Long, Exam> examsById = examRepository.findAllByIdInAndTenantId(examIds, tenantId).stream()
 				.collect(Collectors.toMap(Exam::getId, Function.identity()));
+		boolean includeUnpublished = examResultVisibilityPolicy.canSeeUnpublishedResults();
 		return grades.stream()
 				.map(grade -> Optional.ofNullable(examsById.get(grade.getExamId()))
+						.filter(exam -> includeUnpublished || exam.isResultsPublished())
 						.map(exam -> new GradedExam(grade, exam)))
 				.flatMap(Optional::stream);
 	}
 
-	private Optional<BigDecimal> resolvePoints(GradedExam gradedExam) {
+	private Optional<WeightedPoints> resolveWeightedPoints(GradedExam gradedExam) {
 		List<GradingScaleThreshold> thresholds = gradingScaleService
 				.resolveEffectiveThresholds(gradedExam.exam().getClassroomId());
-		return gradeCalculator.resolvePoints(gradedExam.grade().getGradeLetter(), thresholds);
+		return gradeCalculator.resolvePoints(gradedExam.grade().getGradeLetter(), thresholds)
+				.map(points -> new WeightedPoints(points, gradedExam.exam().getWeightage()));
 	}
 
-	private GpaResult toResult(List<BigDecimal> points) {
-		return new GpaResult(gpaCalculator.calculateAverage(points).orElse(null), points.size());
+	private GpaResult toResult(List<WeightedPoints> weightedPoints) {
+		return new GpaResult(gpaCalculator.calculateWeightedAverage(weightedPoints).orElse(null),
+				weightedPoints.size());
 	}
 
 	private Student resolveStudent(Long tenantId, String studentPublicId) {

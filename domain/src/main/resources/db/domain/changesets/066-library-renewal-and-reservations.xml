@@ -1,0 +1,116 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                            http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-5.0.xsd">
+
+    <!-- Phase 3.4 — a borrower can renew a loan, and reserve a title that has no copy on the shelf. A
+         returned copy is held for the first reservation in the queue until its hold runs out. -->
+
+    <changeSet id="school-168-circulation-renewals" author="school">
+        <addColumn tableName="circulations">
+            <column name="renewal_count" type="INT" defaultValueNumeric="0">
+                <constraints nullable="false"/>
+            </column>
+            <column name="last_renewed_at" type="DATE"/>
+        </addColumn>
+        <sql>
+            ALTER TABLE circulations ADD CONSTRAINT chk_circulations_renewal_count CHECK (renewal_count >= 0)
+        </sql>
+    </changeSet>
+
+    <changeSet id="school-169-book-reservations" author="school">
+        <createTable tableName="book_reservations">
+            <column name="id" type="BIGINT" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="public_id" type="VARCHAR(36)">
+                <constraints nullable="false" unique="true"/>
+            </column>
+            <column name="version" type="BIGINT" defaultValueNumeric="0">
+                <constraints nullable="false"/>
+            </column>
+            <column name="tenant_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="book_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="student_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="reserved_at" type="TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="status" type="VARCHAR(20)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="held_copy_id" type="BIGINT"/>
+            <column name="hold_expires_on" type="DATE"/>
+            <column name="closed_at" type="TIMESTAMP"/>
+            <column name="deleted" type="BOOLEAN" defaultValueBoolean="false">
+                <constraints nullable="false"/>
+            </column>
+            <column name="deleted_at" type="TIMESTAMP"/>
+            <column name="deleted_by" type="VARCHAR(100)"/>
+            <column name="created_at" type="TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="updated_at" type="TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_by" type="VARCHAR(100)"/>
+            <column name="updated_by" type="VARCHAR(100)"/>
+        </createTable>
+        <addForeignKeyConstraint constraintName="fk_book_reservations_tenant_id"
+                baseTableName="book_reservations" baseColumnNames="tenant_id"
+                referencedTableName="tenants" referencedColumnNames="id"/>
+        <addForeignKeyConstraint constraintName="fk_book_reservations_book_id"
+                baseTableName="book_reservations" baseColumnNames="book_id"
+                referencedTableName="books" referencedColumnNames="id"/>
+        <addForeignKeyConstraint constraintName="fk_book_reservations_student_id"
+                baseTableName="book_reservations" baseColumnNames="student_id"
+                referencedTableName="students" referencedColumnNames="id"/>
+        <addForeignKeyConstraint constraintName="fk_book_reservations_held_copy_id"
+                baseTableName="book_reservations" baseColumnNames="held_copy_id"
+                referencedTableName="book_copies" referencedColumnNames="id"/>
+        <!-- 1 while a reservation is still waiting or holding a copy, NULL once it is closed: one live
+             reservation per student and title, and one holder per held copy. -->
+        <sql>
+            ALTER TABLE book_reservations
+            ADD COLUMN live_marker TINYINT
+            GENERATED ALWAYS AS (CASE WHEN deleted = FALSE AND status IN ('QUEUED', 'READY') THEN 1 ELSE NULL END) STORED;
+        </sql>
+        <sql>
+            ALTER TABLE book_reservations
+            ADD COLUMN active_held_copy_id BIGINT
+            GENERATED ALWAYS AS (CASE WHEN deleted = FALSE AND status = 'READY' THEN held_copy_id ELSE NULL END) STORED;
+        </sql>
+        <createIndex indexName="uq_book_reservations_live_student_book" tableName="book_reservations" unique="true">
+            <column name="tenant_id"/>
+            <column name="book_id"/>
+            <column name="student_id"/>
+            <column name="live_marker"/>
+        </createIndex>
+        <createIndex indexName="uq_book_reservations_active_held_copy" tableName="book_reservations" unique="true">
+            <column name="tenant_id"/>
+            <column name="active_held_copy_id"/>
+        </createIndex>
+        <createIndex indexName="idx_book_reservations_tenant_book_status" tableName="book_reservations">
+            <column name="tenant_id"/>
+            <column name="book_id"/>
+            <column name="status"/>
+        </createIndex>
+        <createIndex indexName="idx_book_reservations_student_id" tableName="book_reservations">
+            <column name="student_id"/>
+        </createIndex>
+        <createIndex indexName="idx_book_reservations_deleted" tableName="book_reservations">
+            <column name="deleted"/>
+        </createIndex>
+        <createIndex indexName="idx_book_reservations_hold_expires_on" tableName="book_reservations">
+            <column name="hold_expires_on"/>
+        </createIndex>
+    </changeSet>
+
+</databaseChangeLog>

@@ -4,7 +4,10 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.mock;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.lenient;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import java.time.LocalDate;
@@ -72,6 +75,12 @@ class IdCardServiceTest {
 				classroomRepository, academicYearRepository);
 		idCardService = new IdCardService(studentRepository, employeeRepository, departmentRepository,
 				placementResolver, fileStorageService, documentIssuanceService);
+		lenient().when(documentIssuanceService.issue(any(DocumentIssueRequest.class))).thenAnswer(inv -> {
+			DocumentIssueRequest request = inv.getArgument(0);
+			return card(1000L, request.documentType(), request.ownerEntityType(), request.ownerEntityId());
+		});
+		lenient().when(documentIssuanceService.listForOwner(any(), any(), any(), any(), any()))
+				.thenReturn(new com.altafjava.platform.core.model.Page<>(List.of(), 0, 100, 0));
 		TenantContext.ForTesting.setCurrentTenant(1L, null, null, TenantType.SHARED);
 	}
 
@@ -85,6 +94,18 @@ class IdCardServiceTest {
 		student.setId(id);
 		student.setPublicId(publicId);
 		return student;
+	}
+
+	private DocumentIssuance card(long id, String documentType, String ownerType, long ownerId) {
+		DocumentIssuance card = DocumentIssuance.create(documentType, ownerType, ownerId, "Card", "Jane Doe", null,
+				null, "code" + id, "key" + id, ISSUER);
+		card.setId(id);
+		return card;
+	}
+
+	private void alreadyIssued(String ownerType, long ownerId, DocumentIssuance... cards) {
+		when(documentIssuanceService.listForOwner(eq(1L), eq(ownerType), eq(ownerId), anyString(), any()))
+				.thenReturn(new com.altafjava.platform.core.model.Page<>(List.of(cards), 0, 100, cards.length));
 	}
 
 	@SuppressWarnings("unchecked")
@@ -105,10 +126,10 @@ class IdCardServiceTest {
 		when(studentRepository.findByPublicIdAndTenantId(publicId, 1L))
 				.thenReturn(Optional.of(student(10L, "STU-100", publicId)));
 		when(studentClassroomLinkRepository.findByStudentId(1L, 10L)).thenReturn(List.of());
-		DocumentIssuance issuance = mock(DocumentIssuance.class);
-		when(documentIssuanceService.issue(any(DocumentIssueRequest.class))).thenReturn(issuance);
 
-		assertSame(issuance, idCardService.issueForStudent(publicId.toString(), ISSUER));
+		DocumentIssuance issued = idCardService.issueForStudent(publicId.toString(), ISSUER);
+
+		assertEquals(1000L, issued.getId());
 
 		Map<String, Object> model = issuedModel(SchoolDocumentTypes.STUDENT_ID_CARD, "STUDENT", 10L);
 		assertEquals("Jane Doe", model.get("studentName"));
@@ -190,5 +211,39 @@ class IdCardServiceTest {
 
 		assertThrows(ResourceNotFoundException.class,
 				() -> idCardService.findStudentCard(publicId.toString(), "issuance-1"));
+	}
+
+	@Test
+	void issueForStudent_revokesThePreviouslyIssuedCardSoALostOneStopsScanning() {
+		UUID publicId = UUID.randomUUID();
+		when(studentRepository.findByPublicIdAndTenantId(publicId, 1L))
+				.thenReturn(Optional.of(student(10L, "STU-100", publicId)));
+		when(studentClassroomLinkRepository.findByStudentId(1L, 10L)).thenReturn(List.of());
+		DocumentIssuance lostCard = card(900L, SchoolDocumentTypes.STUDENT_ID_CARD, "STUDENT", 10L);
+		DocumentIssuance alreadyRevoked = card(901L, SchoolDocumentTypes.STUDENT_ID_CARD, "STUDENT", 10L);
+		alreadyRevoked.revoke("old");
+		DocumentIssuance newCard = card(1000L, SchoolDocumentTypes.STUDENT_ID_CARD, "STUDENT", 10L);
+		alreadyIssued("STUDENT", 10L, lostCard, alreadyRevoked, newCard);
+
+		idCardService.issueForStudent(publicId.toString(), ISSUER);
+
+		verify(documentIssuanceService).revoke(eq(lostCard), anyString());
+		verify(documentIssuanceService, never()).revoke(eq(alreadyRevoked), anyString());
+		verify(documentIssuanceService, never()).revoke(eq(newCard), anyString());
+	}
+
+	@Test
+	void issueForEmployee_revokesThePreviouslyIssuedStaffCard() {
+		UUID publicId = UUID.randomUUID();
+		Employee clerk = Employee.create(StaffCategory.SUPPORT, "EMP-3", "Cleo", "Clerk", "cleo@school.test",
+				LocalDate.of(2020, 1, 1));
+		clerk.setId(60L);
+		when(employeeRepository.findByPublicIdAndTenantId(publicId, 1L)).thenReturn(Optional.of(clerk));
+		DocumentIssuance previous = card(800L, SchoolDocumentTypes.STAFF_ID_CARD, "EMPLOYEE", 60L);
+		alreadyIssued("EMPLOYEE", 60L, previous);
+
+		idCardService.issueForEmployee(publicId.toString(), ISSUER);
+
+		verify(documentIssuanceService).revoke(eq(previous), anyString());
 	}
 }

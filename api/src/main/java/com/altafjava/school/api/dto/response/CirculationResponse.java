@@ -10,5 +10,7 @@ public record CirculationResponse(
 		LocalDate checkedOutAt,
 		LocalDate dueDate,
 		LocalDate returnedAt,
-		BigDecimal fineAmount) {
+		BigDecimal fineAmount,
+		int renewalCount,
+		LocalDate lastRenewedAt) {
 }

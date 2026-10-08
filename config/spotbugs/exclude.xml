@@ -342,4 +342,31 @@
         <Method name="&lt;init&gt;"/>
         <Bug pattern="EI_EXPOSE_REP2"/>
     </Match>
+    <!--
+      Phase 3 additions (2026-10-08): the same EI_EXPOSE_REP/REP2 detector noise as above — internal
+      result records that carry JPA entities from an application service to its mapper (nothing
+      mutates them or hands them to untrusted callers), and VisitorLogService's constructor-injected
+      platform DocumentIssuanceService (the same type CertificateService already injects).
+    -->
+    <Match>
+        <Class name="com.altafjava.school.application.service.AttendanceScanResult"/>
+        <Bug pattern="EI_EXPOSE_REP"/>
+    </Match>
+    <Match>
+        <Class name="com.altafjava.school.application.service.AttendanceScanResult"/>
+        <Bug pattern="EI_EXPOSE_REP2"/>
+    </Match>
+    <Match>
+        <Class name="com.altafjava.school.application.service.SubstitutionDetails"/>
+        <Bug pattern="EI_EXPOSE_REP"/>
+    </Match>
+    <Match>
+        <Class name="com.altafjava.school.application.service.SubstitutionDetails"/>
+        <Bug pattern="EI_EXPOSE_REP2"/>
+    </Match>
+    <Match>
+        <Class name="com.altafjava.school.application.service.VisitorLogService"/>
+        <Method name="&lt;init&gt;"/>
+        <Bug pattern="EI_EXPOSE_REP2"/>
+    </Match>
 </FindBugsFilter>
