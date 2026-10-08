@@ -31,9 +31,6 @@ public class LeaveType extends SoftDeletableEntity {
 	@Column(name = "default_annual_days", nullable = false, precision = 5, scale = 1)
 	private BigDecimal defaultAnnualDays;
 
-	@Column(name = "active", nullable = false)
-	private boolean active;
-
 	// Whether leave under this type is compensated. Payroll's loss-of-pay calculation is the only
 	// consumer today — everything created before this column existed defaults to paid, matching the
 	// prior (implicit) behavior where all leave was treated as compensated.
@@ -62,6 +59,9 @@ public class LeaveType extends SoftDeletableEntity {
 	// approval; 1 leaves the decision to an administrator alone.
 	@Column(name = "approval_levels", nullable = false)
 	private int approvalLevels;
+
+	@Column(name = "active", nullable = false)
+	private boolean active;
 
 	public static LeaveType create(String name, BigDecimal defaultAnnualDays) {
 		return LeaveType.builder()

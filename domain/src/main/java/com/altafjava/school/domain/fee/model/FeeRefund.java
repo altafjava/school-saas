@@ -48,10 +48,6 @@ public class FeeRefund extends TenantEntity {
 	@Column(name = "method", nullable = false, length = 20)
 	private RefundMethod method;
 
-	@Enumerated(EnumType.STRING)
-	@Column(name = "status", nullable = false, length = 20)
-	private RefundStatus status;
-
 	@Column(name = "credit_note_number", nullable = false, length = 100)
 	private String creditNoteNumber;
 
@@ -64,6 +60,10 @@ public class FeeRefund extends TenantEntity {
 	// FK to platform users.id
 	@Column(name = "refunded_by_user_id")
 	private Long refundedByUserId;
+
+	@Enumerated(EnumType.STRING)
+	@Column(name = "status", nullable = false, length = 20)
+	private RefundStatus status;
 
 	public static FeeRefund reserve(FeePayment payment, BigDecimal amount, String reason, RefundMethod method,
 			String creditNoteNumber, Long refundedByUserId) {

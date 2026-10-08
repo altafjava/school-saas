@@ -19,6 +19,11 @@ import lombok.experimental.SuperBuilder;
 @NoArgsConstructor
 public class Subject extends SoftDeletableEntity {
 
+	// FK to curricula.id — stored as Long to avoid cross-entity coupling in domain layer, same
+	// convention as Classroom.curriculumId. Nullable: not every subject is tied to a curriculum.
+	@Column(name = "curriculum_id")
+	private Long curriculumId;
+
 	@Column(name = "code", nullable = false, length = 20)
 	private String code;
 
@@ -30,11 +35,6 @@ public class Subject extends SoftDeletableEntity {
 
 	@Column(name = "active", nullable = false)
 	private boolean active;
-
-	// FK to curricula.id — stored as Long to avoid cross-entity coupling in domain layer, same
-	// convention as Classroom.curriculumId. Nullable: not every subject is tied to a curriculum.
-	@Column(name = "curriculum_id")
-	private Long curriculumId;
 
 	public static Subject create(String code, String name, String description) {
 		return Subject.builder()

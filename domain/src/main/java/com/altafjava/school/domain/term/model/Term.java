@@ -20,6 +20,10 @@ import lombok.experimental.SuperBuilder;
 @NoArgsConstructor
 public class Term extends SoftDeletableEntity {
 
+	// FK to academic_years.id — stored as Long to avoid cross-entity coupling in domain layer
+	@Column(name = "academic_year_id", nullable = false)
+	private Long academicYearId;
+
 	@Column(name = "name", nullable = false, length = 50)
 	private String name;
 
@@ -28,10 +32,6 @@ public class Term extends SoftDeletableEntity {
 
 	@Column(name = "end_date", nullable = false)
 	private LocalDate endDate;
-
-	// FK to academic_years.id — stored as Long to avoid cross-entity coupling in domain layer
-	@Column(name = "academic_year_id", nullable = false)
-	private Long academicYearId;
 
 	@Column(name = "is_current", nullable = false)
 	private boolean current;

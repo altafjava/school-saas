@@ -65,7 +65,7 @@ public class GuardianConsentService {
 		} catch (DataIntegrityViolationException e) {
 			// Two concurrent grant calls for the same (guardian, student, type) can both miss the
 			// existence check above and both attempt to insert — the uq_guardian_consent_records
-			// unique index (050-retention-and-guardian-consent.xml) catches the race, and the
+			// unique index (035-retention-and-guardian-consent.xml) catches the race, and the
 			// losing insert lands here. Retrying as an update on the winner's row (rather than
 			// surfacing the raw constraint-violation exception) is safe within this same
 			// transaction: MariaDB rolls back only the failed statement on a duplicate-key error,

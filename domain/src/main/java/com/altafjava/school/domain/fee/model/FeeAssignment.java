@@ -28,10 +28,6 @@ public class FeeAssignment extends SoftDeletableEntity {
 	@Column(name = "fee_structure_id", nullable = false)
 	private Long feeStructureId;
 
-	@Enumerated(EnumType.STRING)
-	@Column(name = "scope", nullable = false, length = 20)
-	private FeeAssignmentScope scope;
-
 	// FK to students.id — set iff scope == STUDENT
 	@Column(name = "student_id")
 	private Long studentId;
@@ -39,6 +35,10 @@ public class FeeAssignment extends SoftDeletableEntity {
 	// FK to classrooms.id — set iff scope == CLASSROOM
 	@Column(name = "classroom_id")
 	private Long classroomId;
+
+	@Enumerated(EnumType.STRING)
+	@Column(name = "scope", nullable = false, length = 20)
+	private FeeAssignmentScope scope;
 
 	// Nullable — no due date means no late fee is ever applied for this assignment, regardless of
 	// the owning FeeStructure's late-fee policy (see FeeBalanceCalculator).

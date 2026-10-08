@@ -32,6 +32,9 @@ public class CounselingReferral extends SoftDeletableEntity {
 	@Column(name = "student_id", nullable = false)
 	private Long studentId;
 
+	@Column(name = "counseling_session_id")
+	private Long counselingSessionId;
+
 	@Column(name = "referred_by_user_id", nullable = false)
 	private Long referredByUserId;
 
@@ -45,9 +48,6 @@ public class CounselingReferral extends SoftDeletableEntity {
 	@Enumerated(EnumType.STRING)
 	@Column(name = "status", nullable = false, length = 20)
 	private CounselingReferralStatus status;
-
-	@Column(name = "counseling_session_id")
-	private Long counselingSessionId;
 
 	public static CounselingReferral refer(Long studentId, Long referredByUserId, String reason) {
 		return CounselingReferral.builder()

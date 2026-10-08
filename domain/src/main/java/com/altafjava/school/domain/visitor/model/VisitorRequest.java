@@ -29,6 +29,14 @@ import lombok.experimental.SuperBuilder;
 @NoArgsConstructor
 public class VisitorRequest extends SoftDeletableEntity {
 
+	// FK to employees.id — anyone on staff can host, not only teachers.
+	@Column(name = "host_employee_id", nullable = false)
+	private Long hostEmployeeId;
+
+	// FK to platform file_metadata.public_id — see Student.photoFilePublicId.
+	@Column(name = "photo_file_public_id")
+	private UUID photoFilePublicId;
+
 	@Pii
 	@Column(name = "visitor_name", nullable = false, length = 150)
 	private String visitorName;
@@ -40,24 +48,12 @@ public class VisitorRequest extends SoftDeletableEntity {
 	@Column(name = "purpose", nullable = false, length = 500)
 	private String purpose;
 
-	// FK to employees.id — anyone on staff can host, not only teachers.
-	@Column(name = "host_employee_id", nullable = false)
-	private Long hostEmployeeId;
-
 	@Column(name = "visit_date", nullable = false)
 	private LocalDate visitDate;
 
 	@Enumerated(EnumType.STRING)
 	@Column(name = "source", nullable = false, length = 20)
 	private VisitorRequestSource source;
-
-	@Enumerated(EnumType.STRING)
-	@Column(name = "status", nullable = false, length = 20)
-	private VisitorRequestStatus status;
-
-	// FK to platform file_metadata.public_id — see Student.photoFilePublicId.
-	@Column(name = "photo_file_public_id")
-	private UUID photoFilePublicId;
 
 	@Column(name = "requested_by_user_id")
 	private Long requestedByUserId;
@@ -70,6 +66,10 @@ public class VisitorRequest extends SoftDeletableEntity {
 
 	@Column(name = "decision_reason", length = 500)
 	private String decisionReason;
+
+	@Enumerated(EnumType.STRING)
+	@Column(name = "status", nullable = false, length = 20)
+	private VisitorRequestStatus status;
 
 	public static VisitorRequest preRegister(String visitorName, String visitorPhone, String purpose,
 			Long hostEmployeeId, LocalDate visitDate, Long requestedByUserId, LocalDate today) {

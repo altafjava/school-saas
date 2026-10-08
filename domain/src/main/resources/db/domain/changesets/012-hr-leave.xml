@@ -1,0 +1,351 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                            http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-5.0.xsd">
+
+    <changeSet id="school-032-departments" author="school">
+        <createTable tableName="departments">
+            <column name="id" type="BIGINT" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="public_id" type="VARCHAR(36)">
+                <constraints nullable="false" unique="true"/>
+            </column>
+            <column name="tenant_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="head_employee_id" type="BIGINT"/>
+            <column name="name" type="VARCHAR(100)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="code" type="VARCHAR(50)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="description" type="VARCHAR(500)"/>
+            <column name="active" type="BOOLEAN" defaultValueBoolean="true">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_at" type="TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_by" type="VARCHAR(100)"/>
+            <column name="updated_at" type="TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="updated_by" type="VARCHAR(100)"/>
+            <column name="deleted" type="BOOLEAN" defaultValueBoolean="false">
+                <constraints nullable="false"/>
+            </column>
+            <column name="deleted_at" type="TIMESTAMP"/>
+            <column name="deleted_by" type="VARCHAR(100)"/>
+            <column name="version" type="BIGINT" defaultValueNumeric="0">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+        <sql>
+            ALTER TABLE departments
+                ADD COLUMN active_code VARCHAR(50)
+                GENERATED ALWAYS AS (CASE WHEN deleted = FALSE THEN code ELSE NULL END) STORED;
+        </sql>
+        <createIndex indexName="idx_departments_tenant_id" tableName="departments">
+            <column name="tenant_id"/>
+        </createIndex>
+        <createIndex indexName="idx_departments_deleted" tableName="departments">
+            <column name="deleted"/>
+        </createIndex>
+        <createIndex indexName="uq_departments_tenant_active_code" tableName="departments" unique="true">
+            <column name="tenant_id"/>
+            <column name="active_code"/>
+        </createIndex>
+        <createIndex indexName="idx_departments_head_employee_id" tableName="departments">
+            <column name="head_employee_id"/>
+        </createIndex>
+        <addForeignKeyConstraint
+                constraintName="fk_departments_tenant_id"
+                baseTableName="departments"
+                baseColumnNames="tenant_id"
+                referencedTableName="tenants"
+                referencedColumnNames="id"/>
+    </changeSet>
+
+    <changeSet id="school-034-leave-types" author="school">
+        <createTable tableName="leave_types">
+            <column name="id" type="BIGINT" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="public_id" type="VARCHAR(36)">
+                <constraints nullable="false" unique="true"/>
+            </column>
+            <column name="tenant_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="name" type="VARCHAR(100)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="default_annual_days" type="DECIMAL(5,1)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="paid" type="BOOLEAN" defaultValueBoolean="true">
+                <constraints nullable="false"/>
+            </column>
+            <column name="available_during_probation" type="BOOLEAN" defaultValueBoolean="true">
+                <constraints nullable="false"/>
+            </column>
+            <column name="carry_forward_enabled" type="BOOLEAN" defaultValueBoolean="false">
+                <constraints nullable="false"/>
+            </column>
+            <column name="max_carry_forward_days" type="DECIMAL(5,1)"/>
+            <column name="carry_forward_expiry_months" type="INT"/>
+            <column name="approval_levels" type="INT" defaultValueNumeric="1">
+                <constraints nullable="false"/>
+            </column>
+            <column name="active" type="BOOLEAN" defaultValueBoolean="true">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_at" type="TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_by" type="VARCHAR(100)"/>
+            <column name="updated_at" type="TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="updated_by" type="VARCHAR(100)"/>
+            <column name="deleted" type="BOOLEAN" defaultValueBoolean="false">
+                <constraints nullable="false"/>
+            </column>
+            <column name="deleted_at" type="TIMESTAMP"/>
+            <column name="deleted_by" type="VARCHAR(100)"/>
+            <column name="version" type="BIGINT" defaultValueNumeric="0">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+        <sql>
+            ALTER TABLE leave_types
+                ADD COLUMN active_name VARCHAR(100)
+                GENERATED ALWAYS AS (CASE WHEN deleted = FALSE THEN name ELSE NULL END) STORED;
+        </sql>
+        <sql>
+            ALTER TABLE leave_types ADD CONSTRAINT chk_leave_types_approval_levels CHECK (approval_levels BETWEEN 1 AND 2);
+        </sql>
+        <createIndex indexName="idx_leave_types_tenant_id" tableName="leave_types">
+            <column name="tenant_id"/>
+        </createIndex>
+        <createIndex indexName="idx_leave_types_deleted" tableName="leave_types">
+            <column name="deleted"/>
+        </createIndex>
+        <createIndex indexName="uq_leave_types_tenant_active_name" tableName="leave_types" unique="true">
+            <column name="tenant_id"/>
+            <column name="active_name"/>
+        </createIndex>
+        <addForeignKeyConstraint
+                constraintName="fk_leave_types_tenant_id"
+                baseTableName="leave_types"
+                baseColumnNames="tenant_id"
+                referencedTableName="tenants"
+                referencedColumnNames="id"/>
+    </changeSet>
+
+    <changeSet id="school-035-leave-balances" author="school">
+        <createTable tableName="leave_balances">
+            <column name="id" type="BIGINT" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="public_id" type="VARCHAR(36)">
+                <constraints nullable="false" unique="true"/>
+            </column>
+            <column name="tenant_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="employee_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="leave_type_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="academic_year_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="allocated_days" type="DECIMAL(5,1)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="used_days" type="DECIMAL(5,1)" defaultValueNumeric="0">
+                <constraints nullable="false"/>
+            </column>
+            <column name="carried_forward_days" type="DECIMAL(5,1)" defaultValueNumeric="0">
+                <constraints nullable="false"/>
+            </column>
+            <column name="carry_forward_expires_at" type="DATE"/>
+            <column name="created_at" type="TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_by" type="VARCHAR(100)"/>
+            <column name="updated_at" type="TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="updated_by" type="VARCHAR(100)"/>
+            <column name="deleted" type="BOOLEAN" defaultValueBoolean="false">
+                <constraints nullable="false"/>
+            </column>
+            <column name="deleted_at" type="TIMESTAMP"/>
+            <column name="deleted_by" type="VARCHAR(100)"/>
+            <column name="version" type="BIGINT" defaultValueNumeric="0">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+        <sql>
+            ALTER TABLE leave_balances
+                ADD COLUMN active_academic_year_id BIGINT
+                GENERATED ALWAYS AS (CASE WHEN deleted = FALSE THEN academic_year_id ELSE NULL END) STORED;
+        </sql>
+        <createIndex indexName="idx_leave_balances_tenant_id" tableName="leave_balances">
+            <column name="tenant_id"/>
+        </createIndex>
+        <createIndex indexName="idx_leave_balances_deleted" tableName="leave_balances">
+            <column name="deleted"/>
+        </createIndex>
+        <createIndex indexName="idx_leave_balances_leave_type_id" tableName="leave_balances">
+            <column name="leave_type_id"/>
+        </createIndex>
+        <createIndex indexName="idx_leave_balances_academic_year_id" tableName="leave_balances">
+            <column name="academic_year_id"/>
+        </createIndex>
+        <createIndex indexName="idx_leave_balances_carry_forward_expires_at" tableName="leave_balances">
+            <column name="tenant_id"/>
+            <column name="carry_forward_expires_at"/>
+        </createIndex>
+        <createIndex indexName="idx_leave_balances_employee_id" tableName="leave_balances">
+            <column name="employee_id"/>
+        </createIndex>
+        <createIndex indexName="uq_leave_balances_employee_type_active_year" tableName="leave_balances" unique="true">
+            <column name="employee_id"/>
+            <column name="leave_type_id"/>
+            <column name="active_academic_year_id"/>
+        </createIndex>
+        <addForeignKeyConstraint
+                constraintName="fk_leave_balances_tenant_id"
+                baseTableName="leave_balances"
+                baseColumnNames="tenant_id"
+                referencedTableName="tenants"
+                referencedColumnNames="id"/>
+        <addForeignKeyConstraint
+                constraintName="fk_leave_balances_leave_type_id"
+                baseTableName="leave_balances"
+                baseColumnNames="leave_type_id"
+                referencedTableName="leave_types"
+                referencedColumnNames="id"/>
+        <addForeignKeyConstraint
+                constraintName="fk_leave_balances_academic_year_id"
+                baseTableName="leave_balances"
+                baseColumnNames="academic_year_id"
+                referencedTableName="academic_years"
+                referencedColumnNames="id"/>
+    </changeSet>
+
+    <changeSet id="school-036-leave-requests" author="school">
+        <createTable tableName="leave_requests">
+            <column name="id" type="BIGINT" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="public_id" type="VARCHAR(36)">
+                <constraints nullable="false" unique="true"/>
+            </column>
+            <column name="tenant_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="employee_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="leave_type_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="academic_year_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="start_date" type="DATE">
+                <constraints nullable="false"/>
+            </column>
+            <column name="end_date" type="DATE">
+                <constraints nullable="false"/>
+            </column>
+            <column name="days_requested" type="DECIMAL(5,1)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="reason" type="VARCHAR(500)"/>
+            <column name="approved_by_user_id" type="BIGINT"/>
+            <column name="approved_at" type="TIMESTAMP"/>
+            <column name="rejection_reason" type="VARCHAR(500)"/>
+            <column name="approvals_required" type="INT" defaultValueNumeric="1">
+                <constraints nullable="false"/>
+            </column>
+            <column name="approvals_granted" type="INT" defaultValueNumeric="0">
+                <constraints nullable="false"/>
+            </column>
+            <column name="status" type="VARCHAR(20)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_at" type="TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_by" type="VARCHAR(100)"/>
+            <column name="updated_at" type="TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="updated_by" type="VARCHAR(100)"/>
+            <column name="deleted" type="BOOLEAN" defaultValueBoolean="false">
+                <constraints nullable="false"/>
+            </column>
+            <column name="deleted_at" type="TIMESTAMP"/>
+            <column name="deleted_by" type="VARCHAR(100)"/>
+            <column name="version" type="BIGINT" defaultValueNumeric="0">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+        <sql>
+            ALTER TABLE leave_requests ADD CONSTRAINT chk_leave_requests_approvals
+                CHECK (approvals_required BETWEEN 1 AND 2 AND approvals_granted BETWEEN 0 AND approvals_required);
+        </sql>
+        <createIndex indexName="idx_leave_requests_tenant_id" tableName="leave_requests">
+            <column name="tenant_id"/>
+        </createIndex>
+        <createIndex indexName="idx_leave_requests_deleted" tableName="leave_requests">
+            <column name="deleted"/>
+        </createIndex>
+        <createIndex indexName="idx_leave_requests_leave_type_id" tableName="leave_requests">
+            <column name="leave_type_id"/>
+        </createIndex>
+        <createIndex indexName="idx_leave_requests_academic_year_id" tableName="leave_requests">
+            <column name="academic_year_id"/>
+        </createIndex>
+        <createIndex indexName="idx_leave_requests_status" tableName="leave_requests">
+            <column name="status"/>
+        </createIndex>
+        <createIndex indexName="idx_leave_requests_employee_id" tableName="leave_requests">
+            <column name="employee_id"/>
+        </createIndex>
+        <createIndex indexName="idx_leave_requests_tenant_status" tableName="leave_requests">
+            <column name="tenant_id"/>
+            <column name="status"/>
+        </createIndex>
+        <addForeignKeyConstraint
+                constraintName="fk_leave_requests_tenant_id"
+                baseTableName="leave_requests"
+                baseColumnNames="tenant_id"
+                referencedTableName="tenants"
+                referencedColumnNames="id"/>
+        <addForeignKeyConstraint
+                constraintName="fk_leave_requests_leave_type_id"
+                baseTableName="leave_requests"
+                baseColumnNames="leave_type_id"
+                referencedTableName="leave_types"
+                referencedColumnNames="id"/>
+        <addForeignKeyConstraint
+                constraintName="fk_leave_requests_academic_year_id"
+                baseTableName="leave_requests"
+                baseColumnNames="academic_year_id"
+                referencedTableName="academic_years"
+                referencedColumnNames="id"/>
+    </changeSet>
+
+</databaseChangeLog>

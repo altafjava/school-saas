@@ -27,9 +27,6 @@ public class Exam extends SoftDeletableEntity {
 
 	public static final BigDecimal FULL_WEIGHTAGE = BigDecimal.valueOf(100);
 
-	@Column(name = "title", nullable = false, length = 200)
-	private String title;
-
 	// FK to subjects.id
 	@Column(name = "subject_id", nullable = false)
 	private Long subjectId;
@@ -38,25 +35,24 @@ public class Exam extends SoftDeletableEntity {
 	@Column(name = "classroom_id", nullable = false)
 	private Long classroomId;
 
-	@Column(name = "scheduled_at", nullable = false)
-	private LocalDateTime scheduledAt;
-
-	@Column(name = "max_marks", nullable = false, precision = 10, scale = 2)
-	private BigDecimal maxMarks;
-
 	// FK to terms.id — nullable: existing exams predate this field and have no reliable source
 	// to backfill from (ReportCardService derives term membership from scheduledAt, not an FK).
 	@Column(name = "term_id")
 	private Long termId;
 
-	@Enumerated(EnumType.STRING)
-	@Column(name = "status", nullable = false, length = 20)
-	private ExamStatus status;
-
 	// FK to exam_type_definitions.id — nullable only at the DB level; create()/ExamService
 	// require and validate a real value.
 	@Column(name = "exam_type_id")
 	private Long examTypeId;
+
+	@Column(name = "title", nullable = false, length = 200)
+	private String title;
+
+	@Column(name = "scheduled_at", nullable = false)
+	private LocalDateTime scheduledAt;
+
+	@Column(name = "max_marks", nullable = false, precision = 10, scale = 2)
+	private BigDecimal maxMarks;
 
 	// Percentage contribution to the subject's result for the term; the exams of one subject in one
 	// term together weigh at most 100.
@@ -69,6 +65,10 @@ public class Exam extends SoftDeletableEntity {
 
 	@Column(name = "results_published_by", length = 100)
 	private String resultsPublishedBy;
+
+	@Enumerated(EnumType.STRING)
+	@Column(name = "status", nullable = false, length = 20)
+	private ExamStatus status;
 
 	public static Exam create(String title, Long subjectId, Long classroomId,
 			LocalDateTime scheduledAt, BigDecimal maxMarks, Long termId, Long examTypeId, BigDecimal weightage) {

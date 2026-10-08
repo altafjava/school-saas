@@ -13,10 +13,10 @@
             <column name="public_id" type="VARCHAR(36)">
                 <constraints nullable="false" unique="true"/>
             </column>
-            <column name="version" type="BIGINT" defaultValueNumeric="0">
+            <column name="tenant_id" type="BIGINT">
                 <constraints nullable="false"/>
             </column>
-            <column name="tenant_id" type="BIGINT">
+            <column name="academic_year_id" type="BIGINT">
                 <constraints nullable="false"/>
             </column>
             <column name="name" type="VARCHAR(50)">
@@ -28,33 +28,31 @@
             <column name="end_date" type="DATE">
                 <constraints nullable="false"/>
             </column>
-            <column name="academic_year_id" type="BIGINT">
+            <column name="is_current" type="BOOLEAN">
                 <constraints nullable="false"/>
             </column>
+            <column name="created_at" type="TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_by" type="VARCHAR(100)"/>
+            <column name="updated_at" type="TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="updated_by" type="VARCHAR(100)"/>
             <column name="deleted" type="BOOLEAN" defaultValueBoolean="false">
                 <constraints nullable="false"/>
             </column>
             <column name="deleted_at" type="TIMESTAMP"/>
             <column name="deleted_by" type="VARCHAR(100)"/>
-            <column name="created_at" type="TIMESTAMP">
+            <column name="version" type="BIGINT" defaultValueNumeric="0">
                 <constraints nullable="false"/>
             </column>
-            <column name="updated_at" type="TIMESTAMP">
-                <constraints nullable="false"/>
-            </column>
-            <column name="created_by" type="VARCHAR(100)"/>
-            <column name="updated_by" type="VARCHAR(100)"/>
         </createTable>
-
-        <addForeignKeyConstraint
-                constraintName="fk_terms_tenant_id"
-                baseTableName="terms" baseColumnNames="tenant_id"
-                referencedTableName="tenants" referencedColumnNames="id"/>
-        <addForeignKeyConstraint
-                constraintName="fk_terms_academic_year_id"
-                baseTableName="terms" baseColumnNames="academic_year_id"
-                referencedTableName="academic_years" referencedColumnNames="id"/>
-
+        <sql>
+            ALTER TABLE terms
+                ADD COLUMN active_name VARCHAR(50)
+                GENERATED ALWAYS AS (CASE WHEN deleted = FALSE THEN name ELSE NULL END) STORED;
+        </sql>
         <createIndex indexName="idx_terms_tenant_id" tableName="terms">
             <column name="tenant_id"/>
         </createIndex>
@@ -64,11 +62,29 @@
         <createIndex indexName="idx_terms_academic_year_id" tableName="terms">
             <column name="academic_year_id"/>
         </createIndex>
-        <createIndex indexName="uq_terms_name_academic_year_tenant" tableName="terms" unique="true">
-            <column name="name"/>
+        <createIndex indexName="uq_terms_active_name_academic_year_tenant" tableName="terms" unique="true">
+            <column name="active_name"/>
             <column name="academic_year_id"/>
             <column name="tenant_id"/>
         </createIndex>
+        <addForeignKeyConstraint
+                constraintName="fk_terms_tenant_id"
+                baseTableName="terms"
+                baseColumnNames="tenant_id"
+                referencedTableName="tenants"
+                referencedColumnNames="id"/>
+        <addForeignKeyConstraint
+                constraintName="fk_terms_academic_year_id"
+                baseTableName="terms"
+                baseColumnNames="academic_year_id"
+                referencedTableName="academic_years"
+                referencedColumnNames="id"/>
+        <addForeignKeyConstraint
+                constraintName="fk_exams_term_id"
+                baseTableName="exams"
+                baseColumnNames="term_id"
+                referencedTableName="terms"
+                referencedColumnNames="id"/>
     </changeSet>
 
 </databaseChangeLog>

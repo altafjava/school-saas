@@ -37,14 +37,6 @@ public class LifecycleTransition extends TenantEntity {
 	@Column(name = "student_id")
 	private Long studentId;
 
-	@Enumerated(EnumType.STRING)
-	@Column(name = "from_stage", length = 20)
-	private LifecycleStage fromStage;
-
-	@Enumerated(EnumType.STRING)
-	@Column(name = "to_stage", nullable = false, length = 20)
-	private LifecycleStage toStage;
-
 	@Column(name = "reason", length = 500)
 	private String reason;
 
@@ -54,6 +46,14 @@ public class LifecycleTransition extends TenantEntity {
 	// FK to platform users.id — null for public submissions and system-driven transitions.
 	@Column(name = "recorded_by_user_id")
 	private Long recordedByUserId;
+
+	@Enumerated(EnumType.STRING)
+	@Column(name = "from_stage", length = 20)
+	private LifecycleStage fromStage;
+
+	@Enumerated(EnumType.STRING)
+	@Column(name = "to_stage", nullable = false, length = 20)
+	private LifecycleStage toStage;
 
 	public static LifecycleTransition record(Long admissionId, Long studentId, LifecycleStage fromStage,
 			LifecycleStage toStage, String reason, LocalDate effectiveOn, Long recordedByUserId) {

@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                            http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-5.0.xsd">
+
+    <!-- Phase 3.8 — siblings are students who share a sibling group. A group, not pairs, so
+         "A is B's sibling and B is C's" makes all three siblings without a row per pair. -->
+    <changeSet id="school-173-sibling-groups" author="school">
+        <createTable tableName="sibling_groups">
+            <column name="id" type="BIGINT" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="public_id" type="VARCHAR(36)">
+                <constraints nullable="false" unique="true"/>
+            </column>
+            <column name="tenant_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_at" type="TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_by" type="VARCHAR(100)"/>
+            <column name="updated_at" type="TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="updated_by" type="VARCHAR(100)"/>
+            <column name="deleted" type="BOOLEAN" defaultValueBoolean="false">
+                <constraints nullable="false"/>
+            </column>
+            <column name="deleted_at" type="TIMESTAMP"/>
+            <column name="deleted_by" type="VARCHAR(100)"/>
+            <column name="version" type="BIGINT" defaultValueNumeric="0">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+        <createIndex indexName="idx_sibling_groups_tenant_id" tableName="sibling_groups">
+            <column name="tenant_id"/>
+        </createIndex>
+        <createIndex indexName="idx_sibling_groups_deleted" tableName="sibling_groups">
+            <column name="deleted"/>
+        </createIndex>
+        <addForeignKeyConstraint
+                constraintName="fk_sibling_groups_tenant_id"
+                baseTableName="sibling_groups"
+                baseColumnNames="tenant_id"
+                referencedTableName="tenants"
+                referencedColumnNames="id"/>
+        <addForeignKeyConstraint
+                constraintName="fk_students_sibling_group_id"
+                baseTableName="students"
+                baseColumnNames="sibling_group_id"
+                referencedTableName="sibling_groups"
+                referencedColumnNames="id"/>
+    </changeSet>
+
+</databaseChangeLog>

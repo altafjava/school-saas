@@ -197,7 +197,7 @@ public class ClassroomService {
 		try {
 			return studentClassroomLinkRepository.save(link);
 		} catch (DataIntegrityViolationException e) {
-			// uq_scl_classroom_year_active_roll_number (054-photo-and-roll-number.xml) is the real
+			// uq_scl_classroom_year_active_roll_number (009-classroom-roster.xml) is the real
 			// guard against two students in the same classroom/academic year sharing a roll number.
 			throw new BusinessException(
 					"Roll number " + rollNumber + " is already assigned in classroom " + classroomPublicId);

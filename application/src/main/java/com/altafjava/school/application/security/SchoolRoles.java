@@ -2,7 +2,7 @@ package com.altafjava.school.application.security;
 
 /**
  * The default domain role names school-saas seeds for every tenant (see
- * {@code 008-seed-school-roles.xml}/{@code 023-seed-dashboard-roles.xml} and
+ * {@code 008-seed-school-roles.xml}/{@code 019-seed-dashboard-roles.xml} and
  * {@code SchoolPlatformConfigurer#domainPermissionCatalog()}). Access control no longer checks
  * these names directly — every {@code @PreAuthorize} resolves a permission code via
  * {@code PermissionAuthorizationService} instead, so a tenant can grant the same access to a

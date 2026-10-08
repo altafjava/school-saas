@@ -29,17 +29,6 @@ import lombok.experimental.SuperBuilder;
 @NoArgsConstructor
 public class VisitorLog extends SoftDeletableEntity {
 
-	@Pii
-	@Column(name = "visitor_name", nullable = false, length = 150)
-	private String visitorName;
-
-	@Pii
-	@Column(name = "visitor_phone", length = 50)
-	private String visitorPhone;
-
-	@Column(name = "purpose", nullable = false, length = 500)
-	private String purpose;
-
 	@Column(name = "host_employee_id", nullable = false)
 	private Long hostEmployeeId;
 
@@ -54,6 +43,17 @@ public class VisitorLog extends SoftDeletableEntity {
 	// FK to platform document_issuances.id — the badge handed to the visitor.
 	@Column(name = "badge_issuance_id")
 	private Long badgeIssuanceId;
+
+	@Pii
+	@Column(name = "visitor_name", nullable = false, length = 150)
+	private String visitorName;
+
+	@Pii
+	@Column(name = "visitor_phone", length = 50)
+	private String visitorPhone;
+
+	@Column(name = "purpose", nullable = false, length = 500)
+	private String purpose;
 
 	@Column(name = "check_in_at", nullable = false)
 	private LocalDateTime checkInAt;

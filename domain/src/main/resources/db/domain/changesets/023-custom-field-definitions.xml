@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                            http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-5.0.xsd">
+
+    <!-- Only the custom-field "schema" (what fields exist, their type/label) lives here — the
+         values themselves are stored in platform's existing entity_extended_attributes table via
+         EntityAttributeService, not in a school-saas table. -->
+    <changeSet id="school-071-custom-field-definitions" author="school">
+        <createTable tableName="custom_field_definitions">
+            <column name="id" type="BIGINT" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="public_id" type="VARCHAR(36)">
+                <constraints nullable="false" unique="true"/>
+            </column>
+            <column name="tenant_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="field_key" type="VARCHAR(100)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="label" type="VARCHAR(200)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="required" type="BOOLEAN" defaultValueBoolean="false">
+                <constraints nullable="false"/>
+            </column>
+            <column name="min_value" type="DECIMAL(19,4)"/>
+            <column name="max_value" type="DECIMAL(19,4)"/>
+            <column name="regex_pattern" type="VARCHAR(500)"/>
+            <column name="options" type="VARCHAR(2000)"/>
+            <column name="display_order" type="INT" defaultValueNumeric="0">
+                <constraints nullable="false"/>
+            </column>
+            <column name="display_group" type="VARCHAR(100)"/>
+            <column name="display_group_order" type="INT" defaultValueNumeric="0">
+                <constraints nullable="false"/>
+            </column>
+            <column name="visibility_depends_on_field_key" type="VARCHAR(100)"/>
+            <column name="visibility_operator" type="VARCHAR(20)"/>
+            <column name="visibility_expected_value" type="VARCHAR(500)"/>
+            <column name="entity_type" type="VARCHAR(30)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="field_type" type="VARCHAR(20)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="active" type="BOOLEAN" defaultValueBoolean="true">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_at" type="TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_by" type="VARCHAR(100)"/>
+            <column name="updated_at" type="TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="updated_by" type="VARCHAR(100)"/>
+            <column name="deleted" type="BOOLEAN" defaultValueBoolean="false">
+                <constraints nullable="false"/>
+            </column>
+            <column name="deleted_at" type="TIMESTAMP"/>
+            <column name="deleted_by" type="VARCHAR(100)"/>
+            <column name="version" type="BIGINT" defaultValueNumeric="0">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+        <sql>
+            ALTER TABLE custom_field_definitions
+                ADD COLUMN active_field_key VARCHAR(100)
+                GENERATED ALWAYS AS (CASE WHEN deleted = FALSE THEN field_key ELSE NULL END) STORED;
+        </sql>
+        <createIndex indexName="idx_custom_field_definitions_tenant_id" tableName="custom_field_definitions">
+            <column name="tenant_id"/>
+        </createIndex>
+        <createIndex indexName="idx_custom_field_definitions_deleted" tableName="custom_field_definitions">
+            <column name="deleted"/>
+        </createIndex>
+        <createIndex indexName="idx_custom_field_definitions_active" tableName="custom_field_definitions">
+            <column name="active"/>
+        </createIndex>
+        <createIndex
+                indexName="uq_custom_field_definitions_active_key"
+                tableName="custom_field_definitions"
+                unique="true">
+            <column name="tenant_id"/>
+            <column name="entity_type"/>
+            <column name="active_field_key"/>
+        </createIndex>
+        <addForeignKeyConstraint
+                constraintName="fk_custom_field_definitions_tenant_id"
+                baseTableName="custom_field_definitions"
+                baseColumnNames="tenant_id"
+                referencedTableName="tenants"
+                referencedColumnNames="id"/>
+    </changeSet>
+
+</databaseChangeLog>

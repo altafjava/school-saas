@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                            http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-5.0.xsd">
+
+    <!-- Per-tenant report-card section toggles (ReportCardTemplate) and teacher/principal remarks
+         on ReportCard itself — both consumed by ReportCardPdfGenerator's section rendering. -->
+    <changeSet id="school-094-report-card-templates" author="school">
+        <createTable tableName="report_card_templates">
+            <column name="id" type="BIGINT" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="public_id" type="VARCHAR(36)">
+                <constraints nullable="false" unique="true"/>
+            </column>
+            <column name="tenant_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="show_attendance_summary" type="BOOLEAN" defaultValueBoolean="false">
+                <constraints nullable="false"/>
+            </column>
+            <column name="show_remarks" type="BOOLEAN" defaultValueBoolean="false">
+                <constraints nullable="false"/>
+            </column>
+            <column name="show_competency_grid" type="BOOLEAN" defaultValueBoolean="false">
+                <constraints nullable="false"/>
+            </column>
+            <column name="show_rank" type="BOOLEAN" defaultValueBoolean="false">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_at" type="TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_by" type="VARCHAR(100)"/>
+            <column name="updated_at" type="TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="updated_by" type="VARCHAR(100)"/>
+            <column name="deleted" type="BOOLEAN" defaultValueBoolean="false">
+                <constraints nullable="false"/>
+            </column>
+            <column name="deleted_at" type="TIMESTAMP"/>
+            <column name="deleted_by" type="VARCHAR(100)"/>
+            <column name="version" type="BIGINT" defaultValueNumeric="0">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+        <sql>
+            ALTER TABLE report_card_templates
+                ADD COLUMN active_tenant_key BIGINT
+                GENERATED ALWAYS AS (CASE WHEN deleted = FALSE THEN tenant_id ELSE NULL END) STORED;
+        </sql>
+        <!-- Single-column key (one active template per tenant) — same pattern as platform-saas's
+             subscriptions fix (035-addon-purchase-race-fixes.xml), not a composite key.
+             uq_report_card_templates_tenant_id is also the only index covering the
+             fk_report_card_templates_tenant_id foreign key (044-report-card-template-remarks.xml
+             never added a separate plain index, since the unique one already covered it) — a plain
+             index is added first so MariaDB still has one to back the FK once the unique index is
+             dropped. -->
+        <createIndex indexName="idx_report_card_templates_tenant_id" tableName="report_card_templates">
+            <column name="tenant_id"/>
+        </createIndex>
+        <createIndex indexName="uq_report_card_templates_active_tenant" tableName="report_card_templates" unique="true">
+            <column name="active_tenant_key"/>
+        </createIndex>
+        <addForeignKeyConstraint
+                constraintName="fk_report_card_templates_tenant_id"
+                baseTableName="report_card_templates"
+                baseColumnNames="tenant_id"
+                referencedTableName="tenants"
+                referencedColumnNames="id"/>
+    </changeSet>
+
+</databaseChangeLog>

@@ -41,10 +41,6 @@ public class FeeDiscount extends SoftDeletableEntity {
 	@Column(name = "fee_structure_id", nullable = false)
 	private Long feeStructureId;
 
-	@Enumerated(EnumType.STRING)
-	@Column(name = "discount_type", nullable = false, length = 20)
-	private DiscountType discountType;
-
 	@Column(name = "discount_value", nullable = false, precision = 12, scale = 2)
 	private BigDecimal discountValue;
 
@@ -63,6 +59,10 @@ public class FeeDiscount extends SoftDeletableEntity {
 
 	@Column(name = "revocation_reason", length = 500)
 	private String revocationReason;
+
+	@Enumerated(EnumType.STRING)
+	@Column(name = "discount_type", nullable = false, length = 20)
+	private DiscountType discountType;
 
 	public static FeeDiscount grant(Long studentId, Long feeStructureId, DiscountType discountType,
 			BigDecimal discountValue, String category, String reason, Long grantedByUserId) {

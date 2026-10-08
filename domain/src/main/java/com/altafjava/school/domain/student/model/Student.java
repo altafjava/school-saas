@@ -28,6 +28,24 @@ import lombok.experimental.SuperBuilder;
 @NoArgsConstructor
 public class Student extends SoftDeletableEntity {
 
+	// FK to platform users.id — nullable, set only once this student has their own login account.
+	@Column(name = "user_id")
+	private Long userId;
+
+	// FK to platform file_metadata.public_id — the UUID publicId (never the internal surrogate
+	// Long id, per the platform's own DTO/identifier convention), nullable, set only once a photo
+	// is uploaded via platform's FileStorageService (quota/virus-scan/ownership controls apply,
+	// same as any other platform file).
+	@Column(name = "photo_file_public_id")
+	private UUID photoFilePublicId;
+
+	// FK to sibling_groups.id — null while the student has no siblings at the school.
+	@Column(name = "sibling_group_id")
+	private Long siblingGroupId;
+
+	@Column(name = "student_code", nullable = false, length = 50)
+	private String studentCode;
+
 	@Pii
 	@Column(name = "first_name", nullable = false, length = 100)
 	private String firstName;
@@ -40,24 +58,8 @@ public class Student extends SoftDeletableEntity {
 	@Column(name = "email", length = 255)
 	private String email;
 
-	@Column(name = "student_code", nullable = false, length = 50)
-	private String studentCode;
-
 	@Column(name = "date_of_birth")
 	private LocalDate dateOfBirth;
-
-	@Enumerated(EnumType.STRING)
-	@Column(name = "enrollment_status", nullable = false, length = 30)
-	private EnrollmentStatus enrollmentStatus;
-
-	// Distinct from updatedAt — a later, unrelated contact-detail edit must not reset the
-	// retention-window clock SchoolDataRetentionHandler measures against this timestamp.
-	@Column(name = "enrollment_status_changed_at")
-	private Instant enrollmentStatusChangedAt;
-
-	// FK to platform users.id — nullable, set only once this student has their own login account.
-	@Column(name = "user_id")
-	private Long userId;
 
 	@Pii(type = Pii.PiiType.PHONE)
 	@Column(name = "phone", length = 30)
@@ -66,16 +68,14 @@ public class Student extends SoftDeletableEntity {
 	@Embedded
 	private Address address;
 
-	// FK to platform file_metadata.public_id — the UUID publicId (never the internal surrogate
-	// Long id, per the platform's own DTO/identifier convention), nullable, set only once a photo
-	// is uploaded via platform's FileStorageService (quota/virus-scan/ownership controls apply,
-	// same as any other platform file).
-	@Column(name = "photo_file_public_id")
-	private UUID photoFilePublicId;
+	// Distinct from updatedAt — a later, unrelated contact-detail edit must not reset the
+	// retention-window clock SchoolDataRetentionHandler measures against this timestamp.
+	@Column(name = "enrollment_status_changed_at")
+	private Instant enrollmentStatusChangedAt;
 
-	// FK to sibling_groups.id — null while the student has no siblings at the school.
-	@Column(name = "sibling_group_id")
-	private Long siblingGroupId;
+	@Enumerated(EnumType.STRING)
+	@Column(name = "enrollment_status", nullable = false, length = 30)
+	private EnrollmentStatus enrollmentStatus;
 
 	public static Student create(String studentCode, String firstName, String lastName,
 			String email, LocalDate dateOfBirth) {

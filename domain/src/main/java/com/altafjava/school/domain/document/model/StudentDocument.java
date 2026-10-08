@@ -44,17 +44,10 @@ public class StudentDocument extends SoftDeletableEntity {
 	@Column(name = "admission_id")
 	private Long admissionId;
 
-	@Column(name = "document_type", nullable = false, length = 100)
-	private String documentType;
-
 	// FK to platform file_metadata.public_id — see Student.photoFilePublicId's Javadoc for why the
 	// UUID publicId, not the internal surrogate id.
 	@Column(name = "file_public_id", nullable = false)
 	private UUID filePublicId;
-
-	@Enumerated(EnumType.STRING)
-	@Column(name = "verification_status", nullable = false, length = 20)
-	private DocumentVerificationStatus verificationStatus;
 
 	// FK to platform users.id — the staff member who verified/rejected this document.
 	@Column(name = "verified_by_user_id")
@@ -65,6 +58,13 @@ public class StudentDocument extends SoftDeletableEntity {
 
 	@Column(name = "rejection_reason", length = 500)
 	private String rejectionReason;
+
+	@Column(name = "document_type", nullable = false, length = 100)
+	private String documentType;
+
+	@Enumerated(EnumType.STRING)
+	@Column(name = "verification_status", nullable = false, length = 20)
+	private DocumentVerificationStatus verificationStatus;
 
 	public static StudentDocument forStudent(Long studentId, String documentType, UUID filePublicId) {
 		if (studentId == null) {

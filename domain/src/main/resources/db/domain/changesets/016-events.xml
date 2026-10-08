@@ -1,0 +1,134 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                            http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-5.0.xsd">
+
+    <changeSet id="school-047-events" author="school">
+        <createTable tableName="events">
+            <column name="id" type="BIGINT" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="public_id" type="VARCHAR(36)">
+                <constraints nullable="false" unique="true"/>
+            </column>
+            <column name="tenant_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="title" type="VARCHAR(200)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="description" type="VARCHAR(1000)"/>
+            <column name="event_date" type="TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="location" type="VARCHAR(200)"/>
+            <column name="registration_required" type="BOOLEAN" defaultValueBoolean="false">
+                <constraints nullable="false"/>
+            </column>
+            <column name="capacity" type="INT"/>
+            <column name="active" type="BOOLEAN" defaultValueBoolean="true">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_at" type="TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_by" type="VARCHAR(100)"/>
+            <column name="updated_at" type="TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="updated_by" type="VARCHAR(100)"/>
+            <column name="deleted" type="BOOLEAN" defaultValueBoolean="false">
+                <constraints nullable="false"/>
+            </column>
+            <column name="deleted_at" type="TIMESTAMP"/>
+            <column name="deleted_by" type="VARCHAR(100)"/>
+            <column name="version" type="BIGINT" defaultValueNumeric="0">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+        <createIndex indexName="idx_events_tenant_id" tableName="events">
+            <column name="tenant_id"/>
+        </createIndex>
+        <createIndex indexName="idx_events_deleted" tableName="events">
+            <column name="deleted"/>
+        </createIndex>
+        <addForeignKeyConstraint
+                constraintName="fk_events_tenant_id"
+                baseTableName="events"
+                baseColumnNames="tenant_id"
+                referencedTableName="tenants"
+                referencedColumnNames="id"/>
+    </changeSet>
+
+    <changeSet id="school-048-event-registrations" author="school">
+        <createTable tableName="event_registrations">
+            <column name="id" type="BIGINT" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="public_id" type="VARCHAR(36)">
+                <constraints nullable="false" unique="true"/>
+            </column>
+            <column name="tenant_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="event_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="student_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="status" type="VARCHAR(20)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_at" type="TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_by" type="VARCHAR(100)"/>
+            <column name="updated_at" type="TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="updated_by" type="VARCHAR(100)"/>
+            <column name="deleted" type="BOOLEAN" defaultValueBoolean="false">
+                <constraints nullable="false"/>
+            </column>
+            <column name="deleted_at" type="TIMESTAMP"/>
+            <column name="deleted_by" type="VARCHAR(100)"/>
+            <column name="version" type="BIGINT" defaultValueNumeric="0">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+        <createIndex indexName="idx_event_registrations_tenant_id" tableName="event_registrations">
+            <column name="tenant_id"/>
+        </createIndex>
+        <createIndex indexName="idx_event_registrations_deleted" tableName="event_registrations">
+            <column name="deleted"/>
+        </createIndex>
+        <createIndex indexName="idx_event_registrations_event_id" tableName="event_registrations">
+            <column name="event_id"/>
+        </createIndex>
+        <createIndex indexName="idx_event_registrations_student_id" tableName="event_registrations">
+            <column name="student_id"/>
+        </createIndex>
+        <addForeignKeyConstraint
+                constraintName="fk_event_registrations_tenant_id"
+                baseTableName="event_registrations"
+                baseColumnNames="tenant_id"
+                referencedTableName="tenants"
+                referencedColumnNames="id"/>
+        <addForeignKeyConstraint
+                constraintName="fk_event_registrations_event_id"
+                baseTableName="event_registrations"
+                baseColumnNames="event_id"
+                referencedTableName="events"
+                referencedColumnNames="id"/>
+        <addForeignKeyConstraint
+                constraintName="fk_event_registrations_student_id"
+                baseTableName="event_registrations"
+                baseColumnNames="student_id"
+                referencedTableName="students"
+                referencedColumnNames="id"/>
+    </changeSet>
+
+</databaseChangeLog>

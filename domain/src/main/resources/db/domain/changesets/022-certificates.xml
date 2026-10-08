@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                            http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-5.0.xsd">
+
+    <!-- Tenant catalog of certificate kinds (Bonafide, Transfer, ...) and their wording. Layout and
+         issued PDFs belong to the platform Document Template Engine: each type renders as
+         document type CERTIFICATE.<code> and every issuance is a platform document_issuances row. -->
+    <changeSet id="school-069-certificate-types" author="school">
+        <createTable tableName="certificate_types">
+            <column name="id" type="BIGINT" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="public_id" type="VARCHAR(36)">
+                <constraints nullable="false" unique="true"/>
+            </column>
+            <column name="tenant_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="code" type="VARCHAR(50)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="name" type="VARCHAR(150)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="wording" type="CLOB">
+                <constraints nullable="false"/>
+            </column>
+            <column name="active" type="BOOLEAN" defaultValueBoolean="true">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_at" type="TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_by" type="VARCHAR(100)"/>
+            <column name="updated_at" type="TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="updated_by" type="VARCHAR(100)"/>
+            <column name="deleted" type="BOOLEAN" defaultValueBoolean="false">
+                <constraints nullable="false"/>
+            </column>
+            <column name="deleted_at" type="TIMESTAMP"/>
+            <column name="deleted_by" type="VARCHAR(100)"/>
+            <column name="version" type="BIGINT" defaultValueNumeric="0">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+        <sql>
+            ALTER TABLE certificate_types
+                ADD COLUMN active_code VARCHAR(50)
+                GENERATED ALWAYS AS (CASE WHEN deleted = FALSE THEN code ELSE NULL END) STORED;
+        </sql>
+        <sql>
+            ALTER TABLE certificate_types
+                ADD COLUMN active_name VARCHAR(150)
+                GENERATED ALWAYS AS (CASE WHEN deleted = FALSE THEN name ELSE NULL END) STORED;
+        </sql>
+        <createIndex indexName="uq_certificate_types_tenant_active_code" tableName="certificate_types" unique="true">
+            <column name="tenant_id"/>
+            <column name="active_code"/>
+        </createIndex>
+        <createIndex indexName="uq_certificate_types_tenant_active_name" tableName="certificate_types" unique="true">
+            <column name="tenant_id"/>
+            <column name="active_name"/>
+        </createIndex>
+        <createIndex indexName="idx_certificate_types_deleted" tableName="certificate_types">
+            <column name="deleted"/>
+        </createIndex>
+        <addForeignKeyConstraint
+                constraintName="fk_certificate_types_tenant_id"
+                baseTableName="certificate_types"
+                baseColumnNames="tenant_id"
+                referencedTableName="tenants"
+                referencedColumnNames="id"/>
+    </changeSet>
+
+</databaseChangeLog>

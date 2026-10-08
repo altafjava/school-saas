@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                            http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-5.0.xsd">
+
+    <!-- Replaces exams.exam_type (a fixed UNIT_TEST/MIDTERM/FINAL/QUIZ enum column) with a
+         tenant-defined exam-type catalog — see ExamTypeDefinition. Boards vary in exam
+         categorization (e.g. Formative/Summative), so this follows the same tenant-catalog
+         pattern as Board/Curriculum/GradingScale and pay_component_definitions. -->
+    <changeSet id="school-049-exam-type-definitions" author="school">
+        <createTable tableName="exam_type_definitions">
+            <column name="id" type="BIGINT" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="public_id" type="VARCHAR(36)">
+                <constraints nullable="false" unique="true"/>
+            </column>
+            <column name="tenant_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="code" type="VARCHAR(50)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="name" type="VARCHAR(100)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="display_order" type="INT" defaultValueNumeric="0">
+                <constraints nullable="false"/>
+            </column>
+            <column name="active" type="BOOLEAN" defaultValueBoolean="true">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_at" type="TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_by" type="VARCHAR(100)"/>
+            <column name="updated_at" type="TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="updated_by" type="VARCHAR(100)"/>
+            <column name="deleted" type="BOOLEAN" defaultValueBoolean="false">
+                <constraints nullable="false"/>
+            </column>
+            <column name="deleted_at" type="TIMESTAMP"/>
+            <column name="deleted_by" type="VARCHAR(100)"/>
+            <column name="version" type="BIGINT" defaultValueNumeric="0">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+        <sql>
+            ALTER TABLE exam_type_definitions
+                ADD COLUMN active_code VARCHAR(50)
+                GENERATED ALWAYS AS (CASE WHEN deleted = FALSE THEN code ELSE NULL END) STORED;
+        </sql>
+        <createIndex indexName="idx_exam_type_definitions_tenant_id" tableName="exam_type_definitions">
+            <column name="tenant_id"/>
+        </createIndex>
+        <createIndex indexName="idx_exam_type_definitions_deleted" tableName="exam_type_definitions">
+            <column name="deleted"/>
+        </createIndex>
+        <createIndex
+                indexName="uq_exam_type_definitions_tenant_active_code"
+                tableName="exam_type_definitions"
+                unique="true">
+            <column name="tenant_id"/>
+            <column name="active_code"/>
+        </createIndex>
+        <addForeignKeyConstraint
+                constraintName="fk_exam_type_definitions_tenant_id"
+                baseTableName="exam_type_definitions"
+                baseColumnNames="tenant_id"
+                referencedTableName="tenants"
+                referencedColumnNames="id"/>
+        <addForeignKeyConstraint
+                constraintName="fk_exams_exam_type_id"
+                baseTableName="exams"
+                baseColumnNames="exam_type_id"
+                referencedTableName="exam_type_definitions"
+                referencedColumnNames="id"/>
+    </changeSet>
+
+</databaseChangeLog>

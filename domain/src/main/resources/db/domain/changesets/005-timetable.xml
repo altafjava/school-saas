@@ -13,9 +13,6 @@
             <column name="public_id" type="VARCHAR(36)">
                 <constraints nullable="false" unique="true"/>
             </column>
-            <column name="version" type="BIGINT" defaultValueNumeric="0">
-                <constraints nullable="false"/>
-            </column>
             <column name="tenant_id" type="BIGINT">
                 <constraints nullable="false"/>
             </column>
@@ -31,36 +28,44 @@
             <column name="display_order" type="INT">
                 <constraints nullable="false"/>
             </column>
+            <column name="created_at" type="TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_by" type="VARCHAR(100)"/>
+            <column name="updated_at" type="TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="updated_by" type="VARCHAR(100)"/>
             <column name="deleted" type="BOOLEAN" defaultValueBoolean="false">
                 <constraints nullable="false"/>
             </column>
             <column name="deleted_at" type="TIMESTAMP"/>
             <column name="deleted_by" type="VARCHAR(100)"/>
-            <column name="created_at" type="TIMESTAMP">
+            <column name="version" type="BIGINT" defaultValueNumeric="0">
                 <constraints nullable="false"/>
             </column>
-            <column name="updated_at" type="TIMESTAMP">
-                <constraints nullable="false"/>
-            </column>
-            <column name="created_by" type="VARCHAR(100)"/>
-            <column name="updated_by" type="VARCHAR(100)"/>
         </createTable>
-
-        <addForeignKeyConstraint
-                constraintName="fk_periods_tenant_id"
-                baseTableName="periods" baseColumnNames="tenant_id"
-                referencedTableName="tenants" referencedColumnNames="id"/>
-
+        <sql>
+            ALTER TABLE periods
+                ADD COLUMN active_name VARCHAR(50)
+                GENERATED ALWAYS AS (CASE WHEN deleted = FALSE THEN name ELSE NULL END) STORED;
+        </sql>
         <createIndex indexName="idx_periods_tenant_id" tableName="periods">
             <column name="tenant_id"/>
         </createIndex>
         <createIndex indexName="idx_periods_deleted" tableName="periods">
             <column name="deleted"/>
         </createIndex>
-        <createIndex indexName="uq_periods_name_tenant" tableName="periods" unique="true">
-            <column name="name"/>
+        <createIndex indexName="uq_periods_active_name_tenant" tableName="periods" unique="true">
+            <column name="active_name"/>
             <column name="tenant_id"/>
         </createIndex>
+        <addForeignKeyConstraint
+                constraintName="fk_periods_tenant_id"
+                baseTableName="periods"
+                baseColumnNames="tenant_id"
+                referencedTableName="tenants"
+                referencedColumnNames="id"/>
     </changeSet>
 
     <changeSet id="school-014-timetable-entries" author="school">
@@ -71,13 +76,7 @@
             <column name="public_id" type="VARCHAR(36)">
                 <constraints nullable="false" unique="true"/>
             </column>
-            <column name="version" type="BIGINT" defaultValueNumeric="0">
-                <constraints nullable="false"/>
-            </column>
             <column name="tenant_id" type="BIGINT">
-                <constraints nullable="false"/>
-            </column>
-            <column name="day_of_week" type="VARCHAR(10)">
                 <constraints nullable="false"/>
             </column>
             <column name="period_id" type="BIGINT">
@@ -92,42 +91,42 @@
             <column name="teacher_id" type="BIGINT">
                 <constraints nullable="false"/>
             </column>
+            <column name="venue_id" type="BIGINT"/>
+            <column name="day_of_week" type="VARCHAR(10)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_at" type="TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_by" type="VARCHAR(100)"/>
+            <column name="updated_at" type="TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="updated_by" type="VARCHAR(100)"/>
             <column name="deleted" type="BOOLEAN" defaultValueBoolean="false">
                 <constraints nullable="false"/>
             </column>
             <column name="deleted_at" type="TIMESTAMP"/>
             <column name="deleted_by" type="VARCHAR(100)"/>
-            <column name="created_at" type="TIMESTAMP">
+            <column name="version" type="BIGINT" defaultValueNumeric="0">
                 <constraints nullable="false"/>
             </column>
-            <column name="updated_at" type="TIMESTAMP">
-                <constraints nullable="false"/>
-            </column>
-            <column name="created_by" type="VARCHAR(100)"/>
-            <column name="updated_by" type="VARCHAR(100)"/>
         </createTable>
-
-        <addForeignKeyConstraint
-                constraintName="fk_timetable_entries_tenant_id"
-                baseTableName="timetable_entries" baseColumnNames="tenant_id"
-                referencedTableName="tenants" referencedColumnNames="id"/>
-        <addForeignKeyConstraint
-                constraintName="fk_timetable_entries_period_id"
-                baseTableName="timetable_entries" baseColumnNames="period_id"
-                referencedTableName="periods" referencedColumnNames="id"/>
-        <addForeignKeyConstraint
-                constraintName="fk_timetable_entries_classroom_id"
-                baseTableName="timetable_entries" baseColumnNames="classroom_id"
-                referencedTableName="classrooms" referencedColumnNames="id"/>
-        <addForeignKeyConstraint
-                constraintName="fk_timetable_entries_subject_id"
-                baseTableName="timetable_entries" baseColumnNames="subject_id"
-                referencedTableName="subjects" referencedColumnNames="id"/>
-        <addForeignKeyConstraint
-                constraintName="fk_timetable_entries_teacher_id"
-                baseTableName="timetable_entries" baseColumnNames="teacher_id"
-                referencedTableName="teachers" referencedColumnNames="id"/>
-
+        <sql>
+            ALTER TABLE timetable_entries
+                ADD COLUMN active_classroom_id BIGINT
+                GENERATED ALWAYS AS (CASE WHEN deleted = FALSE THEN classroom_id ELSE NULL END) STORED;
+        </sql>
+        <sql>
+            ALTER TABLE timetable_entries
+                ADD COLUMN active_teacher_id BIGINT
+                GENERATED ALWAYS AS (CASE WHEN deleted = FALSE THEN teacher_id ELSE NULL END) STORED;
+        </sql>
+        <sql>
+            ALTER TABLE timetable_entries
+                ADD COLUMN active_venue_id BIGINT
+                GENERATED ALWAYS AS (CASE WHEN deleted = FALSE THEN venue_id ELSE NULL END) STORED;
+        </sql>
         <createIndex indexName="idx_timetable_entries_tenant_id" tableName="timetable_entries">
             <column name="tenant_id"/>
         </createIndex>
@@ -146,20 +145,57 @@
         <createIndex indexName="idx_timetable_entries_teacher_id" tableName="timetable_entries">
             <column name="teacher_id"/>
         </createIndex>
-        <!-- A classroom can only have one subject/teacher assigned per period per day. -->
-        <createIndex indexName="uq_timetable_classroom_period_day" tableName="timetable_entries" unique="true">
+        <createIndex indexName="uq_timetable_active_classroom_period_day" tableName="timetable_entries" unique="true">
             <column name="tenant_id"/>
             <column name="day_of_week"/>
             <column name="period_id"/>
-            <column name="classroom_id"/>
+            <column name="active_classroom_id"/>
         </createIndex>
-        <!-- A teacher can only teach one classroom per period per day. -->
-        <createIndex indexName="uq_timetable_teacher_period_day" tableName="timetable_entries" unique="true">
+        <createIndex indexName="uq_timetable_active_teacher_period_day" tableName="timetable_entries" unique="true">
             <column name="tenant_id"/>
             <column name="day_of_week"/>
             <column name="period_id"/>
-            <column name="teacher_id"/>
+            <column name="active_teacher_id"/>
         </createIndex>
+        <createIndex indexName="idx_timetable_entries_venue_id" tableName="timetable_entries">
+            <column name="venue_id"/>
+        </createIndex>
+        <createIndex indexName="uq_timetable_active_venue_period_day" tableName="timetable_entries" unique="true">
+            <column name="tenant_id"/>
+            <column name="day_of_week"/>
+            <column name="period_id"/>
+            <column name="active_venue_id"/>
+        </createIndex>
+        <addForeignKeyConstraint
+                constraintName="fk_timetable_entries_tenant_id"
+                baseTableName="timetable_entries"
+                baseColumnNames="tenant_id"
+                referencedTableName="tenants"
+                referencedColumnNames="id"/>
+        <addForeignKeyConstraint
+                constraintName="fk_timetable_entries_period_id"
+                baseTableName="timetable_entries"
+                baseColumnNames="period_id"
+                referencedTableName="periods"
+                referencedColumnNames="id"/>
+        <addForeignKeyConstraint
+                constraintName="fk_timetable_entries_classroom_id"
+                baseTableName="timetable_entries"
+                baseColumnNames="classroom_id"
+                referencedTableName="classrooms"
+                referencedColumnNames="id"/>
+        <addForeignKeyConstraint
+                constraintName="fk_timetable_entries_subject_id"
+                baseTableName="timetable_entries"
+                baseColumnNames="subject_id"
+                referencedTableName="subjects"
+                referencedColumnNames="id"/>
+        <addForeignKeyConstraint
+                constraintName="fk_timetable_entries_teacher_id"
+                baseTableName="timetable_entries"
+                baseColumnNames="teacher_id"
+                referencedTableName="teachers"
+                referencedColumnNames="id"/>
     </changeSet>
 
 </databaseChangeLog>

@@ -257,6 +257,9 @@ Never: mock repos in integration tests, `@Disabled` placeholders, OpenAPI assert
 - All schema changes via Liquibase changeset — no direct DDL.
 - Surrogate PKs: `BIGINT AUTO_INCREMENT`. External IDs: `public_id VARCHAR(36)` (UUID).
 - **Dev**: edit changesets in-place; drop/recreate DB on checksum conflict.
+- **Column order** in every `createTable` (and the matching entity fields): primary key, `public_id`, `tenant_id`, foreign keys, business fields, status/type fields, `created_at`/`created_by`/`updated_at`/`updated_by`, `deleted`/`deleted_at`/`deleted_by`, `version`. Generated helper columns come last.
+- Soft-delete-safe unique key: a generated `active_*` column (NULL once `deleted = TRUE`) with the unique index on it — add it in the table's own changeset right after `createTable`.
+- Dev: fold evolution (`addColumn`, renames, backfills) into the table's original `createTable` changeset instead of stacking alter changesets; seed data carries its final values directly.
 - **Prod/staging**: new columns nullable or with default; renames/drops are multi-release; never modify existing changesets.
 
 ---

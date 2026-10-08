@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                            http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-5.0.xsd">
+
+    <!-- Distinct from student_guardian_links.consent_given_at (an admin-confirmed link, see
+         GuardianService#linkToStudent) — this is the guardian's own, separately-revocable consent
+         to specific categories of processing of their linked minor's data (FERPA/COPPA/GDPR-K). -->
+    <changeSet id="school-050-guardian-consent-records" author="school">
+        <createTable tableName="guardian_consent_records">
+            <column name="id" type="BIGINT" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="public_id" type="VARCHAR(36)">
+                <constraints nullable="false" unique="true"/>
+            </column>
+            <column name="tenant_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="student_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="guardian_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="granted" type="BOOLEAN" defaultValueBoolean="false">
+                <constraints nullable="false"/>
+            </column>
+            <column name="granted_at" type="TIMESTAMP"/>
+            <column name="revoked_at" type="TIMESTAMP"/>
+            <column name="policy_version" type="VARCHAR(50)"/>
+            <column name="consent_type" type="VARCHAR(50)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_at" type="TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_by" type="VARCHAR(100)"/>
+            <column name="updated_at" type="TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="updated_by" type="VARCHAR(100)"/>
+            <column name="version" type="BIGINT" defaultValueNumeric="0">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+        <createIndex indexName="idx_guardian_consent_records_tenant_id" tableName="guardian_consent_records">
+            <column name="tenant_id"/>
+        </createIndex>
+        <createIndex
+                indexName="uq_guardian_consent_records_student_guardian_type"
+                tableName="guardian_consent_records"
+                unique="true">
+            <column name="tenant_id"/>
+            <column name="student_id"/>
+            <column name="guardian_id"/>
+            <column name="consent_type"/>
+        </createIndex>
+        <addForeignKeyConstraint
+                constraintName="fk_guardian_consent_records_tenant_id"
+                baseTableName="guardian_consent_records"
+                baseColumnNames="tenant_id"
+                referencedTableName="tenants"
+                referencedColumnNames="id"/>
+        <addForeignKeyConstraint
+                constraintName="fk_guardian_consent_records_student_id"
+                baseTableName="guardian_consent_records"
+                baseColumnNames="student_id"
+                referencedTableName="students"
+                referencedColumnNames="id"/>
+        <addForeignKeyConstraint
+                constraintName="fk_guardian_consent_records_guardian_id"
+                baseTableName="guardian_consent_records"
+                baseColumnNames="guardian_id"
+                referencedTableName="guardians"
+                referencedColumnNames="id"/>
+    </changeSet>
+
+</databaseChangeLog>

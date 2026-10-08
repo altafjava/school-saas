@@ -19,6 +19,10 @@ import lombok.experimental.SuperBuilder;
 @NoArgsConstructor
 public class Department extends SoftDeletableEntity {
 
+	// FK to employees.id — nullable, a department need not have a head assigned yet.
+	@Column(name = "head_employee_id")
+	private Long headEmployeeId;
+
 	@Column(name = "name", nullable = false, length = 100)
 	private String name;
 
@@ -27,10 +31,6 @@ public class Department extends SoftDeletableEntity {
 
 	@Column(name = "description", length = 500)
 	private String description;
-
-	// FK to employees.id — nullable, a department need not have a head assigned yet.
-	@Column(name = "head_employee_id")
-	private Long headEmployeeId;
 
 	@Column(name = "active", nullable = false)
 	private boolean active;

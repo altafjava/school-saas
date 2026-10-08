@@ -30,10 +30,6 @@ import lombok.experimental.SuperBuilder;
 @NoArgsConstructor
 public class CustomFieldDefinition extends SoftDeletableEntity {
 
-	@Enumerated(EnumType.STRING)
-	@Column(name = "entity_type", nullable = false, length = 30)
-	private CustomFieldEntityType entityType;
-
 	// Machine key used to store/look up values, e.g. "bloodGroup" — not the display label.
 	@Column(name = "field_key", nullable = false, length = 100)
 	private String fieldKey;
@@ -41,15 +37,8 @@ public class CustomFieldDefinition extends SoftDeletableEntity {
 	@Column(name = "label", nullable = false, length = 200)
 	private String label;
 
-	@Enumerated(EnumType.STRING)
-	@Column(name = "field_type", nullable = false, length = 20)
-	private CustomFieldType fieldType;
-
 	@Column(name = "required", nullable = false)
 	private boolean required;
-
-	@Column(name = "active", nullable = false)
-	private boolean active;
 
 	@Embedded
 	private CustomFieldValidationRule validationRule;
@@ -70,6 +59,17 @@ public class CustomFieldDefinition extends SoftDeletableEntity {
 
 	@Embedded
 	private CustomFieldVisibilityCondition visibilityCondition;
+
+	@Enumerated(EnumType.STRING)
+	@Column(name = "entity_type", nullable = false, length = 30)
+	private CustomFieldEntityType entityType;
+
+	@Enumerated(EnumType.STRING)
+	@Column(name = "field_type", nullable = false, length = 20)
+	private CustomFieldType fieldType;
+
+	@Column(name = "active", nullable = false)
+	private boolean active;
 
 	public static CustomFieldDefinition create(CustomFieldEntityType entityType, String fieldKey, String label,
 			CustomFieldType fieldType, boolean required) {

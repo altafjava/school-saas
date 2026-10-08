@@ -13,12 +13,11 @@
             <column name="public_id" type="VARCHAR(36)">
                 <constraints nullable="false" unique="true"/>
             </column>
-            <column name="version" type="BIGINT" defaultValueNumeric="0">
-                <constraints nullable="false"/>
-            </column>
             <column name="tenant_id" type="BIGINT">
                 <constraints nullable="false"/>
             </column>
+            <column name="user_id" type="BIGINT"/>
+            <column name="photo_file_public_id" type="UUID"/>
             <column name="first_name" type="VARCHAR(100)">
                 <constraints nullable="false"/>
             </column>
@@ -27,31 +26,29 @@
             </column>
             <column name="email" type="VARCHAR(255)"/>
             <column name="phone" type="VARCHAR(30)"/>
-            <column name="user_id" type="BIGINT"/>
+            <column name="address_line1" type="VARCHAR(255)"/>
+            <column name="address_line2" type="VARCHAR(255)"/>
+            <column name="address_locality" type="VARCHAR(100)"/>
+            <column name="address_region" type="VARCHAR(100)"/>
+            <column name="address_postal_code" type="VARCHAR(20)"/>
+            <column name="address_country_code" type="VARCHAR(2)"/>
+            <column name="created_at" type="TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_by" type="VARCHAR(100)"/>
+            <column name="updated_at" type="TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="updated_by" type="VARCHAR(100)"/>
             <column name="deleted" type="BOOLEAN" defaultValueBoolean="false">
                 <constraints nullable="false"/>
             </column>
             <column name="deleted_at" type="TIMESTAMP"/>
             <column name="deleted_by" type="VARCHAR(100)"/>
-            <column name="created_at" type="TIMESTAMP">
+            <column name="version" type="BIGINT" defaultValueNumeric="0">
                 <constraints nullable="false"/>
             </column>
-            <column name="updated_at" type="TIMESTAMP">
-                <constraints nullable="false"/>
-            </column>
-            <column name="created_by" type="VARCHAR(100)"/>
-            <column name="updated_by" type="VARCHAR(100)"/>
         </createTable>
-
-        <addForeignKeyConstraint
-                constraintName="fk_guardians_tenant_id"
-                baseTableName="guardians" baseColumnNames="tenant_id"
-                referencedTableName="tenants" referencedColumnNames="id"/>
-        <addForeignKeyConstraint
-                constraintName="fk_guardians_user_id"
-                baseTableName="guardians" baseColumnNames="user_id"
-                referencedTableName="users" referencedColumnNames="id"/>
-
         <createIndex indexName="idx_guardians_tenant_id" tableName="guardians">
             <column name="tenant_id"/>
         </createIndex>
@@ -61,6 +58,24 @@
         <createIndex indexName="idx_guardians_user_id" tableName="guardians">
             <column name="user_id"/>
         </createIndex>
+        <addForeignKeyConstraint
+                constraintName="fk_guardians_tenant_id"
+                baseTableName="guardians"
+                baseColumnNames="tenant_id"
+                referencedTableName="tenants"
+                referencedColumnNames="id"/>
+        <addForeignKeyConstraint
+                constraintName="fk_guardians_user_id"
+                baseTableName="guardians"
+                baseColumnNames="user_id"
+                referencedTableName="users"
+                referencedColumnNames="id"/>
+        <addForeignKeyConstraint
+                constraintName="fk_guardians_photo_file_public_id"
+                baseTableName="guardians"
+                baseColumnNames="photo_file_public_id"
+                referencedTableName="file_metadata"
+                referencedColumnNames="public_id"/>
     </changeSet>
 
     <changeSet id="school-012-student-guardian-links" author="school">
@@ -71,9 +86,6 @@
             <column name="public_id" type="VARCHAR(36)">
                 <constraints nullable="false" unique="true"/>
             </column>
-            <column name="version" type="BIGINT" defaultValueNumeric="0">
-                <constraints nullable="false"/>
-            </column>
             <column name="tenant_id" type="BIGINT">
                 <constraints nullable="false"/>
             </column>
@@ -83,41 +95,47 @@
             <column name="guardian_id" type="BIGINT">
                 <constraints nullable="false"/>
             </column>
-            <column name="relationship_type" type="VARCHAR(30)">
-                <constraints nullable="false"/>
-            </column>
             <column name="primary_contact" type="BOOLEAN" defaultValueBoolean="false">
                 <constraints nullable="false"/>
             </column>
             <column name="consent_given_at" type="TIMESTAMP"/>
+            <column name="authorized_for_pickup" type="BOOLEAN" defaultValueBoolean="false">
+                <constraints nullable="false"/>
+            </column>
+            <column name="custody_restricted" type="BOOLEAN" defaultValueBoolean="false">
+                <constraints nullable="false"/>
+            </column>
+            <column name="custody_restriction_note" type="VARCHAR(500)"/>
+            <column name="relationship_type" type="VARCHAR(30)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_at" type="TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_by" type="VARCHAR(100)"/>
+            <column name="updated_at" type="TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="updated_by" type="VARCHAR(100)"/>
             <column name="deleted" type="BOOLEAN" defaultValueBoolean="false">
                 <constraints nullable="false"/>
             </column>
             <column name="deleted_at" type="TIMESTAMP"/>
             <column name="deleted_by" type="VARCHAR(100)"/>
-            <column name="created_at" type="TIMESTAMP">
+            <column name="version" type="BIGINT" defaultValueNumeric="0">
                 <constraints nullable="false"/>
             </column>
-            <column name="updated_at" type="TIMESTAMP">
-                <constraints nullable="false"/>
-            </column>
-            <column name="created_by" type="VARCHAR(100)"/>
-            <column name="updated_by" type="VARCHAR(100)"/>
         </createTable>
-
-        <addForeignKeyConstraint
-                constraintName="fk_sgl_tenant_id"
-                baseTableName="student_guardian_links" baseColumnNames="tenant_id"
-                referencedTableName="tenants" referencedColumnNames="id"/>
-        <addForeignKeyConstraint
-                constraintName="fk_sgl_student_id"
-                baseTableName="student_guardian_links" baseColumnNames="student_id"
-                referencedTableName="students" referencedColumnNames="id"/>
-        <addForeignKeyConstraint
-                constraintName="fk_sgl_guardian_id"
-                baseTableName="student_guardian_links" baseColumnNames="guardian_id"
-                referencedTableName="guardians" referencedColumnNames="id"/>
-
+        <sql>
+            ALTER TABLE student_guardian_links
+                ADD COLUMN active_guardian_id BIGINT
+                GENERATED ALWAYS AS (CASE WHEN deleted = FALSE THEN guardian_id ELSE NULL END) STORED;
+        </sql>
+        <sql>
+            ALTER TABLE student_guardian_links
+                ADD CONSTRAINT chk_student_guardian_links_restricted_not_pickup
+                CHECK (NOT (custody_restricted AND authorized_for_pickup));
+        </sql>
         <createIndex indexName="idx_sgl_tenant_id" tableName="student_guardian_links">
             <column name="tenant_id"/>
         </createIndex>
@@ -130,10 +148,28 @@
         <createIndex indexName="idx_sgl_guardian_id" tableName="student_guardian_links">
             <column name="guardian_id"/>
         </createIndex>
-        <createIndex indexName="uq_sgl_student_guardian" tableName="student_guardian_links" unique="true">
+        <createIndex indexName="uq_sgl_student_active_guardian" tableName="student_guardian_links" unique="true">
             <column name="student_id"/>
-            <column name="guardian_id"/>
+            <column name="active_guardian_id"/>
         </createIndex>
+        <addForeignKeyConstraint
+                constraintName="fk_sgl_tenant_id"
+                baseTableName="student_guardian_links"
+                baseColumnNames="tenant_id"
+                referencedTableName="tenants"
+                referencedColumnNames="id"/>
+        <addForeignKeyConstraint
+                constraintName="fk_sgl_student_id"
+                baseTableName="student_guardian_links"
+                baseColumnNames="student_id"
+                referencedTableName="students"
+                referencedColumnNames="id"/>
+        <addForeignKeyConstraint
+                constraintName="fk_sgl_guardian_id"
+                baseTableName="student_guardian_links"
+                baseColumnNames="guardian_id"
+                referencedTableName="guardians"
+                referencedColumnNames="id"/>
     </changeSet>
 
 </databaseChangeLog>

@@ -26,6 +26,19 @@ import lombok.experimental.SuperBuilder;
 @NoArgsConstructor
 public class Admission extends SoftDeletableEntity {
 
+	// FK to students.id — set as soon as the ENROLL_STUDENT step creates the record, not only
+	// once the whole saga completes, so a later step's compensation can still find and undo it.
+	@Column(name = "enrolled_student_id")
+	private Long enrolledStudentId;
+
+	// FK to guardians.id — set as soon as the LINK_GUARDIAN step creates the record, same reason.
+	@Column(name = "enrolled_guardian_id")
+	private Long enrolledGuardianId;
+
+	// FK to platform document_issuances.id — the current offer letter; earlier ones are revoked.
+	@Column(name = "offer_letter_issuance_id")
+	private Long offerLetterIssuanceId;
+
 	@Pii
 	@Column(name = "applicant_first_name", nullable = false, length = 100)
 	private String applicantFirstName;
@@ -56,10 +69,6 @@ public class Admission extends SoftDeletableEntity {
 	@Column(name = "applied_grade", nullable = false, length = 20)
 	private String appliedGrade;
 
-	@Enumerated(EnumType.STRING)
-	@Column(name = "status", nullable = false, length = 20)
-	private AdmissionStatus status;
-
 	@Column(name = "submitted_at", nullable = false)
 	private Instant submittedAt;
 
@@ -69,15 +78,6 @@ public class Admission extends SoftDeletableEntity {
 	@Column(name = "enrollment_saga_id")
 	private UUID enrollmentSagaId;
 
-	// FK to students.id — set as soon as the ENROLL_STUDENT step creates the record, not only
-	// once the whole saga completes, so a later step's compensation can still find and undo it.
-	@Column(name = "enrolled_student_id")
-	private Long enrolledStudentId;
-
-	// FK to guardians.id — set as soon as the LINK_GUARDIAN step creates the record, same reason.
-	@Column(name = "enrolled_guardian_id")
-	private Long enrolledGuardianId;
-
 	@Column(name = "entrance_test_score", precision = 10, scale = 2)
 	private BigDecimal entranceTestScore;
 
@@ -86,13 +86,6 @@ public class Admission extends SoftDeletableEntity {
 
 	@Column(name = "merit_rank")
 	private Integer meritRank;
-
-	// The fee amount is frozen when the application is submitted: changing the school's fee later
-	// must not retroactively change what an applicant already owes.
-	@Enumerated(EnumType.STRING)
-	@Column(name = "application_fee_status", nullable = false, length = 20)
-	@Builder.Default
-	private ApplicationFeeStatus applicationFeeStatus = ApplicationFeeStatus.NOT_REQUIRED;
 
 	@Column(name = "application_fee_amount", precision = 12, scale = 2)
 	private BigDecimal applicationFeeAmount;
@@ -106,9 +99,16 @@ public class Admission extends SoftDeletableEntity {
 	@Column(name = "application_fee_waiver_reason", length = 500)
 	private String applicationFeeWaiverReason;
 
-	// FK to platform document_issuances.id — the current offer letter; earlier ones are revoked.
-	@Column(name = "offer_letter_issuance_id")
-	private Long offerLetterIssuanceId;
+	@Enumerated(EnumType.STRING)
+	@Column(name = "status", nullable = false, length = 20)
+	private AdmissionStatus status;
+
+	// The fee amount is frozen when the application is submitted: changing the school's fee later
+	// must not retroactively change what an applicant already owes.
+	@Enumerated(EnumType.STRING)
+	@Column(name = "application_fee_status", nullable = false, length = 20)
+	@Builder.Default
+	private ApplicationFeeStatus applicationFeeStatus = ApplicationFeeStatus.NOT_REQUIRED;
 
 	public static Admission submit(String applicantFirstName, String applicantLastName,
 			LocalDate applicantDateOfBirth, String guardianFirstName, String guardianLastName,

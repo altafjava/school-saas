@@ -26,10 +26,6 @@ public class LeaveApproval extends SoftDeletableEntity {
 	private Long leaveRequestId;
 
 	@Enumerated(EnumType.STRING)
-	@Column(name = "stage", nullable = false, length = 30)
-	private LeaveApprovalStage stage;
-
-	@Enumerated(EnumType.STRING)
 	@Column(name = "decision", nullable = false, length = 20)
 	private LeaveApprovalDecision decision;
 
@@ -42,6 +38,10 @@ public class LeaveApproval extends SoftDeletableEntity {
 
 	@Column(name = "remarks", length = 500)
 	private String remarks;
+
+	@Enumerated(EnumType.STRING)
+	@Column(name = "stage", nullable = false, length = 30)
+	private LeaveApprovalStage stage;
 
 	public static LeaveApproval approved(Long leaveRequestId, LeaveApprovalStage stage, Long decidedByUserId) {
 		return decision(leaveRequestId, stage, LeaveApprovalDecision.APPROVED, decidedByUserId, null);

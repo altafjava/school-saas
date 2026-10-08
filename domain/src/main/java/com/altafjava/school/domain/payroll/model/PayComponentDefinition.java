@@ -31,12 +31,12 @@ public class PayComponentDefinition extends SoftDeletableEntity {
 	@Column(name = "name", nullable = false, length = 100)
 	private String name;
 
+	@Column(name = "display_order", nullable = false)
+	private int displayOrder;
+
 	@Enumerated(EnumType.STRING)
 	@Column(name = "type", nullable = false, length = 20)
 	private PayComponentType type;
-
-	@Column(name = "display_order", nullable = false)
-	private int displayOrder;
 
 	@Column(name = "active", nullable = false)
 	private boolean active;

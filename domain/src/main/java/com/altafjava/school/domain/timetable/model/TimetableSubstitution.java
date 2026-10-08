@@ -34,12 +34,12 @@ public class TimetableSubstitution extends SoftDeletableEntity {
 	@Column(name = "period_id", nullable = false)
 	private Long periodId;
 
-	@Column(name = "substitution_date", nullable = false)
-	private LocalDate substitutionDate;
-
 	// FK to teachers.id
 	@Column(name = "substitute_teacher_id", nullable = false)
 	private Long substituteTeacherId;
+
+	@Column(name = "substitution_date", nullable = false)
+	private LocalDate substitutionDate;
 
 	@Column(name = "reason", length = 500)
 	private String reason;
