@@ -21,6 +21,7 @@ import com.altafjava.platform.core.audit.AuditAction;
 import com.altafjava.platform.core.audit.annotation.Audited;
 import com.altafjava.platform.core.exception.BusinessException;
 import com.altafjava.platform.core.exception.ResourceNotFoundException;
+import com.altafjava.platform.core.search.LikePattern;
 import com.altafjava.platform.core.security.AuthenticatedUser;
 import com.altafjava.platform.core.tenant.TenantContext;
 import com.altafjava.platform.domain.document.model.DocumentIssuance;
@@ -69,6 +70,12 @@ public class AdmissionService {
 		this.admissionDecisionRepository = admissionDecisionRepository;
 		this.admissionEnrollmentSaga = admissionEnrollmentSaga;
 		this.emailService = emailService;
+	}
+
+	/** Free-text {@code q} (blank = no filter) over the entity's identifying fields. */
+	@Transactional(readOnly = true)
+	public Page<Admission> searchAdmissions(Pageable pageable, String q) {
+		return admissionRepository.search(TenantContext.getCurrentTenantId(), LikePattern.contains(q), pageable);
 	}
 
 	@Transactional(readOnly = true)

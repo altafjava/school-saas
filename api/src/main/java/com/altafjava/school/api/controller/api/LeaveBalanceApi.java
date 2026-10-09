@@ -14,10 +14,10 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 @SecurityRequirement(name = "tenantHeader")
 public interface LeaveBalanceApi {
 
-	@Operation(summary = "For employee", operationId = "leavebalance_forEmployee")
+	@Operation(summary = "For employee")
 	public ApiResponse<List<LeaveBalanceResponse>> forEmployee(@PathVariable String publicId,
 			@RequestParam String academicYearPublicId);
 
-	@Operation(summary = "For current employee", operationId = "leavebalance_forCurrentEmployee")
+	@Operation(summary = "For current employee")
 	public ApiResponse<List<LeaveBalanceResponse>> forCurrentEmployee(@RequestParam String academicYearPublicId);
 }

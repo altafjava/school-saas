@@ -14,10 +14,10 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 @SecurityRequirement(name = "tenantHeader")
 public interface ReportCardTemplateApi {
 
-	@Operation(summary = "Get", operationId = "reportcardtemplate_get")
+	@Operation(summary = "Get")
 	public ApiResponse<ReportCardTemplateResponse> get();
 
-	@Operation(summary = "Configure", operationId = "reportcardtemplate_configure")
+	@Operation(summary = "Configure")
 	public ApiResponse<ReportCardTemplateResponse> configure(
 			@Valid @RequestBody ConfigureReportCardTemplateRequest request);
 }

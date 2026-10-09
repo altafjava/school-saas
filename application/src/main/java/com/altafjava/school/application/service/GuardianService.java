@@ -14,6 +14,7 @@ import org.springframework.transaction.annotation.Transactional;
 import com.altafjava.platform.application.event.publisher.EventPublisher;
 import com.altafjava.platform.core.exception.BusinessException;
 import com.altafjava.platform.core.exception.ResourceNotFoundException;
+import com.altafjava.platform.core.search.LikePattern;
 import com.altafjava.platform.core.security.AuthenticatedUser;
 import com.altafjava.platform.core.tenant.TenantContext;
 import com.altafjava.school.domain.common.model.Address;
@@ -43,6 +44,12 @@ public class GuardianService {
 		this.studentGuardianLinkRepository = studentGuardianLinkRepository;
 		this.studentRepository = studentRepository;
 		this.eventPublisher = eventPublisher;
+	}
+
+	/** Free-text {@code q} (blank = no filter) over the entity's identifying fields. */
+	@Transactional(readOnly = true)
+	public Page<Guardian> searchGuardians(Pageable pageable, String q) {
+		return guardianRepository.search(TenantContext.getCurrentTenantId(), LikePattern.contains(q), pageable);
 	}
 
 	@Transactional(readOnly = true)

@@ -5,9 +5,21 @@ import java.util.UUID;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import com.altafjava.school.domain.guardian.model.Guardian;
 
 public interface GuardianRepository extends JpaRepository<Guardian, Long> {
+
+	// Blank q matches everything; pattern comes from LikePattern.contains.
+	@Query("""
+			SELECT g FROM Guardian g
+			WHERE g.tenantId = :tenantId
+			  AND (:pattern IS NULL
+			       OR LOWER(CONCAT(g.firstName, ' ', g.lastName)) LIKE :pattern ESCAPE '!'
+			       OR LOWER(g.email) LIKE :pattern ESCAPE '!')
+			""")
+	Page<Guardian> search(@Param("tenantId") Long tenantId, @Param("pattern") String pattern, Pageable pageable);
 
 	Page<Guardian> findAllByTenantId(Long tenantId, Pageable pageable);
 

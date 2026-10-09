@@ -16,7 +16,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 @SecurityRequirement(name = "tenantHeader")
 public interface AttendanceScanApi {
 
-	@Operation(summary = "Scan ID card", operationId = "attendancescan_scan", description = "Marks the student on a scanned ID card present for today. payload is whatever the "
+	@Operation(summary = "Scan ID card", description = "Marks the student on a scanned ID card present for today. payload is whatever the "
 			+ "scanner read from the QR code (the card's verification link or bare code). A revoked, non-student or "
 			+ "unenrolled card is refused; a repeat scan the same day returns the existing record with "
 			+ "alreadyMarked=true.")

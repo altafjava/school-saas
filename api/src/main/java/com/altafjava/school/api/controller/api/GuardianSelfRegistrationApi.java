@@ -13,6 +13,6 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 		+ "student/tenant data must be granted separately afterward, this endpoint never accepts caller-supplied roles.")
 public interface GuardianSelfRegistrationApi {
 
-	@Operation(summary = "Self register", operationId = "guardianselfregistration_selfRegister")
+	@Operation(summary = "Self register")
 	public ApiResponse<GuardianResponse> selfRegister(@Valid @RequestBody GuardianSelfRegisterRequest request);
 }

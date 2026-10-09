@@ -17,22 +17,22 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 @SecurityRequirement(name = "tenantHeader")
 public interface SalaryStructureApi {
 
-	@Operation(summary = "List for employee", operationId = "salarystructure_listForEmployee")
+	@Operation(summary = "List for employee")
 	public ApiResponse<com.altafjava.platform.core.model.Page<SalaryStructureResponse>> listForEmployee(
 			@RequestParam String employeePublicId,
 			@RequestParam(defaultValue = "0") int page,
 			@RequestParam(defaultValue = "20") int size);
 
-	@Operation(summary = "Get", operationId = "salarystructure_get")
+	@Operation(summary = "Get")
 	public ApiResponse<SalaryStructureResponse> get(@PathVariable String publicId);
 
-	@Operation(summary = "Create", operationId = "salarystructure_create", description = "Creates a employee's salary structure from a tenant-defined set of pay components "
+	@Operation(summary = "Create", description = "Creates a employee's salary structure from a tenant-defined set of pay components "
 			+ "(see Pay Component Definition) — every component code must exist and be active in the "
 			+ "tenant's catalog; there is no fixed Basic/HRA/Transport shape, so this works for any region's "
 			+ "pay-component naming.")
 	public ApiResponse<SalaryStructureResponse> create(@Valid @RequestBody CreateSalaryStructureRequest request);
 
-	@Operation(summary = "Supersede", operationId = "salarystructure_supersede", description = "Replaces the current structure with a new one effective from a given date, preserving "
+	@Operation(summary = "Supersede", description = "Replaces the current structure with a new one effective from a given date, preserving "
 			+ "history — the prior structure is never mutated or deleted, only superseded.")
 	public ApiResponse<SalaryStructureResponse> supersede(@PathVariable String publicId,
 			@Valid @RequestBody SupersedeSalaryStructureRequest request);

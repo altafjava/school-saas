@@ -21,7 +21,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 @SecurityRequirement(name = "tenantHeader")
 public interface VisitorLogApi {
 
-	@Operation(summary = "List", operationId = "visitorlog_list")
+	@Operation(summary = "List")
 	public ApiResponse<com.altafjava.platform.core.model.Page<VisitorLogResponse>> list(
 			@RequestParam(required = false) Boolean stillCheckedIn,
 			@RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime from,
@@ -29,18 +29,18 @@ public interface VisitorLogApi {
 			@RequestParam(defaultValue = "0") int page,
 			@RequestParam(defaultValue = "20") int size);
 
-	@Operation(summary = "Get", operationId = "visitorlog_get")
+	@Operation(summary = "Get")
 	public ApiResponse<VisitorLogResponse> get(@PathVariable String publicId);
 
-	@Operation(summary = "Check in", operationId = "visitorlog_checkIn", description = "Admits a visitor against an APPROVED visitor request for today. A photo is required — "
+	@Operation(summary = "Check in", description = "Admits a visitor against an APPROVED visitor request for today. A photo is required — "
 			+ "either already on the request or supplied here — and a badge is issued; it stops being valid at "
 			+ "check-out.")
 	public ApiResponse<VisitorLogResponse> checkIn(@Valid @RequestBody CheckInVisitorRequest request,
 			@AuthenticationPrincipal AuthenticatedUser user);
 
-	@Operation(summary = "Download badge", operationId = "visitorlog_downloadBadge", description = "The visitor's badge as a PDF.")
+	@Operation(summary = "Download badge", description = "The visitor's badge as a PDF.")
 	public ResponseEntity<byte[]> downloadBadge(@PathVariable String publicId);
 
-	@Operation(summary = "Check out", operationId = "visitorlog_checkOut")
+	@Operation(summary = "Check out")
 	public ApiResponse<VisitorLogResponse> checkOut(@PathVariable String publicId);
 }

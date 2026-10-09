@@ -17,21 +17,21 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 @SecurityRequirement(name = "tenantHeader")
 public interface HostelBuildingApi {
 
-	@Operation(summary = "List", operationId = "hostelbuilding_list")
+	@Operation(summary = "List")
 	public ApiResponse<com.altafjava.platform.core.model.Page<HostelBuildingResponse>> list(
 			@RequestParam(defaultValue = "0") int page,
 			@RequestParam(defaultValue = "20") int size);
 
-	@Operation(summary = "Get", operationId = "hostelbuilding_get")
+	@Operation(summary = "Get")
 	public ApiResponse<HostelBuildingResponse> get(@PathVariable String publicId);
 
-	@Operation(summary = "Create", operationId = "hostelbuilding_create")
+	@Operation(summary = "Create")
 	public ApiResponse<HostelBuildingResponse> create(@Valid @RequestBody CreateHostelBuildingRequest request);
 
-	@Operation(summary = "Update details", operationId = "hostelbuilding_updateDetails")
+	@Operation(summary = "Update details")
 	public ApiResponse<HostelBuildingResponse> updateDetails(@PathVariable String publicId,
 			@Valid @RequestBody UpdateHostelBuildingRequest request);
 
-	@Operation(summary = "Deactivate", operationId = "hostelbuilding_deactivate")
+	@Operation(summary = "Deactivate")
 	public ApiResponse<HostelBuildingResponse> deactivate(@PathVariable String publicId);
 }

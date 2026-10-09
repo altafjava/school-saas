@@ -69,6 +69,8 @@ All services should show `healthy` or `running`.
 
 The `dev` profile is active by default (set in `application.yml`). The app starts on `http://localhost:8080`.
 
+To start with a realistic school instead of an empty database, set `SCHOOL_DEMO_SEED=true`: the `dev` profile then seeds "Demo School" (`demo` subdomain: academic year and terms, departments, subjects, 6 classrooms, teachers and staff, 36 students with guardians and siblings, fees, graded exams, recent attendance) once at startup. Sign in with `X-Tenant-ID` of the `demo` tenant and password `Demo@12345` as `admin@demo.school`, `principal@`, `finance@`, `hr@`, `academic@`, `teacher@`, `student@` or `parent@demo.school`.
+
 ### 3. Verify startup
 
 - Swagger UI: `http://localhost:8080/swagger-ui`

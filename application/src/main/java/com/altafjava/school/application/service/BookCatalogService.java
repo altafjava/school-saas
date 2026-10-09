@@ -9,6 +9,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import com.altafjava.platform.core.exception.BusinessException;
 import com.altafjava.platform.core.exception.ResourceNotFoundException;
+import com.altafjava.platform.core.search.LikePattern;
 import com.altafjava.platform.core.tenant.TenantContext;
 import com.altafjava.school.application.library.ReservationAllocator;
 import com.altafjava.school.domain.library.model.Book;
@@ -28,6 +29,12 @@ public class BookCatalogService {
 		this.bookRepository = bookRepository;
 		this.bookCopyRepository = bookCopyRepository;
 		this.reservationAllocator = reservationAllocator;
+	}
+
+	/** Free-text {@code q} (blank = no filter) over the entity's identifying fields. */
+	@Transactional(readOnly = true)
+	public Page<Book> searchBooks(Pageable pageable, String q) {
+		return bookRepository.search(TenantContext.getCurrentTenantId(), LikePattern.contains(q), pageable);
 	}
 
 	@Transactional(readOnly = true)

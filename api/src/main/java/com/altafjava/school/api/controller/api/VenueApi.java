@@ -17,24 +17,24 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 @SecurityRequirement(name = "tenantHeader")
 public interface VenueApi {
 
-	@Operation(summary = "List", operationId = "venue_list")
+	@Operation(summary = "List")
 	public ApiResponse<com.altafjava.platform.core.model.Page<VenueResponse>> list(
 			@RequestParam(defaultValue = "0") int page,
 			@RequestParam(defaultValue = "20") int size);
 
-	@Operation(summary = "Get", operationId = "venue_get")
+	@Operation(summary = "Get")
 	public ApiResponse<VenueResponse> get(@PathVariable String publicId);
 
-	@Operation(summary = "Create", operationId = "venue_create", description = "Registers a physical space (classroom, laboratory, hall, ...) that timetable slots can be held in.")
+	@Operation(summary = "Create", description = "Registers a physical space (classroom, laboratory, hall, ...) that timetable slots can be held in.")
 	public ApiResponse<VenueResponse> create(@Valid @RequestBody CreateVenueRequest request);
 
-	@Operation(summary = "Update", operationId = "venue_update")
+	@Operation(summary = "Update")
 	public ApiResponse<VenueResponse> update(@PathVariable String publicId,
 			@Valid @RequestBody UpdateVenueRequest request);
 
-	@Operation(summary = "Deactivate", operationId = "venue_deactivate", description = "A deactivated venue cannot be given to new timetable slots; existing bookings stay.")
+	@Operation(summary = "Deactivate", description = "A deactivated venue cannot be given to new timetable slots; existing bookings stay.")
 	public ApiResponse<VenueResponse> deactivate(@PathVariable String publicId);
 
-	@Operation(summary = "Activate", operationId = "venue_activate")
+	@Operation(summary = "Activate")
 	public ApiResponse<VenueResponse> activate(@PathVariable String publicId);
 }

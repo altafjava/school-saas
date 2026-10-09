@@ -16,10 +16,10 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 @SecurityRequirement(name = "tenantHeader")
 public interface LessonApi {
 
-	@Operation(summary = "Post", operationId = "lesson_post")
+	@Operation(summary = "Post")
 	public ApiResponse<LessonResponse> post(@Valid @RequestBody PostLessonRequest request);
 
-	@Operation(summary = "List by classroom", operationId = "lesson_listByClassroom")
+	@Operation(summary = "List by classroom")
 	public ApiResponse<com.altafjava.platform.core.model.Page<LessonResponse>> listByClassroom(
 			@PathVariable String classroomPublicId,
 			@RequestParam(defaultValue = "0") int page,

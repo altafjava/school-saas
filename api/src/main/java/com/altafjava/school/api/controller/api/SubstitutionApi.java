@@ -23,24 +23,24 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 @SecurityRequirement(name = "tenantHeader")
 public interface SubstitutionApi {
 
-	@Operation(summary = "List on date", operationId = "substitution_listOn", description = "The substitutions standing on one date.")
+	@Operation(summary = "List on date", description = "The substitutions standing on one date.")
 	public ApiResponse<List<SubstitutionResponse>> listOn(@RequestParam LocalDate date);
 
-	@Operation(summary = "List uncovered", operationId = "substitution_listUncovered", description = "Slots on the date whose regular teacher is on approved leave and that have "
+	@Operation(summary = "List uncovered", description = "Slots on the date whose regular teacher is on approved leave and that have "
 			+ "no substitute yet.")
 	public ApiResponse<List<TimetableEntryResponse>> listUncovered(@RequestParam LocalDate date);
 
-	@Operation(summary = "List available teachers", operationId = "substitution_listAvailableTeachers", description = "Active teachers free to cover the slot on the date: not teaching, "
+	@Operation(summary = "List available teachers", description = "Active teachers free to cover the slot on the date: not teaching, "
 			+ "covering or on approved leave in that period.")
 	public ApiResponse<List<AvailableTeacherResponse>> listAvailableTeachers(
 			@RequestParam String timetableEntryPublicId, @RequestParam LocalDate date);
 
-	@Operation(summary = "Assign", operationId = "substitution_assign", description = "Has a free teacher cover one regular slot on one date. The date must fall on the slot's "
+	@Operation(summary = "Assign", description = "Has a free teacher cover one regular slot on one date. The date must fall on the slot's "
 			+ "weekday, must not be in the past or a holiday.")
 	public ApiResponse<SubstitutionResponse> assign(@Valid @RequestBody AssignSubstituteRequest request,
 			@AuthenticationPrincipal AuthenticatedUser user);
 
-	@Operation(summary = "Cancel", operationId = "substitution_cancel")
+	@Operation(summary = "Cancel")
 	public ApiResponse<SubstitutionResponse> cancel(@PathVariable String publicId,
 			@Valid @RequestBody CancelSubstitutionRequest request);
 }

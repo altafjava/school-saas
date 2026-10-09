@@ -22,25 +22,26 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 @SecurityRequirement(name = "tenantHeader")
 public interface AdmissionApi {
 
-	@Operation(summary = "List", operationId = "admission_list")
+	@Operation(summary = "List")
 	public ApiResponse<com.altafjava.platform.core.model.Page<AdmissionResponse>> list(
 			@RequestParam(defaultValue = "0") int page,
-			@RequestParam(defaultValue = "20") int size);
+			@RequestParam(defaultValue = "20") int size,
+			@RequestParam(required = false) String q);
 
-	@Operation(summary = "Get", operationId = "admission_get")
+	@Operation(summary = "Get")
 	public ApiResponse<AdmissionResponse> get(@PathVariable String publicId);
 
-	@Operation(summary = "Submit", operationId = "admission_submit")
+	@Operation(summary = "Submit")
 	public ApiResponse<AdmissionResponse> submit(@Valid @RequestBody SubmitAdmissionRequest request);
 
 	/**
 	 * Public, unauthenticated intake for a prospective guardian applying before any account
 	 * exists — no {@code @PreAuthorize}, mirroring platform's {@code AuthController.register()}.
 	 */
-	@Operation(summary = "Apply", operationId = "admission_apply")
+	@Operation(summary = "Apply")
 	public ApiResponse<AdmissionResponse> apply(@Valid @RequestBody PublicAdmissionApplicationRequest request);
 
-	@Operation(summary = "Mark under review", operationId = "admission_markUnderReview")
+	@Operation(summary = "Mark under review")
 	public ApiResponse<AdmissionResponse> markUnderReview(@PathVariable String publicId);
 
 	/**
@@ -50,32 +51,32 @@ public interface AdmissionApi {
 	 * in {@code requestApproval}, since {@code ApprovalAspect} intercepts that call before its body
 	 * ever runs once a workflow is configured.
 	 */
-	@Operation(summary = "Decide", operationId = "admission_decide")
+	@Operation(summary = "Decide")
 	public ApiResponse<AdmissionResponse> decide(@PathVariable String publicId,
 			@Valid @RequestBody DecideAdmissionRequest request);
 
-	@Operation(summary = "Record entrance test score", operationId = "admission_recordEntranceTestScore")
+	@Operation(summary = "Record entrance test score")
 	public ApiResponse<AdmissionResponse> recordEntranceTestScore(@PathVariable String publicId,
 			@Valid @RequestBody RecordEntranceTestScoreRequest request);
 
-	@Operation(summary = "Generate merit list", operationId = "admission_generateMeritList")
+	@Operation(summary = "Generate merit list")
 	public ApiResponse<List<AdmissionResponse>> generateMeritList(
 			@RequestParam String appliedGrade,
 			@RequestParam int availableSeats);
 
-	@Operation(summary = "Promote from waitlist", operationId = "admission_promoteFromWaitlist")
+	@Operation(summary = "Promote from waitlist")
 	public ApiResponse<AdmissionResponse> promoteFromWaitlist(@PathVariable String publicId);
 
-	@Operation(summary = "Record the application fee as paid", operationId = "admission_recordApplicationFee")
+	@Operation(summary = "Record the application fee as paid")
 	public ApiResponse<AdmissionResponse> recordApplicationFee(@PathVariable String publicId);
 
-	@Operation(summary = "Waive the application fee", operationId = "admission_waiveApplicationFee")
+	@Operation(summary = "Waive the application fee")
 	public ApiResponse<AdmissionResponse> waiveApplicationFee(@PathVariable String publicId,
 			@Valid @RequestBody WaiveApplicationFeeRequest request);
 
-	@Operation(summary = "Issue or re-issue the offer letter", operationId = "admission_issueOfferLetter")
+	@Operation(summary = "Issue or re-issue the offer letter")
 	public ApiResponse<AdmissionResponse> issueOfferLetter(@PathVariable String publicId);
 
-	@Operation(summary = "Download the current offer letter", operationId = "admission_downloadOfferLetter")
+	@Operation(summary = "Download the current offer letter")
 	public ResponseEntity<byte[]> downloadOfferLetter(@PathVariable String publicId);
 }

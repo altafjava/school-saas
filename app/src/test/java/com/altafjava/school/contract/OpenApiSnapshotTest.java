@@ -2,6 +2,7 @@ package com.altafjava.school.contract;
 
 import static io.restassured.RestAssured.given;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 import java.io.IOException;
 import java.io.InputStream;
@@ -82,6 +83,41 @@ class OpenApiSnapshotTest extends SchoolIntegrationTestBase {
 				"OpenAPI spec no longer matches the committed snapshot (src/test/resources/openapi-snapshot.json). "
 						+ "If this change is intentional, regenerate it with "
 						+ "'-DupdateOpenApiSnapshot=true' and commit the update.");
+	}
+
+	@Test
+	void operationIds_areUniqueAndStable() {
+		java.util.Set<String> seen = new java.util.HashSet<>();
+		liveSpec().path("paths").properties().forEach(path -> path.getValue().properties().forEach(op -> {
+			JsonNode id = op.getValue().path("operationId");
+			if (id.isMissingNode()) {
+				return;
+			}
+			String operationId = id.asString();
+			assertTrue(seen.add(operationId), "duplicate operationId " + operationId);
+			assertTrue(!operationId.matches(".*_\\d+$"),
+					"operationId " + operationId + " carries springdoc's unstable numeric suffix");
+		}));
+		assertTrue(seen.size() > 500, "expected the school's operations, found " + seen.size());
+	}
+
+	@Test
+	void everyOperation_documentsTypedErrorResponses() {
+		JsonNode spec = liveSpec();
+		assertTrue(spec.path("components").path("schemas").has("ApiErrorResponse"));
+		spec.path("paths").properties().forEach(path -> path.getValue().properties().forEach(op -> {
+			JsonNode responses = op.getValue().path("responses");
+			if (!responses.isMissingNode()) {
+				assertTrue(responses.has("500"), path.getKey() + " " + op.getKey() + " lacks a typed 500 response");
+			}
+		}));
+	}
+
+	private JsonNode liveSpec() {
+		RestAssured.port = port;
+		RestAssured.basePath = "";
+		return stripEphemeralFields(objectMapper.readTree(given().contentType(ContentType.JSON).when()
+				.get("/api-docs").then().extract().asString()));
 	}
 
 	private JsonNode loadSnapshot() throws IOException {

@@ -17,16 +17,16 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 @SecurityRequirement(name = "tenantHeader")
 public interface TransportAssignmentApi {
 
-	@Operation(summary = "List for route", operationId = "transportassignment_listForRoute")
+	@Operation(summary = "List for route")
 	public ApiResponse<com.altafjava.platform.core.model.Page<TransportAssignmentResponse>> listForRoute(
 			@RequestParam String routePublicId,
 			@RequestParam(defaultValue = "0") int page,
 			@RequestParam(defaultValue = "20") int size);
 
-	@Operation(summary = "Assign", operationId = "transportassignment_assign")
+	@Operation(summary = "Assign")
 	public ApiResponse<TransportAssignmentResponse> assign(@Valid @RequestBody AssignTransportRequest request);
 
-	@Operation(summary = "End", operationId = "transportassignment_end")
+	@Operation(summary = "End")
 	public ApiResponse<TransportAssignmentResponse> end(@PathVariable String publicId,
 			@Valid @RequestBody EndTransportAssignmentRequest request);
 }

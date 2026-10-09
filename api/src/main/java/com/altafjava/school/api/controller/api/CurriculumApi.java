@@ -18,25 +18,25 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 @SecurityRequirement(name = "tenantHeader")
 public interface CurriculumApi {
 
-	@Operation(summary = "List", operationId = "curriculum_list")
+	@Operation(summary = "List")
 	public ApiResponse<com.altafjava.platform.core.model.Page<CurriculumResponse>> list(
 			@RequestParam(defaultValue = "0") int page,
 			@RequestParam(defaultValue = "20") int size);
 
-	@Operation(summary = "Get", operationId = "curriculum_get")
+	@Operation(summary = "Get")
 	public ApiResponse<CurriculumResponse> get(@PathVariable String publicId);
 
-	@Operation(summary = "Create", operationId = "curriculum_create")
+	@Operation(summary = "Create")
 	public ApiResponse<CurriculumResponse> create(@Valid @RequestBody CreateCurriculumRequest request);
 
-	@Operation(summary = "Update details", operationId = "curriculum_updateDetails")
+	@Operation(summary = "Update details")
 	public ApiResponse<CurriculumResponse> updateDetails(@PathVariable String publicId,
 			@Valid @RequestBody UpdateCurriculumRequest request);
 
-	@Operation(summary = "Assign grading scale", operationId = "curriculum_assignGradingScale")
+	@Operation(summary = "Assign grading scale")
 	public ApiResponse<CurriculumResponse> assignGradingScale(@PathVariable String publicId,
 			@Valid @RequestBody AssignGradingScaleRequest request);
 
-	@Operation(summary = "Deactivate", operationId = "curriculum_deactivate")
+	@Operation(summary = "Deactivate")
 	public ApiResponse<CurriculumResponse> deactivate(@PathVariable String publicId);
 }

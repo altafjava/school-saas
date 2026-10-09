@@ -16,13 +16,13 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 @SecurityRequirement(name = "tenantHeader")
 public interface StudentPickupApi {
 
-	@Operation(summary = "List guardians authorized to collect the student", operationId = "studentpickup_listAuthorized")
+	@Operation(summary = "List guardians authorized to collect the student")
 	ApiResponse<List<PickupAuthorizedGuardianResponse>> listAuthorized(@PathVariable String studentPublicId);
 
-	@Operation(summary = "Check whether a guardian may collect the student", operationId = "studentpickup_check")
+	@Operation(summary = "Check whether a guardian may collect the student")
 	ApiResponse<PickupCheckResponse> check(@PathVariable String studentPublicId,
 			@RequestParam String guardianPublicId);
 
-	@Operation(summary = "Pickup authorization and custody change history", operationId = "studentpickup_history")
+	@Operation(summary = "Pickup authorization and custody change history")
 	ApiResponse<List<GuardianAuthorizationChangeResponse>> history(@PathVariable String studentPublicId);
 }

@@ -16,14 +16,14 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 @SecurityRequirement(name = "tenantHeader")
 public interface PeriodAttendanceApi {
 
-	@Operation(summary = "List", operationId = "periodattendance_list")
+	@Operation(summary = "List")
 	public ApiResponse<com.altafjava.platform.core.model.Page<PeriodAttendanceResponse>> list(
 			@RequestParam(defaultValue = "0") int page,
 			@RequestParam(defaultValue = "20") int size);
 
-	@Operation(summary = "Get", operationId = "periodattendance_get")
+	@Operation(summary = "Get")
 	public ApiResponse<PeriodAttendanceResponse> get(@PathVariable String publicId);
 
-	@Operation(summary = "Mark", operationId = "periodattendance_mark")
+	@Operation(summary = "Mark")
 	public ApiResponse<PeriodAttendanceResponse> mark(@Valid @RequestBody MarkPeriodAttendanceRequest request);
 }

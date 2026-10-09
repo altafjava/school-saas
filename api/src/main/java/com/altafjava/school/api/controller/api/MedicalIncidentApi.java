@@ -16,17 +16,17 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 @SecurityRequirement(name = "tenantHeader")
 public interface MedicalIncidentApi {
 
-	@Operation(summary = "List all", operationId = "medicalincident_listAll")
+	@Operation(summary = "List all")
 	public ApiResponse<com.altafjava.platform.core.model.Page<MedicalIncidentResponse>> listAll(
 			@RequestParam(defaultValue = "0") int page,
 			@RequestParam(defaultValue = "20") int size);
 
-	@Operation(summary = "List for student", operationId = "medicalincident_listForStudent")
+	@Operation(summary = "List for student")
 	public ApiResponse<com.altafjava.platform.core.model.Page<MedicalIncidentResponse>> listForStudent(
 			@PathVariable String studentPublicId,
 			@RequestParam(defaultValue = "0") int page,
 			@RequestParam(defaultValue = "20") int size);
 
-	@Operation(summary = "Record", operationId = "medicalincident_record")
+	@Operation(summary = "Record")
 	public ApiResponse<MedicalIncidentResponse> record(@Valid @RequestBody RecordMedicalIncidentRequest request);
 }

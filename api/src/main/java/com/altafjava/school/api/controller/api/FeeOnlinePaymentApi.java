@@ -17,15 +17,15 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 @SecurityRequirement(name = "tenantHeader")
 public interface FeeOnlinePaymentApi {
 
-	@Operation(summary = "Create charge", operationId = "feeonlinepayment_createCharge", description = "Starts an online payment for a student's fee structure, sized to the current outstanding "
+	@Operation(summary = "Create charge", description = "Starts an online payment for a student's fee structure, sized to the current outstanding "
 			+ "balance. Fails if there is nothing left to pay on that fee structure.")
 	public ApiResponse<FeeChargeResponse> createCharge(@Valid @RequestBody CreateFeeChargeRequest request);
 
-	@Operation(summary = "Confirm charge", operationId = "feeonlinepayment_confirmCharge", description = "Confirms a gateway charge and records the payment. Idempotent on "
+	@Operation(summary = "Confirm charge", description = "Confirms a gateway charge and records the payment. Idempotent on "
 			+ "gatewayChargeReference — safe to retry if the client is unsure whether the first call landed.")
 	public ApiResponse<FeePaymentResponse> confirmCharge(@PathVariable String gatewayChargeReference,
 			@Valid @RequestBody ConfirmFeeChargeRequest request);
 
-	@Operation(summary = "Get receipt", operationId = "feeonlinepayment_getReceipt")
+	@Operation(summary = "Get receipt")
 	public ApiResponse<FeePaymentResponse> getReceipt(@PathVariable String publicId);
 }

@@ -17,14 +17,14 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 @SecurityRequirement(name = "tenantHeader")
 public interface HealthRecordApi {
 
-	@Operation(summary = "Get by student", operationId = "healthrecord_getByStudent")
+	@Operation(summary = "Get by student")
 	public ApiResponse<HealthRecordResponse> getByStudent(@PathVariable String studentPublicId);
 
-	@Operation(summary = "Upsert", operationId = "healthrecord_upsert")
+	@Operation(summary = "Upsert")
 	public ApiResponse<HealthRecordResponse> upsert(@PathVariable String studentPublicId,
 			@Valid @RequestBody UpsertHealthRecordRequest request);
 
-	@Operation(summary = "List corrections", operationId = "healthrecord_listCorrections")
+	@Operation(summary = "List corrections")
 	public ApiResponse<com.altafjava.platform.core.model.Page<HealthRecordCorrectionResponse>> listCorrections(
 			@PathVariable String studentPublicId,
 			@RequestParam(defaultValue = "0") int page,

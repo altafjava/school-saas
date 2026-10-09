@@ -18,27 +18,27 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 @SecurityRequirement(name = "tenantHeader")
 public interface AttendanceApi {
 
-	@Operation(summary = "List", operationId = "attendance_list")
+	@Operation(summary = "List")
 	public ApiResponse<com.altafjava.platform.core.model.Page<AttendanceResponse>> list(
 			@RequestParam(defaultValue = "0") int page,
 			@RequestParam(defaultValue = "20") int size);
 
-	@Operation(summary = "Get", operationId = "attendance_get")
+	@Operation(summary = "Get")
 	public ApiResponse<AttendanceResponse> get(@PathVariable String publicId);
 
-	@Operation(summary = "Mark", operationId = "attendance_mark")
+	@Operation(summary = "Mark")
 	public ApiResponse<AttendanceResponse> mark(@Valid @RequestBody MarkAttendanceRequest request);
 
-	@Operation(summary = "Update status", operationId = "attendance_updateStatus")
+	@Operation(summary = "Update status")
 	public ApiResponse<AttendanceResponse> updateStatus(@PathVariable String publicId,
 			@Valid @RequestBody UpdateAttendanceStatusRequest request);
 
-	@Operation(summary = "List corrections", operationId = "attendance_listCorrections")
+	@Operation(summary = "List corrections")
 	public ApiResponse<com.altafjava.platform.core.model.Page<AttendanceCorrectionResponse>> listCorrections(
 			@PathVariable String publicId,
 			@RequestParam(defaultValue = "0") int page,
 			@RequestParam(defaultValue = "20") int size);
 
-	@Operation(summary = "Delete", operationId = "attendance_delete")
+	@Operation(summary = "Delete")
 	public ApiResponse<Void> delete(@PathVariable String publicId);
 }

@@ -17,19 +17,19 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 @SecurityRequirement(name = "tenantHeader")
 public interface TimetableApi {
 
-	@Operation(summary = "List", operationId = "timetable_list")
+	@Operation(summary = "List")
 	public ApiResponse<com.altafjava.platform.core.model.Page<TimetableEntryResponse>> list(
 			@RequestParam(defaultValue = "0") int page,
 			@RequestParam(defaultValue = "20") int size);
 
-	@Operation(summary = "Get", operationId = "timetable_get")
+	@Operation(summary = "Get")
 	public ApiResponse<TimetableEntryResponse> get(@PathVariable String publicId);
 
-	@Operation(summary = "Schedule", operationId = "timetable_schedule", description = "A slot cannot double-book its class, its teacher or — when venuePublicId is given — "
+	@Operation(summary = "Schedule", description = "A slot cannot double-book its class, its teacher or — when venuePublicId is given — "
 			+ "its venue in the same day and period.")
 	public ApiResponse<TimetableEntryResponse> schedule(@Valid @RequestBody CreateTimetableEntryRequest request);
 
-	@Operation(summary = "Assign venue", operationId = "timetable_assignVenue", description = "Holds the slot in a venue; refused if another slot already uses that venue in the "
+	@Operation(summary = "Assign venue", description = "Holds the slot in a venue; refused if another slot already uses that venue in the "
 			+ "same day and period.")
 	public ApiResponse<TimetableEntryResponse> assignVenue(@PathVariable String publicId,
 			@Valid @RequestBody AssignTimetableVenueRequest request);

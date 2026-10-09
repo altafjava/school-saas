@@ -12,7 +12,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 		+ "@PreAuthorize; the tenant is resolved from the path, not a caller-supplied header.")
 public interface FeePaymentWebhookApi {
 
-	@Operation(summary = "Handle webhook", operationId = "feepaymentwebhook_handleWebhook", description = "Verifies the gateway's signature header and applies the payment event to the "
+	@Operation(summary = "Handle webhook", description = "Verifies the gateway's signature header and applies the payment event to the "
 			+ "corresponding fee payment: 404 if the tenant or its gateway config can't be resolved, "
 			+ "400 if the signature is invalid, otherwise the event is recorded against that tenant.")
 	public ResponseEntity<Void> handleWebhook(

@@ -17,25 +17,25 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 @SecurityRequirement(name = "tenantHeader")
 public interface CounselingSessionApi {
 
-	@Operation(summary = "List all", operationId = "counselingsession_listAll")
+	@Operation(summary = "List all")
 	public ApiResponse<com.altafjava.platform.core.model.Page<CounselingSessionResponse>> listAll(
 			@RequestParam(defaultValue = "0") int page,
 			@RequestParam(defaultValue = "20") int size);
 
-	@Operation(summary = "List for student", operationId = "counselingsession_listForStudent")
+	@Operation(summary = "List for student")
 	public ApiResponse<com.altafjava.platform.core.model.Page<CounselingSessionResponse>> listForStudent(
 			@PathVariable String studentPublicId,
 			@RequestParam(defaultValue = "0") int page,
 			@RequestParam(defaultValue = "20") int size);
 
-	@Operation(summary = "Get", operationId = "counselingsession_get")
+	@Operation(summary = "Get")
 	public ApiResponse<CounselingSessionResponse> get(@PathVariable String publicId);
 
-	@Operation(summary = "Schedule", operationId = "counselingsession_schedule")
+	@Operation(summary = "Schedule")
 	public ApiResponse<CounselingSessionResponse> schedule(
 			@Valid @RequestBody ScheduleCounselingSessionRequest request);
 
-	@Operation(summary = "Update notes", operationId = "counselingsession_updateNotes")
+	@Operation(summary = "Update notes")
 	public ApiResponse<CounselingSessionResponse> updateNotes(@PathVariable String publicId,
 			@Valid @RequestBody UpdateCounselingSessionNotesRequest request);
 }

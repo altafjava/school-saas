@@ -51,9 +51,10 @@ public class EmployeeController implements EmployeeApi {
 			@RequestParam(required = false) StaffCategory category,
 			@RequestParam(required = false) EmployeeStatus status,
 			@RequestParam(defaultValue = "0") int page,
-			@RequestParam(defaultValue = "20") int size) {
+			@RequestParam(defaultValue = "20") int size,
+			@RequestParam(required = false) String q) {
 		return ApiResponse.success(PlatformPageMapper.toPlatformPage(
-				employeeService.search(category, status, pageableResolver.resolve(page, size))
+				employeeService.search(category, status, q, pageableResolver.resolve(page, size))
 						.map(employeeMapper::toResponse)));
 	}
 

@@ -16,14 +16,14 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 @SecurityRequirement(name = "tenantHeader")
 public interface FeePaymentApi {
 
-	@Operation(summary = "List", operationId = "feepayment_list")
+	@Operation(summary = "List")
 	public ApiResponse<com.altafjava.platform.core.model.Page<FeePaymentResponse>> list(
 			@RequestParam(defaultValue = "0") int page,
 			@RequestParam(defaultValue = "20") int size);
 
-	@Operation(summary = "Get", operationId = "feepayment_get")
+	@Operation(summary = "Get")
 	public ApiResponse<FeePaymentResponse> get(@PathVariable String publicId);
 
-	@Operation(summary = "Record", operationId = "feepayment_record")
+	@Operation(summary = "Record")
 	public ApiResponse<FeePaymentResponse> record(@Valid @RequestBody RecordFeePaymentRequest request);
 }

@@ -19,30 +19,31 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 @SecurityRequirement(name = "tenantHeader")
 public interface BookApi {
 
-	@Operation(summary = "List", operationId = "book_list")
+	@Operation(summary = "List")
 	public ApiResponse<com.altafjava.platform.core.model.Page<BookResponse>> list(
 			@RequestParam(defaultValue = "0") int page,
-			@RequestParam(defaultValue = "20") int size);
+			@RequestParam(defaultValue = "20") int size,
+			@RequestParam(required = false) String q);
 
-	@Operation(summary = "Get", operationId = "book_get")
+	@Operation(summary = "Get")
 	public ApiResponse<BookResponse> get(@PathVariable String publicId);
 
-	@Operation(summary = "Create", operationId = "book_create")
+	@Operation(summary = "Create")
 	public ApiResponse<BookResponse> create(@Valid @RequestBody CreateBookRequest request);
 
-	@Operation(summary = "Deactivate", operationId = "book_deactivate")
+	@Operation(summary = "Deactivate")
 	public ApiResponse<BookResponse> deactivate(@PathVariable String publicId);
 
-	@Operation(summary = "List copies", operationId = "book_listCopies")
+	@Operation(summary = "List copies")
 	public ApiResponse<List<BookCopyResponse>> listCopies(@PathVariable String publicId);
 
-	@Operation(summary = "Add copy", operationId = "book_addCopy")
+	@Operation(summary = "Add copy")
 	public ApiResponse<BookCopyResponse> addCopy(@PathVariable String publicId,
 			@Valid @RequestBody AddBookCopyRequest request);
 
-	@Operation(summary = "Mark copy lost", operationId = "book_markCopyLost")
+	@Operation(summary = "Mark copy lost")
 	public ApiResponse<BookCopyResponse> markCopyLost(@PathVariable String copyPublicId);
 
-	@Operation(summary = "Mark copy damaged", operationId = "book_markCopyDamaged")
+	@Operation(summary = "Mark copy damaged")
 	public ApiResponse<BookCopyResponse> markCopyDamaged(@PathVariable String copyPublicId);
 }

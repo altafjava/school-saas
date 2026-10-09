@@ -13,18 +13,18 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 @SecurityRequirement(name = "tenantHeader")
 public interface PayslipApi {
 
-	@Operation(summary = "List", operationId = "payslip_list")
+	@Operation(summary = "List")
 	public ApiResponse<com.altafjava.platform.core.model.Page<PayslipResponse>> list(
 			@RequestParam(required = false) String employeePublicId,
 			@RequestParam(defaultValue = "0") int page,
 			@RequestParam(defaultValue = "20") int size);
 
-	@Operation(summary = "Get", operationId = "payslip_get")
+	@Operation(summary = "Get")
 	public ApiResponse<PayslipResponse> get(@PathVariable String publicId);
 
-	@Operation(summary = "Finalize payslip", operationId = "payslip_finalizePayslip")
+	@Operation(summary = "Finalize payslip")
 	public ApiResponse<PayslipResponse> finalizePayslip(@PathVariable String publicId);
 
-	@Operation(summary = "Disburse", operationId = "payslip_disburse")
+	@Operation(summary = "Disburse")
 	public ApiResponse<PayslipResponse> disburse(@PathVariable String publicId);
 }

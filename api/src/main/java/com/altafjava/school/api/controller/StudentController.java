@@ -121,9 +121,10 @@ public class StudentController implements StudentApi {
 	public ApiResponse<com.altafjava.platform.core.model.Page<StudentResponse>> list(
 			@RequestParam(defaultValue = "0") int page,
 			@RequestParam(defaultValue = "20") int size,
-			@RequestParam(required = false) EnrollmentStatus status) {
+			@RequestParam(required = false) EnrollmentStatus status,
+			@RequestParam(required = false) String q) {
 		return ApiResponse.success(PlatformPageMapper
-				.toPlatformPage(studentService.listStudents(pageableResolver.resolve(page, size), status)
+				.toPlatformPage(studentService.searchStudents(pageableResolver.resolve(page, size), status, q)
 						.map(studentMapper::toResponse)));
 	}
 

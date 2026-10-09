@@ -17,21 +17,22 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 @SecurityRequirement(name = "tenantHeader")
 public interface SubjectApi {
 
-	@Operation(summary = "List", operationId = "subject_list")
+	@Operation(summary = "List")
 	public ApiResponse<com.altafjava.platform.core.model.Page<SubjectResponse>> list(
 			@RequestParam(defaultValue = "0") int page,
-			@RequestParam(defaultValue = "20") int size);
+			@RequestParam(defaultValue = "20") int size,
+			@RequestParam(required = false) String q);
 
-	@Operation(summary = "Get", operationId = "subject_get")
+	@Operation(summary = "Get")
 	public ApiResponse<SubjectResponse> get(@PathVariable String publicId);
 
-	@Operation(summary = "Create", operationId = "subject_create")
+	@Operation(summary = "Create")
 	public ApiResponse<SubjectResponse> create(@Valid @RequestBody CreateSubjectRequest request);
 
-	@Operation(summary = "Deactivate", operationId = "subject_deactivate")
+	@Operation(summary = "Deactivate")
 	public ApiResponse<SubjectResponse> deactivate(@PathVariable String publicId);
 
-	@Operation(summary = "Assign curriculum", operationId = "subject_assignCurriculum")
+	@Operation(summary = "Assign curriculum")
 	public ApiResponse<SubjectResponse> assignCurriculum(@PathVariable String publicId,
 			@Valid @RequestBody AssignSubjectCurriculumRequest request);
 }

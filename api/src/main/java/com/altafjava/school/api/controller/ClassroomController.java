@@ -69,10 +69,12 @@ public class ClassroomController implements ClassroomApi {
 	@SortableBy({ "classCode", "grade", "section" })
 	public ApiResponse<com.altafjava.platform.core.model.Page<ClassroomResponse>> list(
 			@RequestParam(defaultValue = "0") int page,
-			@RequestParam(defaultValue = "20") int size) {
+			@RequestParam(defaultValue = "20") int size,
+			@RequestParam(required = false) String q) {
 		return ApiResponse.success(
-				PlatformPageMapper.toPlatformPage(classroomService.listClassrooms(pageableResolver.resolve(page, size))
-						.map(classroomMapper::toResponse)));
+				PlatformPageMapper
+						.toPlatformPage(classroomService.searchClassrooms(pageableResolver.resolve(page, size), q)
+								.map(classroomMapper::toResponse)));
 	}
 
 	@Override

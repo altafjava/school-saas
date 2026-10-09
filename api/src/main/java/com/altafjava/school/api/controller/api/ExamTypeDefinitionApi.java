@@ -17,20 +17,20 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 @SecurityRequirement(name = "tenantHeader")
 public interface ExamTypeDefinitionApi {
 
-	@Operation(summary = "List", operationId = "examtypedefinition_list", description = "Lists this tenant's exam type catalog (e.g. Unit Test, Midterm, Final), including inactive entries.")
+	@Operation(summary = "List", description = "Lists this tenant's exam type catalog (e.g. Unit Test, Midterm, Final), including inactive entries.")
 	public ApiResponse<List<ExamTypeDefinitionResponse>> list();
 
-	@Operation(summary = "List active", operationId = "examtypedefinition_listActive", description = "Lists only active exam types — the set an exam-scheduling UI should offer.")
+	@Operation(summary = "List active", description = "Lists only active exam types — the set an exam-scheduling UI should offer.")
 	public ApiResponse<List<ExamTypeDefinitionResponse>> listActive();
 
-	@Operation(summary = "Get", operationId = "examtypedefinition_get")
+	@Operation(summary = "Get")
 	public ApiResponse<ExamTypeDefinitionResponse> get(@PathVariable String publicId);
 
-	@Operation(summary = "Create", operationId = "examtypedefinition_create", description = "Adds a new exam type to this tenant's catalog. Exam types are tenant data, not a fixed enum, "
+	@Operation(summary = "Create", description = "Adds a new exam type to this tenant's catalog. Exam types are tenant data, not a fixed enum, "
 			+ "so each tenant can define its own set (board/curriculum-specific terminology, extra exam categories).")
 	public ApiResponse<ExamTypeDefinitionResponse> create(@Valid @RequestBody CreateExamTypeDefinitionRequest request);
 
-	@Operation(summary = "Update", operationId = "examtypedefinition_update", description = "Renames, reorders, or deactivates an exam type. Deactivating hides it from future exam "
+	@Operation(summary = "Update", description = "Renames, reorders, or deactivates an exam type. Deactivating hides it from future exam "
 			+ "scheduling without affecting exams already scheduled against it.")
 	public ApiResponse<ExamTypeDefinitionResponse> update(@PathVariable String publicId,
 			@Valid @RequestBody UpdateExamTypeDefinitionRequest request);

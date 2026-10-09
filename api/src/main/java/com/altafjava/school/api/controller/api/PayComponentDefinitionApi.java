@@ -17,20 +17,20 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 @SecurityRequirement(name = "tenantHeader")
 public interface PayComponentDefinitionApi {
 
-	@Operation(summary = "List", operationId = "paycomponentdefinition_list")
+	@Operation(summary = "List")
 	public ApiResponse<List<PayComponentDefinitionResponse>> list();
 
-	@Operation(summary = "List active", operationId = "paycomponentdefinition_listActive")
+	@Operation(summary = "List active")
 	public ApiResponse<List<PayComponentDefinitionResponse>> listActive();
 
-	@Operation(summary = "Get", operationId = "paycomponentdefinition_get")
+	@Operation(summary = "Get")
 	public ApiResponse<PayComponentDefinitionResponse> get(@PathVariable String publicId);
 
-	@Operation(summary = "Create", operationId = "paycomponentdefinition_create")
+	@Operation(summary = "Create")
 	public ApiResponse<PayComponentDefinitionResponse> create(
 			@Valid @RequestBody CreatePayComponentDefinitionRequest request);
 
-	@Operation(summary = "Update", operationId = "paycomponentdefinition_update")
+	@Operation(summary = "Update")
 	public ApiResponse<PayComponentDefinitionResponse> update(@PathVariable String publicId,
 			@Valid @RequestBody UpdatePayComponentDefinitionRequest request);
 }

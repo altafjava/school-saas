@@ -26,57 +26,58 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 @SecurityRequirement(name = "tenantHeader")
 public interface GuardianApi {
 
-	@Operation(summary = "List", operationId = "guardian_list")
+	@Operation(summary = "List")
 	public ApiResponse<com.altafjava.platform.core.model.Page<GuardianResponse>> list(
 			@RequestParam(defaultValue = "0") int page,
-			@RequestParam(defaultValue = "20") int size);
+			@RequestParam(defaultValue = "20") int size,
+			@RequestParam(required = false) String q);
 
-	@Operation(summary = "Get", operationId = "guardian_get")
+	@Operation(summary = "Get")
 	public ApiResponse<GuardianResponse> get(@PathVariable String publicId);
 
-	@Operation(summary = "Create", operationId = "guardian_create")
+	@Operation(summary = "Create")
 	public ApiResponse<GuardianResponse> create(@Valid @RequestBody CreateGuardianRequest request);
 
-	@Operation(summary = "Update address", operationId = "guardian_updateAddress")
+	@Operation(summary = "Update address")
 	public ApiResponse<GuardianResponse> updateAddress(@PathVariable String publicId,
 			@Valid @RequestBody AddressRequest request);
 
-	@Operation(summary = "Update phone", operationId = "guardian_updatePhone")
+	@Operation(summary = "Update phone")
 	public ApiResponse<GuardianResponse> updatePhone(@PathVariable String publicId,
 			@Valid @RequestBody UpdatePhoneRequest request);
 
-	@Operation(summary = "Update photo", operationId = "guardian_updatePhoto")
+	@Operation(summary = "Update photo")
 	public ApiResponse<GuardianResponse> updatePhoto(@PathVariable String publicId,
 			@Valid @RequestBody UpdatePhotoRequest request);
 
-	@Operation(summary = "Link student", operationId = "guardian_linkStudent")
+	@Operation(summary = "Link student")
 	public ApiResponse<StudentGuardianLinkResponse> linkStudent(@PathVariable String publicId,
 			@Valid @RequestBody LinkGuardianRequest request);
 
-	@Operation(summary = "Grant consent", operationId = "guardian_grantConsent")
+	@Operation(summary = "Grant consent")
 	public ApiResponse<StudentGuardianLinkResponse> grantConsent(@PathVariable String guardianPublicId,
 			@PathVariable String studentPublicId);
 
-	@Operation(summary = "Revoke consent", operationId = "guardian_revokeConsent")
+	@Operation(summary = "Revoke consent")
 	public ApiResponse<StudentGuardianLinkResponse> revokeConsent(@PathVariable String guardianPublicId,
 			@PathVariable String studentPublicId);
 
-	@Operation(summary = "My students", operationId = "guardian_myStudents")
+	@Operation(summary = "My students")
 	public ApiResponse<com.altafjava.platform.core.model.Page<StudentResponse>> myStudents(
 			@RequestParam(defaultValue = "0") int page,
 			@RequestParam(defaultValue = "20") int size);
 
-	@Operation(summary = "Grant a data-processing consent for my linked student", operationId = "guardian_grantSelfConsent")
+	@Operation(summary = "Grant a data-processing consent for my linked student")
 	public ApiResponse<GuardianConsentRecordResponse> grantSelfConsent(@PathVariable String studentPublicId,
 			@Valid @RequestBody GrantGuardianConsentRequest request);
 
-	@Operation(summary = "Revoke a previously granted data-processing consent for my linked student", operationId = "guardian_revokeSelfConsent")
+	@Operation(summary = "Revoke a previously granted data-processing consent for my linked student")
 	public ApiResponse<GuardianConsentRecordResponse> revokeSelfConsent(@PathVariable String studentPublicId,
 			@PathVariable GuardianConsentType consentType);
 
-	@Operation(summary = "List my own consent records for a linked student", operationId = "guardian_myConsents")
+	@Operation(summary = "List my own consent records for a linked student")
 	public ApiResponse<List<GuardianConsentRecordResponse>> myConsents(@PathVariable String studentPublicId);
 
-	@Operation(summary = "List a student's guardian consent records (admin view)", operationId = "guardian_studentConsents")
+	@Operation(summary = "List a student's guardian consent records (admin view)")
 	public ApiResponse<List<GuardianConsentRecordResponse>> studentConsents(@PathVariable String studentPublicId);
 }

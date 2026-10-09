@@ -17,26 +17,26 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 @SecurityRequirement(name = "tenantHeader")
 public interface GradingScaleApi {
 
-	@Operation(summary = "List", operationId = "gradingscale_list")
+	@Operation(summary = "List")
 	public ApiResponse<com.altafjava.platform.core.model.Page<GradingScaleResponse>> list(
 			@RequestParam(defaultValue = "0") int page,
 			@RequestParam(defaultValue = "20") int size);
 
-	@Operation(summary = "Get", operationId = "gradingscale_get")
+	@Operation(summary = "Get")
 	public ApiResponse<GradingScaleResponse> get(@PathVariable String publicId);
 
-	@Operation(summary = "Create", operationId = "gradingscale_create", description = "Defines a new tenant grading scale (its score-to-grade thresholds) — lets each tenant "
+	@Operation(summary = "Create", description = "Defines a new tenant grading scale (its score-to-grade thresholds) — lets each tenant "
 			+ "use its own board/curriculum's grading system rather than a fixed one.")
 	public ApiResponse<GradingScaleResponse> create(@Valid @RequestBody CreateGradingScaleRequest request);
 
-	@Operation(summary = "Update thresholds", operationId = "gradingscale_updateThresholds")
+	@Operation(summary = "Update thresholds")
 	public ApiResponse<GradingScaleResponse> updateThresholds(@PathVariable String publicId,
 			@Valid @RequestBody UpdateGradingScaleThresholdsRequest request);
 
-	@Operation(summary = "Mark as default", operationId = "gradingscale_markAsDefault", description = "Sets this scale as the tenant's default — the scale used when grading doesn't specify "
+	@Operation(summary = "Mark as default", description = "Sets this scale as the tenant's default — the scale used when grading doesn't specify "
 			+ "one explicitly. Only one scale can be default per tenant.")
 	public ApiResponse<GradingScaleResponse> markAsDefault(@PathVariable String publicId);
 
-	@Operation(summary = "Deactivate", operationId = "gradingscale_deactivate")
+	@Operation(summary = "Deactivate")
 	public ApiResponse<GradingScaleResponse> deactivate(@PathVariable String publicId);
 }

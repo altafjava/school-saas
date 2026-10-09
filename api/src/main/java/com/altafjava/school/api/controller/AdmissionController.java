@@ -68,10 +68,12 @@ public class AdmissionController implements AdmissionApi {
 	@SortableBy({ "applicantFirstName", "applicantLastName", "appliedGrade", "status", "submittedAt" })
 	public ApiResponse<com.altafjava.platform.core.model.Page<AdmissionResponse>> list(
 			@RequestParam(defaultValue = "0") int page,
-			@RequestParam(defaultValue = "20") int size) {
+			@RequestParam(defaultValue = "20") int size,
+			@RequestParam(required = false) String q) {
 		return ApiResponse.success(
-				PlatformPageMapper.toPlatformPage(admissionService.listAdmissions(pageableResolver.resolve(page, size))
-						.map(admissionMapper::toResponse)));
+				PlatformPageMapper
+						.toPlatformPage(admissionService.searchAdmissions(pageableResolver.resolve(page, size), q)
+								.map(admissionMapper::toResponse)));
 	}
 
 	@Override

@@ -13,6 +13,7 @@ import org.springframework.transaction.annotation.Transactional;
 import com.altafjava.platform.application.event.publisher.EventPublisher;
 import com.altafjava.platform.core.exception.BusinessException;
 import com.altafjava.platform.core.exception.ResourceNotFoundException;
+import com.altafjava.platform.core.search.LikePattern;
 import com.altafjava.platform.core.tenant.TenantContext;
 import com.altafjava.school.domain.academicyear.model.AcademicYear;
 import com.altafjava.school.domain.academicyear.repository.AcademicYearRepository;
@@ -49,6 +50,12 @@ public class ClassroomService {
 		this.studentRepository = studentRepository;
 		this.curriculumRepository = curriculumRepository;
 		this.eventPublisher = eventPublisher;
+	}
+
+	/** Free-text {@code q} (blank = no filter) over the entity's identifying fields. */
+	@Transactional(readOnly = true)
+	public Page<Classroom> searchClassrooms(Pageable pageable, String q) {
+		return classroomRepository.search(TenantContext.getCurrentTenantId(), LikePattern.contains(q), pageable);
 	}
 
 	@Transactional(readOnly = true)

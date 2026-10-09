@@ -15,10 +15,10 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 @SecurityRequirement(name = "tenantHeader")
 public interface StudentIdCardApi {
 
-	@Operation(summary = "Issue", operationId = "studentidcard_issue")
+	@Operation(summary = "Issue")
 	ApiResponse<IssuedDocumentResponse> issue(@PathVariable String studentPublicId,
 			@AuthenticationPrincipal AuthenticatedUser user);
 
-	@Operation(summary = "Download", operationId = "studentidcard_download")
+	@Operation(summary = "Download")
 	ResponseEntity<byte[]> download(@PathVariable String studentPublicId, @PathVariable String issuancePublicId);
 }

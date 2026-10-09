@@ -20,44 +20,44 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 @SecurityRequirement(name = "tenantHeader")
 public interface LeaveTypeApi {
 
-	@Operation(summary = "List", operationId = "leavetype_list")
+	@Operation(summary = "List")
 	public ApiResponse<com.altafjava.platform.core.model.Page<LeaveTypeResponse>> list(
 			@RequestParam(defaultValue = "0") int page,
 			@RequestParam(defaultValue = "20") int size);
 
-	@Operation(summary = "List active", operationId = "leavetype_listActive")
+	@Operation(summary = "List active")
 	public ApiResponse<List<LeaveTypeResponse>> listActive();
 
-	@Operation(summary = "Get", operationId = "leavetype_get")
+	@Operation(summary = "Get")
 	public ApiResponse<LeaveTypeResponse> get(@PathVariable String publicId);
 
-	@Operation(summary = "Create", operationId = "leavetype_create")
+	@Operation(summary = "Create")
 	public ApiResponse<LeaveTypeResponse> create(@Valid @RequestBody CreateLeaveTypeRequest request);
 
-	@Operation(summary = "Update details", operationId = "leavetype_updateDetails")
+	@Operation(summary = "Update details")
 	public ApiResponse<LeaveTypeResponse> updateDetails(@PathVariable String publicId,
 			@Valid @RequestBody UpdateLeaveTypeRequest request);
 
-	@Operation(summary = "Deactivate", operationId = "leavetype_deactivate")
+	@Operation(summary = "Deactivate")
 	public ApiResponse<LeaveTypeResponse> deactivate(@PathVariable String publicId);
 
-	@Operation(summary = "Mark unpaid", operationId = "leavetype_markUnpaid")
+	@Operation(summary = "Mark unpaid")
 	public ApiResponse<LeaveTypeResponse> markUnpaid(@PathVariable String publicId);
 
-	@Operation(summary = "Mark paid", operationId = "leavetype_markPaid")
+	@Operation(summary = "Mark paid")
 	public ApiResponse<LeaveTypeResponse> markPaid(@PathVariable String publicId);
 
-	@Operation(summary = "Restrict during probation", operationId = "leavetype_restrictDuringProbation")
+	@Operation(summary = "Restrict during probation")
 	public ApiResponse<LeaveTypeResponse> restrictDuringProbation(@PathVariable String publicId);
 
-	@Operation(summary = "Allow during probation", operationId = "leavetype_allowDuringProbation")
+	@Operation(summary = "Allow during probation")
 	public ApiResponse<LeaveTypeResponse> allowDuringProbation(@PathVariable String publicId);
 
-	@Operation(summary = "Configure carry forward", operationId = "leavetype_configureCarryForward")
+	@Operation(summary = "Configure carry forward")
 	public ApiResponse<LeaveTypeResponse> configureCarryForward(@PathVariable String publicId,
 			@Valid @RequestBody ConfigureLeaveCarryForwardRequest request);
 
-	@Operation(summary = "Configure approval levels", operationId = "leavetype_configureApprovalLevels", description = "1 leaves the decision to a leave administrator; 2 makes the requester's "
+	@Operation(summary = "Configure approval levels", description = "1 leaves the decision to a leave administrator; 2 makes the requester's "
 			+ "department head approve first. Applies to requests submitted afterwards.")
 	public ApiResponse<LeaveTypeResponse> configureApprovalLevels(@PathVariable String publicId,
 			@Valid @RequestBody ConfigureLeaveApprovalRequest request);

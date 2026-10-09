@@ -13,27 +13,27 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 @SecurityRequirement(name = "tenantHeader")
 public interface DashboardApi {
 
-	@Operation(summary = "Principal", operationId = "dashboard_principal")
+	@Operation(summary = "Principal")
 	public ApiResponse<List<Map<String, Object>>> principal();
 
-	@Operation(summary = "Finance", operationId = "dashboard_finance")
+	@Operation(summary = "Finance")
 	public ApiResponse<List<Map<String, Object>>> finance();
 
-	@Operation(summary = "Hr", operationId = "dashboard_hr")
+	@Operation(summary = "Hr")
 	public ApiResponse<List<Map<String, Object>>> hr();
 
-	@Operation(summary = "Academic", operationId = "dashboard_academic")
+	@Operation(summary = "Academic")
 	public ApiResponse<List<Map<String, Object>>> academic();
 
-	@Operation(summary = "Principal trends", operationId = "dashboard_principalTrends")
+	@Operation(summary = "Principal trends")
 	public ApiResponse<List<Map<String, Object>>> principalTrends(@RequestParam(required = false) Integer periods);
 
-	@Operation(summary = "Academic trends", operationId = "dashboard_academicTrends")
+	@Operation(summary = "Academic trends")
 	public ApiResponse<List<Map<String, Object>>> academicTrends(@RequestParam(required = false) Integer periods);
 
-	@Operation(summary = "Finance trends", operationId = "dashboard_financeTrends")
+	@Operation(summary = "Finance trends")
 	public ApiResponse<List<Map<String, Object>>> financeTrends(@RequestParam(required = false) Integer periods);
 
-	@Operation(summary = "Hr trends", operationId = "dashboard_hrTrends")
+	@Operation(summary = "Hr trends")
 	public ApiResponse<List<Map<String, Object>>> hrTrends(@RequestParam(required = false) Integer periods);
 }

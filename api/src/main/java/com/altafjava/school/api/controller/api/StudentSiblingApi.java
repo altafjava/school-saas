@@ -16,17 +16,17 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 @SecurityRequirement(name = "tenantHeader")
 public interface StudentSiblingApi {
 
-	@Operation(summary = "List siblings", operationId = "studentsibling_list", description = "The student's siblings at the school, whatever their enrollment status.")
+	@Operation(summary = "List siblings", description = "The student's siblings at the school, whatever their enrollment status.")
 	public ApiResponse<List<SiblingResponse>> list(@PathVariable String studentPublicId);
 
-	@Operation(summary = "Suggest siblings", operationId = "studentsibling_suggest", description = "Students sharing a guardian with this one who are not yet recorded as siblings.")
+	@Operation(summary = "Suggest siblings", description = "Students sharing a guardian with this one who are not yet recorded as siblings.")
 	public ApiResponse<List<SiblingResponse>> suggest(@PathVariable String studentPublicId);
 
-	@Operation(summary = "Link sibling", operationId = "studentsibling_link", description = "Records the two students as siblings and returns all of the student's siblings. Siblinghood "
+	@Operation(summary = "Link sibling", description = "Records the two students as siblings and returns all of the student's siblings. Siblinghood "
 			+ "is transitive: a student who already has siblings brings them all into the family.")
 	public ApiResponse<List<SiblingResponse>> link(@PathVariable String studentPublicId,
 			@Valid @RequestBody LinkSiblingRequest request);
 
-	@Operation(summary = "Leave sibling group", operationId = "studentsibling_leave", description = "Removes only this student from their siblings. A family left with one member is dissolved.")
+	@Operation(summary = "Leave sibling group", description = "Removes only this student from their siblings. A family left with one member is dissolved.")
 	public ApiResponse<Void> leave(@PathVariable String studentPublicId);
 }

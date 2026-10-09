@@ -7,6 +7,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import com.altafjava.platform.core.exception.BusinessException;
 import com.altafjava.platform.core.exception.ResourceNotFoundException;
+import com.altafjava.platform.core.search.LikePattern;
 import com.altafjava.platform.core.tenant.TenantContext;
 import com.altafjava.school.domain.curriculum.repository.CurriculumRepository;
 import com.altafjava.school.domain.subject.model.Subject;
@@ -21,6 +22,12 @@ public class SubjectService {
 	public SubjectService(SubjectRepository subjectRepository, CurriculumRepository curriculumRepository) {
 		this.subjectRepository = subjectRepository;
 		this.curriculumRepository = curriculumRepository;
+	}
+
+	/** Free-text {@code q} (blank = no filter) over the entity's identifying fields. */
+	@Transactional(readOnly = true)
+	public Page<Subject> searchSubjects(Pageable pageable, String q) {
+		return subjectRepository.search(TenantContext.getCurrentTenantId(), LikePattern.contains(q), pageable);
 	}
 
 	@Transactional(readOnly = true)

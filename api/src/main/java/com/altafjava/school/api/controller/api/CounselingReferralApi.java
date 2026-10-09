@@ -17,30 +17,30 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 @SecurityRequirement(name = "tenantHeader")
 public interface CounselingReferralApi {
 
-	@Operation(summary = "List all", operationId = "counselingreferral_listAll")
+	@Operation(summary = "List all")
 	public ApiResponse<com.altafjava.platform.core.model.Page<CounselingReferralResponse>> listAll(
 			@RequestParam(defaultValue = "0") int page,
 			@RequestParam(defaultValue = "20") int size);
 
-	@Operation(summary = "List for student", operationId = "counselingreferral_listForStudent")
+	@Operation(summary = "List for student")
 	public ApiResponse<com.altafjava.platform.core.model.Page<CounselingReferralResponse>> listForStudent(
 			@PathVariable String studentPublicId,
 			@RequestParam(defaultValue = "0") int page,
 			@RequestParam(defaultValue = "20") int size);
 
-	@Operation(summary = "Get", operationId = "counselingreferral_get")
+	@Operation(summary = "Get")
 	public ApiResponse<CounselingReferralResponse> get(@PathVariable String publicId);
 
-	@Operation(summary = "Refer", operationId = "counselingreferral_refer")
+	@Operation(summary = "Refer")
 	public ApiResponse<CounselingReferralResponse> refer(@Valid @RequestBody ReferForCounselingRequest request);
 
-	@Operation(summary = "Schedule", operationId = "counselingreferral_schedule")
+	@Operation(summary = "Schedule")
 	public ApiResponse<CounselingReferralResponse> schedule(@PathVariable String publicId,
 			@Valid @RequestBody ScheduleCounselingReferralRequest request);
 
-	@Operation(summary = "Complete", operationId = "counselingreferral_complete")
+	@Operation(summary = "Complete")
 	public ApiResponse<CounselingReferralResponse> complete(@PathVariable String publicId);
 
-	@Operation(summary = "Decline", operationId = "counselingreferral_decline")
+	@Operation(summary = "Decline")
 	public ApiResponse<CounselingReferralResponse> decline(@PathVariable String publicId);
 }

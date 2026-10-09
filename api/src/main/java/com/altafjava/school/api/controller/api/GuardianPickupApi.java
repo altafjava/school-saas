@@ -17,20 +17,20 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 @SecurityRequirement(name = "tenantHeader")
 public interface GuardianPickupApi {
 
-	@Operation(summary = "Authorize pickup", operationId = "guardianpickup_authorize")
+	@Operation(summary = "Authorize pickup")
 	ApiResponse<StudentGuardianLinkResponse> authorizePickup(@PathVariable String guardianPublicId,
 			@PathVariable String studentPublicId, @AuthenticationPrincipal AuthenticatedUser user);
 
-	@Operation(summary = "Revoke pickup authorization", operationId = "guardianpickup_revoke")
+	@Operation(summary = "Revoke pickup authorization")
 	ApiResponse<StudentGuardianLinkResponse> revokePickup(@PathVariable String guardianPublicId,
 			@PathVariable String studentPublicId, @AuthenticationPrincipal AuthenticatedUser user);
 
-	@Operation(summary = "Restrict custody", operationId = "guardianpickup_restrictCustody")
+	@Operation(summary = "Restrict custody")
 	ApiResponse<StudentGuardianLinkResponse> restrictCustody(@PathVariable String guardianPublicId,
 			@PathVariable String studentPublicId, @Valid @RequestBody RestrictCustodyRequest request,
 			@AuthenticationPrincipal AuthenticatedUser user);
 
-	@Operation(summary = "Lift custody restriction", operationId = "guardianpickup_liftCustodyRestriction")
+	@Operation(summary = "Lift custody restriction")
 	ApiResponse<StudentGuardianLinkResponse> liftCustodyRestriction(@PathVariable String guardianPublicId,
 			@PathVariable String studentPublicId, @AuthenticationPrincipal AuthenticatedUser user);
 }

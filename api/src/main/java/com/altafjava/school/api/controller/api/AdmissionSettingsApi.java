@@ -14,9 +14,9 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 @SecurityRequirement(name = "tenantHeader")
 public interface AdmissionSettingsApi {
 
-	@Operation(summary = "Get", operationId = "admissionsettings_get")
+	@Operation(summary = "Get")
 	ApiResponse<AdmissionSettingsResponse> get();
 
-	@Operation(summary = "Update", operationId = "admissionsettings_update")
+	@Operation(summary = "Update")
 	ApiResponse<AdmissionSettingsResponse> update(@Valid @RequestBody UpdateAdmissionSettingsRequest request);
 }

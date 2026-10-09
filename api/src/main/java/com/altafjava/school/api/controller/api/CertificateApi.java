@@ -19,22 +19,22 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 @SecurityRequirement(name = "tenantHeader")
 public interface CertificateApi {
 
-	@Operation(summary = "List", operationId = "certificate_list")
+	@Operation(summary = "List")
 	public ApiResponse<com.altafjava.platform.core.model.Page<IssuedDocumentResponse>> list(
 			@PathVariable String studentPublicId,
 			@RequestParam(defaultValue = "0") int page,
 			@RequestParam(defaultValue = "20") int size);
 
-	@Operation(summary = "Issue", operationId = "certificate_issue")
+	@Operation(summary = "Issue")
 	public ApiResponse<IssuedDocumentResponse> issue(@PathVariable String studentPublicId,
 			@RequestParam String certificateTypePublicId,
 			@AuthenticationPrincipal AuthenticatedUser user);
 
-	@Operation(summary = "Revoke", operationId = "certificate_revoke")
+	@Operation(summary = "Revoke")
 	public ApiResponse<IssuedDocumentResponse> revoke(@PathVariable String studentPublicId,
 			@PathVariable String certificatePublicId, @Valid @RequestBody RevokeDocumentRequest request);
 
-	@Operation(summary = "Download", operationId = "certificate_download")
+	@Operation(summary = "Download")
 	public ResponseEntity<byte[]> download(@PathVariable String studentPublicId,
 			@PathVariable String certificatePublicId);
 }

@@ -22,45 +22,45 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 @SecurityRequirement(name = "tenantHeader")
 public interface FeeStructureApi {
 
-	@Operation(summary = "List", operationId = "feestructure_list")
+	@Operation(summary = "List")
 	public ApiResponse<com.altafjava.platform.core.model.Page<FeeStructureResponse>> list(
 			@RequestParam(defaultValue = "0") int page,
 			@RequestParam(defaultValue = "20") int size);
 
-	@Operation(summary = "Get", operationId = "feestructure_get")
+	@Operation(summary = "Get")
 	public ApiResponse<FeeStructureResponse> get(@PathVariable String publicId);
 
-	@Operation(summary = "Create", operationId = "feestructure_create")
+	@Operation(summary = "Create")
 	public ApiResponse<FeeStructureResponse> create(@Valid @RequestBody CreateFeeStructureRequest request);
 
-	@Operation(summary = "Revise amount", operationId = "feestructure_reviseAmount")
+	@Operation(summary = "Revise amount")
 	public ApiResponse<FeeStructureResponse> reviseAmount(@PathVariable String publicId,
 			@Valid @RequestBody ReviseFeeAmountRequest request);
 
-	@Operation(summary = "Configure late fee policy", operationId = "feestructure_configureLateFeePolicy")
+	@Operation(summary = "Configure late fee policy")
 	public ApiResponse<FeeStructureResponse> configureLateFeePolicy(@PathVariable String publicId,
 			@Valid @RequestBody ConfigureFeeLateFeePolicyRequest request);
 
-	@Operation(summary = "List revisions", operationId = "feestructure_listRevisions")
+	@Operation(summary = "List revisions")
 	public ApiResponse<com.altafjava.platform.core.model.Page<FeeStructureRevisionResponse>> listRevisions(
 			@PathVariable String publicId,
 			@RequestParam(defaultValue = "0") int page,
 			@RequestParam(defaultValue = "20") int size);
 
-	@Operation(summary = "Assign", operationId = "feestructure_assign")
+	@Operation(summary = "Assign")
 	public ApiResponse<FeeAssignmentResponse> assign(@PathVariable String publicId,
 			@Valid @RequestBody AssignFeeStructureRequest request);
 
-	@Operation(summary = "List assignments", operationId = "feestructure_listAssignments")
+	@Operation(summary = "List assignments")
 	public ApiResponse<com.altafjava.platform.core.model.Page<FeeAssignmentResponse>> listAssignments(
 			@PathVariable String publicId,
 			@RequestParam(defaultValue = "0") int page,
 			@RequestParam(defaultValue = "20") int size);
 
-	@Operation(summary = "Revoke assignment", operationId = "feestructure_revokeAssignment")
+	@Operation(summary = "Revoke assignment")
 	public ApiResponse<Void> revokeAssignment(@PathVariable String publicId, @PathVariable String assignmentPublicId);
 
-	@Operation(summary = "Configure assignment due date", operationId = "feestructure_configureAssignmentDueDate")
+	@Operation(summary = "Configure assignment due date")
 	public ApiResponse<FeeAssignmentResponse> configureAssignmentDueDate(@PathVariable String publicId,
 			@PathVariable String assignmentPublicId, @Valid @RequestBody ConfigureFeeAssignmentDueDateRequest request);
 }
