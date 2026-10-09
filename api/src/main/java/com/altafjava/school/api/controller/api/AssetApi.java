@@ -17,27 +17,27 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 @SecurityRequirement(name = "tenantHeader")
 public interface AssetApi {
 
-	@Operation(summary = "List", operationId = "asset_list")
+	@Operation(summary = "List")
 	public ApiResponse<com.altafjava.platform.core.model.Page<AssetResponse>> list(
 			@RequestParam(defaultValue = "0") int page,
 			@RequestParam(defaultValue = "20") int size);
 
-	@Operation(summary = "Get", operationId = "asset_get")
+	@Operation(summary = "Get")
 	public ApiResponse<AssetResponse> get(@PathVariable String publicId);
 
-	@Operation(summary = "Create", operationId = "asset_create")
+	@Operation(summary = "Create")
 	public ApiResponse<AssetResponse> create(@Valid @RequestBody CreateAssetRequest request);
 
-	@Operation(summary = "Update location", operationId = "asset_updateLocation")
+	@Operation(summary = "Update location")
 	public ApiResponse<AssetResponse> updateLocation(@PathVariable String publicId,
 			@Valid @RequestBody UpdateAssetLocationRequest request);
 
-	@Operation(summary = "Mark under maintenance", operationId = "asset_markUnderMaintenance")
+	@Operation(summary = "Mark under maintenance")
 	public ApiResponse<AssetResponse> markUnderMaintenance(@PathVariable String publicId);
 
-	@Operation(summary = "Mark available", operationId = "asset_markAvailable")
+	@Operation(summary = "Mark available")
 	public ApiResponse<AssetResponse> markAvailable(@PathVariable String publicId);
 
-	@Operation(summary = "Mark disposed", operationId = "asset_markDisposed")
+	@Operation(summary = "Mark disposed")
 	public ApiResponse<AssetResponse> markDisposed(@PathVariable String publicId);
 }

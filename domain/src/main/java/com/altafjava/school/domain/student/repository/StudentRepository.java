@@ -16,6 +16,19 @@ public interface StudentRepository extends JpaRepository<Student, Long> {
 
 	Page<Student> findAllByTenantId(Long tenantId, Pageable pageable);
 
+	// Either filter may be null/blank to match everything; pattern comes from LikePattern.contains.
+	@Query("""
+			SELECT s FROM Student s
+			WHERE s.tenantId = :tenantId
+			  AND (:status IS NULL OR s.enrollmentStatus = :status)
+			  AND (:pattern IS NULL
+			       OR LOWER(s.studentCode) LIKE :pattern ESCAPE '!'
+			       OR LOWER(CONCAT(s.firstName, ' ', s.lastName)) LIKE :pattern ESCAPE '!'
+			       OR LOWER(s.email) LIKE :pattern ESCAPE '!')
+			""")
+	Page<Student> search(@Param("tenantId") Long tenantId, @Param("status") EnrollmentStatus status,
+			@Param("pattern") String pattern, Pageable pageable);
+
 	Page<Student> findAllByTenantIdAndEnrollmentStatus(Long tenantId, EnrollmentStatus enrollmentStatus,
 			Pageable pageable);
 

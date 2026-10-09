@@ -33,99 +33,100 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 @SecurityRequirement(name = "tenantHeader")
 public interface StudentApi {
 
-	@Operation(summary = "List", operationId = "student_list")
+	@Operation(summary = "List")
 	public ApiResponse<com.altafjava.platform.core.model.Page<StudentResponse>> list(
 			@RequestParam(defaultValue = "0") int page,
 			@RequestParam(defaultValue = "20") int size,
-			@RequestParam(required = false) EnrollmentStatus status);
+			@RequestParam(required = false) EnrollmentStatus status,
+			@RequestParam(required = false) String q);
 
-	@Operation(summary = "Get", operationId = "student_get")
+	@Operation(summary = "Get")
 	public ApiResponse<StudentResponse> get(@PathVariable String publicId);
 
-	@Operation(summary = "Bulk import", operationId = "student_bulkImport")
+	@Operation(summary = "Bulk import")
 	public ApiResponse<BulkImportResponse> bulkImport(@RequestParam("file") MultipartFile file);
 
-	@Operation(summary = "Enroll", operationId = "student_enroll")
+	@Operation(summary = "Enroll")
 	public ApiResponse<StudentResponse> enroll(@Valid @RequestBody CreateStudentRequest request);
 
-	@Operation(summary = "Withdraw", operationId = "student_withdraw")
+	@Operation(summary = "Withdraw")
 	public ApiResponse<StudentResponse> withdraw(@PathVariable String publicId,
 			@RequestBody(required = false) @Valid LifecycleChangeRequest request);
 
-	@Operation(summary = "Transfer", operationId = "student_transfer")
+	@Operation(summary = "Transfer")
 	public ApiResponse<StudentResponse> transfer(@PathVariable String publicId,
 			@RequestBody(required = false) @Valid LifecycleChangeRequest request);
 
-	@Operation(summary = "Graduate", operationId = "student_graduate")
+	@Operation(summary = "Graduate")
 	public ApiResponse<StudentResponse> graduate(@PathVariable String publicId,
 			@RequestBody(required = false) @Valid LifecycleChangeRequest request);
 
-	@Operation(summary = "Suspend", operationId = "student_suspend")
+	@Operation(summary = "Suspend")
 	public ApiResponse<StudentResponse> suspend(@PathVariable String publicId,
 			@RequestBody(required = false) @Valid LifecycleChangeRequest request);
 
-	@Operation(summary = "Reinstate a suspended student", operationId = "student_reinstate")
+	@Operation(summary = "Reinstate a suspended student")
 	public ApiResponse<StudentResponse> reinstate(@PathVariable String publicId,
 			@RequestBody(required = false) @Valid LifecycleChangeRequest request);
 
-	@Operation(summary = "Update contact details", operationId = "student_updateContactDetails")
+	@Operation(summary = "Update contact details")
 	public ApiResponse<StudentResponse> updateContactDetails(@PathVariable String publicId,
 			@Valid @RequestBody UpdateStudentContactDetailsRequest request);
 
-	@Operation(summary = "Update phone", operationId = "student_updatePhone")
+	@Operation(summary = "Update phone")
 	public ApiResponse<StudentResponse> updatePhone(@PathVariable String publicId,
 			@Valid @RequestBody UpdatePhoneRequest request);
 
-	@Operation(summary = "Update address", operationId = "student_updateAddress")
+	@Operation(summary = "Update address")
 	public ApiResponse<StudentResponse> updateAddress(@PathVariable String publicId,
 			@Valid @RequestBody AddressRequest request);
 
-	@Operation(summary = "Update photo", operationId = "student_updatePhoto")
+	@Operation(summary = "Update photo")
 	public ApiResponse<StudentResponse> updatePhoto(@PathVariable String publicId,
 			@Valid @RequestBody UpdatePhotoRequest request);
 
-	@Operation(summary = "Grades", operationId = "student_grades")
+	@Operation(summary = "Grades")
 	public ApiResponse<com.altafjava.platform.core.model.Page<GradeResponse>> grades(@PathVariable String publicId,
 			@RequestParam(defaultValue = "0") int page,
 			@RequestParam(defaultValue = "20") int size);
 
-	@Operation(summary = "Term gpa", operationId = "student_termGpa")
+	@Operation(summary = "Term gpa")
 	public ApiResponse<GpaResponse> termGpa(@PathVariable String publicId, @RequestParam String termPublicId);
 
-	@Operation(summary = "Academic year gpa", operationId = "student_academicYearGpa")
+	@Operation(summary = "Academic year gpa")
 	public ApiResponse<GpaResponse> academicYearGpa(@PathVariable String publicId,
 			@RequestParam String academicYearPublicId);
 
-	@Operation(summary = "Cumulative gpa", operationId = "student_cumulativeGpa")
+	@Operation(summary = "Cumulative gpa")
 	public ApiResponse<GpaResponse> cumulativeGpa(@PathVariable String publicId);
 
-	@Operation(summary = "Attendance", operationId = "student_attendance")
+	@Operation(summary = "Attendance")
 	public ApiResponse<com.altafjava.platform.core.model.Page<AttendanceResponse>> attendance(
 			@PathVariable String publicId,
 			@RequestParam(defaultValue = "0") int page,
 			@RequestParam(defaultValue = "20") int size);
 
-	@Operation(summary = "Attendance percentage", operationId = "student_attendancePercentage")
+	@Operation(summary = "Attendance percentage")
 	public ApiResponse<AttendancePercentageResponse> attendancePercentage(@PathVariable String publicId,
 			@RequestParam LocalDate fromDate,
 			@RequestParam LocalDate toDate);
 
-	@Operation(summary = "Fee balance", operationId = "student_feeBalance")
+	@Operation(summary = "Fee balance")
 	public ApiResponse<List<FeeBalanceResponse>> feeBalance(@PathVariable String publicId);
 
-	@Operation(summary = "Report cards", operationId = "student_reportCards")
+	@Operation(summary = "Report cards")
 	public ApiResponse<com.altafjava.platform.core.model.Page<ReportCardResponse>> reportCards(
 			@PathVariable String publicId,
 			@RequestParam(defaultValue = "0") int page,
 			@RequestParam(defaultValue = "20") int size);
 
-	@Operation(summary = "Generate report card", operationId = "student_generateReportCard")
+	@Operation(summary = "Generate report card")
 	public ApiResponse<ReportCardResponse> generateReportCard(@PathVariable String publicId,
 			@RequestParam String termPublicId,
 			@RequestParam(required = false) String teacherRemarks,
 			@RequestParam(required = false) String principalRemarks);
 
-	@Operation(summary = "Download report card", operationId = "student_downloadReportCard")
+	@Operation(summary = "Download report card")
 	public ResponseEntity<byte[]> downloadReportCard(@PathVariable String publicId,
 			@PathVariable String reportCardPublicId);
 }

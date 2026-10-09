@@ -72,10 +72,12 @@ public class GuardianController implements GuardianApi {
 	@SortableBy({ "firstName", "lastName" })
 	public ApiResponse<com.altafjava.platform.core.model.Page<GuardianResponse>> list(
 			@RequestParam(defaultValue = "0") int page,
-			@RequestParam(defaultValue = "20") int size) {
+			@RequestParam(defaultValue = "20") int size,
+			@RequestParam(required = false) String q) {
 		return ApiResponse.success(
-				PlatformPageMapper.toPlatformPage(guardianService.listGuardians(pageableResolver.resolve(page, size))
-						.map(guardianMapper::toResponse)));
+				PlatformPageMapper
+						.toPlatformPage(guardianService.searchGuardians(pageableResolver.resolve(page, size), q)
+								.map(guardianMapper::toResponse)));
 	}
 
 	@Override

@@ -91,3 +91,8 @@ application:
     access-key: minioadmin
     secret-key: minioadmin
     endpoint: http://localhost:9003
+
+# Seeds "Demo School" (admin@demo.school / Demo@12345, plus a login per role) at startup; idempotent.
+school:
+  demo:
+    seed-on-startup: ${SCHOOL_DEMO_SEED:false}

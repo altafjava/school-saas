@@ -168,7 +168,7 @@ class CustomFieldE2ETest extends SchoolIntegrationTestBase {
 						{"values":{"bloodGroup":"O+"}}
 						""")
 				.when()
-				.put("/api/v1/students/" + studentPublicId + "/custom-fields")
+				.put("/api/v1/custom-fields/STUDENT/" + studentPublicId)
 				.then()
 				.statusCode(HttpStatus.OK.value())
 				.body("data.find { it.fieldKey == 'bloodGroup' }.value", equalTo("O+"));
@@ -177,7 +177,7 @@ class CustomFieldE2ETest extends SchoolIntegrationTestBase {
 				.header("X-Tenant-ID", tenantId)
 				.header("Authorization", "Bearer " + accessToken)
 				.when()
-				.get("/api/v1/students/" + studentPublicId + "/custom-fields")
+				.get("/api/v1/custom-fields/STUDENT/" + studentPublicId)
 				.then()
 				.statusCode(HttpStatus.OK.value())
 				.body("data.find { it.fieldKey == 'bloodGroup' }.value", equalTo("O+"));
@@ -197,7 +197,7 @@ class CustomFieldE2ETest extends SchoolIntegrationTestBase {
 						{"values":{"doesNotExist":"x"}}
 						""")
 				.when()
-				.put("/api/v1/students/" + studentPublicId + "/custom-fields")
+				.put("/api/v1/custom-fields/STUDENT/" + studentPublicId)
 				.then()
 				.statusCode(HttpStatus.BAD_REQUEST.value());
 	}
@@ -224,7 +224,7 @@ class CustomFieldE2ETest extends SchoolIntegrationTestBase {
 						{"values":{"retiredField":"x"}}
 						""")
 				.when()
-				.put("/api/v1/students/" + studentPublicId + "/custom-fields")
+				.put("/api/v1/custom-fields/STUDENT/" + studentPublicId)
 				.then()
 				.statusCode(HttpStatus.BAD_REQUEST.value());
 	}
@@ -244,7 +244,7 @@ class CustomFieldE2ETest extends SchoolIntegrationTestBase {
 						{"values":{"heightCm":"tall"}}
 						""")
 				.when()
-				.put("/api/v1/students/" + studentPublicId + "/custom-fields")
+				.put("/api/v1/custom-fields/STUDENT/" + studentPublicId)
 				.then()
 				.statusCode(HttpStatus.BAD_REQUEST.value());
 	}
@@ -265,7 +265,7 @@ class CustomFieldE2ETest extends SchoolIntegrationTestBase {
 						{"values":{"notes":"x"}}
 						""")
 				.when()
-				.put("/api/v1/students/" + studentPublicId + "/custom-fields")
+				.put("/api/v1/custom-fields/STUDENT/" + studentPublicId)
 				.then()
 				.statusCode(HttpStatus.FORBIDDEN.value());
 	}
@@ -275,7 +275,7 @@ class CustomFieldE2ETest extends SchoolIntegrationTestBase {
 		given()
 				.header("X-Tenant-ID", tenantId)
 				.when()
-				.get("/api/v1/students/" + UUID.randomUUID() + "/custom-fields")
+				.get("/api/v1/custom-fields/STUDENT/" + UUID.randomUUID())
 				.then()
 				.statusCode(HttpStatus.UNAUTHORIZED.value());
 	}
@@ -303,7 +303,7 @@ class CustomFieldE2ETest extends SchoolIntegrationTestBase {
 						{"values":{"isolationField":"x"}}
 						""")
 				.when()
-				.put("/api/v1/students/" + studentPublicId + "/custom-fields")
+				.put("/api/v1/custom-fields/STUDENT/" + studentPublicId)
 				.then()
 				.statusCode(HttpStatus.NOT_FOUND.value());
 	}
@@ -341,7 +341,7 @@ class CustomFieldE2ETest extends SchoolIntegrationTestBase {
 						{"values":{"houseColor":"Blue"}}
 						""")
 				.when()
-				.put("/api/v1/students/" + studentPublicId + "/custom-fields")
+				.put("/api/v1/custom-fields/STUDENT/" + studentPublicId)
 				.then()
 				.statusCode(HttpStatus.OK.value())
 				.body("data.find { it.fieldKey == 'houseColor' }.value", equalTo("Blue"))
@@ -364,7 +364,7 @@ class CustomFieldE2ETest extends SchoolIntegrationTestBase {
 						{"values":{"houseColor2":"Purple"}}
 						""")
 				.when()
-				.put("/api/v1/students/" + studentPublicId + "/custom-fields")
+				.put("/api/v1/custom-fields/STUDENT/" + studentPublicId)
 				.then()
 				.statusCode(HttpStatus.BAD_REQUEST.value());
 	}

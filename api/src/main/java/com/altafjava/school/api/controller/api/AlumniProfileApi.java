@@ -17,24 +17,24 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 @SecurityRequirement(name = "tenantHeader")
 public interface AlumniProfileApi {
 
-	@Operation(summary = "List", operationId = "alumniprofile_list")
+	@Operation(summary = "List")
 	public ApiResponse<com.altafjava.platform.core.model.Page<AlumniProfileResponse>> list(
 			@RequestParam(defaultValue = "0") int page,
 			@RequestParam(defaultValue = "20") int size);
 
-	@Operation(summary = "Get", operationId = "alumniprofile_get")
+	@Operation(summary = "Get")
 	public ApiResponse<AlumniProfileResponse> get(@PathVariable String publicId);
 
-	@Operation(summary = "Create", operationId = "alumniprofile_create")
+	@Operation(summary = "Create")
 	public ApiResponse<AlumniProfileResponse> create(@Valid @RequestBody CreateAlumniProfileRequest request);
 
-	@Operation(summary = "Update contact info", operationId = "alumniprofile_updateContactInfo")
+	@Operation(summary = "Update contact info")
 	public ApiResponse<AlumniProfileResponse> updateContactInfo(@PathVariable String publicId,
 			@Valid @RequestBody UpdateAlumniContactInfoRequest request);
 
-	@Operation(summary = "Activate", operationId = "alumniprofile_activate")
+	@Operation(summary = "Activate")
 	public ApiResponse<AlumniProfileResponse> activate(@PathVariable String publicId);
 
-	@Operation(summary = "Deactivate", operationId = "alumniprofile_deactivate")
+	@Operation(summary = "Deactivate")
 	public ApiResponse<AlumniProfileResponse> deactivate(@PathVariable String publicId);
 }

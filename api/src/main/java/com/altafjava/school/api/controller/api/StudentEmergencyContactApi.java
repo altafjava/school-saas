@@ -18,18 +18,18 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 @SecurityRequirement(name = "tenantHeader")
 public interface StudentEmergencyContactApi {
 
-	@Operation(summary = "List", operationId = "emergencycontact_list")
+	@Operation(summary = "List")
 	ApiResponse<List<EmergencyContactResponse>> list(@PathVariable String studentPublicId);
 
-	@Operation(summary = "Add", operationId = "emergencycontact_add")
+	@Operation(summary = "Add")
 	ApiResponse<EmergencyContactResponse> add(@PathVariable String studentPublicId,
 			@Valid @RequestBody EmergencyContactRequest request);
 
-	@Operation(summary = "Update", operationId = "emergencycontact_update")
+	@Operation(summary = "Update")
 	ApiResponse<EmergencyContactResponse> update(@PathVariable String studentPublicId,
 			@PathVariable String contactPublicId, @Valid @RequestBody EmergencyContactRequest request);
 
-	@Operation(summary = "Remove", operationId = "emergencycontact_remove")
+	@Operation(summary = "Remove")
 	ApiResponse<Void> remove(@PathVariable String studentPublicId, @PathVariable String contactPublicId,
 			@AuthenticationPrincipal AuthenticatedUser user);
 }

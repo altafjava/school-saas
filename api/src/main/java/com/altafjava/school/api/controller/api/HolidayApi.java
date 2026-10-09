@@ -17,21 +17,21 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 @SecurityRequirement(name = "tenantHeader")
 public interface HolidayApi {
 
-	@Operation(summary = "List", operationId = "holiday_list")
+	@Operation(summary = "List")
 	public ApiResponse<com.altafjava.platform.core.model.Page<HolidayResponse>> list(
 			@RequestParam(defaultValue = "0") int page,
 			@RequestParam(defaultValue = "20") int size);
 
-	@Operation(summary = "Get", operationId = "holiday_get")
+	@Operation(summary = "Get")
 	public ApiResponse<HolidayResponse> get(@PathVariable String publicId);
 
-	@Operation(summary = "Create", operationId = "holiday_create")
+	@Operation(summary = "Create")
 	public ApiResponse<HolidayResponse> create(@Valid @RequestBody CreateHolidayRequest request);
 
-	@Operation(summary = "Update details", operationId = "holiday_updateDetails")
+	@Operation(summary = "Update details")
 	public ApiResponse<HolidayResponse> updateDetails(@PathVariable String publicId,
 			@Valid @RequestBody UpdateHolidayRequest request);
 
-	@Operation(summary = "Delete", operationId = "holiday_delete")
+	@Operation(summary = "Delete")
 	public ApiResponse<Void> delete(@PathVariable String publicId);
 }

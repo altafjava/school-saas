@@ -17,20 +17,20 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 @SecurityRequirement(name = "tenantHeader")
 public interface CirculationApi {
 
-	@Operation(summary = "List for student", operationId = "circulation_listForStudent")
+	@Operation(summary = "List for student")
 	public ApiResponse<com.altafjava.platform.core.model.Page<CirculationResponse>> listForStudent(
 			@RequestParam String studentPublicId,
 			@RequestParam(defaultValue = "0") int page,
 			@RequestParam(defaultValue = "20") int size);
 
-	@Operation(summary = "Checkout", operationId = "circulation_checkout", description = "A copy held for a reservation can only be checked out by the member it is held for.")
+	@Operation(summary = "Checkout", description = "A copy held for a reservation can only be checked out by the member it is held for.")
 	public ApiResponse<CirculationResponse> checkout(@Valid @RequestBody CheckoutBookRequest request);
 
-	@Operation(summary = "Return book", operationId = "circulation_returnBook")
+	@Operation(summary = "Return book")
 	public ApiResponse<CirculationResponse> returnBook(@PathVariable String publicId,
 			@Valid @RequestBody ReturnBookRequest request);
 
-	@Operation(summary = "Renew", operationId = "circulation_renew", description = "Extends the due date by another loan period. Refused when the loan is overdue, has used "
+	@Operation(summary = "Renew", description = "Extends the due date by another loan period. Refused when the loan is overdue, has used "
 			+ "its renewals (library.renewal.max-count, default 2), or another member is queuing for the title.")
 	public ApiResponse<CirculationResponse> renew(@PathVariable String publicId);
 }

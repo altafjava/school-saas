@@ -50,9 +50,10 @@ public class BookController implements BookApi {
 	@SortableBy({ "title", "author", "category" })
 	public ApiResponse<com.altafjava.platform.core.model.Page<BookResponse>> list(
 			@RequestParam(defaultValue = "0") int page,
-			@RequestParam(defaultValue = "20") int size) {
+			@RequestParam(defaultValue = "20") int size,
+			@RequestParam(required = false) String q) {
 		return ApiResponse.success(PlatformPageMapper.toPlatformPage(
-				bookCatalogService.listBooks(pageableResolver.resolve(page, size)).map(bookMapper::toResponse)));
+				bookCatalogService.searchBooks(pageableResolver.resolve(page, size), q).map(bookMapper::toResponse)));
 	}
 
 	@Override

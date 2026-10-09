@@ -14,7 +14,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 @SecurityRequirement(name = "tenantHeader")
 public interface OrganizationRollupApi {
 
-	@Operation(summary = "Get", operationId = "organizationrollup_get", description = "Aggregates enrollment, attendance, and fee-collection totals across every campus (tenant) "
+	@Operation(summary = "Get", description = "Aggregates enrollment, attendance, and fee-collection totals across every campus (tenant) "
 			+ "belonging to the organization for the given date range.")
 	public ApiResponse<OrganizationRollupResponse> get(
 			@PathVariable String organizationPublicId,

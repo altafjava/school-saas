@@ -22,7 +22,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 @SecurityRequirement(name = "tenantHeader")
 public interface VisitorRequestApi {
 
-	@Operation(summary = "List", operationId = "visitorrequest_list", description = "Every visit request in the school, optionally filtered by status and a visit-date range.")
+	@Operation(summary = "List", description = "Every visit request in the school, optionally filtered by status and a visit-date range.")
 	public ApiResponse<com.altafjava.platform.core.model.Page<VisitorRequestResponse>> list(
 			@RequestParam(required = false) VisitorRequestStatus status,
 			@RequestParam(required = false) LocalDate from,
@@ -30,7 +30,7 @@ public interface VisitorRequestApi {
 			@RequestParam(defaultValue = "0") int page,
 			@RequestParam(defaultValue = "20") int size);
 
-	@Operation(summary = "List hosted by me", operationId = "visitorrequest_listHostedByMe", description = "Visits where the current employee is the host.")
+	@Operation(summary = "List hosted by me", description = "Visits where the current employee is the host.")
 	public ApiResponse<com.altafjava.platform.core.model.Page<VisitorRequestResponse>> listHostedByMe(
 			@RequestParam(required = false) VisitorRequestStatus status,
 			@RequestParam(required = false) LocalDate from,
@@ -39,29 +39,29 @@ public interface VisitorRequestApi {
 			@RequestParam(defaultValue = "20") int size,
 			@AuthenticationPrincipal AuthenticatedUser user);
 
-	@Operation(summary = "Get", operationId = "visitorrequest_get")
+	@Operation(summary = "Get")
 	public ApiResponse<VisitorRequestResponse> get(@PathVariable String publicId,
 			@AuthenticationPrincipal AuthenticatedUser user);
 
-	@Operation(summary = "Raise", operationId = "visitorrequest_raise", description = "Pre-registers a visit for visitDate, or raises a walk-in for today when visitDate is omitted. "
+	@Operation(summary = "Raise", description = "Pre-registers a visit for visitDate, or raises a walk-in for today when visitDate is omitted. "
 			+ "Hosts can raise visits for themselves; the front desk for any host. The host is notified and the "
 			+ "request waits, PENDING, for approval.")
 	public ApiResponse<VisitorRequestResponse> raise(@Valid @RequestBody RaiseVisitorRequestRequest request,
 			@AuthenticationPrincipal AuthenticatedUser user);
 
-	@Operation(summary = "Approve", operationId = "visitorrequest_approve", description = "By the host or a visitor-request approver. Only an approved visit for today can be checked in.")
+	@Operation(summary = "Approve", description = "By the host or a visitor-request approver. Only an approved visit for today can be checked in.")
 	public ApiResponse<VisitorRequestResponse> approve(@PathVariable String publicId,
 			@AuthenticationPrincipal AuthenticatedUser user);
 
-	@Operation(summary = "Reject", operationId = "visitorrequest_reject")
+	@Operation(summary = "Reject")
 	public ApiResponse<VisitorRequestResponse> reject(@PathVariable String publicId,
 			@Valid @RequestBody RejectVisitorRequestRequest request, @AuthenticationPrincipal AuthenticatedUser user);
 
-	@Operation(summary = "Cancel", operationId = "visitorrequest_cancel")
+	@Operation(summary = "Cancel")
 	public ApiResponse<VisitorRequestResponse> cancel(@PathVariable String publicId,
 			@AuthenticationPrincipal AuthenticatedUser user);
 
-	@Operation(summary = "Attach photo", operationId = "visitorrequest_attachPhoto", description = "Records the visitor's photo, uploaded beforehand through the file API, so it is ready at the gate.")
+	@Operation(summary = "Attach photo", description = "Records the visitor's photo, uploaded beforehand through the file API, so it is ready at the gate.")
 	public ApiResponse<VisitorRequestResponse> attachPhoto(@PathVariable String publicId,
 			@Valid @RequestBody AttachVisitorPhotoRequest request, @AuthenticationPrincipal AuthenticatedUser user);
 }

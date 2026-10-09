@@ -17,21 +17,21 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 @SecurityRequirement(name = "tenantHeader")
 public interface DisciplineIncidentApi {
 
-	@Operation(summary = "List all", operationId = "disciplineincident_listAll")
+	@Operation(summary = "List all")
 	public ApiResponse<com.altafjava.platform.core.model.Page<DisciplineIncidentResponse>> listAll(
 			@RequestParam(defaultValue = "0") int page,
 			@RequestParam(defaultValue = "20") int size);
 
-	@Operation(summary = "List for student", operationId = "disciplineincident_listForStudent")
+	@Operation(summary = "List for student")
 	public ApiResponse<com.altafjava.platform.core.model.Page<DisciplineIncidentResponse>> listForStudent(
 			@PathVariable String studentPublicId,
 			@RequestParam(defaultValue = "0") int page,
 			@RequestParam(defaultValue = "20") int size);
 
-	@Operation(summary = "Record", operationId = "disciplineincident_record")
+	@Operation(summary = "Record")
 	public ApiResponse<DisciplineIncidentResponse> record(@Valid @RequestBody RecordDisciplineIncidentRequest request);
 
-	@Operation(summary = "Record action", operationId = "disciplineincident_recordAction")
+	@Operation(summary = "Record action")
 	public ApiResponse<DisciplineIncidentResponse> recordAction(@PathVariable String publicId,
 			@Valid @RequestBody RecordDisciplineActionRequest request);
 }

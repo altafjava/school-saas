@@ -17,21 +17,21 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 @SecurityRequirement(name = "tenantHeader")
 public interface BoardApi {
 
-	@Operation(summary = "List", operationId = "board_list")
+	@Operation(summary = "List")
 	public ApiResponse<com.altafjava.platform.core.model.Page<BoardResponse>> list(
 			@RequestParam(defaultValue = "0") int page,
 			@RequestParam(defaultValue = "20") int size);
 
-	@Operation(summary = "Get", operationId = "board_get")
+	@Operation(summary = "Get")
 	public ApiResponse<BoardResponse> get(@PathVariable String publicId);
 
-	@Operation(summary = "Create", operationId = "board_create")
+	@Operation(summary = "Create")
 	public ApiResponse<BoardResponse> create(@Valid @RequestBody CreateBoardRequest request);
 
-	@Operation(summary = "Update details", operationId = "board_updateDetails")
+	@Operation(summary = "Update details")
 	public ApiResponse<BoardResponse> updateDetails(@PathVariable String publicId,
 			@Valid @RequestBody UpdateBoardRequest request);
 
-	@Operation(summary = "Deactivate", operationId = "board_deactivate")
+	@Operation(summary = "Deactivate")
 	public ApiResponse<BoardResponse> deactivate(@PathVariable String publicId);
 }

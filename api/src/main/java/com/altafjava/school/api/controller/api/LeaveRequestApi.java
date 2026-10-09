@@ -19,39 +19,39 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 @SecurityRequirement(name = "tenantHeader")
 public interface LeaveRequestApi {
 
-	@Operation(summary = "List", operationId = "leaverequest_list")
+	@Operation(summary = "List")
 	public ApiResponse<com.altafjava.platform.core.model.Page<LeaveRequestResponse>> list(
 			@RequestParam(defaultValue = "0") int page,
 			@RequestParam(defaultValue = "20") int size);
 
-	@Operation(summary = "List mine", operationId = "leaverequest_listMine", description = "Lists the current employee's own leave requests.")
+	@Operation(summary = "List mine", description = "Lists the current employee's own leave requests.")
 	public ApiResponse<com.altafjava.platform.core.model.Page<LeaveRequestResponse>> listMine(
 			@RequestParam(defaultValue = "0") int page,
 			@RequestParam(defaultValue = "20") int size);
 
-	@Operation(summary = "Submit", operationId = "leaverequest_submit", description = "Requests leave for a date range. Days requested exclude holidays and are validated "
+	@Operation(summary = "Submit", description = "Requests leave for a date range. Days requested exclude holidays and are validated "
 			+ "against the leave type's probation-eligibility rule for the requesting employee.")
 	public ApiResponse<LeaveRequestResponse> submit(@Valid @RequestBody SubmitLeaveRequestRequest request);
 
-	@Operation(summary = "List awaiting my review", operationId = "leaverequest_listAwaitingMyReview", description = "Requests waiting for the current employee's approval as head of the "
+	@Operation(summary = "List awaiting my review", description = "Requests waiting for the current employee's approval as head of the "
 			+ "requester's department.")
 	public ApiResponse<com.altafjava.platform.core.model.Page<LeaveRequestResponse>> listAwaitingMyReview(
 			@RequestParam(defaultValue = "0") int page,
 			@RequestParam(defaultValue = "20") int size);
 
-	@Operation(summary = "List approvals", operationId = "leaverequest_listApprovals", description = "The decision trail of one request: who decided at which level, and when.")
+	@Operation(summary = "List approvals", description = "The decision trail of one request: who decided at which level, and when.")
 	public ApiResponse<List<LeaveApprovalResponse>> listApprovals(@PathVariable String publicId);
 
-	@Operation(summary = "Approve", operationId = "leaverequest_approve", description = "Records the caller's approval for the level the request is waiting on: the "
+	@Operation(summary = "Approve", description = "Records the caller's approval for the level the request is waiting on: the "
 			+ "requester's department head first when the leave type asks for it, then a leave administrator. "
 			+ "The final approval atomically deducts the days from the employee's leave balance for that "
 			+ "type and academic year. Nobody can decide their own request or approve at two levels.")
 	public ApiResponse<LeaveRequestResponse> approve(@PathVariable String publicId);
 
-	@Operation(summary = "Reject", operationId = "leaverequest_reject")
+	@Operation(summary = "Reject")
 	public ApiResponse<LeaveRequestResponse> reject(@PathVariable String publicId,
 			@Valid @RequestBody RejectLeaveRequestRequest request);
 
-	@Operation(summary = "Cancel", operationId = "leaverequest_cancel")
+	@Operation(summary = "Cancel")
 	public ApiResponse<LeaveRequestResponse> cancel(@PathVariable String publicId);
 }

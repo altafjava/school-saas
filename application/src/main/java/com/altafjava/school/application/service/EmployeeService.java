@@ -11,6 +11,7 @@ import com.altafjava.platform.core.audit.AuditAction;
 import com.altafjava.platform.core.audit.annotation.Audited;
 import com.altafjava.platform.core.exception.BusinessException;
 import com.altafjava.platform.core.exception.ResourceNotFoundException;
+import com.altafjava.platform.core.search.LikePattern;
 import com.altafjava.platform.core.tenant.TenantContext;
 import com.altafjava.school.application.employee.EmployeeCodeAllocator;
 import com.altafjava.school.domain.classroom.repository.ClassroomRepository;
@@ -40,8 +41,9 @@ public class EmployeeService {
 	private final PhoneNumberValidator phoneNumberValidator = new PhoneNumberValidator();
 
 	@Transactional(readOnly = true)
-	public Page<Employee> search(StaffCategory category, EmployeeStatus status, Pageable pageable) {
-		return employeeRepository.search(TenantContext.getCurrentTenantId(), category, status, pageable);
+	public Page<Employee> search(StaffCategory category, EmployeeStatus status, String q, Pageable pageable) {
+		return employeeRepository.search(TenantContext.getCurrentTenantId(), category, status,
+				LikePattern.contains(q), pageable);
 	}
 
 	@Transactional(readOnly = true)

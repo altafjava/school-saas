@@ -18,22 +18,22 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 @SecurityRequirement(name = "tenantHeader")
 public interface GradeApi {
 
-	@Operation(summary = "List", operationId = "grade_list")
+	@Operation(summary = "List")
 	public ApiResponse<com.altafjava.platform.core.model.Page<GradeResponse>> list(
 			@RequestParam(defaultValue = "0") int page,
 			@RequestParam(defaultValue = "20") int size);
 
-	@Operation(summary = "Get", operationId = "grade_get")
+	@Operation(summary = "Get")
 	public ApiResponse<GradeResponse> get(@PathVariable String publicId);
 
-	@Operation(summary = "Record", operationId = "grade_record")
+	@Operation(summary = "Record")
 	public ApiResponse<GradeResponse> record(@Valid @RequestBody RecordGradeRequest request);
 
-	@Operation(summary = "Correct", operationId = "grade_correct")
+	@Operation(summary = "Correct")
 	public ApiResponse<GradeResponse> correct(@PathVariable String publicId,
 			@Valid @RequestBody CorrectGradeRequest request);
 
-	@Operation(summary = "List corrections", operationId = "grade_listCorrections")
+	@Operation(summary = "List corrections")
 	public ApiResponse<com.altafjava.platform.core.model.Page<GradeCorrectionResponse>> listCorrections(
 			@PathVariable String publicId,
 			@RequestParam(defaultValue = "0") int page,

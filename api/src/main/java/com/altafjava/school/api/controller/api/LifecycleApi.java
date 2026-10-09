@@ -13,9 +13,9 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 @SecurityRequirement(name = "tenantHeader")
 public interface LifecycleApi {
 
-	@Operation(summary = "Student timeline, including the admission it came from", operationId = "lifecycle_student")
+	@Operation(summary = "Student timeline, including the admission it came from")
 	ApiResponse<List<LifecycleTransitionResponse>> studentTimeline(@PathVariable String studentPublicId);
 
-	@Operation(summary = "Admission timeline", operationId = "lifecycle_admission")
+	@Operation(summary = "Admission timeline")
 	ApiResponse<List<LifecycleTransitionResponse>> admissionTimeline(@PathVariable String admissionPublicId);
 }

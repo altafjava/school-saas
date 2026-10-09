@@ -11,6 +11,7 @@ import org.springframework.transaction.annotation.Transactional;
 import com.altafjava.platform.application.service.NumberSequenceService;
 import com.altafjava.platform.core.exception.BusinessException;
 import com.altafjava.platform.core.exception.ResourceNotFoundException;
+import com.altafjava.platform.core.search.LikePattern;
 import com.altafjava.platform.core.tenant.TenantContext;
 import com.altafjava.platform.domain.numbering.model.ResetPeriod;
 import com.altafjava.school.application.lifecycle.LifecycleChange;
@@ -36,6 +37,12 @@ public class StudentService {
 		this.studentRepository = studentRepository;
 		this.numberSequenceService = numberSequenceService;
 		this.lifecycleRecorder = lifecycleRecorder;
+	}
+
+	/** Free-text {@code q} (blank = no filter) over the entity's identifying fields. */
+	@Transactional(readOnly = true)
+	public Page<Student> searchStudents(Pageable pageable, EnrollmentStatus status, String q) {
+		return studentRepository.search(TenantContext.getCurrentTenantId(), status, LikePattern.contains(q), pageable);
 	}
 
 	@Transactional(readOnly = true)

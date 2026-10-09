@@ -14,10 +14,10 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 @SecurityRequirement(name = "tenantHeader")
 public interface GuardianRegistrationSettingsApi {
 
-	@Operation(summary = "Get", operationId = "guardianregistrationsettings_get")
+	@Operation(summary = "Get")
 	public ApiResponse<GuardianRegistrationSettingsResponse> get();
 
-	@Operation(summary = "Update", operationId = "guardianregistrationsettings_update")
+	@Operation(summary = "Update")
 	public ApiResponse<GuardianRegistrationSettingsResponse> update(
 			@Valid @RequestBody UpdateGuardianRegistrationSettingsRequest request);
 }

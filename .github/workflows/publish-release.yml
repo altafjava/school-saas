@@ -1,0 +1,112 @@
+name: Publish Release
+
+on:
+  push:
+    tags:
+      - 'v[0-9]+.[0-9]+.[0-9]+'
+
+permissions:
+  contents: write
+  packages: read    # required to pull com.altafjava.platform:* from GitHub Packages
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
+jobs:
+  publish-release:
+    name: Release OpenAPI spec and typed client
+    runs-on: self-hosted
+
+    steps:
+      - name: Checkout school-saas
+        uses: actions/checkout@v5
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v5
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          # Self-hosted runner: local ~/.gradle already persists between jobs — see ci.yml's matching comment.
+          cache-disabled: true
+
+      - name: Grant execute permission for gradlew
+        run: chmod +x gradlew
+
+      - name: Derive release version from tag
+        id: version
+        run: |
+          TAG="${GITHUB_REF#refs/tags/v}"
+          echo "release_version=$TAG" >> "$GITHUB_OUTPUT"
+          echo "Releasing version: $TAG"
+
+      - name: Set release version
+        # -i.bak is the one form GNU and BSD sed (the macOS self-hosted runner) both accept.
+        run: |
+          sed -i.bak "s/^    version = .*/    version = '${{ steps.version.outputs.release_version }}'/" build.gradle
+          rm build.gradle.bak
+
+      # OpenApiSnapshotTest is part of this gate: it proves the committed snapshot equals the live spec.
+      - name: Full test suite (release gate)
+        env:
+          GITHUB_ACTOR: ${{ github.actor }}
+          PLATFORM_SAAS_TOKEN: ${{ secrets.PLATFORM_SAAS_TOKEN }}
+          SPRING_PROFILES_ACTIVE: test
+          STRIPE_API_KEY: sk_test_dummy_key_for_ci
+        run: ./gradlew test --build-cache
+
+      - name: Export OpenAPI spec
+        env:
+          GITHUB_ACTOR: ${{ github.actor }}
+          PLATFORM_SAAS_TOKEN: ${{ secrets.PLATFORM_SAAS_TOKEN }}
+        run: ./gradlew :app:exportOpenApi --build-cache
+
+      - name: Set up Node
+        uses: actions/setup-node@v6
+        with:
+          node-version: '24'
+          # Empty when no private npm registry is configured: the tarball is still attached to the release.
+          registry-url: ${{ vars.NPM_REGISTRY_URL }}
+          scope: '@school'
+
+      - name: Build and test the typed client
+        working-directory: api-client
+        run: |
+          npm ci
+          npm version "${{ steps.version.outputs.release_version }}" --no-git-tag-version
+          npm run build
+          npm test
+
+      - name: Pack the typed client
+        working-directory: api-client
+        run: npm pack
+
+      # Needs the NPM_REGISTRY_URL repository variable and NPM_TOKEN secret. GitHub Packages cannot host the
+      # @school scope (its npm scope must equal the owner), so use a registry that maps scopes freely.
+      - name: Publish the typed client
+        if: vars.NPM_REGISTRY_URL != ''
+        working-directory: api-client
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+        run: npm publish school-api-client-*.tgz
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          name: "School SaaS v${{ steps.version.outputs.release_version }}"
+          body: |
+            ## Release v${{ steps.version.outputs.release_version }}
+
+            **Frontend** — the typed client `@school/api-client@${{ steps.version.outputs.release_version }}` is attached as a
+            tarball (and published to the configured npm registry), together with the OpenAPI spec it was
+            generated from (`school-saas-openapi.json`). Pin the client version in the frontend; upgrading it is a
+            normal pull request whose compile errors show what changed.
+          files: |
+            app/build/openapi/school-saas-openapi.json
+            api-client/school-api-client-*.tgz
+          draft: false
+          prerelease: false
+          generate_release_notes: true

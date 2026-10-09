@@ -18,28 +18,28 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 @SecurityRequirement(name = "tenantHeader")
 public interface CertificateTypeApi {
 
-	@Operation(summary = "List", operationId = "certificatetype_list")
+	@Operation(summary = "List")
 	public ApiResponse<com.altafjava.platform.core.model.Page<CertificateTypeResponse>> list(
 			@RequestParam(defaultValue = "0") int page,
 			@RequestParam(defaultValue = "20") int size);
 
-	@Operation(summary = "List active", operationId = "certificatetype_listActive")
+	@Operation(summary = "List active")
 	public ApiResponse<List<CertificateTypeResponse>> listActive();
 
-	@Operation(summary = "Get", operationId = "certificatetype_get")
+	@Operation(summary = "Get")
 	public ApiResponse<CertificateTypeResponse> get(@PathVariable String publicId);
 
-	@Operation(summary = "Create", operationId = "certificatetype_create")
+	@Operation(summary = "Create")
 	public ApiResponse<CertificateTypeResponse> create(
 			@Valid @RequestBody CreateCertificateTypeRequest request);
 
-	@Operation(summary = "Update details", operationId = "certificatetype_updateDetails")
+	@Operation(summary = "Update details")
 	public ApiResponse<CertificateTypeResponse> updateDetails(@PathVariable String publicId,
 			@Valid @RequestBody UpdateCertificateTypeRequest request);
 
-	@Operation(summary = "Activate", operationId = "certificatetype_activate")
+	@Operation(summary = "Activate")
 	public ApiResponse<CertificateTypeResponse> activate(@PathVariable String publicId);
 
-	@Operation(summary = "Deactivate", operationId = "certificatetype_deactivate")
+	@Operation(summary = "Deactivate")
 	public ApiResponse<CertificateTypeResponse> deactivate(@PathVariable String publicId);
 }

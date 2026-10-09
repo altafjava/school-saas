@@ -17,16 +17,16 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 @SecurityRequirement(name = "tenantHeader")
 public interface AssignmentApi {
 
-	@Operation(summary = "Create", operationId = "assignment_create")
+	@Operation(summary = "Create")
 	public ApiResponse<AssignmentResponse> create(@Valid @RequestBody CreateAssignmentRequest request);
 
-	@Operation(summary = "List by classroom", operationId = "assignment_listByClassroom")
+	@Operation(summary = "List by classroom")
 	public ApiResponse<com.altafjava.platform.core.model.Page<AssignmentResponse>> listByClassroom(
 			@PathVariable String classroomPublicId,
 			@RequestParam(defaultValue = "0") int page,
 			@RequestParam(defaultValue = "20") int size);
 
-	@Operation(summary = "Reschedule", operationId = "assignment_reschedule")
+	@Operation(summary = "Reschedule")
 	public ApiResponse<AssignmentResponse> reschedule(@PathVariable String publicId,
 			@Valid @RequestBody RescheduleAssignmentRequest request);
 }

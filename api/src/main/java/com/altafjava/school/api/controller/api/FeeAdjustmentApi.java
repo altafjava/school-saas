@@ -23,35 +23,35 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 @SecurityRequirement(name = "tenantHeader")
 public interface FeeAdjustmentApi {
 
-	@Operation(summary = "List a student's fee discounts", operationId = "feediscount_list")
+	@Operation(summary = "List a student's fee discounts")
 	ApiResponse<List<FeeDiscountResponse>> listDiscounts(@PathVariable String studentPublicId);
 
-	@Operation(summary = "Grant a fee discount", operationId = "feediscount_grant")
+	@Operation(summary = "Grant a fee discount")
 	ApiResponse<FeeDiscountResponse> grantDiscount(@PathVariable String studentPublicId,
 			@Valid @RequestBody GrantFeeDiscountRequest request, @AuthenticationPrincipal AuthenticatedUser user);
 
-	@Operation(summary = "Revoke a fee discount", operationId = "feediscount_revoke")
+	@Operation(summary = "Revoke a fee discount")
 	ApiResponse<FeeDiscountResponse> revokeDiscount(@PathVariable String studentPublicId,
 			@PathVariable String discountPublicId, @Valid @RequestBody RevokeFeeDiscountRequest request);
 
-	@Operation(summary = "Get a student's installment plan for a fee structure", operationId = "feeinstallment_get")
+	@Operation(summary = "Get a student's installment plan for a fee structure")
 	ApiResponse<List<FeeInstallmentResponse>> getPlan(@PathVariable String studentPublicId,
 			@PathVariable String feeStructurePublicId);
 
-	@Operation(summary = "Set (replace) a student's installment plan", operationId = "feeinstallment_set")
+	@Operation(summary = "Set (replace) a student's installment plan")
 	ApiResponse<List<FeeInstallmentResponse>> setPlan(@PathVariable String studentPublicId,
 			@PathVariable String feeStructurePublicId, @Valid @RequestBody SetFeeInstallmentPlanRequest request);
 
-	@Operation(summary = "Remove a student's installment plan", operationId = "feeinstallment_remove")
+	@Operation(summary = "Remove a student's installment plan")
 	ApiResponse<Void> removePlan(@PathVariable String studentPublicId, @PathVariable String feeStructurePublicId);
 
-	@Operation(summary = "Refund (part of) a fee payment", operationId = "feerefund_refund")
+	@Operation(summary = "Refund (part of) a fee payment")
 	ApiResponse<FeeRefundResponse> refund(@PathVariable String paymentPublicId,
 			@Valid @RequestBody RefundFeePaymentRequest request, @AuthenticationPrincipal AuthenticatedUser user);
 
-	@Operation(summary = "List refunds of a fee payment", operationId = "feerefund_listForPayment")
+	@Operation(summary = "List refunds of a fee payment")
 	ApiResponse<List<FeeRefundResponse>> listRefundsForPayment(@PathVariable String paymentPublicId);
 
-	@Operation(summary = "List a student's refunds", operationId = "feerefund_listForStudent")
+	@Operation(summary = "List a student's refunds")
 	ApiResponse<List<FeeRefundResponse>> listRefundsForStudent(@PathVariable String studentPublicId);
 }

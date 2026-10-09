@@ -25,46 +25,47 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 @SecurityRequirement(name = "tenantHeader")
 public interface EmployeeApi {
 
-	@Operation(summary = "List", operationId = "employee_list")
+	@Operation(summary = "List")
 	ApiResponse<com.altafjava.platform.core.model.Page<EmployeeResponse>> list(
 			@RequestParam(required = false) StaffCategory category,
 			@RequestParam(required = false) EmployeeStatus status,
 			@RequestParam(defaultValue = "0") int page,
-			@RequestParam(defaultValue = "20") int size);
+			@RequestParam(defaultValue = "20") int size,
+			@RequestParam(required = false) String q);
 
-	@Operation(summary = "Get", operationId = "employee_get")
+	@Operation(summary = "Get")
 	ApiResponse<EmployeeResponse> get(@PathVariable String publicId);
 
-	@Operation(summary = "Hire a non-teaching employee", operationId = "employee_hire")
+	@Operation(summary = "Hire a non-teaching employee")
 	ApiResponse<EmployeeResponse> hire(@Valid @RequestBody CreateEmployeeRequest request);
 
-	@Operation(summary = "Update contact details", operationId = "employee_updateContactDetails")
+	@Operation(summary = "Update contact details")
 	ApiResponse<EmployeeResponse> updateContactDetails(@PathVariable String publicId,
 			@Valid @RequestBody UpdateEmployeeContactDetailsRequest request);
 
-	@Operation(summary = "Update HR details", operationId = "employee_updateHrDetails")
+	@Operation(summary = "Update HR details")
 	ApiResponse<EmployeeResponse> updateHrDetails(@PathVariable String publicId,
 			@Valid @RequestBody UpdateEmployeeHrDetailsRequest request);
 
-	@Operation(summary = "Update phone", operationId = "employee_updatePhone")
+	@Operation(summary = "Update phone")
 	ApiResponse<EmployeeResponse> updatePhone(@PathVariable String publicId,
 			@Valid @RequestBody UpdatePhoneRequest request);
 
-	@Operation(summary = "Update address", operationId = "employee_updateAddress")
+	@Operation(summary = "Update address")
 	ApiResponse<EmployeeResponse> updateAddress(@PathVariable String publicId,
 			@Valid @RequestBody AddressRequest request);
 
-	@Operation(summary = "Update photo", operationId = "employee_updatePhoto")
+	@Operation(summary = "Update photo")
 	ApiResponse<EmployeeResponse> updatePhoto(@PathVariable String publicId,
 			@Valid @RequestBody UpdatePhotoRequest request);
 
-	@Operation(summary = "Set probation period", operationId = "employee_setProbationPeriod")
+	@Operation(summary = "Set probation period")
 	ApiResponse<EmployeeResponse> setProbationPeriod(@PathVariable String publicId,
 			@Valid @RequestBody SetEmployeeProbationRequest request);
 
-	@Operation(summary = "End probation", operationId = "employee_endProbation")
+	@Operation(summary = "End probation")
 	ApiResponse<EmployeeResponse> endProbation(@PathVariable String publicId);
 
-	@Operation(summary = "Record that the employee has left the school", operationId = "employee_exit")
+	@Operation(summary = "Record that the employee has left the school")
 	ApiResponse<EmployeeResponse> exit(@PathVariable String publicId, @Valid @RequestBody ExitEmployeeRequest request);
 }

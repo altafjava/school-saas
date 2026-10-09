@@ -19,37 +19,37 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 @SecurityRequirement(name = "tenantHeader")
 public interface EventApi {
 
-	@Operation(summary = "List", operationId = "event_list")
+	@Operation(summary = "List")
 	public ApiResponse<com.altafjava.platform.core.model.Page<EventResponse>> list(
 			@RequestParam(defaultValue = "0") int page,
 			@RequestParam(defaultValue = "20") int size);
 
-	@Operation(summary = "Get", operationId = "event_get")
+	@Operation(summary = "Get")
 	public ApiResponse<EventResponse> get(@PathVariable String publicId);
 
-	@Operation(summary = "Create", operationId = "event_create")
+	@Operation(summary = "Create")
 	public ApiResponse<EventResponse> create(@Valid @RequestBody CreateEventRequest request);
 
-	@Operation(summary = "Update details", operationId = "event_updateDetails")
+	@Operation(summary = "Update details")
 	public ApiResponse<EventResponse> updateDetails(@PathVariable String publicId,
 			@Valid @RequestBody UpdateEventRequest request);
 
-	@Operation(summary = "Cancel", operationId = "event_cancel")
+	@Operation(summary = "Cancel")
 	public ApiResponse<EventResponse> cancel(@PathVariable String publicId);
 
-	@Operation(summary = "List registrations", operationId = "event_listRegistrations")
+	@Operation(summary = "List registrations")
 	public ApiResponse<com.altafjava.platform.core.model.Page<EventRegistrationResponse>> listRegistrations(
 			@PathVariable String publicId,
 			@RequestParam(defaultValue = "0") int page,
 			@RequestParam(defaultValue = "20") int size);
 
-	@Operation(summary = "Register", operationId = "event_register")
+	@Operation(summary = "Register")
 	public ApiResponse<EventRegistrationResponse> register(@PathVariable String publicId,
 			@Valid @RequestBody RegisterForEventRequest request);
 
-	@Operation(summary = "Cancel registration", operationId = "event_cancelRegistration")
+	@Operation(summary = "Cancel registration")
 	public ApiResponse<EventRegistrationResponse> cancelRegistration(@PathVariable String registrationPublicId);
 
-	@Operation(summary = "Mark attended", operationId = "event_markAttended")
+	@Operation(summary = "Mark attended")
 	public ApiResponse<EventRegistrationResponse> markAttended(@PathVariable String registrationPublicId);
 }

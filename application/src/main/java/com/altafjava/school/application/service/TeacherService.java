@@ -9,6 +9,7 @@ import org.springframework.transaction.annotation.Transactional;
 import com.altafjava.platform.core.audit.AuditAction;
 import com.altafjava.platform.core.audit.annotation.Audited;
 import com.altafjava.platform.core.exception.ResourceNotFoundException;
+import com.altafjava.platform.core.search.LikePattern;
 import com.altafjava.platform.core.tenant.TenantContext;
 import com.altafjava.school.application.employee.EmployeeCodeAllocator;
 import com.altafjava.school.domain.teacher.model.Teacher;
@@ -26,6 +27,12 @@ public class TeacherService {
 
 	private final TeacherRepository teacherRepository;
 	private final EmployeeCodeAllocator employeeCodeAllocator;
+
+	/** Free-text {@code q} (blank = no filter) over the entity's identifying fields. */
+	@Transactional(readOnly = true)
+	public Page<Teacher> searchTeachers(Pageable pageable, String q) {
+		return teacherRepository.search(TenantContext.getCurrentTenantId(), LikePattern.contains(q), pageable);
+	}
 
 	@Transactional(readOnly = true)
 	public Page<Teacher> listTeachers(Pageable pageable) {

@@ -18,25 +18,25 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 @SecurityRequirement(name = "tenantHeader")
 public interface DepartmentApi {
 
-	@Operation(summary = "List", operationId = "department_list")
+	@Operation(summary = "List")
 	public ApiResponse<com.altafjava.platform.core.model.Page<DepartmentResponse>> list(
 			@RequestParam(defaultValue = "0") int page,
 			@RequestParam(defaultValue = "20") int size);
 
-	@Operation(summary = "Get", operationId = "department_get")
+	@Operation(summary = "Get")
 	public ApiResponse<DepartmentResponse> get(@PathVariable String publicId);
 
-	@Operation(summary = "Create", operationId = "department_create")
+	@Operation(summary = "Create")
 	public ApiResponse<DepartmentResponse> create(@Valid @RequestBody CreateDepartmentRequest request);
 
-	@Operation(summary = "Update details", operationId = "department_updateDetails")
+	@Operation(summary = "Update details")
 	public ApiResponse<DepartmentResponse> updateDetails(@PathVariable String publicId,
 			@Valid @RequestBody UpdateDepartmentRequest request);
 
-	@Operation(summary = "Assign head employee", operationId = "department_assignHeadEmployee")
+	@Operation(summary = "Assign head employee")
 	public ApiResponse<DepartmentResponse> assignHeadEmployee(@PathVariable String publicId,
 			@Valid @RequestBody AssignHeadEmployeeRequest request);
 
-	@Operation(summary = "Deactivate", operationId = "department_deactivate")
+	@Operation(summary = "Deactivate")
 	public ApiResponse<DepartmentResponse> deactivate(@PathVariable String publicId);
 }

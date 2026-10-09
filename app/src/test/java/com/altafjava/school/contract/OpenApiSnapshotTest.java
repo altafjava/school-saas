@@ -2,6 +2,8 @@ package com.altafjava.school.contract;
 
 import static io.restassured.RestAssured.given;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 import java.io.IOException;
 import java.io.InputStream;
@@ -82,6 +84,79 @@ class OpenApiSnapshotTest extends SchoolIntegrationTestBase {
 				"OpenAPI spec no longer matches the committed snapshot (src/test/resources/openapi-snapshot.json). "
 						+ "If this change is intentional, regenerate it with "
 						+ "'-DupdateOpenApiSnapshot=true' and commit the update.");
+	}
+
+	@Test
+	void operationIds_areUniqueAndStable() {
+		java.util.Set<String> seen = new java.util.HashSet<>();
+		liveSpec().path("paths").properties().forEach(path -> path.getValue().properties().forEach(op -> {
+			JsonNode id = op.getValue().path("operationId");
+			if (id.isMissingNode()) {
+				return;
+			}
+			String operationId = id.asString();
+			assertTrue(seen.add(operationId), "duplicate operationId " + operationId);
+			assertTrue(!operationId.matches(".*_\\d+$"),
+					"operationId " + operationId + " carries springdoc's unstable numeric suffix");
+		}));
+		assertTrue(seen.size() > 500, "expected the school's operations, found " + seen.size());
+	}
+
+	@Test
+	void everyOperation_documentsTypedErrorResponses() {
+		JsonNode spec = liveSpec();
+		assertTrue(spec.path("components").path("schemas").has("ApiErrorResponse"));
+		spec.path("paths").properties().forEach(path -> path.getValue().properties().forEach(op -> {
+			JsonNode responses = op.getValue().path("responses");
+			if (!responses.isMissingNode()) {
+				assertTrue(responses.has("500"), path.getKey() + " " + op.getKey() + " lacks a typed 500 response");
+			}
+		}));
+	}
+
+	@Test
+	void everySuccessResponse_declaresItsPayloadType() {
+		liveSpec().path("paths").properties().forEach(path -> path.getValue().properties().forEach(op -> {
+			op.getValue().path("responses").properties().stream().filter(response -> response.getKey().startsWith("2"))
+					.forEach(response -> response.getValue().path("content").properties().forEach(media -> assertFalse(
+							media.getValue().path("schema").path("$ref").asString("").endsWith("/ApiResponse"),
+							path.getKey() + " " + op.getKey() + " returns the untyped ApiResponse envelope — "
+									+ "drop the explicit @Schema(implementation = ApiResponse.class) so the payload type is inferred")));
+		}));
+	}
+
+	@Test
+	void structuredResponses_areDeclaredAsJson() {
+		liveSpec().path("paths").properties().forEach(path -> path.getValue().properties().forEach(op -> op.getValue()
+				.path("responses").properties().forEach(response -> assertFalse(
+						response.getValue().path("content").path("*/*").path("schema").has("$ref"),
+						path.getKey() + " " + op.getKey() + " " + response.getKey()
+								+ " declares a structured body as */* — generators only read application/json"))));
+	}
+
+	@Test
+	void noSchemaCarriesABlankDefault() {
+		assertNoBlankDefault(liveSpec(), "#");
+	}
+
+	private void assertNoBlankDefault(JsonNode node, String path) {
+		if (node.isObject()) {
+			JsonNode value = node.get("default");
+			assertFalse(value != null && (value.isNull() || value.isString() && value.asString().isEmpty()),
+					"blank default at " + path + " — codegen would turn it into a wrong default value");
+			node.properties().forEach(child -> assertNoBlankDefault(child.getValue(), path + "/" + child.getKey()));
+		} else if (node.isArray()) {
+			for (int i = 0; i < node.size(); i++) {
+				assertNoBlankDefault(node.get(i), path + "/" + i);
+			}
+		}
+	}
+
+	private JsonNode liveSpec() {
+		RestAssured.port = port;
+		RestAssured.basePath = "";
+		return stripEphemeralFields(objectMapper.readTree(given().contentType(ContentType.JSON).when()
+				.get("/api-docs").then().extract().asString()));
 	}
 
 	private JsonNode loadSnapshot() throws IOException {

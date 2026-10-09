@@ -17,17 +17,17 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 @SecurityRequirement(name = "tenantHeader")
 public interface SubmissionApi {
 
-	@Operation(summary = "Submit", operationId = "submission_submit")
+	@Operation(summary = "Submit")
 	public ApiResponse<SubmissionResponse> submit(@PathVariable String assignmentPublicId,
 			@Valid @RequestBody SubmitAssignmentRequest request);
 
-	@Operation(summary = "List", operationId = "submission_list")
+	@Operation(summary = "List")
 	public ApiResponse<com.altafjava.platform.core.model.Page<SubmissionResponse>> list(
 			@PathVariable String assignmentPublicId,
 			@RequestParam(defaultValue = "0") int page,
 			@RequestParam(defaultValue = "20") int size);
 
-	@Operation(summary = "Grade", operationId = "submission_grade")
+	@Operation(summary = "Grade")
 	public ApiResponse<SubmissionResponse> grade(@PathVariable String assignmentPublicId,
 			@PathVariable String submissionPublicId, @Valid @RequestBody GradeSubmissionRequest request);
 }

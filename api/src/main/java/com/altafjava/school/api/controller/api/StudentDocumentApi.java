@@ -19,21 +19,21 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 @SecurityRequirement(name = "tenantHeader")
 public interface StudentDocumentApi {
 
-	@Operation(summary = "List", operationId = "studentdocument_list")
+	@Operation(summary = "List")
 	ApiResponse<com.altafjava.platform.core.model.Page<StudentDocumentResponse>> list(
 			@PathVariable String studentPublicId,
 			@RequestParam(defaultValue = "0") int page,
 			@RequestParam(defaultValue = "20") int size);
 
-	@Operation(summary = "Upload", operationId = "studentdocument_upload")
+	@Operation(summary = "Upload")
 	ApiResponse<StudentDocumentResponse> upload(@PathVariable String studentPublicId,
 			@Valid @RequestBody UploadStudentDocumentRequest request);
 
-	@Operation(summary = "Verify", operationId = "studentdocument_verify")
+	@Operation(summary = "Verify")
 	ApiResponse<StudentDocumentResponse> verify(@PathVariable String studentPublicId,
 			@PathVariable String documentPublicId, @AuthenticationPrincipal AuthenticatedUser user);
 
-	@Operation(summary = "Reject", operationId = "studentdocument_reject")
+	@Operation(summary = "Reject")
 	ApiResponse<StudentDocumentResponse> reject(@PathVariable String studentPublicId,
 			@PathVariable String documentPublicId, @Valid @RequestBody RejectDocumentRequest request,
 			@AuthenticationPrincipal AuthenticatedUser user);

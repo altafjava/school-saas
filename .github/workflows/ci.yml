@@ -155,10 +155,74 @@ jobs:
           path: 'domain/build/reports/pitest/'
           retention-days: 7
 
+  api-client:
+    name: API Contract & Typed Client
+    runs-on: self-hosted
+    # Same duplicate-run guard as build-and-test above — see that job's comment.
+    if: >-
+      github.event_name != 'pull_request' ||
+      github.event.pull_request.head.ref != 'develop' ||
+      github.event.pull_request.base.ref != 'main'
+    env:
+      SPEC: app/src/test/resources/openapi-snapshot.json
+      # Pinned by digest: the diff report must not change under a PR because the tool moved.
+      OASDIFF_IMAGE: tufin/oasdiff@sha256:37cded09a045370fcbebc95640e6269d2e3548a781e13ae0549cc34905c39d9c
+
+    steps:
+      - name: Checkout school-saas
+        uses: actions/checkout@v5
+
+      - name: Set up Node
+        uses: actions/setup-node@v6
+        with:
+          node-version: '24'
+
+      # The committed snapshot is kept equal to the live spec by OpenApiSnapshotTest (build-and-test);
+      # this job proves the snapshot still produces a client that type-checks, passes its tests and packs.
+      - name: Install client dependencies
+        working-directory: api-client
+        run: npm ci
+
+      - name: Generate client from the committed snapshot
+        working-directory: api-client
+        run: npm run generate
+
+      - name: Type-check
+        working-directory: api-client
+        run: npm run typecheck
+
+      - name: Test
+        working-directory: api-client
+        run: npm test
+
+      - name: Build package
+        working-directory: api-client
+        run: npm run build
+
+      # Makes the frontend impact of a contract change visible in review; the hard gate is the snapshot test.
+      - name: API change report
+        if: github.event_name == 'pull_request'
+        run: |
+          git fetch --no-tags --depth=1 origin "${{ github.base_ref }}"
+          if ! git show "origin/${{ github.base_ref }}:${SPEC}" > "${RUNNER_TEMP}/base.json"; then
+            echo "No committed snapshot on ${{ github.base_ref }} yet; nothing to compare."
+            exit 0
+          fi
+          cp "${SPEC}" "${RUNNER_TEMP}/head.json"
+          oasdiff() { docker run --rm -v "${RUNNER_TEMP}:/spec" "${OASDIFF_IMAGE}" "$@"; }
+          {
+            echo "## Public API changes against ${{ github.base_ref }}"
+            oasdiff changelog /spec/base.json /spec/head.json --format markdown | head -c 900000
+          } >> "${GITHUB_STEP_SUMMARY}"
+          BREAKING=$(oasdiff breaking /spec/base.json /spec/head.json --format singleline | grep -c '^error' || true)
+          if [ "${BREAKING}" -gt 0 ]; then
+            echo "::warning title=Breaking API change::${BREAKING} breaking change(s) to the public API - see the job summary. Frontend clients must be upgraded together."
+          fi
+
   auto-pr:
     name: Auto PR → main
     runs-on: self-hosted
-    needs: build-and-test
+    needs: [ build-and-test, api-client ]
     if: github.ref == 'refs/heads/develop' && github.event_name == 'push'
     permissions:
       contents: read

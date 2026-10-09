@@ -43,9 +43,10 @@ public class SubjectController implements SubjectApi {
 	@PreAuthorize("@permissionAuthorizationService.hasPermission('SUBJECT_READ')")
 	public ApiResponse<com.altafjava.platform.core.model.Page<SubjectResponse>> list(
 			@RequestParam(defaultValue = "0") int page,
-			@RequestParam(defaultValue = "20") int size) {
+			@RequestParam(defaultValue = "20") int size,
+			@RequestParam(required = false) String q) {
 		return ApiResponse.success(
-				PlatformPageMapper.toPlatformPage(subjectService.listSubjects(pageableResolver.resolve(page, size))
+				PlatformPageMapper.toPlatformPage(subjectService.searchSubjects(pageableResolver.resolve(page, size), q)
 						.map(subjectMapper::toResponse)));
 	}
 

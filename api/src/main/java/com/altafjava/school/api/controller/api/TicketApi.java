@@ -20,7 +20,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 @SecurityRequirement(name = "tenantHeader")
 public interface TicketApi {
 
-	@Operation(summary = "Search", operationId = "ticket_search")
+	@Operation(summary = "Search")
 	public ApiResponse<com.altafjava.platform.core.model.Page<TicketResponse>> search(
 			@RequestParam(required = false) TicketStatus status,
 			@RequestParam(required = false) TicketCategory category,
@@ -28,28 +28,28 @@ public interface TicketApi {
 			@RequestParam(defaultValue = "0") int page,
 			@RequestParam(defaultValue = "20") int size);
 
-	@Operation(summary = "List mine", operationId = "ticket_listMine")
+	@Operation(summary = "List mine")
 	public ApiResponse<com.altafjava.platform.core.model.Page<TicketResponse>> listMine(
 			@RequestParam(defaultValue = "0") int page,
 			@RequestParam(defaultValue = "20") int size);
 
-	@Operation(summary = "Get", operationId = "ticket_get")
+	@Operation(summary = "Get")
 	public ApiResponse<TicketResponse> get(@PathVariable String publicId);
 
-	@Operation(summary = "Raise", operationId = "ticket_raise")
+	@Operation(summary = "Raise")
 	public ApiResponse<TicketResponse> raise(@Valid @RequestBody RaiseTicketRequest request);
 
-	@Operation(summary = "Assign", operationId = "ticket_assign")
+	@Operation(summary = "Assign")
 	public ApiResponse<TicketResponse> assign(@PathVariable String publicId,
 			@Valid @RequestBody AssignTicketRequest request);
 
-	@Operation(summary = "Resolve", operationId = "ticket_resolve")
+	@Operation(summary = "Resolve")
 	public ApiResponse<TicketResponse> resolve(@PathVariable String publicId,
 			@Valid @RequestBody ResolveTicketRequest request);
 
-	@Operation(summary = "Close", operationId = "ticket_close")
+	@Operation(summary = "Close")
 	public ApiResponse<TicketResponse> close(@PathVariable String publicId);
 
-	@Operation(summary = "Reopen", operationId = "ticket_reopen")
+	@Operation(summary = "Reopen")
 	public ApiResponse<TicketResponse> reopen(@PathVariable String publicId);
 }

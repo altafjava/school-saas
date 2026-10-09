@@ -46,9 +46,10 @@ public class TeacherController implements TeacherApi {
 	@SortableBy({ "employeeCode", "firstName", "lastName", "joinDate", "status" })
 	public ApiResponse<com.altafjava.platform.core.model.Page<TeacherResponse>> list(
 			@RequestParam(defaultValue = "0") int page,
-			@RequestParam(defaultValue = "20") int size) {
+			@RequestParam(defaultValue = "20") int size,
+			@RequestParam(required = false) String q) {
 		return ApiResponse.success(
-				PlatformPageMapper.toPlatformPage(teacherService.listTeachers(pageableResolver.resolve(page, size))
+				PlatformPageMapper.toPlatformPage(teacherService.searchTeachers(pageableResolver.resolve(page, size), q)
 						.map(teacherMapper::toResponse)));
 	}
 

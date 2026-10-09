@@ -21,45 +21,45 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 @SecurityRequirement(name = "tenantHeader")
 public interface ExamApi {
 
-	@Operation(summary = "List", operationId = "exam_list")
+	@Operation(summary = "List")
 	public ApiResponse<com.altafjava.platform.core.model.Page<ExamResponse>> list(
 			@RequestParam(defaultValue = "0") int page,
 			@RequestParam(defaultValue = "20") int size);
 
-	@Operation(summary = "Get", operationId = "exam_get")
+	@Operation(summary = "Get")
 	public ApiResponse<ExamResponse> get(@PathVariable String publicId);
 
-	@Operation(summary = "Schedule", operationId = "exam_schedule", description = "Schedules a new exam against a tenant-defined exam type "
+	@Operation(summary = "Schedule", description = "Schedules a new exam against a tenant-defined exam type "
 			+ "(see Exam Type Definition) — examTypeId must reference an existing, active catalog entry. "
 			+ "weightage (percent, default 100) is the exam's share of its subject's term result.")
 	public ApiResponse<ExamResponse> schedule(@Valid @RequestBody ScheduleExamRequest request);
 
-	@Operation(summary = "Reschedule", operationId = "exam_reschedule")
+	@Operation(summary = "Reschedule")
 	public ApiResponse<ExamResponse> reschedule(@PathVariable String publicId,
 			@Valid @RequestBody RescheduleExamRequest request);
 
-	@Operation(summary = "Assign term", operationId = "exam_assignTerm")
+	@Operation(summary = "Assign term")
 	public ApiResponse<ExamResponse> assignTerm(@PathVariable String publicId,
 			@Valid @RequestBody AssignExamTermRequest request);
 
-	@Operation(summary = "Reweight", operationId = "exam_reweight", description = "Sets the exam's percentage weight in its subject's term result. The exams of one "
+	@Operation(summary = "Reweight", description = "Sets the exam's percentage weight in its subject's term result. The exams of one "
 			+ "subject in one term may weigh at most 100 together; locked once results are published.")
 	public ApiResponse<ExamResponse> reweight(@PathVariable String publicId,
 			@Valid @RequestBody ReweightExamRequest request);
 
-	@Operation(summary = "Publish results", operationId = "exam_publishResults", description = "Makes a completed exam's grades visible to students and guardians "
+	@Operation(summary = "Publish results", description = "Makes a completed exam's grades visible to students and guardians "
 			+ "and includes them in report cards and GPA. Requires at least one recorded grade.")
 	public ApiResponse<ExamResponse> publishResults(@PathVariable String publicId,
 			@AuthenticationPrincipal AuthenticatedUser user);
 
-	@Operation(summary = "Withdraw results", operationId = "exam_withdrawResults", description = "Hides a published exam's grades from students and guardians again, "
+	@Operation(summary = "Withdraw results", description = "Hides a published exam's grades from students and guardians again, "
 			+ "e.g. after a marking error is found.")
 	public ApiResponse<ExamResponse> withdrawResults(@PathVariable String publicId);
 
-	@Operation(summary = "Complete", operationId = "exam_complete", description = "Marks the exam complete, making it eligible for grade entry and downstream "
+	@Operation(summary = "Complete", description = "Marks the exam complete, making it eligible for grade entry and downstream "
 			+ "GPA/report-card computation.")
 	public ApiResponse<ExamResponse> complete(@PathVariable String publicId);
 
-	@Operation(summary = "Cancel", operationId = "exam_cancel")
+	@Operation(summary = "Cancel")
 	public ApiResponse<ExamResponse> cancel(@PathVariable String publicId);
 }

@@ -6,9 +6,23 @@ import java.util.UUID;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import com.altafjava.school.domain.classroom.model.Classroom;
 
 public interface ClassroomRepository extends JpaRepository<Classroom, Long> {
+
+	// Blank q matches everything; pattern comes from LikePattern.contains.
+	@Query("""
+			SELECT c FROM Classroom c
+			WHERE c.tenantId = :tenantId
+			  AND (:pattern IS NULL
+			       OR LOWER(c.classCode) LIKE :pattern ESCAPE '!'
+			       OR LOWER(c.grade) LIKE :pattern ESCAPE '!'
+			       OR LOWER(c.section) LIKE :pattern ESCAPE '!'
+			       OR LOWER(CONCAT(c.grade, ' ', c.section)) LIKE :pattern ESCAPE '!')
+			""")
+	Page<Classroom> search(@Param("tenantId") Long tenantId, @Param("pattern") String pattern, Pageable pageable);
 
 	Page<Classroom> findAllByTenantId(Long tenantId, Pageable pageable);
 

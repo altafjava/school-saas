@@ -17,16 +17,16 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 @SecurityRequirement(name = "tenantHeader")
 public interface RoomAllocationApi {
 
-	@Operation(summary = "List for room", operationId = "roomallocation_listForRoom")
+	@Operation(summary = "List for room")
 	public ApiResponse<com.altafjava.platform.core.model.Page<RoomAllocationResponse>> listForRoom(
 			@RequestParam String roomPublicId,
 			@RequestParam(defaultValue = "0") int page,
 			@RequestParam(defaultValue = "20") int size);
 
-	@Operation(summary = "Allocate", operationId = "roomallocation_allocate")
+	@Operation(summary = "Allocate")
 	public ApiResponse<RoomAllocationResponse> allocate(@Valid @RequestBody AllocateRoomRequest request);
 
-	@Operation(summary = "Vacate", operationId = "roomallocation_vacate")
+	@Operation(summary = "Vacate")
 	public ApiResponse<RoomAllocationResponse> vacate(@PathVariable String publicId,
 			@Valid @RequestBody VacateRoomAllocationRequest request);
 }

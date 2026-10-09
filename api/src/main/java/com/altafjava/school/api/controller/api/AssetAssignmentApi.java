@@ -17,17 +17,17 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 @SecurityRequirement(name = "tenantHeader")
 public interface AssetAssignmentApi {
 
-	@Operation(summary = "List", operationId = "assetassignment_list")
+	@Operation(summary = "List")
 	public ApiResponse<com.altafjava.platform.core.model.Page<AssetAssignmentResponse>> list(
 			@PathVariable String assetPublicId,
 			@RequestParam(defaultValue = "0") int page,
 			@RequestParam(defaultValue = "20") int size);
 
-	@Operation(summary = "Assign", operationId = "assetassignment_assign")
+	@Operation(summary = "Assign")
 	public ApiResponse<AssetAssignmentResponse> assign(@PathVariable String assetPublicId,
 			@Valid @RequestBody AssignAssetRequest request);
 
-	@Operation(summary = "Mark returned", operationId = "assetassignment_markReturned")
+	@Operation(summary = "Mark returned")
 	public ApiResponse<AssetAssignmentResponse> markReturned(@PathVariable String assetPublicId,
 			@PathVariable String assignmentPublicId, @Valid @RequestBody ReturnAssetRequest request);
 }

@@ -20,28 +20,28 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 @SecurityRequirement(name = "tenantHeader")
 public interface RouteApi {
 
-	@Operation(summary = "List", operationId = "route_list")
+	@Operation(summary = "List")
 	public ApiResponse<com.altafjava.platform.core.model.Page<RouteResponse>> list(
 			@RequestParam(defaultValue = "0") int page,
 			@RequestParam(defaultValue = "20") int size);
 
-	@Operation(summary = "Get", operationId = "route_get")
+	@Operation(summary = "Get")
 	public ApiResponse<RouteResponse> get(@PathVariable String publicId);
 
-	@Operation(summary = "Create", operationId = "route_create")
+	@Operation(summary = "Create")
 	public ApiResponse<RouteResponse> create(@Valid @RequestBody CreateRouteRequest request);
 
-	@Operation(summary = "Update details", operationId = "route_updateDetails")
+	@Operation(summary = "Update details")
 	public ApiResponse<RouteResponse> updateDetails(@PathVariable String publicId,
 			@Valid @RequestBody UpdateRouteRequest request);
 
-	@Operation(summary = "Deactivate", operationId = "route_deactivate")
+	@Operation(summary = "Deactivate")
 	public ApiResponse<RouteResponse> deactivate(@PathVariable String publicId);
 
-	@Operation(summary = "List stops", operationId = "route_listStops")
+	@Operation(summary = "List stops")
 	public ApiResponse<List<RouteStopResponse>> listStops(@PathVariable String publicId);
 
-	@Operation(summary = "Add stop", operationId = "route_addStop")
+	@Operation(summary = "Add stop")
 	public ApiResponse<RouteStopResponse> addStop(@PathVariable String publicId,
 			@Valid @RequestBody AddRouteStopRequest request);
 }

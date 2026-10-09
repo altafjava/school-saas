@@ -27,49 +27,50 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 @SecurityRequirement(name = "tenantHeader")
 public interface ClassroomApi {
 
-	@Operation(summary = "List", operationId = "classroom_list")
+	@Operation(summary = "List")
 	public ApiResponse<com.altafjava.platform.core.model.Page<ClassroomResponse>> list(
 			@RequestParam(defaultValue = "0") int page,
-			@RequestParam(defaultValue = "20") int size);
+			@RequestParam(defaultValue = "20") int size,
+			@RequestParam(required = false) String q);
 
-	@Operation(summary = "Get", operationId = "classroom_get")
+	@Operation(summary = "Get")
 	public ApiResponse<ClassroomResponse> get(@PathVariable String publicId);
 
-	@Operation(summary = "Create", operationId = "classroom_create")
+	@Operation(summary = "Create")
 	public ApiResponse<ClassroomResponse> create(@Valid @RequestBody CreateClassroomRequest request);
 
-	@Operation(summary = "Reassign teacher", operationId = "classroom_reassignTeacher")
+	@Operation(summary = "Reassign teacher")
 	public ApiResponse<ClassroomResponse> reassignTeacher(@PathVariable String publicId,
 			@Valid @RequestBody ReassignClassTeacherRequest request);
 
-	@Operation(summary = "Move to academic year", operationId = "classroom_moveToAcademicYear")
+	@Operation(summary = "Move to academic year")
 	public ApiResponse<ClassroomResponse> moveToAcademicYear(@PathVariable String publicId,
 			@Valid @RequestBody MoveClassroomAcademicYearRequest request);
 
-	@Operation(summary = "Update capacity", operationId = "classroom_updateCapacity")
+	@Operation(summary = "Update capacity")
 	public ApiResponse<ClassroomResponse> updateCapacity(@PathVariable String publicId,
 			@Valid @RequestBody UpdateClassroomCapacityRequest request);
 
-	@Operation(summary = "Assign curriculum", operationId = "classroom_assignCurriculum")
+	@Operation(summary = "Assign curriculum")
 	public ApiResponse<ClassroomResponse> assignCurriculum(@PathVariable String publicId,
 			@Valid @RequestBody AssignClassroomCurriculumRequest request);
 
-	@Operation(summary = "Timetable", operationId = "classroom_timetable")
+	@Operation(summary = "Timetable")
 	public ApiResponse<List<TimetableEntryResponse>> timetable(@PathVariable String publicId);
 
-	@Operation(summary = "Enroll student", operationId = "classroom_enrollStudent")
+	@Operation(summary = "Enroll student")
 	public ApiResponse<StudentClassroomLinkResponse> enrollStudent(@PathVariable String publicId,
 			@Valid @RequestBody EnrollStudentInClassroomRequest request);
 
-	@Operation(summary = "Roster", operationId = "classroom_roster")
+	@Operation(summary = "Roster")
 	public ApiResponse<com.altafjava.platform.core.model.Page<StudentResponse>> roster(@PathVariable String publicId,
 			@RequestParam(defaultValue = "0") int page,
 			@RequestParam(defaultValue = "20") int size);
 
-	@Operation(summary = "Withdraw student", operationId = "classroom_withdrawStudent")
+	@Operation(summary = "Withdraw student")
 	public ApiResponse<Void> withdrawStudent(@PathVariable String publicId, @PathVariable String studentPublicId);
 
-	@Operation(summary = "Assign roll number", operationId = "classroom_assignRollNumber")
+	@Operation(summary = "Assign roll number")
 	public ApiResponse<RollNumberResponse> assignRollNumber(
 			@PathVariable String publicId, @PathVariable String studentPublicId,
 			@Valid @RequestBody AssignRollNumberRequest request);

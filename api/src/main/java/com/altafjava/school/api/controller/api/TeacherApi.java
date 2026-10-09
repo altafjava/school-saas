@@ -16,14 +16,15 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 @SecurityRequirement(name = "tenantHeader")
 public interface TeacherApi {
 
-	@Operation(summary = "List", operationId = "teacher_list")
+	@Operation(summary = "List")
 	public ApiResponse<com.altafjava.platform.core.model.Page<TeacherResponse>> list(
 			@RequestParam(defaultValue = "0") int page,
-			@RequestParam(defaultValue = "20") int size);
+			@RequestParam(defaultValue = "20") int size,
+			@RequestParam(required = false) String q);
 
-	@Operation(summary = "Get", operationId = "teacher_get")
+	@Operation(summary = "Get")
 	public ApiResponse<TeacherResponse> get(@PathVariable String publicId);
 
-	@Operation(summary = "Hire", operationId = "teacher_hire")
+	@Operation(summary = "Hire")
 	public ApiResponse<TeacherResponse> hire(@Valid @RequestBody CreateTeacherRequest request);
 }
