@@ -187,10 +187,25 @@ school-saas/
 ├── domain/       Entity models, repository interfaces, domain services
 ├── application/  Use case orchestration, event listeners, sagas, schedulers
 ├── api/          REST controllers, DTOs, mappers, input validation
-└── app/          Spring Boot entry point, resources, configuration
+├── app/          Spring Boot entry point, resources, configuration
+└── api-client/   @school/api-client — typed TypeScript client generated from the OpenAPI snapshot
 ```
 
 Dependency direction: `app → api → application → domain`. The `app` module pulls in the `platform-saas` spring-boot-starter which auto-configures all infrastructure (multi-tenancy, security, messaging, caching, payments, scheduling).
+
+---
+
+## API Contract and Typed Client
+
+The public REST contract is `app/src/test/resources/openapi-snapshot.json`. `OpenApiSnapshotTest` fails the build when the live spec
+differs from it; after an intentional change regenerate it with
+`./gradlew :app:test --tests '*OpenApiSnapshotTest' -DupdateOpenApiSnapshot=true` and commit it.
+
+`api-client/` turns that snapshot into `@school/api-client` (fetch functions, TanStack Query hooks, zod schemas, MSW mocks) for the
+frontend — see [api-client/README.md](api-client/README.md). `./gradlew :app:exportOpenApi` writes the spec, stamped with the project
+version, to `app/build/openapi/school-saas-openapi.json`. Every pull request builds the client and prints the API changes (oasdiff) in the
+job summary. Tagging `vX.Y.Z` runs `publish-release.yml`: full test suite, then the spec and the client tarball are attached to the
+GitHub release, and the client is published to the npm registry named by the `NPM_REGISTRY_URL` repository variable (secret `NPM_TOKEN`).
 
 ---
 

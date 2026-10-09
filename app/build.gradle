@@ -126,3 +126,26 @@ tasks.named('test') {
         exceptionFormat "full"
     }
 }
+
+// Release artifact for codegen consumers. The committed snapshot is the spec: OpenApiSnapshotTest fails the
+// build unless it equals the live one, so exporting the file needs no running application.
+tasks.register('exportOpenApi') {
+    group = 'documentation'
+    description = 'Writes the OpenAPI spec, stamped with the project version, to build/openapi/school-saas-openapi.json'
+    def snapshot = layout.projectDirectory.file('src/test/resources/openapi-snapshot.json')
+    def specVersion = project.version.toString()
+    def target = layout.buildDirectory.file('openapi/school-saas-openapi.json')
+    inputs.file(snapshot)
+    inputs.property('specVersion', specVersion)
+    outputs.file(target)
+    doLast {
+        def spec = new groovy.json.JsonSlurper().parse(snapshot.asFile)
+        spec.info.version = specVersion
+        def json = new groovy.json.JsonGenerator.Options().disableUnicodeEscaping().build().toJson(spec)
+        target.get().asFile.text = groovy.json.JsonOutput.prettyPrint(json) + '\n'
+    }
+}
+
+tasks.named('build') {
+    dependsOn 'exportOpenApi'
+}

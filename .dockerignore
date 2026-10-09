@@ -22,6 +22,9 @@ docker-compose.yml
 *.md
 docs/
 
+# Frontend client package: generated from the spec, not part of the service image.
+api-client/
+
 # Never bake local dev secrets into the build context.
 .env
 .env.*
