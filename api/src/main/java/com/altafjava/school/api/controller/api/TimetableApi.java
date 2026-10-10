@@ -1,5 +1,6 @@
 package com.altafjava.school.api.controller.api;
 
+import java.time.DayOfWeek;
 import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -20,7 +21,11 @@ public interface TimetableApi {
 	@Operation(summary = "List")
 	public ApiResponse<com.altafjava.platform.core.model.Page<TimetableEntryResponse>> list(
 			@RequestParam(defaultValue = "0") int page,
-			@RequestParam(defaultValue = "20") int size);
+			@RequestParam(defaultValue = "20") int size,
+			@RequestParam(required = false) String classroomPublicId,
+			@RequestParam(required = false) String teacherPublicId,
+			@RequestParam(required = false) String subjectPublicId,
+			@RequestParam(required = false) DayOfWeek dayOfWeek);
 
 	@Operation(summary = "Get")
 	public ApiResponse<TimetableEntryResponse> get(@PathVariable String publicId);

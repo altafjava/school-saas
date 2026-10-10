@@ -1,5 +1,6 @@
 package com.altafjava.school.api.controller;
 
+import java.time.LocalDate;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -20,7 +21,10 @@ import com.altafjava.school.api.mapper.FeePaymentMapper;
 import com.altafjava.school.api.support.PlatformPageMapper;
 import com.altafjava.school.api.support.SortableBy;
 import com.altafjava.school.api.support.SpringDataPageableResolver;
+import com.altafjava.school.application.filter.DateWindow;
+import com.altafjava.school.application.filter.FeePaymentFilter;
 import com.altafjava.school.application.service.FeePaymentService;
+import com.altafjava.school.domain.fee.model.PaymentSource;
 
 @RestController
 @RequestMapping("/api/v1/fee-payments")
@@ -44,9 +48,16 @@ public class FeePaymentController implements FeePaymentApi {
 	@SortableBy({ "paidAt", "paidAmount", "receiptNumber" })
 	public ApiResponse<com.altafjava.platform.core.model.Page<FeePaymentResponse>> list(
 			@RequestParam(defaultValue = "0") int page,
-			@RequestParam(defaultValue = "20") int size) {
+			@RequestParam(defaultValue = "20") int size,
+			@RequestParam(required = false) String studentPublicId,
+			@RequestParam(required = false) String feeStructurePublicId,
+			@RequestParam(required = false) LocalDate from,
+			@RequestParam(required = false) LocalDate to,
+			@RequestParam(required = false) PaymentSource paymentSource) {
+		FeePaymentFilter filter = new FeePaymentFilter(studentPublicId, feeStructurePublicId,
+				new DateWindow(from, to), paymentSource);
 		return ApiResponse.success(PlatformPageMapper
-				.toPlatformPage(feePaymentService.listFeePayments(pageableResolver.resolve(page, size))
+				.toPlatformPage(feePaymentService.listFeePayments(filter, pageableResolver.resolve(page, size))
 						.map(feePaymentMapper::toResponse)));
 	}
 

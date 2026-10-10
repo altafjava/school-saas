@@ -12,6 +12,7 @@ import com.altafjava.platform.core.exception.ResourceNotFoundException;
 import com.altafjava.platform.core.search.LikePattern;
 import com.altafjava.platform.core.tenant.TenantContext;
 import com.altafjava.school.application.employee.EmployeeCodeAllocator;
+import com.altafjava.school.domain.common.model.Gender;
 import com.altafjava.school.domain.teacher.model.Teacher;
 import com.altafjava.school.domain.teacher.repository.TeacherRepository;
 import lombok.RequiredArgsConstructor;
@@ -46,10 +47,15 @@ public class TeacherService {
 				.orElseThrow(() -> new ResourceNotFoundException("Teacher not found: " + publicId));
 	}
 
+	public Teacher hire(String employeeCode, String firstName, String lastName, String email, LocalDate joinDate) {
+		return hire(employeeCode, firstName, lastName, email, Gender.NOT_SPECIFIED, joinDate);
+	}
+
 	@Transactional
 	@Audited(action = AuditAction.CREATE, resourceType = "Employee", details = "Teacher hired")
-	public Teacher hire(String employeeCode, String firstName, String lastName, String email, LocalDate joinDate) {
+	public Teacher hire(String employeeCode, String firstName, String lastName, String email, Gender gender,
+			LocalDate joinDate) {
 		String code = employeeCodeAllocator.allocate(TenantContext.getCurrentTenantId(), employeeCode);
-		return teacherRepository.save(Teacher.create(code, firstName, lastName, email, joinDate));
+		return teacherRepository.save(Teacher.create(code, firstName, lastName, email, gender, joinDate));
 	}
 }

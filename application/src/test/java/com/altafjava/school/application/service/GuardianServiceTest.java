@@ -24,6 +24,7 @@ import com.altafjava.platform.core.exception.ResourceNotFoundException;
 import com.altafjava.platform.core.tenant.TenantContext;
 import com.altafjava.platform.core.tenant.TenantType;
 import com.altafjava.school.application.reference.UserReferenceResolver;
+import com.altafjava.school.application.security.StudentDataAccessGuard;
 import com.altafjava.school.domain.common.model.Address;
 import com.altafjava.school.domain.guardian.model.Guardian;
 import com.altafjava.school.domain.guardian.model.RelationshipType;
@@ -51,12 +52,15 @@ class GuardianServiceTest {
 	@Mock
 	private UserReferenceResolver userReferenceResolver;
 
+	@Mock
+	private StudentDataAccessGuard studentDataAccessGuard;
+
 	private GuardianService guardianService;
 
 	@BeforeEach
 	void setUp() {
 		guardianService = new GuardianService(guardianRepository, studentGuardianLinkRepository, studentRepository,
-				eventPublisher, userReferenceResolver);
+				eventPublisher, userReferenceResolver, studentDataAccessGuard);
 		TenantContext.ForTesting.setCurrentTenant(1L, null, null, TenantType.SHARED);
 	}
 

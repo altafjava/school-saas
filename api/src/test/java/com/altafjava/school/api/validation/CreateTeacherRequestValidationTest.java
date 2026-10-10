@@ -25,7 +25,7 @@ class CreateTeacherRequestValidationTest {
 	}
 
 	private CreateTeacherRequest valid() {
-		return new CreateTeacherRequest("EMP-001", "Bob", "Jones", "bob@school.com", LocalDate.of(2022, 1, 10));
+		return new CreateTeacherRequest("EMP-001", "Bob", "Jones", "bob@school.com", null, LocalDate.of(2022, 1, 10));
 	}
 
 	@Test
@@ -37,49 +37,50 @@ class CreateTeacherRequestValidationTest {
 	void employeeCode_blank_passesValidation() {
 		// employeeCode is an explicit-override path — blank/omitted defers to the tenant's
 		// configured numbering sequence, see TeacherService#hire.
-		var req = new CreateTeacherRequest("", "Bob", "Jones", "bob@school.com", LocalDate.of(2022, 1, 10));
+		var req = new CreateTeacherRequest("", "Bob", "Jones", "bob@school.com", null, LocalDate.of(2022, 1, 10));
 		assertTrue(violationsFor(req).isEmpty());
 	}
 
 	@Test
 	void employeeCode_null_passesValidation() {
-		var req = new CreateTeacherRequest(null, "Bob", "Jones", "bob@school.com", LocalDate.of(2022, 1, 10));
+		var req = new CreateTeacherRequest(null, "Bob", "Jones", "bob@school.com", null, LocalDate.of(2022, 1, 10));
 		assertTrue(violationsFor(req).isEmpty());
 	}
 
 	@Test
 	void employeeCode_tooLong_failsValidation() {
-		var req = new CreateTeacherRequest("E".repeat(51), "Bob", "Jones", "bob@school.com", LocalDate.of(2022, 1, 10));
+		var req = new CreateTeacherRequest("E".repeat(51), "Bob", "Jones", "bob@school.com", null,
+				LocalDate.of(2022, 1, 10));
 		assertFalse(violationsFor(req).isEmpty());
 	}
 
 	@Test
 	void firstName_blank_failsValidation() {
-		var req = new CreateTeacherRequest("EMP-001", "", "Jones", "bob@school.com", LocalDate.of(2022, 1, 10));
+		var req = new CreateTeacherRequest("EMP-001", "", "Jones", "bob@school.com", null, LocalDate.of(2022, 1, 10));
 		assertFalse(violationsFor(req).isEmpty());
 	}
 
 	@Test
 	void lastName_blank_failsValidation() {
-		var req = new CreateTeacherRequest("EMP-001", "Bob", "", "bob@school.com", LocalDate.of(2022, 1, 10));
+		var req = new CreateTeacherRequest("EMP-001", "Bob", "", "bob@school.com", null, LocalDate.of(2022, 1, 10));
 		assertFalse(violationsFor(req).isEmpty());
 	}
 
 	@Test
 	void email_blank_failsValidation() {
-		var req = new CreateTeacherRequest("EMP-001", "Bob", "Jones", "", LocalDate.of(2022, 1, 10));
+		var req = new CreateTeacherRequest("EMP-001", "Bob", "Jones", "", null, LocalDate.of(2022, 1, 10));
 		assertFalse(violationsFor(req).isEmpty());
 	}
 
 	@Test
 	void email_invalidFormat_failsValidation() {
-		var req = new CreateTeacherRequest("EMP-001", "Bob", "Jones", "not-an-email", LocalDate.of(2022, 1, 10));
+		var req = new CreateTeacherRequest("EMP-001", "Bob", "Jones", "not-an-email", null, LocalDate.of(2022, 1, 10));
 		assertFalse(violationsFor(req).isEmpty());
 	}
 
 	@Test
 	void joinDate_null_failsValidation() {
-		var req = new CreateTeacherRequest("EMP-001", "Bob", "Jones", "bob@school.com", null);
+		var req = new CreateTeacherRequest("EMP-001", "Bob", "Jones", "bob@school.com", null, null);
 		assertFalse(violationsFor(req).isEmpty());
 	}
 }

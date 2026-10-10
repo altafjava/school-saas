@@ -18,6 +18,9 @@ import com.altafjava.platform.core.security.AuthenticatedUser;
 import com.altafjava.platform.core.tenant.TenantContext;
 import com.altafjava.platform.domain.notification.model.NotificationPriority;
 import com.altafjava.platform.domain.notification.model.NotificationType;
+import com.altafjava.school.application.filter.MedicalIncidentFilter;
+import com.altafjava.school.application.reference.EntityRef;
+import com.altafjava.school.application.reference.PublicIdLookup;
 import com.altafjava.school.application.scheduler.support.StudentNotificationRecipientResolver;
 import com.altafjava.school.domain.health.model.MedicalIncident;
 import com.altafjava.school.domain.health.repository.MedicalIncidentRepository;
@@ -43,10 +46,13 @@ public class MedicalIncidentService {
 	private final StudentNotificationRecipientResolver recipientResolver;
 	private final NotificationService notificationService;
 	private final ActivityLogService activityLogService;
+	private final PublicIdLookup publicIdLookup;
 
 	public MedicalIncidentService(MedicalIncidentRepository medicalIncidentRepository,
 			StudentRepository studentRepository, StudentNotificationRecipientResolver recipientResolver,
-			NotificationService notificationService, ActivityLogService activityLogService) {
+			NotificationService notificationService, ActivityLogService activityLogService,
+			PublicIdLookup publicIdLookup) {
+		this.publicIdLookup = publicIdLookup;
 		this.medicalIncidentRepository = medicalIncidentRepository;
 		this.studentRepository = studentRepository;
 		this.recipientResolver = recipientResolver;
@@ -55,8 +61,11 @@ public class MedicalIncidentService {
 	}
 
 	@Transactional(readOnly = true)
-	public Page<MedicalIncident> listAll(Pageable pageable) {
-		return medicalIncidentRepository.findAllByTenantId(TenantContext.getCurrentTenantId(), pageable);
+	public Page<MedicalIncident> listAll(MedicalIncidentFilter filter, Pageable pageable) {
+		return medicalIncidentRepository.search(TenantContext.getCurrentTenantId(),
+				publicIdLookup.idOrNull(EntityRef.STUDENT, filter.studentPublicId()),
+				filter.dates().from() != null ? filter.dates().from().atStartOfDay() : null,
+				filter.dates().to() != null ? filter.dates().to().plusDays(1).atStartOfDay() : null, pageable);
 	}
 
 	@Transactional(readOnly = true)

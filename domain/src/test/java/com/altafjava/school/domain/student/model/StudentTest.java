@@ -8,6 +8,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import java.time.LocalDate;
 import org.junit.jupiter.api.Test;
 import com.altafjava.platform.core.exception.BusinessException;
+import com.altafjava.school.domain.common.model.Gender;
 
 class StudentTest {
 
@@ -78,21 +79,35 @@ class StudentTest {
 	void updateContactDetails_replacesMutableFields() {
 		Student student = newStudent();
 
-		student.updateContactDetails("Alicia", "Jones", "alicia@school.test", LocalDate.of(2010, 2, 2));
+		student.updateContactDetails("Alicia", "Jones", "alicia@school.test", LocalDate.of(2010, 2, 2), Gender.FEMALE);
 
 		assertEquals("Alicia", student.getFirstName());
 		assertEquals("Jones", student.getLastName());
 		assertEquals("alicia@school.test", student.getEmail());
 		assertEquals(LocalDate.of(2010, 2, 2), student.getDateOfBirth());
+		assertEquals(Gender.FEMALE, student.getGender());
+	}
+
+	@Test
+	void create_defaultsGenderToNotSpecified() {
+		assertEquals(Gender.NOT_SPECIFIED, newStudent().getGender());
+	}
+
+	@Test
+	void create_keepsTheGivenGender_andTreatsNullAsNotSpecified() {
+		assertEquals(Gender.MALE, Student.create("S1", "A", "B", null, null, Gender.MALE).getGender());
+		assertEquals(Gender.NOT_SPECIFIED, Student.create("S2", "A", "B", null, null, null).getGender());
 	}
 
 	@Test
 	void erasePii_clearsContactPiiButKeepsOperationalIdentifiers() {
-		Student student = newStudent();
+		Student student = Student.create("STU-001", "Alice", "Smith", "alice@school.test", LocalDate.of(2010, 1, 1),
+				Gender.FEMALE);
 		student.updatePhone("+14155552671");
 
 		student.erasePii();
 
+		assertEquals(Gender.NOT_SPECIFIED, student.getGender());
 		assertEquals("[erased]", student.getFirstName());
 		assertEquals("[erased]", student.getLastName());
 		assertEquals(null, student.getEmail());

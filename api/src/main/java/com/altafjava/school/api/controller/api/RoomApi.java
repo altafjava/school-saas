@@ -21,7 +21,8 @@ public interface RoomApi {
 	public ApiResponse<com.altafjava.platform.core.model.Page<RoomResponse>> listForBuilding(
 			@RequestParam String hostelBuildingPublicId,
 			@RequestParam(defaultValue = "0") int page,
-			@RequestParam(defaultValue = "20") int size);
+			@RequestParam(defaultValue = "20") int size,
+			@RequestParam(required = false) String q);
 
 	@Operation(summary = "Get")
 	public ApiResponse<RoomResponse> get(@PathVariable String publicId);

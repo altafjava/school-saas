@@ -20,6 +20,7 @@ import com.altafjava.platform.core.concurrency.ExpectedVersion;
 import com.altafjava.platform.core.exception.ResourceNotFoundException;
 import com.altafjava.platform.core.tenant.TenantContext;
 import com.altafjava.platform.core.tenant.TenantType;
+import com.altafjava.school.application.reference.PublicIdLookup;
 import com.altafjava.school.domain.counseling.model.CounselingSession;
 import com.altafjava.school.domain.counseling.repository.CounselingSessionRepository;
 import com.altafjava.school.domain.student.model.Student;
@@ -39,6 +40,8 @@ class CounselingSessionServiceTest {
 	private StudentRepository studentRepository;
 	@Mock
 	private TeacherRepository teacherRepository;
+	@Mock
+	private PublicIdLookup publicIdLookup;
 	private final ActivityLogService activityLogService = new NoOpActivityLogService();
 
 	private CounselingSessionService counselingSessionService;
@@ -46,7 +49,7 @@ class CounselingSessionServiceTest {
 	@BeforeEach
 	void setUp() {
 		counselingSessionService = new CounselingSessionService(counselingSessionRepository, studentRepository,
-				teacherRepository, activityLogService);
+				teacherRepository, activityLogService, publicIdLookup);
 		TenantContext.ForTesting.setCurrentTenant(1L, null, null, TenantType.SHARED);
 	}
 

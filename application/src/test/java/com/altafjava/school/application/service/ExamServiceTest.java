@@ -30,6 +30,7 @@ import com.altafjava.platform.core.exception.BusinessException;
 import com.altafjava.platform.core.exception.ResourceNotFoundException;
 import com.altafjava.platform.core.tenant.TenantContext;
 import com.altafjava.platform.core.tenant.TenantType;
+import com.altafjava.school.application.reference.PublicIdLookup;
 import com.altafjava.school.application.security.AcademicAccessGuard;
 import com.altafjava.school.domain.classroom.model.Classroom;
 import com.altafjava.school.domain.classroom.repository.ClassroomRepository;
@@ -64,13 +65,15 @@ class ExamServiceTest {
 	private EventPublisher eventPublisher;
 	@Mock
 	private AcademicAccessGuard academicAccessGuard;
+	@Mock
+	private PublicIdLookup publicIdLookup;
 
 	private ExamService examService;
 
 	@BeforeEach
 	void setUp() {
 		examService = new ExamService(examRepository, classroomRepository, subjectRepository, termRepository,
-				examTypeDefinitionRepository, gradeRepository, eventPublisher, academicAccessGuard);
+				examTypeDefinitionRepository, gradeRepository, eventPublisher, academicAccessGuard, publicIdLookup);
 		TenantContext.ForTesting.setCurrentTenant(1L, null, null, TenantType.SHARED);
 	}
 

@@ -58,6 +58,12 @@ public interface StudentClassroomLinkRepository extends JpaRepository<StudentCla
 	List<StudentClassroomLink> findByStudentIdIn(@Param("tenantId") Long tenantId,
 			@Param("studentIds") List<Long> studentIds);
 
+	// Where the given students sit in one academic year — a student holds at most one classroom per year.
+	@Query("SELECT l FROM StudentClassroomLink l WHERE l.tenantId = :tenantId AND l.academicYearId = :academicYearId "
+			+ "AND l.studentId IN :studentIds")
+	List<StudentClassroomLink> findByStudentIdsAndAcademicYearId(@Param("tenantId") Long tenantId,
+			@Param("studentIds") Collection<Long> studentIds, @Param("academicYearId") Long academicYearId);
+
 	// Distinct roster-enrolled student ids tenant-wide — the authoritative "who is actively
 	// enrolled" source for jobs that must iterate every student, not just one classroom's.
 	@Query("SELECT DISTINCT l.studentId FROM StudentClassroomLink l WHERE l.tenantId = :tenantId")

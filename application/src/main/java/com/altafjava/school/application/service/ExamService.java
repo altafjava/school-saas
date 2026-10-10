@@ -14,6 +14,9 @@ import com.altafjava.platform.core.concurrency.ExpectedVersion;
 import com.altafjava.platform.core.exception.BusinessException;
 import com.altafjava.platform.core.exception.ResourceNotFoundException;
 import com.altafjava.platform.core.tenant.TenantContext;
+import com.altafjava.school.application.filter.ExamFilter;
+import com.altafjava.school.application.reference.EntityRef;
+import com.altafjava.school.application.reference.PublicIdLookup;
 import com.altafjava.school.application.security.AcademicAccessGuard;
 import com.altafjava.school.domain.classroom.repository.ClassroomRepository;
 import com.altafjava.school.domain.exam.event.ExamResultsPublishedEvent;
@@ -39,11 +42,13 @@ public class ExamService {
 	private final GradeRepository gradeRepository;
 	private final EventPublisher eventPublisher;
 	private final AcademicAccessGuard academicAccessGuard;
+	private final PublicIdLookup publicIdLookup;
 
 	public ExamService(ExamRepository examRepository, ClassroomRepository classroomRepository,
 			SubjectRepository subjectRepository, TermRepository termRepository,
 			ExamTypeDefinitionRepository examTypeDefinitionRepository, GradeRepository gradeRepository,
-			EventPublisher eventPublisher, AcademicAccessGuard academicAccessGuard) {
+			EventPublisher eventPublisher, AcademicAccessGuard academicAccessGuard, PublicIdLookup publicIdLookup) {
+		this.publicIdLookup = publicIdLookup;
 		this.examRepository = examRepository;
 		this.classroomRepository = classroomRepository;
 		this.subjectRepository = subjectRepository;
@@ -55,8 +60,11 @@ public class ExamService {
 	}
 
 	@Transactional(readOnly = true)
-	public Page<Exam> listExams(Pageable pageable) {
-		return examRepository.findAllByTenantId(TenantContext.getCurrentTenantId(), pageable);
+	public Page<Exam> listExams(ExamFilter filter, Pageable pageable) {
+		return examRepository.search(TenantContext.getCurrentTenantId(),
+				publicIdLookup.idOrNull(EntityRef.CLASSROOM, filter.classroomPublicId()),
+				publicIdLookup.idOrNull(EntityRef.TERM, filter.termPublicId()),
+				publicIdLookup.idOrNull(EntityRef.SUBJECT, filter.subjectPublicId()), filter.status(), pageable);
 	}
 
 	@Transactional(readOnly = true)

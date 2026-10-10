@@ -10,6 +10,9 @@ import org.springframework.transaction.annotation.Transactional;
 import com.altafjava.platform.core.concurrency.ExpectedVersion;
 import com.altafjava.platform.core.exception.ResourceNotFoundException;
 import com.altafjava.platform.core.tenant.TenantContext;
+import com.altafjava.school.application.filter.AttendanceFilter;
+import com.altafjava.school.application.reference.EntityRef;
+import com.altafjava.school.application.reference.PublicIdLookup;
 import com.altafjava.school.application.security.AcademicAccessGuard;
 import com.altafjava.school.application.security.AcademicScope;
 import com.altafjava.school.application.security.AcademicScopeResolver;
@@ -39,13 +42,15 @@ public class AttendanceService {
 	private final AcademicAccessGuard academicAccessGuard;
 	private final HolidayService holidayService;
 	private final AttendancePercentageCalculator attendancePercentageCalculator = new AttendancePercentageCalculator();
+	private final PublicIdLookup publicIdLookup;
 
 	public AttendanceService(AttendanceRepository attendanceRepository,
 			AttendanceCorrectionRepository attendanceCorrectionRepository, StudentRepository studentRepository,
 			ClassroomRepository classroomRepository, StudentClassroomLinkRepository studentClassroomLinkRepository,
 			StudentDataAccessGuard studentDataAccessGuard,
 			AcademicScopeResolver academicScopeResolver, AcademicAccessGuard academicAccessGuard,
-			HolidayService holidayService) {
+			HolidayService holidayService, PublicIdLookup publicIdLookup) {
+		this.publicIdLookup = publicIdLookup;
 		this.attendanceRepository = attendanceRepository;
 		this.attendanceCorrectionRepository = attendanceCorrectionRepository;
 		this.studentRepository = studentRepository;
@@ -57,16 +62,16 @@ public class AttendanceService {
 		this.holidayService = holidayService;
 	}
 
-	// Narrowed to the caller's scope: every classroom, the classrooms they teach, or their own students.
+	// Narrowed to the caller's scope (every classroom, the classrooms they teach, or their own students), then
+	// by the filter.
 	@Transactional(readOnly = true)
-	public Page<Attendance> listAttendance(Pageable pageable) {
+	public Page<Attendance> listAttendance(AttendanceFilter filter, Pageable pageable) {
 		Long tenantId = TenantContext.getCurrentTenantId();
 		AcademicScope scope = academicScopeResolver.current(tenantId);
-		if (scope.readsAllClassrooms()) {
-			return attendanceRepository.findAllByTenantId(tenantId, pageable);
-		}
-		return attendanceRepository.findVisible(tenantId, scope.teaching().classroomIds(), scope.ownStudentIds(),
-				pageable);
+		return attendanceRepository.search(tenantId, scope.readsAllClassrooms(), scope.teaching().classroomIds(),
+				scope.ownStudentIds(), publicIdLookup.idOrNull(EntityRef.CLASSROOM, filter.classroomPublicId()),
+				publicIdLookup.idOrNull(EntityRef.STUDENT, filter.studentPublicId()), filter.dates().from(),
+				filter.dates().to(), filter.status(), pageable);
 	}
 
 	@Transactional(readOnly = true)

@@ -45,9 +45,10 @@ public class HostelBuildingController implements HostelBuildingApi {
 	@PreAuthorize("@permissionAuthorizationService.hasPermission('HOSTEL_READ')")
 	public ApiResponse<com.altafjava.platform.core.model.Page<HostelBuildingResponse>> list(
 			@RequestParam(defaultValue = "0") int page,
-			@RequestParam(defaultValue = "20") int size) {
+			@RequestParam(defaultValue = "20") int size,
+			@RequestParam(required = false) String q) {
 		return ApiResponse.success(PlatformPageMapper.toPlatformPage(hostelBuildingService
-				.list(pageableResolver.resolve(page, size)).map(hostelBuildingMapper::toResponse)));
+				.list(q, pageableResolver.resolve(page, size)).map(hostelBuildingMapper::toResponse)));
 	}
 
 	@Override

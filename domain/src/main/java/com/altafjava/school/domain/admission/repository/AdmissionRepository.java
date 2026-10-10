@@ -17,13 +17,15 @@ public interface AdmissionRepository extends JpaRepository<Admission, Long> {
 	@Query("""
 			SELECT a FROM Admission a
 			WHERE a.tenantId = :tenantId
+			  AND (:status IS NULL OR a.status = :status)
 			  AND (:pattern IS NULL
 			       OR LOWER(CONCAT(a.applicantFirstName, ' ', a.applicantLastName)) LIKE :pattern ESCAPE '!'
 			       OR LOWER(CONCAT(a.guardianFirstName, ' ', a.guardianLastName)) LIKE :pattern ESCAPE '!'
 			       OR LOWER(a.guardianEmail) LIKE :pattern ESCAPE '!'
 			       OR LOWER(a.appliedGrade) LIKE :pattern ESCAPE '!')
 			""")
-	Page<Admission> search(@Param("tenantId") Long tenantId, @Param("pattern") String pattern, Pageable pageable);
+	Page<Admission> search(@Param("tenantId") Long tenantId, @Param("status") AdmissionStatus status,
+			@Param("pattern") String pattern, Pageable pageable);
 
 	Page<Admission> findAllByTenantId(Long tenantId, Pageable pageable);
 

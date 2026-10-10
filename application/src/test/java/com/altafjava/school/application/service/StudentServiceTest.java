@@ -25,7 +25,9 @@ import com.altafjava.platform.core.tenant.TenantType;
 import com.altafjava.platform.domain.numbering.model.ResetPeriod;
 import com.altafjava.school.application.lifecycle.LifecycleChange;
 import com.altafjava.school.application.lifecycle.LifecycleRecorder;
+import com.altafjava.school.application.reference.PublicIdLookup;
 import com.altafjava.school.domain.common.model.Address;
+import com.altafjava.school.domain.common.model.Gender;
 import com.altafjava.school.domain.student.model.EnrollmentStatus;
 import com.altafjava.school.domain.student.model.Student;
 import com.altafjava.school.domain.student.repository.StudentRepository;
@@ -39,12 +41,15 @@ class StudentServiceTest {
 	private NumberSequenceService numberSequenceService;
 	@Mock
 	private LifecycleRecorder lifecycleRecorder;
+	@Mock
+	private PublicIdLookup publicIdLookup;
 
 	private StudentService studentService;
 
 	@BeforeEach
 	void setUp() {
-		studentService = new StudentService(studentRepository, numberSequenceService, lifecycleRecorder);
+		studentService = new StudentService(studentRepository, numberSequenceService, lifecycleRecorder,
+				publicIdLookup);
 		TenantContext.ForTesting.setCurrentTenant(1L, null, null, TenantType.SHARED);
 	}
 
@@ -134,11 +139,12 @@ class StudentServiceTest {
 		when(studentRepository.save(any(Student.class))).thenAnswer(inv -> inv.getArgument(0));
 
 		Student updated = studentService.updateContactDetails(publicId.toString(), "Carolyn", "Jones",
-				"carolyn@school.test", LocalDate.of(2010, 6, 6), ExpectedVersion.any());
+				"carolyn@school.test", LocalDate.of(2010, 6, 6), Gender.FEMALE, ExpectedVersion.any());
 
 		assertEquals("Carolyn", updated.getFirstName());
 		assertEquals("Jones", updated.getLastName());
 		assertEquals("carolyn@school.test", updated.getEmail());
+		assertEquals(Gender.FEMALE, updated.getGender());
 	}
 
 	@Test

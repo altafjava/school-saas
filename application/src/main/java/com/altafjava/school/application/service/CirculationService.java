@@ -11,7 +11,10 @@ import com.altafjava.platform.application.service.TenantSettingOverrideService;
 import com.altafjava.platform.core.exception.BusinessException;
 import com.altafjava.platform.core.exception.ResourceNotFoundException;
 import com.altafjava.platform.core.tenant.TenantContext;
+import com.altafjava.school.application.filter.CirculationFilter;
 import com.altafjava.school.application.library.ReservationAllocator;
+import com.altafjava.school.application.reference.EntityRef;
+import com.altafjava.school.application.reference.PublicIdLookup;
 import com.altafjava.school.domain.library.model.BookCopy;
 import com.altafjava.school.domain.library.model.BookCopyStatus;
 import com.altafjava.school.domain.library.model.BookReservation;
@@ -46,10 +49,13 @@ public class CirculationService {
 	private final BookReservationRepository bookReservationRepository;
 	private final ReservationAllocator reservationAllocator;
 	private final LibraryFineCalculator libraryFineCalculator = new LibraryFineCalculator();
+	private final PublicIdLookup publicIdLookup;
 
 	public CirculationService(CirculationRepository circulationRepository, BookCopyRepository bookCopyRepository,
 			StudentRepository studentRepository, TenantSettingOverrideService tenantSettingOverrideService,
-			BookReservationRepository bookReservationRepository, ReservationAllocator reservationAllocator) {
+			BookReservationRepository bookReservationRepository, ReservationAllocator reservationAllocator,
+			PublicIdLookup publicIdLookup) {
+		this.publicIdLookup = publicIdLookup;
 		this.circulationRepository = circulationRepository;
 		this.bookCopyRepository = bookCopyRepository;
 		this.studentRepository = studentRepository;
@@ -59,11 +65,11 @@ public class CirculationService {
 	}
 
 	@Transactional(readOnly = true)
-	public Page<Circulation> listForStudent(String studentPublicId, Pageable pageable) {
-		Long tenantId = TenantContext.getCurrentTenantId();
-		var student = studentRepository.findByPublicIdAndTenantId(UUID.fromString(studentPublicId), tenantId)
-				.orElseThrow(() -> new ResourceNotFoundException("Student not found: " + studentPublicId));
-		return circulationRepository.findAllByStudentIdAndTenantId(student.getId(), tenantId, pageable);
+	public Page<Circulation> list(CirculationFilter filter, Pageable pageable) {
+		return circulationRepository.search(TenantContext.getCurrentTenantId(),
+				publicIdLookup.idOrNull(EntityRef.STUDENT, filter.studentPublicId()),
+				publicIdLookup.idOrNull(EntityRef.BOOK, filter.bookPublicId()), filter.returned(),
+				filter.dates().from(), filter.dates().to(), pageable);
 	}
 
 	@Transactional

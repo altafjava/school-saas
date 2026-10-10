@@ -18,6 +18,19 @@ public interface ExamRepository extends JpaRepository<Exam, Long> {
 
 	Page<Exam> findAllByTenantId(Long tenantId, Pageable pageable);
 
+	// Every filter is optional (null matches all).
+	@Query("""
+			SELECT e FROM Exam e
+			WHERE e.tenantId = :tenantId
+			  AND (:classroomId IS NULL OR e.classroomId = :classroomId)
+			  AND (:termId IS NULL OR e.termId = :termId)
+			  AND (:subjectId IS NULL OR e.subjectId = :subjectId)
+			  AND (:status IS NULL OR e.status = :status)
+			""")
+	Page<Exam> search(@Param("tenantId") Long tenantId, @Param("classroomId") Long classroomId,
+			@Param("termId") Long termId, @Param("subjectId") Long subjectId, @Param("status") ExamStatus status,
+			Pageable pageable);
+
 	Optional<Exam> findByPublicIdAndTenantId(UUID publicId, Long tenantId);
 
 	@Query("SELECT e FROM Exam e WHERE e.tenantId = :tenantId AND e.scheduledAt BETWEEN :from AND :to")

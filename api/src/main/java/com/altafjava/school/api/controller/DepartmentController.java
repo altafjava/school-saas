@@ -44,9 +44,10 @@ public class DepartmentController implements DepartmentApi {
 	@PreAuthorize("@permissionAuthorizationService.hasPermission('DEPARTMENT_MANAGE')")
 	public ApiResponse<com.altafjava.platform.core.model.Page<DepartmentResponse>> list(
 			@RequestParam(defaultValue = "0") int page,
-			@RequestParam(defaultValue = "20") int size) {
+			@RequestParam(defaultValue = "20") int size,
+			@RequestParam(required = false) String q) {
 		return ApiResponse.success(PlatformPageMapper.toPlatformPage(
-				departmentService.list(pageableResolver.resolve(page, size)).map(departmentMapper::toResponse)));
+				departmentService.list(q, pageableResolver.resolve(page, size)).map(departmentMapper::toResponse)));
 	}
 
 	@Override

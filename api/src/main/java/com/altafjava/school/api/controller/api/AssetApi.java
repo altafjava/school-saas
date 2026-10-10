@@ -8,6 +8,7 @@ import com.altafjava.platform.api.dto.response.ApiResponse;
 import com.altafjava.school.api.dto.request.CreateAssetRequest;
 import com.altafjava.school.api.dto.request.UpdateAssetLocationRequest;
 import com.altafjava.school.api.dto.response.AssetResponse;
+import com.altafjava.school.domain.inventory.model.AssetStatus;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -20,7 +21,9 @@ public interface AssetApi {
 	@Operation(summary = "List")
 	public ApiResponse<com.altafjava.platform.core.model.Page<AssetResponse>> list(
 			@RequestParam(defaultValue = "0") int page,
-			@RequestParam(defaultValue = "20") int size);
+			@RequestParam(defaultValue = "20") int size,
+			@RequestParam(required = false) AssetStatus status,
+			@RequestParam(required = false) String q);
 
 	@Operation(summary = "Get")
 	public ApiResponse<AssetResponse> get(@PathVariable String publicId);

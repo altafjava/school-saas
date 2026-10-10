@@ -46,9 +46,10 @@ public class LeaveTypeController implements LeaveTypeApi {
 	@PreAuthorize("@permissionAuthorizationService.hasPermission('LEAVE_TYPE_READ')")
 	public ApiResponse<com.altafjava.platform.core.model.Page<LeaveTypeResponse>> list(
 			@RequestParam(defaultValue = "0") int page,
-			@RequestParam(defaultValue = "20") int size) {
+			@RequestParam(defaultValue = "20") int size,
+			@RequestParam(required = false) String q) {
 		return ApiResponse.success(PlatformPageMapper.toPlatformPage(
-				leaveTypeService.list(pageableResolver.resolve(page, size)).map(leaveTypeMapper::toResponse)));
+				leaveTypeService.list(q, pageableResolver.resolve(page, size)).map(leaveTypeMapper::toResponse)));
 	}
 
 	@Override

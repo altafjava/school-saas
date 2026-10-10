@@ -18,6 +18,7 @@ import com.altafjava.school.api.dto.response.TermResponse;
 import com.altafjava.school.api.mapper.TermMapper;
 import com.altafjava.school.api.support.PlatformPageMapper;
 import com.altafjava.school.api.support.SpringDataPageableResolver;
+import com.altafjava.school.application.filter.TermFilter;
 import com.altafjava.school.application.service.TermService;
 
 @RestController
@@ -40,9 +41,12 @@ public class TermController implements TermApi {
 	@PreAuthorize("@permissionAuthorizationService.hasPermission('TERM_READ')")
 	public ApiResponse<com.altafjava.platform.core.model.Page<TermResponse>> list(
 			@RequestParam(defaultValue = "0") int page,
-			@RequestParam(defaultValue = "20") int size) {
+			@RequestParam(defaultValue = "20") int size,
+			@RequestParam(required = false) String academicYearPublicId,
+			@RequestParam(required = false) String q) {
 		return ApiResponse
-				.success(PlatformPageMapper.toPlatformPage(termService.listTerms(pageableResolver.resolve(page, size))
+				.success(PlatformPageMapper.toPlatformPage(termService
+						.listTerms(new TermFilter(academicYearPublicId, q), pageableResolver.resolve(page, size))
 						.map(termMapper::toResponse)));
 	}
 

@@ -90,6 +90,7 @@ class AcademicScopeE2ETest extends SchoolIntegrationTestBase {
 	private String mathPublicId;
 	private String englishPublicId;
 	private String studentA;
+	private String studentB;
 	private Long studentAId;
 	private Long studentBId;
 	private Long mathExamAId;
@@ -136,7 +137,7 @@ class AcademicScopeE2ETest extends SchoolIntegrationTestBase {
 		});
 
 		studentA = support.createStudent(school);
-		String studentB = support.createStudent(school);
+		studentB = support.createStudent(school);
 		studentAId = studentId(studentA);
 		studentBId = studentId(studentB);
 		enroll(classroomA, studentA);
@@ -304,17 +305,178 @@ class AcademicScopeE2ETest extends SchoolIntegrationTestBase {
 		createAssignment(as(mathTeacherUser, "TEACHER"), classroomA, mathPublicId).then()
 				.statusCode(HttpStatus.CREATED.value());
 
-		as(studentAUser, "STUDENT").get("/api/v1/assignments/classroom/" + classroomA).then()
+		as(studentAUser, "STUDENT").get("/api/v1/assignments?classroomPublicId=" + classroomA).then()
 				.statusCode(HttpStatus.OK.value())
-				.body("data.content", hasSize(1));
-		as(parentOfAUser, "PARENT").get("/api/v1/assignments/classroom/" + classroomA).then()
+				.body("data.content", hasSize(org.hamcrest.Matchers.greaterThanOrEqualTo(1)))
+				.body("data.content.classroomPublicId", everyItem(equalTo(classroomA)));
+		as(parentOfAUser, "PARENT").get("/api/v1/assignments?classroomPublicId=" + classroomA).then()
 				.statusCode(HttpStatus.OK.value());
-		as(studentAUser, "STUDENT").get("/api/v1/assignments/classroom/" + classroomB).then()
+		as(studentAUser, "STUDENT").get("/api/v1/assignments?classroomPublicId=" + classroomB).then()
 				.statusCode(HttpStatus.FORBIDDEN.value());
-		as(parentOfAUser, "PARENT").get("/api/v1/assignments/classroom/" + classroomB).then()
+		as(parentOfAUser, "PARENT").get("/api/v1/assignments?classroomPublicId=" + classroomB).then()
 				.statusCode(HttpStatus.FORBIDDEN.value());
-		as(unassignedTeacherUser, "TEACHER").get("/api/v1/assignments/classroom/" + classroomA).then()
+		as(unassignedTeacherUser, "TEACHER").get("/api/v1/assignments?classroomPublicId=" + classroomA).then()
 				.statusCode(HttpStatus.FORBIDDEN.value());
+	}
+
+	// ---- list filters, always inside the caller's scope ----
+
+	@Test
+	void attendanceFilters_narrowTheAdminsView() {
+		admin().get("/api/v1/attendance?size=100&classroomPublicId=" + classroomA).then()
+				.statusCode(HttpStatus.OK.value())
+				.body("data.content.publicId", hasItem(attendanceOfA))
+				.body("data.content.classroomPublicId", everyItem(equalTo(classroomA)));
+		admin().get("/api/v1/attendance?size=100&studentPublicId=" + studentB).then()
+				.body("data.content.publicId", hasItem(attendanceOfB))
+				.body("data.content.studentPublicId", everyItem(equalTo(studentB)));
+		admin().get("/api/v1/attendance?size=100&from=2026-02-02&to=2026-02-02").then()
+				.body("data.content.publicId", hasItems(attendanceOfA, attendanceOfB))
+				.body("data.content.attendanceDate", everyItem(equalTo("2026-02-02")));
+		admin().get("/api/v1/attendance?size=100&from=2026-02-03&to=2026-02-05").then()
+				.body("data.content.publicId", not(hasItem(attendanceOfA)));
+		admin().get("/api/v1/attendance?size=100&status=PRESENT").then()
+				.body("data.content.publicId", hasItem(attendanceOfA))
+				.body("data.content.status", everyItem(equalTo("PRESENT")));
+		admin().get("/api/v1/attendance?size=100&status=ABSENT&classroomPublicId=" + classroomA).then()
+				.body("data.content.publicId", not(hasItem(attendanceOfA)));
+	}
+
+	@Test
+	void attendanceFilters_composeWithTheTeachersScopeInsteadOfLiftingIt() {
+		as(classTeacherUser, "TEACHER").get("/api/v1/attendance?size=100&classroomPublicId=" + classroomA).then()
+				.statusCode(HttpStatus.OK.value())
+				.body("data.content.publicId", hasItem(attendanceOfA));
+		as(classTeacherUser, "TEACHER").get("/api/v1/attendance?size=100&classroomPublicId=" + classroomB).then()
+				.statusCode(HttpStatus.OK.value())
+				.body("data.content", hasSize(0));
+		as(classTeacherUser, "TEACHER").get("/api/v1/attendance?size=100&studentPublicId=" + studentB).then()
+				.body("data.content", hasSize(0));
+		as(unassignedTeacherUser, "TEACHER").get("/api/v1/attendance?size=100&classroomPublicId=" + classroomA).then()
+				.body("data.content", hasSize(0));
+		as(parentOfAUser, "PARENT").get("/api/v1/attendance?size=100&studentPublicId=" + studentB).then()
+				.body("data.content", hasSize(0));
+		as(parentOfAUser, "PARENT").get("/api/v1/attendance?size=100&studentPublicId=" + studentA).then()
+				.body("data.content.publicId", hasItem(attendanceOfA));
+	}
+
+	@Test
+	void attendanceFilters_rejectBadInput() {
+		admin().get("/api/v1/attendance?from=2026-03-01&to=2026-02-01").then()
+				.statusCode(HttpStatus.BAD_REQUEST.value())
+				.body("error.code", equalTo("INVALID_ARGUMENT"));
+		admin().get("/api/v1/attendance?from=yesterday").then().statusCode(HttpStatus.BAD_REQUEST.value());
+		admin().get("/api/v1/attendance?status=LATE_ISH").then().statusCode(HttpStatus.BAD_REQUEST.value());
+		admin().get("/api/v1/attendance?classroomPublicId=" + UUID.randomUUID()).then()
+				.statusCode(HttpStatus.NOT_FOUND.value());
+		admin().get("/api/v1/attendance?studentPublicId=not-a-uuid").then()
+				.statusCode(HttpStatus.BAD_REQUEST.value());
+	}
+
+	@Test
+	void gradeFilters_narrowTheAdminsView() {
+		String mathExamA = publicIds.of(Exam.class, mathExamAId);
+		admin().get("/api/v1/grades?size=100&examPublicId=" + mathExamA).then()
+				.statusCode(HttpStatus.OK.value())
+				.body("data.content.examPublicId", everyItem(equalTo(mathExamA)))
+				.body("data.content", hasSize(1));
+		admin().get("/api/v1/grades?size=100&studentPublicId=" + studentB).then()
+				.body("data.content.studentPublicId", everyItem(equalTo(studentB)))
+				.body("data.content.examPublicId", hasItem(publicIds.of(Exam.class, mathExamBId)));
+		admin().get("/api/v1/grades?size=100&classroomPublicId=" + classroomB).then()
+				.body("data.content.examPublicId", hasItem(publicIds.of(Exam.class, mathExamBId)))
+				.body("data.content.examPublicId", not(hasItem(mathExamA)));
+	}
+
+	@Test
+	void gradeFilters_composeWithTheCallersScope() {
+		String mathExamA = publicIds.of(Exam.class, mathExamAId);
+		String englishExamA = publicIds.of(Exam.class, englishExamAId);
+		as(mathTeacherUser, "TEACHER").get("/api/v1/grades?size=100&classroomPublicId=" + classroomA).then()
+				.statusCode(HttpStatus.OK.value())
+				.body("data.content.examPublicId", hasItem(mathExamA))
+				.body("data.content.examPublicId", not(hasItem(englishExamA)));
+		as(mathTeacherUser, "TEACHER").get("/api/v1/grades?size=100&examPublicId=" + englishExamA).then()
+				.statusCode(HttpStatus.OK.value())
+				.body("data.content", hasSize(0));
+		as(mathTeacherUser, "TEACHER").get("/api/v1/grades?size=100&classroomPublicId=" + classroomB).then()
+				.body("data.content", hasSize(0));
+		// Not yet published, so even a filter that names the exact grade shows the parent nothing.
+		as(parentOfAUser, "PARENT").get("/api/v1/grades?size=100&examPublicId=" + mathExamA).then()
+				.statusCode(HttpStatus.OK.value())
+				.body("data.content", hasSize(0));
+	}
+
+	@Test
+	void examFilters_narrowByClassroomSubjectAndStatus() {
+		String mathExamA = publicIds.of(Exam.class, mathExamAId);
+		String englishExamA = publicIds.of(Exam.class, englishExamAId);
+		String mathExamB = publicIds.of(Exam.class, mathExamBId);
+		admin().get("/api/v1/exams?size=100&classroomPublicId=" + classroomA).then()
+				.statusCode(HttpStatus.OK.value())
+				.body("data.content.publicId", hasItems(mathExamA, englishExamA))
+				.body("data.content.publicId", not(hasItem(mathExamB)))
+				.body("data.content.classroomPublicId", everyItem(equalTo(classroomA)));
+		admin().get("/api/v1/exams?size=100&subjectPublicId=" + englishPublicId).then()
+				.body("data.content.publicId", hasItem(englishExamA))
+				.body("data.content.subjectPublicId", everyItem(equalTo(englishPublicId)));
+		admin().get("/api/v1/exams?size=100&classroomPublicId=" + classroomB + "&subjectPublicId=" + mathPublicId
+				+ "&status=SCHEDULED").then()
+				.body("data.content.publicId", hasItem(mathExamB))
+				.body("data.content.status", everyItem(equalTo("SCHEDULED")));
+		admin().get("/api/v1/exams?size=100&status=CANCELLED&classroomPublicId=" + classroomA).then()
+				.body("data.content", hasSize(0));
+		admin().get("/api/v1/exams?termPublicId=" + UUID.randomUUID()).then()
+				.statusCode(HttpStatus.NOT_FOUND.value());
+	}
+
+	@Test
+	void courseworkLists_coverTheCallersReachableClassroomsAndFilterWithinThem() {
+		createAssignment(as(mathTeacherUser, "TEACHER"), classroomA, mathPublicId).then()
+				.statusCode(HttpStatus.CREATED.value());
+		postLesson(as(mathTeacherUser, "TEACHER"), classroomA, mathPublicId).then()
+				.statusCode(HttpStatus.CREATED.value());
+
+		for (String path : new String[] { "assignments", "lessons" }) {
+			as(studentAUser, "STUDENT").get("/api/v1/" + path + "?size=100").then()
+					.statusCode(HttpStatus.OK.value())
+					.body("data.content", hasSize(org.hamcrest.Matchers.greaterThanOrEqualTo(1)))
+					.body("data.content.classroomPublicId", everyItem(equalTo(classroomA)));
+			as(studentAUser, "STUDENT").get("/api/v1/" + path + "?size=100&subjectPublicId=" + englishPublicId).then()
+					.body("data.content", hasSize(0));
+			as(studentAUser, "STUDENT").get("/api/v1/" + path + "?size=100&subjectPublicId=" + mathPublicId).then()
+					.body("data.content.subjectPublicId", everyItem(equalTo(mathPublicId)))
+					.body("data.content", hasSize(org.hamcrest.Matchers.greaterThanOrEqualTo(1)));
+			as(unassignedTeacherUser, "TEACHER").get("/api/v1/" + path + "?size=100").then()
+					.statusCode(HttpStatus.OK.value())
+					.body("data.content", hasSize(0));
+			as(classTeacherUser, "TEACHER").get("/api/v1/" + path + "?size=100&classroomPublicId=" + classroomB)
+					.then().statusCode(HttpStatus.FORBIDDEN.value());
+			admin().get("/api/v1/" + path + "?size=100&classroomPublicId=" + classroomA).then()
+					.statusCode(HttpStatus.OK.value())
+					.body("data.content", hasSize(org.hamcrest.Matchers.greaterThanOrEqualTo(1)));
+		}
+	}
+
+	@Test
+	void courseworkLists_filterByDate() {
+		createAssignment(as(mathTeacherUser, "TEACHER"), classroomA, mathPublicId).then()
+				.statusCode(HttpStatus.CREATED.value());
+		postLesson(as(mathTeacherUser, "TEACHER"), classroomA, mathPublicId).then()
+				.statusCode(HttpStatus.CREATED.value());
+		String today = LocalDate.now().toString();
+
+		// Assignments are due 2026-12-01; lessons are stamped with the day they are posted.
+		admin().get("/api/v1/assignments?size=100&from=2026-12-01&to=2026-12-31").then()
+				.body("data.content.dueDate", everyItem(equalTo("2026-12-01")))
+				.body("data.content", hasSize(org.hamcrest.Matchers.greaterThanOrEqualTo(1)));
+		admin().get("/api/v1/assignments?size=100&from=2027-01-01").then().body("data.content", hasSize(0));
+		admin().get("/api/v1/lessons?size=100&from=" + today + "&to=" + today).then()
+				.body("data.content", hasSize(org.hamcrest.Matchers.greaterThanOrEqualTo(1)));
+		admin().get("/api/v1/lessons?size=100&to=" + LocalDate.now().minusDays(1)).then()
+				.body("data.content", hasSize(0));
+		admin().get("/api/v1/lessons?from=2026-03-01&to=2026-02-01").then()
+				.statusCode(HttpStatus.BAD_REQUEST.value());
 	}
 
 	// ---- fixture helpers ----
@@ -408,6 +570,13 @@ class AcademicScopeE2ETest extends SchoolIntegrationTestBase {
 						+ publicIds.of(Classroom.class, classroomId) + "\",\"attendanceDate\":\""
 						+ date + "\",\"status\":\"PRESENT\"}")
 				.post("/api/v1/attendance");
+	}
+
+	private Response postLesson(RequestSpecification caller, String classroomPublicId, String subjectPublicId) {
+		return caller
+				.body("{\"classroomPublicId\":\"" + classroomPublicId + "\",\"subjectPublicId\":\"" + subjectPublicId
+						+ "\",\"title\":\"Fractions\",\"description\":\"Chapter 3\"}")
+				.post("/api/v1/lessons");
 	}
 
 	private Response createAssignment(RequestSpecification caller, String classroomPublicId,

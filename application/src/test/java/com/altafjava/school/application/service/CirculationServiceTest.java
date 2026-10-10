@@ -21,6 +21,7 @@ import com.altafjava.platform.core.exception.BusinessException;
 import com.altafjava.platform.core.tenant.TenantContext;
 import com.altafjava.platform.core.tenant.TenantType;
 import com.altafjava.school.application.library.ReservationAllocator;
+import com.altafjava.school.application.reference.PublicIdLookup;
 import com.altafjava.school.domain.library.model.BookCopy;
 import com.altafjava.school.domain.library.model.BookCopyStatus;
 import com.altafjava.school.domain.library.model.BookReservation;
@@ -49,13 +50,15 @@ class CirculationServiceTest {
 	private BookReservationRepository bookReservationRepository;
 	@Mock
 	private ReservationAllocator reservationAllocator;
+	@Mock
+	private PublicIdLookup publicIdLookup;
 
 	private CirculationService circulationService;
 
 	@BeforeEach
 	void setUp() {
 		circulationService = new CirculationService(circulationRepository, bookCopyRepository, studentRepository,
-				tenantSettingOverrideService, bookReservationRepository, reservationAllocator);
+				tenantSettingOverrideService, bookReservationRepository, reservationAllocator, publicIdLookup);
 		TenantContext.ForTesting.setCurrentTenant(1L, null, null, TenantType.SHARED);
 	}
 

@@ -1,5 +1,6 @@
 package com.altafjava.school.domain.classroom.repository;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -12,17 +13,22 @@ import com.altafjava.school.domain.classroom.model.Classroom;
 
 public interface ClassroomRepository extends JpaRepository<Classroom, Long> {
 
+	List<Classroom> findAllByIdInAndTenantId(Collection<Long> ids, Long tenantId);
+
 	// Blank q matches everything; pattern comes from LikePattern.contains.
 	@Query("""
 			SELECT c FROM Classroom c
 			WHERE c.tenantId = :tenantId
+			  AND (:academicYearId IS NULL OR c.academicYearId = :academicYearId)
+			  AND (:grade IS NULL OR c.grade = :grade)
 			  AND (:pattern IS NULL
 			       OR LOWER(c.classCode) LIKE :pattern ESCAPE '!'
 			       OR LOWER(c.grade) LIKE :pattern ESCAPE '!'
 			       OR LOWER(c.section) LIKE :pattern ESCAPE '!'
 			       OR LOWER(CONCAT(c.grade, ' ', c.section)) LIKE :pattern ESCAPE '!')
 			""")
-	Page<Classroom> search(@Param("tenantId") Long tenantId, @Param("pattern") String pattern, Pageable pageable);
+	Page<Classroom> search(@Param("tenantId") Long tenantId, @Param("academicYearId") Long academicYearId,
+			@Param("grade") String grade, @Param("pattern") String pattern, Pageable pageable);
 
 	Page<Classroom> findAllByTenantId(Long tenantId, Pageable pageable);
 

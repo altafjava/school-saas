@@ -1,5 +1,6 @@
 package com.altafjava.school.api.controller;
 
+import java.time.LocalDate;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -21,6 +22,8 @@ import com.altafjava.school.api.dto.response.HolidayResponse;
 import com.altafjava.school.api.mapper.HolidayMapper;
 import com.altafjava.school.api.support.PlatformPageMapper;
 import com.altafjava.school.api.support.SpringDataPageableResolver;
+import com.altafjava.school.application.filter.DateWindow;
+import com.altafjava.school.application.filter.HolidayFilter;
 import com.altafjava.school.application.service.HolidayService;
 
 // The tenant's school-calendar holiday list — feeds attendance-percentage and leave-day
@@ -47,9 +50,14 @@ public class HolidayController implements HolidayApi {
 	@PreAuthorize("@permissionAuthorizationService.hasPermission('HOLIDAY_READ')")
 	public ApiResponse<com.altafjava.platform.core.model.Page<HolidayResponse>> list(
 			@RequestParam(defaultValue = "0") int page,
-			@RequestParam(defaultValue = "20") int size) {
+			@RequestParam(defaultValue = "20") int size,
+			@RequestParam(required = false) LocalDate from,
+			@RequestParam(required = false) LocalDate to,
+			@RequestParam(required = false) String q) {
 		return ApiResponse.success(PlatformPageMapper.toPlatformPage(
-				holidayService.list(pageableResolver.resolve(page, size)).map(holidayMapper::toResponse)));
+				holidayService
+						.list(new HolidayFilter(new DateWindow(from, to), q), pageableResolver.resolve(page, size))
+						.map(holidayMapper::toResponse)));
 	}
 
 	@Override

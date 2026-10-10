@@ -16,9 +16,16 @@ public interface BookReservationRepository extends JpaRepository<BookReservation
 
 	Optional<BookReservation> findByPublicIdAndTenantId(UUID publicId, Long tenantId);
 
-	Page<BookReservation> findAllByBookIdAndTenantId(Long bookId, Long tenantId, Pageable pageable);
-
-	Page<BookReservation> findAllByStudentIdAndTenantId(Long studentId, Long tenantId, Pageable pageable);
+	// Every filter is optional (null matches all).
+	@Query("""
+			SELECT r FROM BookReservation r
+			WHERE r.tenantId = :tenantId
+			  AND (:bookId IS NULL OR r.bookId = :bookId)
+			  AND (:studentId IS NULL OR r.studentId = :studentId)
+			  AND (:status IS NULL OR r.status = :status)
+			""")
+	Page<BookReservation> search(@Param("tenantId") Long tenantId, @Param("bookId") Long bookId,
+			@Param("studentId") Long studentId, @Param("status") ReservationStatus status, Pageable pageable);
 
 	// Oldest first, so the longest-waiting member is served first.
 	Optional<BookReservation> findFirstByBookIdAndStatusAndTenantIdOrderByReservedAtAscIdAsc(Long bookId,

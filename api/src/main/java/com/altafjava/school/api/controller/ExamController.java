@@ -25,7 +25,9 @@ import com.altafjava.school.api.mapper.ExamMapper;
 import com.altafjava.school.api.support.PlatformPageMapper;
 import com.altafjava.school.api.support.SortableBy;
 import com.altafjava.school.api.support.SpringDataPageableResolver;
+import com.altafjava.school.application.filter.ExamFilter;
 import com.altafjava.school.application.service.ExamService;
+import com.altafjava.school.domain.exam.model.ExamStatus;
 
 @RestController
 @RequestMapping("/api/v1/exams")
@@ -48,9 +50,14 @@ public class ExamController implements ExamApi {
 	@SortableBy({ "title", "scheduledAt", "status", "maxMarks" })
 	public ApiResponse<com.altafjava.platform.core.model.Page<ExamResponse>> list(
 			@RequestParam(defaultValue = "0") int page,
-			@RequestParam(defaultValue = "20") int size) {
-		return ApiResponse
-				.success(PlatformPageMapper.toPlatformPage(examService.listExams(pageableResolver.resolve(page, size))
+			@RequestParam(defaultValue = "20") int size,
+			@RequestParam(required = false) String classroomPublicId,
+			@RequestParam(required = false) String termPublicId,
+			@RequestParam(required = false) String subjectPublicId,
+			@RequestParam(required = false) ExamStatus status) {
+		ExamFilter filter = new ExamFilter(classroomPublicId, termPublicId, subjectPublicId, status);
+		return ApiResponse.success(PlatformPageMapper
+				.toPlatformPage(examService.listExams(filter, pageableResolver.resolve(page, size))
 						.map(examMapper::toResponse)));
 	}
 

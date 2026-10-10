@@ -1,5 +1,6 @@
 package com.altafjava.school.api.controller;
 
+import java.time.DayOfWeek;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -20,6 +21,7 @@ import com.altafjava.school.api.dto.response.TimetableEntryResponse;
 import com.altafjava.school.api.mapper.TimetableEntryMapper;
 import com.altafjava.school.api.support.PlatformPageMapper;
 import com.altafjava.school.api.support.SpringDataPageableResolver;
+import com.altafjava.school.application.filter.TimetableEntryFilter;
 import com.altafjava.school.application.service.TimetableService;
 
 @RestController
@@ -43,10 +45,20 @@ public class TimetableController implements TimetableApi {
 	@PreAuthorize("@permissionAuthorizationService.hasPermission('TIMETABLE_READ')")
 	public ApiResponse<com.altafjava.platform.core.model.Page<TimetableEntryResponse>> list(
 			@RequestParam(defaultValue = "0") int page,
-			@RequestParam(defaultValue = "20") int size) {
+			@RequestParam(defaultValue = "20") int size,
+			@RequestParam(required = false) String classroomPublicId,
+			@RequestParam(required = false) String teacherPublicId,
+			@RequestParam(required = false) String subjectPublicId,
+			@RequestParam(required = false) DayOfWeek dayOfWeek) {
 		return ApiResponse.success(
-				PlatformPageMapper.toPlatformPage(timetableService.listEntries(pageableResolver.resolve(page, size))
-						.map(timetableEntryMapper::toResponse)));
+				PlatformPageMapper
+						.toPlatformPage(
+								timetableService
+										.listEntries(
+												new TimetableEntryFilter(classroomPublicId, teacherPublicId,
+														subjectPublicId, dayOfWeek),
+												pageableResolver.resolve(page, size))
+										.map(timetableEntryMapper::toResponse)));
 	}
 
 	@Override

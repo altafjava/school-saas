@@ -44,9 +44,10 @@ public class RoomController implements RoomApi {
 	public ApiResponse<com.altafjava.platform.core.model.Page<RoomResponse>> listForBuilding(
 			@RequestParam String hostelBuildingPublicId,
 			@RequestParam(defaultValue = "0") int page,
-			@RequestParam(defaultValue = "20") int size) {
+			@RequestParam(defaultValue = "20") int size,
+			@RequestParam(required = false) String q) {
 		return ApiResponse.success(PlatformPageMapper.toPlatformPage(
-				roomService.listForBuilding(hostelBuildingPublicId, pageableResolver.resolve(page, size))
+				roomService.listForBuilding(hostelBuildingPublicId, q, pageableResolver.resolve(page, size))
 						.map(roomMapper::toResponse)));
 	}
 

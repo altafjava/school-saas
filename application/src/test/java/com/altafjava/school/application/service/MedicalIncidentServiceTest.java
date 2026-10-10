@@ -31,6 +31,7 @@ import com.altafjava.platform.application.service.NotificationService;
 import com.altafjava.platform.core.security.AuthenticatedUser;
 import com.altafjava.platform.core.tenant.TenantContext;
 import com.altafjava.platform.core.tenant.TenantType;
+import com.altafjava.school.application.reference.PublicIdLookup;
 import com.altafjava.school.application.scheduler.support.StudentNotificationRecipientResolver;
 import com.altafjava.school.domain.health.model.MedicalIncident;
 import com.altafjava.school.domain.health.repository.MedicalIncidentRepository;
@@ -51,6 +52,8 @@ class MedicalIncidentServiceTest {
 	private StudentNotificationRecipientResolver recipientResolver;
 	@Mock
 	private NotificationService notificationService;
+	@Mock
+	private PublicIdLookup publicIdLookup;
 	private final ActivityLogService activityLogService = new NoOpActivityLogService();
 
 	private MedicalIncidentService medicalIncidentService;
@@ -58,7 +61,7 @@ class MedicalIncidentServiceTest {
 	@BeforeEach
 	void setUp() {
 		medicalIncidentService = new MedicalIncidentService(medicalIncidentRepository, studentRepository,
-				recipientResolver, notificationService, activityLogService);
+				recipientResolver, notificationService, activityLogService, publicIdLookup);
 		TenantContext.ForTesting.setCurrentTenant(1L, null, null, TenantType.SHARED);
 	}
 

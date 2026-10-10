@@ -16,6 +16,7 @@ import com.altafjava.platform.application.service.TenantOnboardingService;
 import com.altafjava.platform.core.exception.ResourceNotFoundException;
 import com.altafjava.platform.core.tenant.TenantContext;
 import com.altafjava.platform.domain.tenant.model.Tenant;
+import com.altafjava.school.application.filter.TermFilter;
 import com.altafjava.school.application.service.AcademicYearService;
 import com.altafjava.school.application.service.TermService;
 import com.altafjava.school.base.SchoolIntegrationTestBase;
@@ -72,7 +73,7 @@ class TermTenantIsolationIntegrationTest extends SchoolIntegrationTestBase {
 				year.getPublicId().toString());
 
 		activateTenant(tenantB);
-		Page<Term> tenantBTerms = termService.listTerms(PageRequest.of(0, 100));
+		Page<Term> tenantBTerms = termService.listTerms(TermFilter.NONE, PageRequest.of(0, 100));
 
 		boolean found = tenantBTerms.getContent().stream()
 				.anyMatch(t -> tenantA.getId().equals(t.getTenantId()));

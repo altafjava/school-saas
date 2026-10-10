@@ -1,5 +1,6 @@
 package com.altafjava.school.api.controller;
 
+import java.time.LocalDate;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -22,6 +23,8 @@ import com.altafjava.school.api.dto.response.CirculationResponse;
 import com.altafjava.school.api.mapper.CirculationMapper;
 import com.altafjava.school.api.support.PlatformPageMapper;
 import com.altafjava.school.api.support.SpringDataPageableResolver;
+import com.altafjava.school.application.filter.CirculationFilter;
+import com.altafjava.school.application.filter.DateWindow;
 import com.altafjava.school.application.service.CirculationService;
 
 @RestController
@@ -43,12 +46,18 @@ public class CirculationController implements CirculationApi {
 	@Override
 	@GetMapping
 	@PreAuthorize("@permissionAuthorizationService.hasPermission('CIRCULATION_MANAGE')")
-	public ApiResponse<com.altafjava.platform.core.model.Page<CirculationResponse>> listForStudent(
-			@RequestParam String studentPublicId,
+	public ApiResponse<com.altafjava.platform.core.model.Page<CirculationResponse>> list(
 			@RequestParam(defaultValue = "0") int page,
-			@RequestParam(defaultValue = "20") int size) {
-		return ApiResponse.success(PlatformPageMapper
-				.toPlatformPage(circulationService.listForStudent(studentPublicId, pageableResolver.resolve(page, size))
+			@RequestParam(defaultValue = "20") int size,
+			@RequestParam(required = false) String studentPublicId,
+			@RequestParam(required = false) String bookPublicId,
+			@RequestParam(required = false) Boolean returned,
+			@RequestParam(required = false) LocalDate from,
+			@RequestParam(required = false) LocalDate to) {
+		CirculationFilter filter = new CirculationFilter(studentPublicId, bookPublicId, returned,
+				new DateWindow(from, to));
+		return ApiResponse.success(PlatformPageMapper.toPlatformPage(
+				circulationService.list(filter, pageableResolver.resolve(page, size))
 						.map(circulationMapper::toResponse)));
 	}
 

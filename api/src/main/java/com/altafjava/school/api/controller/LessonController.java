@@ -1,10 +1,10 @@
 package com.altafjava.school.api.controller;
 
+import java.time.LocalDate;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -18,6 +18,8 @@ import com.altafjava.school.api.dto.response.LessonResponse;
 import com.altafjava.school.api.mapper.LessonMapper;
 import com.altafjava.school.api.support.PlatformPageMapper;
 import com.altafjava.school.api.support.SpringDataPageableResolver;
+import com.altafjava.school.application.filter.CourseworkFilter;
+import com.altafjava.school.application.filter.DateWindow;
 import com.altafjava.school.application.service.LessonService;
 
 @RestController
@@ -50,14 +52,18 @@ public class LessonController implements LessonApi {
 	}
 
 	@Override
-	@GetMapping("/classroom/{classroomPublicId}")
+	@GetMapping
 	@PreAuthorize("@permissionAuthorizationService.hasPermission('LESSON_READ')")
-	public ApiResponse<com.altafjava.platform.core.model.Page<LessonResponse>> listByClassroom(
-			@PathVariable String classroomPublicId,
+	public ApiResponse<com.altafjava.platform.core.model.Page<LessonResponse>> list(
 			@RequestParam(defaultValue = "0") int page,
-			@RequestParam(defaultValue = "20") int size) {
+			@RequestParam(defaultValue = "20") int size,
+			@RequestParam(required = false) String classroomPublicId,
+			@RequestParam(required = false) String subjectPublicId,
+			@RequestParam(required = false) LocalDate from,
+			@RequestParam(required = false) LocalDate to) {
+		CourseworkFilter filter = new CourseworkFilter(classroomPublicId, subjectPublicId, new DateWindow(from, to));
 		return ApiResponse.success(PlatformPageMapper
-				.toPlatformPage(lessonService.listByClassroom(classroomPublicId, pageableResolver.resolve(page, size))
+				.toPlatformPage(lessonService.listLessons(filter, pageableResolver.resolve(page, size))
 						.map(lessonMapper::toResponse)));
 	}
 }

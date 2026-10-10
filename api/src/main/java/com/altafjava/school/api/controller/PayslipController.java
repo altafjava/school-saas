@@ -1,7 +1,5 @@
 package com.altafjava.school.api.controller;
 
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
@@ -17,8 +15,9 @@ import com.altafjava.school.api.mapper.PayslipMapper;
 import com.altafjava.school.api.support.PlatformPageMapper;
 import com.altafjava.school.api.support.SortableBy;
 import com.altafjava.school.api.support.SpringDataPageableResolver;
+import com.altafjava.school.application.filter.PayslipFilter;
 import com.altafjava.school.application.service.PayslipService;
-import com.altafjava.school.domain.payroll.model.Payslip;
+import com.altafjava.school.domain.payroll.model.PayslipStatus;
 
 @RestController
 @RequestMapping("/api/v1/payslips")
@@ -43,12 +42,13 @@ public class PayslipController implements PayslipApi {
 	public ApiResponse<com.altafjava.platform.core.model.Page<PayslipResponse>> list(
 			@RequestParam(required = false) String employeePublicId,
 			@RequestParam(defaultValue = "0") int page,
-			@RequestParam(defaultValue = "20") int size) {
-		Pageable pageable = pageableResolver.resolve(page, size);
-		Page<Payslip> payslips = employeePublicId != null
-				? payslipService.listForEmployee(employeePublicId, pageable)
-				: payslipService.listAll(pageable);
-		return ApiResponse.success(PlatformPageMapper.toPlatformPage(payslips.map(payslipMapper::toResponse)));
+			@RequestParam(defaultValue = "20") int size,
+			@RequestParam(required = false) Integer payYear,
+			@RequestParam(required = false) Integer payMonth,
+			@RequestParam(required = false) PayslipStatus status) {
+		PayslipFilter filter = new PayslipFilter(employeePublicId, payYear, payMonth, status);
+		return ApiResponse.success(PlatformPageMapper.toPlatformPage(
+				payslipService.list(filter, pageableResolver.resolve(page, size)).map(payslipMapper::toResponse)));
 	}
 
 	@Override

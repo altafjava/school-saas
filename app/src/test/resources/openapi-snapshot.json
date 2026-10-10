@@ -7822,6 +7822,13 @@
             "default" : 20
           }
         }, {
+          "name" : "q",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
           "name" : "sort",
           "in" : "query",
           "description" : "Repeatable, `field` or `field,asc|desc`, at most 3 fields. Sortable: createdAt, updatedAt.",
@@ -7987,6 +7994,13 @@
             "type" : "integer",
             "format" : "int32",
             "default" : 20
+          }
+        }, {
+          "name" : "q",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
           }
         }, {
           "name" : "sort",
@@ -9118,6 +9132,35 @@
             "default" : 20
           }
         }, {
+          "name" : "classroomPublicId",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "name" : "teacherPublicId",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "name" : "subjectPublicId",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "name" : "dayOfWeek",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "type" : "string",
+            "enum" : [ "MONDAY", "TUESDAY", "WEDNESDAY", "THURSDAY", "FRIDAY", "SATURDAY", "SUNDAY" ]
+          }
+        }, {
           "name" : "sort",
           "in" : "query",
           "description" : "Repeatable, `field` or `field,asc|desc`, at most 3 fields. Sortable: createdAt, updatedAt.",
@@ -9308,6 +9351,13 @@
             "default" : 20
           }
         }, {
+          "name" : "q",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
           "name" : "sort",
           "in" : "query",
           "description" : "Repeatable, `field` or `field,asc|desc`, at most 3 fields. Sortable: category, createdAt, status, subject, updatedAt.",
@@ -9472,6 +9522,20 @@
             "type" : "integer",
             "format" : "int32",
             "default" : 20
+          }
+        }, {
+          "name" : "academicYearPublicId",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "name" : "q",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
           }
         }, {
           "name" : "sort",
@@ -11181,6 +11245,13 @@
           "schema" : {
             "type" : "string",
             "enum" : [ "ACTIVE", "SUSPENDED", "GRADUATED", "WITHDRAWN", "TRANSFERRED" ]
+          }
+        }, {
+          "name" : "classroomPublicId",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
           }
         }, {
           "name" : "q",
@@ -12989,6 +13060,13 @@
             "default" : 20
           }
         }, {
+          "name" : "q",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
           "name" : "sort",
           "in" : "query",
           "description" : "Repeatable, `field` or `field,asc|desc`, at most 3 fields. Sortable: createdAt, updatedAt.",
@@ -13322,6 +13400,13 @@
             "type" : "integer",
             "format" : "int32",
             "default" : 20
+          }
+        }, {
+          "name" : "q",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
           }
         }, {
           "name" : "sort",
@@ -14565,6 +14650,13 @@
             "default" : 20
           }
         }, {
+          "name" : "q",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
           "name" : "sort",
           "in" : "query",
           "description" : "Repeatable, `field` or `field,asc|desc`, at most 3 fields. Sortable: createdAt, updatedAt.",
@@ -14729,6 +14821,44 @@
             "type" : "integer",
             "format" : "int32",
             "default" : 20
+          }
+        }, {
+          "name" : "classroomPublicId",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "name" : "studentPublicId",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "name" : "from",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "type" : "string",
+            "format" : "date"
+          }
+        }, {
+          "name" : "to",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "type" : "string",
+            "format" : "date"
+          }
+        }, {
+          "name" : "status",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "type" : "string",
+            "enum" : [ "PRESENT", "ABSENT", "LATE", "EXCUSED" ]
           }
         }, {
           "name" : "sort",
@@ -15799,6 +15929,29 @@
             "default" : 20
           }
         }, {
+          "name" : "studentPublicId",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "name" : "from",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "type" : "string",
+            "format" : "date"
+          }
+        }, {
+          "name" : "to",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "type" : "string",
+            "format" : "date"
+          }
+        }, {
           "name" : "sort",
           "in" : "query",
           "description" : "Repeatable, `field` or `field,asc|desc`, at most 3 fields. Sortable: createdAt, updatedAt.",
@@ -15942,6 +16095,129 @@
       }
     },
     "/api/v1/lessons" : {
+      "get" : {
+        "tags" : [ "Lesson" ],
+        "summary" : "List",
+        "description" : "Filter by classroom, subject and a date range (due date for assignments, posting date for lessons). Without a classroom, covers the classrooms the caller can reach.",
+        "operationId" : "lessonList",
+        "parameters" : [ {
+          "name" : "page",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int32",
+            "default" : 0
+          }
+        }, {
+          "name" : "size",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int32",
+            "default" : 20
+          }
+        }, {
+          "name" : "classroomPublicId",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "name" : "subjectPublicId",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "name" : "from",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "type" : "string",
+            "format" : "date"
+          }
+        }, {
+          "name" : "to",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "type" : "string",
+            "format" : "date"
+          }
+        }, {
+          "name" : "sort",
+          "in" : "query",
+          "description" : "Repeatable, `field` or `field,asc|desc`, at most 3 fields. Sortable: createdAt, updatedAt.",
+          "required" : false,
+          "schema" : {
+            "type" : "array",
+            "items" : {
+              "type" : "string"
+            }
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiResponsePageLessonResponse"
+                }
+              }
+            }
+          },
+          "400" : {
+            "description" : "Validation failed or a business rule rejected the request",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "401" : {
+            "description" : "Missing, expired or revoked access token",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "403" : {
+            "description" : "The caller lacks the required permission",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "500" : {
+            "description" : "Unexpected error; quote error.traceId when reporting it",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "security" : [ {
+          "bearerAuth" : [ ]
+        }, {
+          "tenantHeader" : [ ]
+        } ]
+      },
       "post" : {
         "tags" : [ "Lesson" ],
         "summary" : "Post",
@@ -16037,6 +16313,13 @@
             "type" : "integer",
             "format" : "int32",
             "default" : 20
+          }
+        }, {
+          "name" : "q",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
           }
         }, {
           "name" : "sort",
@@ -16203,6 +16486,44 @@
             "type" : "integer",
             "format" : "int32",
             "default" : 20
+          }
+        }, {
+          "name" : "employeePublicId",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "name" : "leaveTypePublicId",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "name" : "status",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "type" : "string",
+            "enum" : [ "PENDING", "APPROVED", "REJECTED", "CANCELLED" ]
+          }
+        }, {
+          "name" : "from",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "type" : "string",
+            "format" : "date"
+          }
+        }, {
+          "name" : "to",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "type" : "string",
+            "format" : "date"
           }
         }, {
           "name" : "sort",
@@ -16372,6 +16693,13 @@
             "default" : 20
           }
         }, {
+          "name" : "q",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
           "name" : "sort",
           "in" : "query",
           "description" : "Repeatable, `field` or `field,asc|desc`, at most 3 fields. Sortable: createdAt, updatedAt.",
@@ -16536,6 +16864,29 @@
             "type" : "integer",
             "format" : "int32",
             "default" : 20
+          }
+        }, {
+          "name" : "from",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "type" : "string",
+            "format" : "date"
+          }
+        }, {
+          "name" : "to",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "type" : "string",
+            "format" : "date"
+          }
+        }, {
+          "name" : "q",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
           }
         }, {
           "name" : "sort",
@@ -17190,6 +17541,13 @@
             "default" : 20
           }
         }, {
+          "name" : "q",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
           "name" : "sort",
           "in" : "query",
           "description" : "Repeatable, `field` or `field,asc|desc`, at most 3 fields. Sortable: createdAt, updatedAt.",
@@ -17355,6 +17713,27 @@
             "type" : "integer",
             "format" : "int32",
             "default" : 20
+          }
+        }, {
+          "name" : "examPublicId",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "name" : "studentPublicId",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "name" : "classroomPublicId",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
           }
         }, {
           "name" : "sort",
@@ -17658,6 +18037,13 @@
             "type" : "integer",
             "format" : "int32",
             "default" : 20
+          }
+        }, {
+          "name" : "q",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
           }
         }, {
           "name" : "sort",
@@ -18025,6 +18411,44 @@
             "type" : "integer",
             "format" : "int32",
             "default" : 20
+          }
+        }, {
+          "name" : "studentPublicId",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "name" : "feeStructurePublicId",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "name" : "from",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "type" : "string",
+            "format" : "date"
+          }
+        }, {
+          "name" : "to",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "type" : "string",
+            "format" : "date"
+          }
+        }, {
+          "name" : "paymentSource",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "type" : "string",
+            "enum" : [ "MANUAL", "GATEWAY" ]
           }
         }, {
           "name" : "sort",
@@ -18634,6 +19058,35 @@
             "default" : 20
           }
         }, {
+          "name" : "classroomPublicId",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "name" : "termPublicId",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "name" : "subjectPublicId",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "name" : "status",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "type" : "string",
+            "enum" : [ "SCHEDULED", "COMPLETED", "CANCELLED" ]
+          }
+        }, {
           "name" : "sort",
           "in" : "query",
           "description" : "Repeatable, `field` or `field,asc|desc`, at most 3 fields. Sortable: createdAt, maxMarks, scheduledAt, status, title, updatedAt.",
@@ -19075,6 +19528,29 @@
             "default" : 20
           }
         }, {
+          "name" : "from",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "type" : "string",
+            "format" : "date"
+          }
+        }, {
+          "name" : "to",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "type" : "string",
+            "format" : "date"
+          }
+        }, {
+          "name" : "q",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
           "name" : "sort",
           "in" : "query",
           "description" : "Repeatable, `field` or `field,asc|desc`, at most 3 fields. Sortable: createdAt, eventDate, title, updatedAt.",
@@ -19459,6 +19935,13 @@
           }
         }, {
           "name" : "q",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "name" : "departmentPublicId",
           "in" : "query",
           "required" : false,
           "schema" : {
@@ -19898,6 +20381,37 @@
             "default" : 20
           }
         }, {
+          "name" : "studentPublicId",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "name" : "severity",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "type" : "string",
+            "enum" : [ "MINOR", "MAJOR", "SEVERE" ]
+          }
+        }, {
+          "name" : "from",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "type" : "string",
+            "format" : "date"
+          }
+        }, {
+          "name" : "to",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "type" : "string",
+            "format" : "date"
+          }
+        }, {
           "name" : "sort",
           "in" : "query",
           "description" : "Repeatable, `field` or `field,asc|desc`, at most 3 fields. Sortable: createdAt, updatedAt.",
@@ -20210,6 +20724,13 @@
             "type" : "integer",
             "format" : "int32",
             "default" : 20
+          }
+        }, {
+          "name" : "q",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
           }
         }, {
           "name" : "sort",
@@ -20676,6 +21197,13 @@
             "default" : 20
           }
         }, {
+          "name" : "q",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
           "name" : "sort",
           "in" : "query",
           "description" : "Repeatable, `field` or `field,asc|desc`, at most 3 fields. Sortable: createdAt, updatedAt.",
@@ -20842,6 +21370,36 @@
             "default" : 20
           }
         }, {
+          "name" : "studentPublicId",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "name" : "followUpRequired",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "type" : "boolean"
+          }
+        }, {
+          "name" : "from",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "type" : "string",
+            "format" : "date"
+          }
+        }, {
+          "name" : "to",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "type" : "string",
+            "format" : "date"
+          }
+        }, {
           "name" : "sort",
           "in" : "query",
           "description" : "Repeatable, `field` or `field,asc|desc`, at most 3 fields. Sortable: createdAt, updatedAt.",
@@ -21006,6 +21564,37 @@
             "type" : "integer",
             "format" : "int32",
             "default" : 20
+          }
+        }, {
+          "name" : "studentPublicId",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "name" : "status",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "type" : "string",
+            "enum" : [ "PENDING", "SCHEDULED", "COMPLETED", "DECLINED" ]
+          }
+        }, {
+          "name" : "from",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "type" : "string",
+            "format" : "date"
+          }
+        }, {
+          "name" : "to",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "type" : "string",
+            "format" : "date"
           }
         }, {
           "name" : "sort",
@@ -21175,6 +21764,20 @@
           }
         }, {
           "name" : "q",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "name" : "academicYearPublicId",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "name" : "grade",
           "in" : "query",
           "required" : false,
           "schema" : {
@@ -21630,6 +22233,13 @@
             "type" : "integer",
             "format" : "int32",
             "default" : 20
+          }
+        }, {
+          "name" : "q",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
           }
         }, {
           "name" : "sort",
@@ -22148,6 +22758,14 @@
             "default" : 20
           }
         }, {
+          "name" : "status",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "type" : "string",
+            "enum" : [ "QUEUED", "READY", "FULFILLED", "CANCELLED", "EXPIRED" ]
+          }
+        }, {
           "name" : "sort",
           "in" : "query",
           "description" : "Repeatable, `field` or `field,asc|desc`, at most 3 fields. Sortable: createdAt, reservedAt, status, updatedAt.",
@@ -22313,6 +22931,13 @@
             "type" : "integer",
             "format" : "int32",
             "default" : 20
+          }
+        }, {
+          "name" : "q",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
           }
         }, {
           "name" : "sort",
@@ -24760,6 +25385,44 @@
             "default" : 20
           }
         }, {
+          "name" : "classroomPublicId",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "name" : "studentPublicId",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "name" : "from",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "type" : "string",
+            "format" : "date"
+          }
+        }, {
+          "name" : "to",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "type" : "string",
+            "format" : "date"
+          }
+        }, {
+          "name" : "status",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "type" : "string",
+            "enum" : [ "PRESENT", "ABSENT", "LATE", "EXCUSED" ]
+          }
+        }, {
           "name" : "sort",
           "in" : "query",
           "description" : "Repeatable, `field` or `field,asc|desc`, at most 3 fields. Sortable: attendanceDate, createdAt, status, updatedAt.",
@@ -24987,6 +25650,129 @@
       }
     },
     "/api/v1/assignments" : {
+      "get" : {
+        "tags" : [ "Assignment" ],
+        "summary" : "List",
+        "description" : "Filter by classroom, subject and a date range (due date for assignments, posting date for lessons). Without a classroom, covers the classrooms the caller can reach.",
+        "operationId" : "assignmentList",
+        "parameters" : [ {
+          "name" : "page",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int32",
+            "default" : 0
+          }
+        }, {
+          "name" : "size",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int32",
+            "default" : 20
+          }
+        }, {
+          "name" : "classroomPublicId",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "name" : "subjectPublicId",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "name" : "from",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "type" : "string",
+            "format" : "date"
+          }
+        }, {
+          "name" : "to",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "type" : "string",
+            "format" : "date"
+          }
+        }, {
+          "name" : "sort",
+          "in" : "query",
+          "description" : "Repeatable, `field` or `field,asc|desc`, at most 3 fields. Sortable: createdAt, updatedAt.",
+          "required" : false,
+          "schema" : {
+            "type" : "array",
+            "items" : {
+              "type" : "string"
+            }
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiResponsePageAssignmentResponse"
+                }
+              }
+            }
+          },
+          "400" : {
+            "description" : "Validation failed or a business rule rejected the request",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "401" : {
+            "description" : "Missing, expired or revoked access token",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "403" : {
+            "description" : "The caller lacks the required permission",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "500" : {
+            "description" : "Unexpected error; quote error.traceId when reporting it",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "security" : [ {
+          "bearerAuth" : [ ]
+        }, {
+          "tenantHeader" : [ ]
+        } ]
+      },
       "post" : {
         "tags" : [ "Assignment" ],
         "summary" : "Create",
@@ -25283,6 +26069,21 @@
             "type" : "integer",
             "format" : "int32",
             "default" : 20
+          }
+        }, {
+          "name" : "status",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "type" : "string",
+            "enum" : [ "AVAILABLE", "IN_USE", "UNDER_MAINTENANCE", "DISPOSED" ]
+          }
+        }, {
+          "name" : "q",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
           }
         }, {
           "name" : "sort",
@@ -26072,6 +26873,28 @@
             "default" : 20
           }
         }, {
+          "name" : "graduationYear",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int32"
+          }
+        }, {
+          "name" : "active",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "type" : "boolean"
+          }
+        }, {
+          "name" : "q",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
           "name" : "sort",
           "in" : "query",
           "description" : "Repeatable, `field` or `field,asc|desc`, at most 3 fields. Sortable: createdAt, updatedAt.",
@@ -26365,6 +27188,14 @@
           "required" : false,
           "schema" : {
             "type" : "string"
+          }
+        }, {
+          "name" : "status",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "type" : "string",
+            "enum" : [ "SUBMITTED", "UNDER_REVIEW", "APPROVED", "REJECTED", "ENROLLED", "WAITLISTED" ]
           }
         }, {
           "name" : "sort",
@@ -30093,6 +30924,13 @@
             "type" : "integer",
             "format" : "int32",
             "default" : 20
+          }
+        }, {
+          "name" : "q",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
           }
         }, {
           "name" : "sort",
@@ -48779,6 +49617,79 @@
         } ]
       }
     },
+    "/api/v1/students/{publicId}/guardians" : {
+      "get" : {
+        "tags" : [ "Student" ],
+        "summary" : "Guardians of a student",
+        "description" : "Every guardian linked to the student with the relationship, primary-contact flag, pickup authorization and custody restriction. Staff-facing: carries contact details.",
+        "operationId" : "studentGuardians",
+        "parameters" : [ {
+          "name" : "publicId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiResponseListStudentGuardianResponse"
+                }
+              }
+            }
+          },
+          "401" : {
+            "description" : "Missing, expired or revoked access token",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "403" : {
+            "description" : "The caller lacks the required permission",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "404" : {
+            "description" : "The resource does not exist in the caller's tenant",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "500" : {
+            "description" : "Unexpected error; quote error.traceId when reporting it",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "security" : [ {
+          "bearerAuth" : [ ]
+        }, {
+          "tenantHeader" : [ ]
+        } ]
+      }
+    },
     "/api/v1/students/{publicId}/grades" : {
       "get" : {
         "tags" : [ "Student" ],
@@ -50145,6 +51056,30 @@
             "default" : 20
           }
         }, {
+          "name" : "payYear",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int32"
+          }
+        }, {
+          "name" : "payMonth",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int32"
+          }
+        }, {
+          "name" : "status",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "type" : "string",
+            "enum" : [ "DRAFT", "FINALIZED", "DISBURSED" ]
+          }
+        }, {
           "name" : "sort",
           "in" : "query",
           "description" : "Repeatable, `field` or `field,asc|desc`, at most 3 fields. Sortable: createdAt, netPay, payMonth, payYear, status, updatedAt.",
@@ -51113,117 +52048,6 @@
         }
       }
     },
-    "/api/v1/lessons/classroom/{classroomPublicId}" : {
-      "get" : {
-        "tags" : [ "Lesson" ],
-        "summary" : "List by classroom",
-        "operationId" : "lessonListByClassroom",
-        "parameters" : [ {
-          "name" : "classroomPublicId",
-          "in" : "path",
-          "required" : true,
-          "schema" : {
-            "type" : "string"
-          }
-        }, {
-          "name" : "page",
-          "in" : "query",
-          "required" : false,
-          "schema" : {
-            "type" : "integer",
-            "format" : "int32",
-            "default" : 0
-          }
-        }, {
-          "name" : "size",
-          "in" : "query",
-          "required" : false,
-          "schema" : {
-            "type" : "integer",
-            "format" : "int32",
-            "default" : 20
-          }
-        }, {
-          "name" : "sort",
-          "in" : "query",
-          "description" : "Repeatable, `field` or `field,asc|desc`, at most 3 fields. Sortable: createdAt, updatedAt.",
-          "required" : false,
-          "schema" : {
-            "type" : "array",
-            "items" : {
-              "type" : "string"
-            }
-          }
-        } ],
-        "responses" : {
-          "200" : {
-            "description" : "OK",
-            "content" : {
-              "application/json" : {
-                "schema" : {
-                  "$ref" : "#/components/schemas/ApiResponsePageLessonResponse"
-                }
-              }
-            }
-          },
-          "400" : {
-            "description" : "Validation failed or a business rule rejected the request",
-            "content" : {
-              "application/json" : {
-                "schema" : {
-                  "$ref" : "#/components/schemas/ApiErrorResponse"
-                }
-              }
-            }
-          },
-          "401" : {
-            "description" : "Missing, expired or revoked access token",
-            "content" : {
-              "application/json" : {
-                "schema" : {
-                  "$ref" : "#/components/schemas/ApiErrorResponse"
-                }
-              }
-            }
-          },
-          "403" : {
-            "description" : "The caller lacks the required permission",
-            "content" : {
-              "application/json" : {
-                "schema" : {
-                  "$ref" : "#/components/schemas/ApiErrorResponse"
-                }
-              }
-            }
-          },
-          "404" : {
-            "description" : "The resource does not exist in the caller's tenant",
-            "content" : {
-              "application/json" : {
-                "schema" : {
-                  "$ref" : "#/components/schemas/ApiErrorResponse"
-                }
-              }
-            }
-          },
-          "500" : {
-            "description" : "Unexpected error; quote error.traceId when reporting it",
-            "content" : {
-              "application/json" : {
-                "schema" : {
-                  "$ref" : "#/components/schemas/ApiErrorResponse"
-                }
-              }
-            }
-          }
-        },
-        "security" : [ {
-          "bearerAuth" : [ ]
-        }, {
-          "tenantHeader" : [ ]
-        } ]
-      }
-    },
     "/api/v1/leave-types/active" : {
       "get" : {
         "tags" : [ "Leave Type" ],
@@ -51374,6 +52198,37 @@
             "type" : "integer",
             "format" : "int32",
             "default" : 20
+          }
+        }, {
+          "name" : "leaveTypePublicId",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "name" : "status",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "type" : "string",
+            "enum" : [ "PENDING", "APPROVED", "REJECTED", "CANCELLED" ]
+          }
+        }, {
+          "name" : "from",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "type" : "string",
+            "format" : "date"
+          }
+        }, {
+          "name" : "to",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "type" : "string",
+            "format" : "date"
           }
         }, {
           "name" : "sort",
@@ -54770,15 +55625,8 @@
       "get" : {
         "tags" : [ "Circulation" ],
         "summary" : "List for student",
-        "operationId" : "circulationListForStudent",
+        "operationId" : "circulationList",
         "parameters" : [ {
-          "name" : "studentPublicId",
-          "in" : "query",
-          "required" : true,
-          "schema" : {
-            "type" : "string"
-          }
-        }, {
           "name" : "page",
           "in" : "query",
           "required" : false,
@@ -54795,6 +55643,43 @@
             "type" : "integer",
             "format" : "int32",
             "default" : 20
+          }
+        }, {
+          "name" : "studentPublicId",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "name" : "bookPublicId",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "name" : "returned",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "type" : "boolean"
+          }
+        }, {
+          "name" : "from",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "type" : "string",
+            "format" : "date"
+          }
+        }, {
+          "name" : "to",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "type" : "string",
+            "format" : "date"
           }
         }, {
           "name" : "sort",
@@ -56380,117 +57265,6 @@
               "application/json" : {
                 "schema" : {
                   "$ref" : "#/components/schemas/ApiResponsePageAttendanceCorrectionResponse"
-                }
-              }
-            }
-          },
-          "400" : {
-            "description" : "Validation failed or a business rule rejected the request",
-            "content" : {
-              "application/json" : {
-                "schema" : {
-                  "$ref" : "#/components/schemas/ApiErrorResponse"
-                }
-              }
-            }
-          },
-          "401" : {
-            "description" : "Missing, expired or revoked access token",
-            "content" : {
-              "application/json" : {
-                "schema" : {
-                  "$ref" : "#/components/schemas/ApiErrorResponse"
-                }
-              }
-            }
-          },
-          "403" : {
-            "description" : "The caller lacks the required permission",
-            "content" : {
-              "application/json" : {
-                "schema" : {
-                  "$ref" : "#/components/schemas/ApiErrorResponse"
-                }
-              }
-            }
-          },
-          "404" : {
-            "description" : "The resource does not exist in the caller's tenant",
-            "content" : {
-              "application/json" : {
-                "schema" : {
-                  "$ref" : "#/components/schemas/ApiErrorResponse"
-                }
-              }
-            }
-          },
-          "500" : {
-            "description" : "Unexpected error; quote error.traceId when reporting it",
-            "content" : {
-              "application/json" : {
-                "schema" : {
-                  "$ref" : "#/components/schemas/ApiErrorResponse"
-                }
-              }
-            }
-          }
-        },
-        "security" : [ {
-          "bearerAuth" : [ ]
-        }, {
-          "tenantHeader" : [ ]
-        } ]
-      }
-    },
-    "/api/v1/assignments/classroom/{classroomPublicId}" : {
-      "get" : {
-        "tags" : [ "Assignment" ],
-        "summary" : "List by classroom",
-        "operationId" : "assignmentListByClassroom",
-        "parameters" : [ {
-          "name" : "classroomPublicId",
-          "in" : "path",
-          "required" : true,
-          "schema" : {
-            "type" : "string"
-          }
-        }, {
-          "name" : "page",
-          "in" : "query",
-          "required" : false,
-          "schema" : {
-            "type" : "integer",
-            "format" : "int32",
-            "default" : 0
-          }
-        }, {
-          "name" : "size",
-          "in" : "query",
-          "required" : false,
-          "schema" : {
-            "type" : "integer",
-            "format" : "int32",
-            "default" : 20
-          }
-        }, {
-          "name" : "sort",
-          "in" : "query",
-          "description" : "Repeatable, `field` or `field,asc|desc`, at most 3 fields. Sortable: createdAt, updatedAt.",
-          "required" : false,
-          "schema" : {
-            "type" : "array",
-            "items" : {
-              "type" : "string"
-            }
-          }
-        } ],
-        "responses" : {
-          "200" : {
-            "description" : "OK",
-            "content" : {
-              "application/json" : {
-                "schema" : {
-                  "$ref" : "#/components/schemas/ApiResponsePageAssignmentResponse"
                 }
               }
             }
@@ -65930,6 +66704,10 @@
             "maxLength" : 255,
             "minLength" : 0
           },
+          "gender" : {
+            "type" : "string",
+            "enum" : [ "MALE", "FEMALE", "OTHER", "NOT_SPECIFIED" ]
+          },
           "joinDate" : {
             "type" : "string",
             "format" : "date"
@@ -65999,6 +66777,10 @@
           },
           "email" : {
             "type" : "string"
+          },
+          "gender" : {
+            "type" : "string",
+            "enum" : [ "MALE", "FEMALE", "OTHER", "NOT_SPECIFIED" ]
           },
           "phone" : {
             "type" : "string"
@@ -66572,6 +67354,10 @@
           "dateOfBirth" : {
             "type" : "string",
             "format" : "date"
+          },
+          "gender" : {
+            "type" : "string",
+            "enum" : [ "MALE", "FEMALE", "OTHER", "NOT_SPECIFIED" ]
           }
         },
         "required" : [ "dateOfBirth", "firstName", "lastName" ]
@@ -66593,6 +67379,24 @@
           }
         },
         "required" : [ "success" ]
+      },
+      "CurrentClassroomResponse" : {
+        "type" : "object",
+        "properties" : {
+          "publicId" : {
+            "type" : "string"
+          },
+          "name" : {
+            "type" : "string"
+          },
+          "rollNumber" : {
+            "type" : "string"
+          },
+          "academicYearPublicId" : {
+            "type" : "string"
+          }
+        },
+        "required" : [ "publicId" ]
       },
       "StudentResponse" : {
         "type" : "object",
@@ -66623,6 +67427,10 @@
             "type" : "string",
             "format" : "date"
           },
+          "gender" : {
+            "type" : "string",
+            "enum" : [ "MALE", "FEMALE", "OTHER", "NOT_SPECIFIED" ]
+          },
           "enrollmentStatus" : {
             "type" : "string"
           },
@@ -66631,6 +67439,9 @@
           },
           "photoFilePublicId" : {
             "type" : "string"
+          },
+          "currentClassroom" : {
+            "$ref" : "#/components/schemas/CurrentClassroomResponse"
           }
         },
         "required" : [ "publicId" ]
@@ -69416,6 +70227,13 @@
           },
           "receiptNumber" : {
             "type" : "string"
+          },
+          "paymentSource" : {
+            "type" : "string",
+            "enum" : [ "MANUAL", "GATEWAY" ]
+          },
+          "gatewayProviderType" : {
+            "type" : "string"
           }
         },
         "required" : [ "publicId" ]
@@ -69887,6 +70705,10 @@
             "maxLength" : 255,
             "minLength" : 0
           },
+          "gender" : {
+            "type" : "string",
+            "enum" : [ "MALE", "FEMALE", "OTHER", "NOT_SPECIFIED" ]
+          },
           "joinDate" : {
             "type" : "string",
             "format" : "date"
@@ -69933,6 +70755,10 @@
           },
           "email" : {
             "type" : "string"
+          },
+          "gender" : {
+            "type" : "string",
+            "enum" : [ "MALE", "FEMALE", "OTHER", "NOT_SPECIFIED" ]
           },
           "phone" : {
             "type" : "string"
@@ -72801,6 +73627,10 @@
             "type" : "string",
             "format" : "date"
           },
+          "applicantGender" : {
+            "type" : "string",
+            "enum" : [ "MALE", "FEMALE", "OTHER", "NOT_SPECIFIED" ]
+          },
           "guardianFirstName" : {
             "type" : "string",
             "maxLength" : 100,
@@ -72849,6 +73679,10 @@
           "applicantDateOfBirth" : {
             "type" : "string",
             "format" : "date"
+          },
+          "applicantGender" : {
+            "type" : "string",
+            "enum" : [ "MALE", "FEMALE", "OTHER", "NOT_SPECIFIED" ]
           },
           "guardianFirstName" : {
             "type" : "string"
@@ -72970,6 +73804,10 @@
           "applicantDateOfBirth" : {
             "type" : "string",
             "format" : "date"
+          },
+          "applicantGender" : {
+            "type" : "string",
+            "enum" : [ "MALE", "FEMALE", "OTHER", "NOT_SPECIFIED" ]
           },
           "guardianFirstName" : {
             "type" : "string",
@@ -74655,12 +75493,16 @@
             "type" : "string",
             "format" : "date"
           },
+          "gender" : {
+            "type" : "string",
+            "enum" : [ "MALE", "FEMALE", "OTHER", "NOT_SPECIFIED" ]
+          },
           "version" : {
             "type" : "integer",
             "format" : "int64"
           }
         },
-        "required" : [ "dateOfBirth", "firstName", "lastName", "version" ]
+        "required" : [ "dateOfBirth", "firstName", "gender", "lastName", "version" ]
       },
       "AddressRequest" : {
         "type" : "object",
@@ -75248,12 +76090,16 @@
             "maxLength" : 255,
             "minLength" : 0
           },
+          "gender" : {
+            "type" : "string",
+            "enum" : [ "MALE", "FEMALE", "OTHER", "NOT_SPECIFIED" ]
+          },
           "version" : {
             "type" : "integer",
             "format" : "int64"
           }
         },
-        "required" : [ "email", "firstName", "lastName", "version" ]
+        "required" : [ "email", "firstName", "gender", "lastName", "version" ]
       },
       "RecordDisciplineActionRequest" : {
         "type" : "object",
@@ -77612,6 +78458,74 @@
           }
         },
         "required" : [ "pageNumber", "pageSize", "totalElements" ]
+      },
+      "ApiResponseListStudentGuardianResponse" : {
+        "type" : "object",
+        "properties" : {
+          "success" : {
+            "type" : "boolean"
+          },
+          "data" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/StudentGuardianResponse"
+            }
+          },
+          "error" : {
+            "$ref" : "#/components/schemas/ApiErrorDetail"
+          },
+          "meta" : {
+            "$ref" : "#/components/schemas/ApiResponseMeta"
+          }
+        },
+        "required" : [ "success" ]
+      },
+      "StudentGuardianResponse" : {
+        "type" : "object",
+        "properties" : {
+          "linkPublicId" : {
+            "type" : "string"
+          },
+          "linkVersion" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "guardianPublicId" : {
+            "type" : "string"
+          },
+          "firstName" : {
+            "type" : "string"
+          },
+          "lastName" : {
+            "type" : "string"
+          },
+          "email" : {
+            "type" : "string"
+          },
+          "phone" : {
+            "type" : "string"
+          },
+          "relationshipType" : {
+            "type" : "string"
+          },
+          "primaryContact" : {
+            "type" : "boolean"
+          },
+          "authorizedForPickup" : {
+            "type" : "boolean"
+          },
+          "custodyRestricted" : {
+            "type" : "boolean"
+          },
+          "custodyRestrictionNote" : {
+            "type" : "string"
+          },
+          "consentGivenAt" : {
+            "type" : "string",
+            "format" : "date-time"
+          }
+        },
+        "required" : [ "authorizedForPickup", "custodyRestricted", "primaryContact" ]
       },
       "ApiResponsePageGradeResponse" : {
         "type" : "object",
@@ -81747,48 +82661,6 @@
         },
         "required" : [ "pageNumber", "pageSize", "totalElements" ]
       },
-      "ApiResponsePageSubmissionResponse" : {
-        "type" : "object",
-        "properties" : {
-          "success" : {
-            "type" : "boolean"
-          },
-          "data" : {
-            "$ref" : "#/components/schemas/PageSubmissionResponse"
-          },
-          "error" : {
-            "$ref" : "#/components/schemas/ApiErrorDetail"
-          },
-          "meta" : {
-            "$ref" : "#/components/schemas/ApiResponseMeta"
-          }
-        },
-        "required" : [ "success" ]
-      },
-      "PageSubmissionResponse" : {
-        "type" : "object",
-        "properties" : {
-          "content" : {
-            "type" : "array",
-            "items" : {
-              "$ref" : "#/components/schemas/SubmissionResponse"
-            }
-          },
-          "pageNumber" : {
-            "type" : "integer",
-            "format" : "int32"
-          },
-          "pageSize" : {
-            "type" : "integer",
-            "format" : "int32"
-          },
-          "totalElements" : {
-            "type" : "integer",
-            "format" : "int64"
-          }
-        },
-        "required" : [ "pageNumber", "pageSize", "totalElements" ]
-      },
       "ApiResponsePageAssignmentResponse" : {
         "type" : "object",
         "properties" : {
@@ -81814,6 +82686,48 @@
             "type" : "array",
             "items" : {
               "$ref" : "#/components/schemas/AssignmentResponse"
+            }
+          },
+          "pageNumber" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "pageSize" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "totalElements" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        },
+        "required" : [ "pageNumber", "pageSize", "totalElements" ]
+      },
+      "ApiResponsePageSubmissionResponse" : {
+        "type" : "object",
+        "properties" : {
+          "success" : {
+            "type" : "boolean"
+          },
+          "data" : {
+            "$ref" : "#/components/schemas/PageSubmissionResponse"
+          },
+          "error" : {
+            "$ref" : "#/components/schemas/ApiErrorDetail"
+          },
+          "meta" : {
+            "$ref" : "#/components/schemas/ApiResponseMeta"
+          }
+        },
+        "required" : [ "success" ]
+      },
+      "PageSubmissionResponse" : {
+        "type" : "object",
+        "properties" : {
+          "content" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/SubmissionResponse"
             }
           },
           "pageNumber" : {

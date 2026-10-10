@@ -1,6 +1,7 @@
 package com.altafjava.school.domain.library.repository;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -13,7 +14,23 @@ import com.altafjava.school.domain.library.model.Circulation;
 
 public interface CirculationRepository extends JpaRepository<Circulation, Long> {
 
-	Page<Circulation> findAllByStudentIdAndTenantId(Long studentId, Long tenantId, Pageable pageable);
+	// Every filter is optional (null matches all); {@code returned} true keeps handed-back loans, false those still
+	// out.
+	@Query("""
+			SELECT c FROM Circulation c
+			WHERE c.tenantId = :tenantId
+			  AND (:studentId IS NULL OR c.studentId = :studentId)
+			  AND (:bookId IS NULL OR EXISTS (SELECT 1 FROM BookCopy bc
+			                                  WHERE bc.id = c.bookCopyId AND bc.tenantId = :tenantId
+			                                    AND bc.bookId = :bookId))
+			  AND (:returned IS NULL OR (:returned = true AND c.returnedAt IS NOT NULL)
+			       OR (:returned = false AND c.returnedAt IS NULL))
+			  AND (:from IS NULL OR c.checkedOutAt >= :from)
+			  AND (:to IS NULL OR c.checkedOutAt <= :to)
+			""")
+	Page<Circulation> search(@Param("tenantId") Long tenantId, @Param("studentId") Long studentId,
+			@Param("bookId") Long bookId, @Param("returned") Boolean returned, @Param("from") LocalDate from,
+			@Param("to") LocalDate to, Pageable pageable);
 
 	Optional<Circulation> findByPublicIdAndTenantId(UUID publicId, Long tenantId);
 

@@ -11,6 +11,9 @@ import com.altafjava.platform.core.concurrency.ExpectedVersion;
 import com.altafjava.platform.core.exception.BusinessException;
 import com.altafjava.platform.core.exception.ResourceNotFoundException;
 import com.altafjava.platform.core.tenant.TenantContext;
+import com.altafjava.school.application.filter.GradeFilter;
+import com.altafjava.school.application.reference.EntityRef;
+import com.altafjava.school.application.reference.PublicIdLookup;
 import com.altafjava.school.application.security.AcademicAccessGuard;
 import com.altafjava.school.application.security.AcademicScope;
 import com.altafjava.school.application.security.AcademicScopeResolver;
@@ -41,12 +44,14 @@ public class GradeService {
 	private final AcademicAccessGuard academicAccessGuard;
 	private final ExamResultVisibilityPolicy examResultVisibilityPolicy;
 	private final GradeCalculator gradeCalculator = new GradeCalculator();
+	private final PublicIdLookup publicIdLookup;
 
 	public GradeService(GradeRepository gradeRepository, GradeCorrectionRepository gradeCorrectionRepository,
 			StudentRepository studentRepository, ExamRepository examRepository,
 			GradingScaleService gradingScaleService, StudentDataAccessGuard studentDataAccessGuard,
 			AcademicScopeResolver academicScopeResolver, AcademicAccessGuard academicAccessGuard,
-			ExamResultVisibilityPolicy examResultVisibilityPolicy) {
+			ExamResultVisibilityPolicy examResultVisibilityPolicy, PublicIdLookup publicIdLookup) {
+		this.publicIdLookup = publicIdLookup;
 		this.gradeRepository = gradeRepository;
 		this.gradeCorrectionRepository = gradeCorrectionRepository;
 		this.studentRepository = studentRepository;
@@ -61,18 +66,23 @@ public class GradeService {
 	// Narrowed to the caller's scope: every exam, the exams of subjects they teach, or their own
 	// students' published results.
 	@Transactional(readOnly = true)
-	public Page<Grade> listGrades(Pageable pageable) {
+	public Page<Grade> listGrades(GradeFilter filter, Pageable pageable) {
 		Long tenantId = TenantContext.getCurrentTenantId();
 		AcademicScope scope = academicScopeResolver.current(tenantId);
+		return gradeRepository.search(tenantId, scope.readsAllClassrooms(), taughtExamIds(tenantId, scope),
+				scope.ownStudentIds(), publicIdLookup.idOrNull(EntityRef.EXAM, filter.examPublicId()),
+				publicIdLookup.idOrNull(EntityRef.STUDENT, filter.studentPublicId()),
+				publicIdLookup.idOrNull(EntityRef.CLASSROOM, filter.classroomPublicId()), pageable);
+	}
+
+	private List<Long> taughtExamIds(Long tenantId, AcademicScope scope) {
 		if (scope.readsAllClassrooms()) {
-			return gradeRepository.findAllByTenantId(tenantId, pageable);
+			return List.of();
 		}
-		List<Long> taughtExamIds = examRepository
-				.findAllByClassroomIdInAndTenantId(scope.teaching().classroomIds(), tenantId).stream()
+		return examRepository.findAllByClassroomIdInAndTenantId(scope.teaching().classroomIds(), tenantId).stream()
 				.filter(exam -> scope.teaching().teachesSubject(exam.getClassroomId(), exam.getSubjectId()))
 				.map(Exam::getId)
 				.toList();
-		return gradeRepository.findVisible(tenantId, taughtExamIds, scope.ownStudentIds(), pageable);
 	}
 
 	@Transactional(readOnly = true)

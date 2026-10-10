@@ -10,6 +10,7 @@ import org.springframework.transaction.annotation.Transactional;
 import com.altafjava.platform.core.concurrency.ExpectedVersion;
 import com.altafjava.platform.core.exception.BusinessException;
 import com.altafjava.platform.core.exception.ResourceNotFoundException;
+import com.altafjava.platform.core.search.LikePattern;
 import com.altafjava.platform.core.tenant.TenantContext;
 import com.altafjava.school.domain.curriculum.model.Board;
 import com.altafjava.school.domain.curriculum.repository.BoardRepository;
@@ -27,8 +28,8 @@ public class BoardService {
 	}
 
 	@Transactional(readOnly = true)
-	public Page<Board> list(Pageable pageable) {
-		return boardRepository.findAllByTenantId(TenantContext.getCurrentTenantId(), pageable);
+	public Page<Board> list(String q, Pageable pageable) {
+		return boardRepository.search(TenantContext.getCurrentTenantId(), LikePattern.contains(q), pageable);
 	}
 
 	@Transactional(readOnly = true)

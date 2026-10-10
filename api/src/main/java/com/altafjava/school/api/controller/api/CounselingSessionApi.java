@@ -1,5 +1,6 @@
 package com.altafjava.school.api.controller.api;
 
+import java.time.LocalDate;
 import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -20,7 +21,11 @@ public interface CounselingSessionApi {
 	@Operation(summary = "List all")
 	public ApiResponse<com.altafjava.platform.core.model.Page<CounselingSessionResponse>> listAll(
 			@RequestParam(defaultValue = "0") int page,
-			@RequestParam(defaultValue = "20") int size);
+			@RequestParam(defaultValue = "20") int size,
+			@RequestParam(required = false) String studentPublicId,
+			@RequestParam(required = false) Boolean followUpRequired,
+			@RequestParam(required = false) LocalDate from,
+			@RequestParam(required = false) LocalDate to);
 
 	@Operation(summary = "List for student")
 	public ApiResponse<com.altafjava.platform.core.model.Page<CounselingSessionResponse>> listForStudent(

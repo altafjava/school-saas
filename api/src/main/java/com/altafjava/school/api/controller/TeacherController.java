@@ -70,6 +70,7 @@ public class TeacherController implements TeacherApi {
 				request.firstName(),
 				request.lastName(),
 				request.email(),
+				request.gender(),
 				request.joinDate())));
 	}
 }

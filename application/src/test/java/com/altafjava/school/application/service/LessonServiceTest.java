@@ -4,10 +4,13 @@ import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import java.time.LocalDate;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -21,7 +24,12 @@ import org.springframework.security.access.AccessDeniedException;
 import com.altafjava.platform.core.exception.ResourceNotFoundException;
 import com.altafjava.platform.core.tenant.TenantContext;
 import com.altafjava.platform.core.tenant.TenantType;
+import com.altafjava.school.application.filter.CourseworkFilter;
+import com.altafjava.school.application.filter.DateWindow;
+import com.altafjava.school.application.reference.EntityRef;
+import com.altafjava.school.application.reference.PublicIdLookup;
 import com.altafjava.school.application.security.AcademicAccessGuard;
+import com.altafjava.school.application.security.CourseworkReach;
 import com.altafjava.school.domain.classroom.model.Classroom;
 import com.altafjava.school.domain.classroom.repository.ClassroomRepository;
 import com.altafjava.school.domain.lms.model.Lesson;
@@ -43,14 +51,18 @@ class LessonServiceTest {
 	private SubjectRepository subjectRepository;
 	@Mock
 	private AcademicAccessGuard academicAccessGuard;
+	@Mock
+	private PublicIdLookup publicIdLookup;
 
 	private LessonService lessonService;
 
 	@BeforeEach
 	void setUp() {
 		lessonService = new LessonService(lessonRepository, classroomRepository, subjectRepository,
-				academicAccessGuard);
+				academicAccessGuard, publicIdLookup);
 		TenantContext.ForTesting.setCurrentTenant(1L, null, null, TenantType.SHARED);
+		// An absent filter resolves to no id; a bare Mockito mock would answer 0L.
+		lenient().when(publicIdLookup.idOrNull(any(), any())).thenReturn(null);
 	}
 
 	@AfterEach
@@ -113,34 +125,40 @@ class LessonServiceTest {
 	}
 
 	@Test
-	void listByClassroom_withNonExistentClassroom_throwsResourceNotFound() {
-		when(classroomRepository.findByPublicIdAndTenantId(CLASSROOM_PUBLIC_ID, 1L)).thenReturn(Optional.empty());
-
-		assertThrows(ResourceNotFoundException.class,
-				() -> lessonService.listByClassroom(CLASSROOM_PUBLIC_ID.toString(), PageRequest.of(0, 20)));
-	}
-
-	@Test
-	void listByClassroom_delegatesVisibilityCheckAndReturnsLessons() {
-		when(classroomRepository.findByPublicIdAndTenantId(CLASSROOM_PUBLIC_ID, 1L))
-				.thenReturn(Optional.of(classroomWithId(5L)));
+	void listLessons_forAClassroom_requiresItToBeReachableAndFiltersByPostingDay() {
+		when(publicIdLookup.idOrNull(EntityRef.CLASSROOM, CLASSROOM_PUBLIC_ID.toString())).thenReturn(5L);
+		when(academicAccessGuard.courseworkReach(1L, 5L)).thenReturn(CourseworkReach.ALL);
+		LocalDate from = LocalDate.of(2026, 1, 1);
+		LocalDate to = LocalDate.of(2026, 1, 31);
 		Page<Lesson> expected = Page.empty();
-		when(lessonRepository.findByClassroomIdAndTenantId(5L, 1L, PageRequest.of(0, 20))).thenReturn(expected);
+		when(lessonRepository.search(1L, true, Set.of(), 5L, null, from.atStartOfDay(),
+				to.plusDays(1).atStartOfDay(), PageRequest.of(0, 20))).thenReturn(expected);
 
-		Page<Lesson> result = lessonService.listByClassroom(CLASSROOM_PUBLIC_ID.toString(), PageRequest.of(0, 20));
+		Page<Lesson> result = lessonService.listLessons(
+				new CourseworkFilter(CLASSROOM_PUBLIC_ID.toString(), null, new DateWindow(from, to)),
+				PageRequest.of(0, 20));
 
-		verify(academicAccessGuard).assertCanViewCoursework(1L, 5L);
 		assertEquals(expected, result);
 	}
 
 	@Test
-	void listByClassroom_visibilityDenied_propagatesAccessDenied() {
-		when(classroomRepository.findByPublicIdAndTenantId(CLASSROOM_PUBLIC_ID, 1L))
-				.thenReturn(Optional.of(classroomWithId(5L)));
-		org.mockito.Mockito.doThrow(new AccessDeniedException("denied")).when(academicAccessGuard)
-				.assertCanViewCoursework(1L, 5L);
+	void listLessons_forAnUnreachableClassroom_propagatesAccessDenied() {
+		when(publicIdLookup.idOrNull(EntityRef.CLASSROOM, CLASSROOM_PUBLIC_ID.toString())).thenReturn(5L);
+		when(academicAccessGuard.courseworkReach(1L, 5L)).thenThrow(new AccessDeniedException("denied"));
 
-		assertThrows(AccessDeniedException.class,
-				() -> lessonService.listByClassroom(CLASSROOM_PUBLIC_ID.toString(), PageRequest.of(0, 20)));
+		assertThrows(AccessDeniedException.class, () -> lessonService.listLessons(
+				new CourseworkFilter(CLASSROOM_PUBLIC_ID.toString(), null, DateWindow.UNBOUNDED),
+				PageRequest.of(0, 20)));
+	}
+
+	@Test
+	void listLessons_withoutAClassroom_searchesTheClassroomsTheCallerReaches() {
+		when(academicAccessGuard.courseworkReach(1L, null)).thenReturn(new CourseworkReach(false, Set.of(5L)));
+		when(lessonRepository.search(1L, false, Set.of(5L), null, null, null, null, PageRequest.of(0, 20)))
+				.thenReturn(Page.empty());
+
+		lessonService.listLessons(CourseworkFilter.NONE, PageRequest.of(0, 20));
+
+		verify(lessonRepository).search(1L, false, Set.of(5L), null, null, null, null, PageRequest.of(0, 20));
 	}
 }

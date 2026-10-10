@@ -7,7 +7,11 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import com.altafjava.platform.core.exception.ResourceNotFoundException;
+import com.altafjava.platform.core.search.LikePattern;
 import com.altafjava.platform.core.tenant.TenantContext;
+import com.altafjava.school.application.filter.TermFilter;
+import com.altafjava.school.application.reference.EntityRef;
+import com.altafjava.school.application.reference.PublicIdLookup;
 import com.altafjava.school.domain.academicyear.repository.AcademicYearRepository;
 import com.altafjava.school.domain.term.model.Term;
 import com.altafjava.school.domain.term.repository.TermRepository;
@@ -17,15 +21,20 @@ public class TermService {
 
 	private final TermRepository termRepository;
 	private final AcademicYearRepository academicYearRepository;
+	private final PublicIdLookup publicIdLookup;
 
-	public TermService(TermRepository termRepository, AcademicYearRepository academicYearRepository) {
+	public TermService(TermRepository termRepository, AcademicYearRepository academicYearRepository,
+			PublicIdLookup publicIdLookup) {
+		this.publicIdLookup = publicIdLookup;
 		this.termRepository = termRepository;
 		this.academicYearRepository = academicYearRepository;
 	}
 
 	@Transactional(readOnly = true)
-	public Page<Term> listTerms(Pageable pageable) {
-		return termRepository.findAllByTenantId(TenantContext.getCurrentTenantId(), pageable);
+	public Page<Term> listTerms(TermFilter filter, Pageable pageable) {
+		return termRepository.search(TenantContext.getCurrentTenantId(),
+				publicIdLookup.idOrNull(EntityRef.ACADEMIC_YEAR, filter.academicYearPublicId()),
+				LikePattern.contains(filter.q()), pageable);
 	}
 
 	@Transactional(readOnly = true)

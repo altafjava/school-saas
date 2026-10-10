@@ -41,9 +41,10 @@ public class AcademicYearController implements AcademicYearApi {
 	@PreAuthorize("@permissionAuthorizationService.hasPermission('ACADEMIC_YEAR_READ')")
 	public ApiResponse<com.altafjava.platform.core.model.Page<AcademicYearResponse>> list(
 			@RequestParam(defaultValue = "0") int page,
-			@RequestParam(defaultValue = "20") int size) {
+			@RequestParam(defaultValue = "20") int size,
+			@RequestParam(required = false) String q) {
 		return ApiResponse.success(PlatformPageMapper
-				.toPlatformPage(academicYearService.listAcademicYears(pageableResolver.resolve(page, size))
+				.toPlatformPage(academicYearService.listAcademicYears(q, pageableResolver.resolve(page, size))
 						.map(academicYearMapper::toResponse)));
 	}
 

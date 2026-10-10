@@ -8,6 +8,7 @@ import org.springframework.transaction.annotation.Transactional;
 import com.altafjava.platform.core.concurrency.ExpectedVersion;
 import com.altafjava.platform.core.exception.BusinessException;
 import com.altafjava.platform.core.exception.ResourceNotFoundException;
+import com.altafjava.platform.core.search.LikePattern;
 import com.altafjava.platform.core.tenant.TenantContext;
 import com.altafjava.school.domain.timetable.model.Venue;
 import com.altafjava.school.domain.timetable.model.VenueType;
@@ -21,8 +22,8 @@ public class VenueService {
 	private final VenueRepository venueRepository;
 
 	@Transactional(readOnly = true)
-	public Page<Venue> list(Pageable pageable) {
-		return venueRepository.findAllByTenantId(TenantContext.getCurrentTenantId(), pageable);
+	public Page<Venue> list(String q, Pageable pageable) {
+		return venueRepository.search(TenantContext.getCurrentTenantId(), LikePattern.contains(q), pageable);
 	}
 
 	@Transactional(readOnly = true)

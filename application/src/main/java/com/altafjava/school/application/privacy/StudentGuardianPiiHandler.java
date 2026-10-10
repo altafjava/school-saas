@@ -199,6 +199,7 @@ public class StudentGuardianPiiHandler implements DomainPiiHandler {
 		export.put("email", student.getEmail());
 		export.put("phone", student.getPhone());
 		export.put("dateOfBirth", student.getDateOfBirth());
+		export.put("gender", student.getGender());
 		return export;
 	}
 
@@ -210,6 +211,7 @@ public class StudentGuardianPiiHandler implements DomainPiiHandler {
 		export.put("lastName", employee.getLastName());
 		export.put("email", employee.getEmail());
 		export.put("phone", employee.getPhone());
+		export.put("gender", employee.getGender());
 		export.put("joinDate", employee.getJoinDate());
 		export.put("designation", employee.getDesignation());
 		return export;

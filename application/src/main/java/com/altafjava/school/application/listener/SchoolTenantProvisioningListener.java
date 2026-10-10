@@ -201,8 +201,10 @@ public class SchoolTenantProvisioningListener {
 		int year = now.getYear();
 		String name = year + "-" + (year + 1);
 
-		if (academicYearRepository.existsByNameAndTenantId(name, tenantId)) {
-			log.info("action=seed-academic-year-skipped tenantId={} name={} reason=already-exists", tenantId, name);
+		// Runs asynchronously after the tenant is created: an admin may have set up a current year by now, and a
+		// second current year would break the one-current-year rule.
+		if (academicYearRepository.existsByTenantId(tenantId)) {
+			log.info("action=seed-academic-year-skipped tenantId={} name={} reason=tenant-has-a-year", tenantId, name);
 			return;
 		}
 

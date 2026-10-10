@@ -8,17 +8,20 @@ import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVParser;
 import org.apache.commons.csv.CSVRecord;
 import org.springframework.stereotype.Service;
 import com.altafjava.school.application.student.BulkImportResult;
 import com.altafjava.school.application.student.BulkImportResult.RowFailure;
+import com.altafjava.school.domain.common.model.Gender;
 
 /**
  * Bulk student-roster CSV import (ROADMAP.md Phase 3) — the first bulk-write path in school-saas.
- * Expected columns: {@code studentCode,firstName,lastName,email,dateOfBirth} (header required;
- * {@code email}/{@code dateOfBirth} may be blank, {@code dateOfBirth} in ISO-8601 format).
+ * Expected columns: {@code studentCode,firstName,lastName,email,dateOfBirth[,gender]} (header required;
+ * {@code email}/{@code dateOfBirth} may be blank, {@code dateOfBirth} in ISO-8601 format; the optional
+ * {@code gender} is {@code MALE}, {@code FEMALE}, {@code OTHER} or blank for not specified).
  *
  * <p>
  * Each row is created via {@link StudentService#enroll} — the same validated, tested entry point
@@ -40,8 +43,8 @@ import com.altafjava.school.application.student.BulkImportResult.RowFailure;
 @Service
 public class StudentBulkImportService {
 
-	private static final List<String> REQUIRED_HEADERS = List.of("studentCode", "firstName", "lastName", "email",
-			"dateOfBirth");
+	private static final List<String> HEADERS = List.of("studentCode", "firstName", "lastName", "email",
+			"dateOfBirth", "gender");
 	private static final String UNREADABLE_ROW = "<unreadable row>";
 
 	private final StudentService studentService;
@@ -52,7 +55,7 @@ public class StudentBulkImportService {
 
 	public BulkImportResult importCsv(InputStream csvInputStream) {
 		CSVFormat format = CSVFormat.DEFAULT.builder()
-				.setHeader(REQUIRED_HEADERS.toArray(new String[0]))
+				.setHeader(HEADERS.toArray(new String[0]))
 				.setSkipHeaderRecord(true)
 				.setTrim(true)
 				.setIgnoreEmptyLines(true)
@@ -90,7 +93,19 @@ public class StudentBulkImportService {
 		String lastName = requireNonBlank(record, "lastName");
 		String email = blankToNull(safeGet(record, "email"));
 		LocalDate dateOfBirth = parseDateOrNull(safeGet(record, "dateOfBirth"));
-		studentService.enroll(studentCode, firstName, lastName, email, dateOfBirth);
+		Gender gender = parseGender(safeGet(record, "gender"));
+		studentService.enroll(studentCode, firstName, lastName, email, dateOfBirth, gender, null);
+	}
+
+	private Gender parseGender(String value) {
+		if (value == null || value.isBlank()) {
+			return Gender.NOT_SPECIFIED;
+		}
+		try {
+			return Gender.valueOf(value.strip().toUpperCase(Locale.ROOT));
+		} catch (IllegalArgumentException ex) {
+			throw new IllegalArgumentException("gender must be MALE, FEMALE, OTHER or blank, was " + value);
+		}
 	}
 
 	private String requireNonBlank(CSVRecord record, String column) {

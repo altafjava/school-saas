@@ -38,6 +38,7 @@ import com.altafjava.school.api.dto.response.FeeBalanceResponse;
 import com.altafjava.school.api.dto.response.GpaResponse;
 import com.altafjava.school.api.dto.response.GradeResponse;
 import com.altafjava.school.api.dto.response.ReportCardResponse;
+import com.altafjava.school.api.dto.response.StudentGuardianResponse;
 import com.altafjava.school.api.dto.response.StudentResponse;
 import com.altafjava.school.api.mapper.AddressMapper;
 import com.altafjava.school.api.mapper.AttendanceMapper;
@@ -46,16 +47,18 @@ import com.altafjava.school.api.mapper.BulkImportMapper;
 import com.altafjava.school.api.mapper.FeeBalanceMapper;
 import com.altafjava.school.api.mapper.GradeMapper;
 import com.altafjava.school.api.mapper.ReportCardMapper;
-import com.altafjava.school.api.mapper.StudentMapper;
+import com.altafjava.school.api.mapper.StudentGuardianMapper;
 import com.altafjava.school.api.ratelimit.RateLimited;
 import com.altafjava.school.api.support.PlatformPageMapper;
 import com.altafjava.school.api.support.SortableBy;
 import com.altafjava.school.api.support.SpringDataPageableResolver;
+import com.altafjava.school.api.support.StudentResponseAssembler;
 import com.altafjava.school.application.lifecycle.LifecycleChange;
 import com.altafjava.school.application.service.AttendanceService;
 import com.altafjava.school.application.service.FeePaymentService;
 import com.altafjava.school.application.service.GpaResult;
 import com.altafjava.school.application.service.GradeService;
+import com.altafjava.school.application.service.GuardianService;
 import com.altafjava.school.application.service.ReportCardService;
 import com.altafjava.school.application.service.StudentBulkImportService;
 import com.altafjava.school.application.service.StudentGpaService;
@@ -70,7 +73,9 @@ import com.altafjava.school.domain.student.model.Student;
 public class StudentController implements StudentApi {
 
 	private final StudentService studentService;
-	private final StudentMapper studentMapper;
+	private final StudentResponseAssembler studentResponseAssembler;
+	private final GuardianService guardianService;
+	private final StudentGuardianMapper studentGuardianMapper;
 	private final AddressMapper addressMapper;
 	private final GradeService gradeService;
 	private final GradeMapper gradeMapper;
@@ -88,7 +93,8 @@ public class StudentController implements StudentApi {
 
 	private final SpringDataPageableResolver pageableResolver;
 
-	public StudentController(StudentService studentService, StudentMapper studentMapper, AddressMapper addressMapper,
+	public StudentController(StudentService studentService, StudentResponseAssembler studentResponseAssembler,
+			GuardianService guardianService, StudentGuardianMapper studentGuardianMapper, AddressMapper addressMapper,
 			GradeService gradeService,
 			GradeMapper gradeMapper, AttendanceService attendanceService, AttendanceMapper attendanceMapper,
 			AttendancePercentageMapper attendancePercentageMapper, FeePaymentService feePaymentService,
@@ -97,7 +103,9 @@ public class StudentController implements StudentApi {
 			BulkImportMapper bulkImportMapper, StudentGpaService studentGpaService,
 			SpringDataPageableResolver pageableResolver) {
 		this.studentService = studentService;
-		this.studentMapper = studentMapper;
+		this.studentResponseAssembler = studentResponseAssembler;
+		this.guardianService = guardianService;
+		this.studentGuardianMapper = studentGuardianMapper;
 		this.addressMapper = addressMapper;
 		this.gradeService = gradeService;
 		this.gradeMapper = gradeMapper;
@@ -123,17 +131,17 @@ public class StudentController implements StudentApi {
 			@RequestParam(defaultValue = "0") int page,
 			@RequestParam(defaultValue = "20") int size,
 			@RequestParam(required = false) EnrollmentStatus status,
+			@RequestParam(required = false) String classroomPublicId,
 			@RequestParam(required = false) String q) {
-		return ApiResponse.success(PlatformPageMapper
-				.toPlatformPage(studentService.searchStudents(pageableResolver.resolve(page, size), status, q)
-						.map(studentMapper::toResponse)));
+		return ApiResponse.success(PlatformPageMapper.toPlatformPage(studentResponseAssembler.toResponses(
+				studentService.searchStudents(pageableResolver.resolve(page, size), status, classroomPublicId, q))));
 	}
 
 	@Override
 	@GetMapping("/{publicId}")
 	@PreAuthorize("@permissionAuthorizationService.hasPermission('STUDENT_READ')")
 	public ApiResponse<StudentResponse> get(@PathVariable String publicId) {
-		return ApiResponse.success(studentMapper.toResponse(studentService.findByPublicId(publicId)));
+		return ApiResponse.success(studentResponseAssembler.toResponse(studentService.findByPublicId(publicId)));
 	}
 
 	@Override
@@ -159,8 +167,10 @@ public class StudentController implements StudentApi {
 				request.firstName(),
 				request.lastName(),
 				request.email(),
-				request.dateOfBirth());
-		return ApiResponse.success(studentMapper.toResponse(student));
+				request.dateOfBirth(),
+				request.gender(),
+				null);
+		return ApiResponse.success(studentResponseAssembler.toResponse(student));
 	}
 
 	@Override
@@ -169,7 +179,8 @@ public class StudentController implements StudentApi {
 	@PreAuthorize("@permissionAuthorizationService.hasPermission('STUDENT_MANAGE')")
 	public ApiResponse<StudentResponse> withdraw(@PathVariable String publicId,
 			@RequestBody(required = false) @Valid LifecycleChangeRequest request) {
-		return ApiResponse.success(studentMapper.toResponse(studentService.withdraw(publicId, toChange(request))));
+		return ApiResponse
+				.success(studentResponseAssembler.toResponse(studentService.withdraw(publicId, toChange(request))));
 	}
 
 	@Override
@@ -178,7 +189,8 @@ public class StudentController implements StudentApi {
 	@PreAuthorize("@permissionAuthorizationService.hasPermission('STUDENT_MANAGE')")
 	public ApiResponse<StudentResponse> transfer(@PathVariable String publicId,
 			@RequestBody(required = false) @Valid LifecycleChangeRequest request) {
-		return ApiResponse.success(studentMapper.toResponse(studentService.transfer(publicId, toChange(request))));
+		return ApiResponse
+				.success(studentResponseAssembler.toResponse(studentService.transfer(publicId, toChange(request))));
 	}
 
 	@Override
@@ -187,7 +199,8 @@ public class StudentController implements StudentApi {
 	@PreAuthorize("@permissionAuthorizationService.hasPermission('STUDENT_MANAGE')")
 	public ApiResponse<StudentResponse> graduate(@PathVariable String publicId,
 			@RequestBody(required = false) @Valid LifecycleChangeRequest request) {
-		return ApiResponse.success(studentMapper.toResponse(studentService.graduate(publicId, toChange(request))));
+		return ApiResponse
+				.success(studentResponseAssembler.toResponse(studentService.graduate(publicId, toChange(request))));
 	}
 
 	@Override
@@ -196,7 +209,8 @@ public class StudentController implements StudentApi {
 	@PreAuthorize("@permissionAuthorizationService.hasPermission('STUDENT_MANAGE')")
 	public ApiResponse<StudentResponse> suspend(@PathVariable String publicId,
 			@RequestBody(required = false) @Valid LifecycleChangeRequest request) {
-		return ApiResponse.success(studentMapper.toResponse(studentService.suspend(publicId, toChange(request))));
+		return ApiResponse
+				.success(studentResponseAssembler.toResponse(studentService.suspend(publicId, toChange(request))));
 	}
 
 	@Override
@@ -205,7 +219,8 @@ public class StudentController implements StudentApi {
 	@PreAuthorize("@permissionAuthorizationService.hasPermission('STUDENT_MANAGE')")
 	public ApiResponse<StudentResponse> reinstate(@PathVariable String publicId,
 			@RequestBody(required = false) @Valid LifecycleChangeRequest request) {
-		return ApiResponse.success(studentMapper.toResponse(studentService.reinstate(publicId, toChange(request))));
+		return ApiResponse
+				.success(studentResponseAssembler.toResponse(studentService.reinstate(publicId, toChange(request))));
 	}
 
 	private static LifecycleChange toChange(LifecycleChangeRequest request) {
@@ -218,8 +233,10 @@ public class StudentController implements StudentApi {
 	public ApiResponse<StudentResponse> updateContactDetails(@PathVariable String publicId,
 			@Valid @RequestBody UpdateStudentContactDetailsRequest request) {
 		return ApiResponse
-				.success(studentMapper.toResponse(studentService.updateContactDetails(publicId, request.firstName(),
-						request.lastName(), request.email(), request.dateOfBirth(), request.expectedVersion())));
+				.success(studentResponseAssembler
+						.toResponse(studentService.updateContactDetails(publicId, request.firstName(),
+								request.lastName(), request.email(), request.dateOfBirth(), request.gender(),
+								request.expectedVersion())));
 	}
 
 	@Override
@@ -227,7 +244,7 @@ public class StudentController implements StudentApi {
 	@PreAuthorize("@permissionAuthorizationService.hasPermission('STUDENT_MANAGE')")
 	public ApiResponse<StudentResponse> updatePhone(@PathVariable String publicId,
 			@Valid @RequestBody UpdatePhoneRequest request) {
-		return ApiResponse.success(studentMapper
+		return ApiResponse.success(studentResponseAssembler
 				.toResponse(studentService.updatePhone(publicId, request.phone(), request.expectedVersion())));
 	}
 
@@ -237,8 +254,9 @@ public class StudentController implements StudentApi {
 	public ApiResponse<StudentResponse> updateAddress(@PathVariable String publicId,
 			@Valid @RequestBody AddressRequest request) {
 		return ApiResponse.success(
-				studentMapper.toResponse(studentService.updateAddress(publicId, addressMapper.toDomain(request),
-						request.expectedVersion())));
+				studentResponseAssembler
+						.toResponse(studentService.updateAddress(publicId, addressMapper.toDomain(request),
+								request.expectedVersion())));
 	}
 
 	@Override
@@ -247,8 +265,15 @@ public class StudentController implements StudentApi {
 	public ApiResponse<StudentResponse> updatePhoto(@PathVariable String publicId,
 			@Valid @RequestBody UpdatePhotoRequest request) {
 		return ApiResponse
-				.success(studentMapper.toResponse(
+				.success(studentResponseAssembler.toResponse(
 						studentService.updatePhoto(publicId, request.filePublicId(), request.expectedVersion())));
+	}
+
+	@Override
+	@GetMapping("/{publicId}/guardians")
+	@PreAuthorize("@permissionAuthorizationService.hasPermission('STUDENT_READ')")
+	public ApiResponse<List<StudentGuardianResponse>> guardians(@PathVariable String publicId) {
+		return ApiResponse.success(studentGuardianMapper.toResponses(guardianService.listGuardiansOfStudent(publicId)));
 	}
 
 	@Override

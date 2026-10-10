@@ -14,6 +14,16 @@ public interface TermRepository extends JpaRepository<Term, Long> {
 
 	Page<Term> findAllByTenantId(Long tenantId, Pageable pageable);
 
+	// Every filter is optional (null matches all).
+	@Query("""
+			SELECT t FROM Term t
+			WHERE t.tenantId = :tenantId
+			  AND (:academicYearId IS NULL OR t.academicYearId = :academicYearId)
+			  AND (:pattern IS NULL OR LOWER(t.name) LIKE :pattern ESCAPE '!')
+			""")
+	Page<Term> search(@Param("tenantId") Long tenantId, @Param("academicYearId") Long academicYearId,
+			@Param("pattern") String pattern, Pageable pageable);
+
 	Optional<Term> findByPublicIdAndTenantId(UUID publicId, Long tenantId);
 
 	boolean existsByNameAndAcademicYearIdAndTenantId(String name, Long academicYearId, Long tenantId);

@@ -189,7 +189,7 @@ class HrLeaveTenantIsolationIntegrationTest extends SchoolIntegrationTestBase {
 
 		activateTenant(tenantB);
 		authenticateAsTenantAdmin();
-		Page<Department> departmentsB = departmentService.list(PageRequest.of(0, 100));
+		Page<Department> departmentsB = departmentService.list(null, PageRequest.of(0, 100));
 
 		assertTrue(departmentsB.getContent().isEmpty(), "Tenant B must not see tenant A's departments");
 	}

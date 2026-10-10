@@ -7,6 +7,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import com.altafjava.platform.api.dto.response.ApiResponse;
 import com.altafjava.school.api.dto.request.ReserveBookRequest;
 import com.altafjava.school.api.dto.response.BookReservationResponse;
+import com.altafjava.school.domain.library.model.ReservationStatus;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -22,7 +23,8 @@ public interface BookReservationApi {
 			@RequestParam(required = false) String bookPublicId,
 			@RequestParam(required = false) String studentPublicId,
 			@RequestParam(defaultValue = "0") int page,
-			@RequestParam(defaultValue = "20") int size);
+			@RequestParam(defaultValue = "20") int size,
+			@RequestParam(required = false) ReservationStatus status);
 
 	@Operation(summary = "Reserve", description = "Queues an active student for a title with no copy on the shelf. When a copy is returned "
 			+ "it is held for the longest-waiting reservation until the hold period (library.reservation.hold-days, "

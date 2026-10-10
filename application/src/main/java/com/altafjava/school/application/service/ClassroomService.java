@@ -20,6 +20,8 @@ import com.altafjava.platform.core.exception.BusinessException;
 import com.altafjava.platform.core.exception.ResourceNotFoundException;
 import com.altafjava.platform.core.search.LikePattern;
 import com.altafjava.platform.core.tenant.TenantContext;
+import com.altafjava.school.application.reference.EntityRef;
+import com.altafjava.school.application.reference.PublicIdLookup;
 import com.altafjava.school.application.security.AcademicAccessGuard;
 import com.altafjava.school.domain.academicyear.model.AcademicYear;
 import com.altafjava.school.domain.academicyear.repository.AcademicYearRepository;
@@ -45,12 +47,14 @@ public class ClassroomService {
 	private final CurriculumRepository curriculumRepository;
 	private final EventPublisher eventPublisher;
 	private final AcademicAccessGuard academicAccessGuard;
+	private final PublicIdLookup publicIdLookup;
 
 	public ClassroomService(ClassroomRepository classroomRepository, TeacherRepository teacherRepository,
 			AcademicYearRepository academicYearRepository,
 			StudentClassroomLinkRepository studentClassroomLinkRepository, StudentRepository studentRepository,
 			CurriculumRepository curriculumRepository, EventPublisher eventPublisher,
-			AcademicAccessGuard academicAccessGuard) {
+			AcademicAccessGuard academicAccessGuard, PublicIdLookup publicIdLookup) {
+		this.publicIdLookup = publicIdLookup;
 		this.classroomRepository = classroomRepository;
 		this.teacherRepository = teacherRepository;
 		this.academicYearRepository = academicYearRepository;
@@ -63,8 +67,10 @@ public class ClassroomService {
 
 	/** Free-text {@code q} (blank = no filter) over the entity's identifying fields. */
 	@Transactional(readOnly = true)
-	public Page<Classroom> searchClassrooms(Pageable pageable, String q) {
-		return classroomRepository.search(TenantContext.getCurrentTenantId(), LikePattern.contains(q), pageable);
+	public Page<Classroom> searchClassrooms(Pageable pageable, String academicYearPublicId, String grade, String q) {
+		return classroomRepository.search(TenantContext.getCurrentTenantId(),
+				publicIdLookup.idOrNull(EntityRef.ACADEMIC_YEAR, academicYearPublicId),
+				grade == null || grade.isBlank() ? null : grade.strip(), LikePattern.contains(q), pageable);
 	}
 
 	@Transactional(readOnly = true)

@@ -1,5 +1,6 @@
 package com.altafjava.school.api.controller;
 
+import java.time.LocalDate;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -20,6 +21,8 @@ import com.altafjava.school.api.dto.response.CounselingSessionResponse;
 import com.altafjava.school.api.mapper.CounselingSessionMapper;
 import com.altafjava.school.api.support.PlatformPageMapper;
 import com.altafjava.school.api.support.SpringDataPageableResolver;
+import com.altafjava.school.application.filter.CounselingSessionFilter;
+import com.altafjava.school.application.filter.DateWindow;
 import com.altafjava.school.application.service.CounselingSessionService;
 
 /**
@@ -49,9 +52,15 @@ public class CounselingSessionController implements CounselingSessionApi {
 	@PreAuthorize("@permissionAuthorizationService.hasPermission('COUNSELING_MANAGE')")
 	public ApiResponse<com.altafjava.platform.core.model.Page<CounselingSessionResponse>> listAll(
 			@RequestParam(defaultValue = "0") int page,
-			@RequestParam(defaultValue = "20") int size) {
+			@RequestParam(defaultValue = "20") int size,
+			@RequestParam(required = false) String studentPublicId,
+			@RequestParam(required = false) Boolean followUpRequired,
+			@RequestParam(required = false) LocalDate from,
+			@RequestParam(required = false) LocalDate to) {
 		return ApiResponse.success(
-				PlatformPageMapper.toPlatformPage(counselingSessionService.listAll(pageableResolver.resolve(page, size))
+				PlatformPageMapper.toPlatformPage(counselingSessionService
+						.listAll(new CounselingSessionFilter(studentPublicId, new DateWindow(from, to),
+								followUpRequired), pageableResolver.resolve(page, size))
 						.map(counselingSessionMapper::toResponse)));
 	}
 

@@ -25,6 +25,7 @@ import com.altafjava.school.api.mapper.GradeMapper;
 import com.altafjava.school.api.support.PlatformPageMapper;
 import com.altafjava.school.api.support.SortableBy;
 import com.altafjava.school.api.support.SpringDataPageableResolver;
+import com.altafjava.school.application.filter.GradeFilter;
 import com.altafjava.school.application.service.GradeService;
 
 @RestController
@@ -51,9 +52,13 @@ public class GradeController implements GradeApi {
 	@SortableBy({ "marks", "gradeLetter" })
 	public ApiResponse<com.altafjava.platform.core.model.Page<GradeResponse>> list(
 			@RequestParam(defaultValue = "0") int page,
-			@RequestParam(defaultValue = "20") int size) {
-		return ApiResponse
-				.success(PlatformPageMapper.toPlatformPage(gradeService.listGrades(pageableResolver.resolve(page, size))
+			@RequestParam(defaultValue = "20") int size,
+			@RequestParam(required = false) String examPublicId,
+			@RequestParam(required = false) String studentPublicId,
+			@RequestParam(required = false) String classroomPublicId) {
+		GradeFilter filter = new GradeFilter(examPublicId, studentPublicId, classroomPublicId);
+		return ApiResponse.success(PlatformPageMapper
+				.toPlatformPage(gradeService.listGrades(filter, pageableResolver.resolve(page, size))
 						.map(gradeMapper::toResponse)));
 	}
 

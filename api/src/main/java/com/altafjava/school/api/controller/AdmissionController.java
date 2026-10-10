@@ -34,6 +34,7 @@ import com.altafjava.school.api.support.PlatformPageMapper;
 import com.altafjava.school.api.support.SortableBy;
 import com.altafjava.school.api.support.SpringDataPageableResolver;
 import com.altafjava.school.application.service.AdmissionService;
+import com.altafjava.school.domain.admission.model.AdmissionStatus;
 import com.altafjava.school.domain.admission.model.DecisionOutcome;
 
 /**
@@ -70,11 +71,13 @@ public class AdmissionController implements AdmissionApi {
 	public ApiResponse<com.altafjava.platform.core.model.Page<AdmissionResponse>> list(
 			@RequestParam(defaultValue = "0") int page,
 			@RequestParam(defaultValue = "20") int size,
-			@RequestParam(required = false) String q) {
+			@RequestParam(required = false) String q,
+			@RequestParam(required = false) AdmissionStatus status) {
 		return ApiResponse.success(
 				PlatformPageMapper
-						.toPlatformPage(admissionService.searchAdmissions(pageableResolver.resolve(page, size), q)
-								.map(admissionMapper::toResponse)));
+						.toPlatformPage(
+								admissionService.searchAdmissions(pageableResolver.resolve(page, size), status, q)
+										.map(admissionMapper::toResponse)));
 	}
 
 	@Override
@@ -94,6 +97,7 @@ public class AdmissionController implements AdmissionApi {
 				request.applicantFirstName(),
 				request.applicantLastName(),
 				request.applicantDateOfBirth(),
+				request.applicantGender(),
 				request.guardianFirstName(),
 				request.guardianLastName(),
 				request.guardianEmail(),
@@ -110,6 +114,7 @@ public class AdmissionController implements AdmissionApi {
 				request.applicantFirstName(),
 				request.applicantLastName(),
 				request.applicantDateOfBirth(),
+				request.applicantGender(),
 				request.guardianFirstName(),
 				request.guardianLastName(),
 				request.guardianEmail(),

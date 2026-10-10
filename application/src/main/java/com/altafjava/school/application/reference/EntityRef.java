@@ -55,4 +55,10 @@ public enum EntityRef {
 	String table() {
 		return table;
 	}
+
+	/** Human-readable kind for messages, e.g. {@code Book copy}. */
+	String label() {
+		String lower = name().toLowerCase(java.util.Locale.ROOT).replace('_', ' ');
+		return Character.toUpperCase(lower.charAt(0)) + lower.substring(1);
+	}
 }

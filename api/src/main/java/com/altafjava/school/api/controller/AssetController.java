@@ -20,7 +20,9 @@ import com.altafjava.school.api.dto.response.AssetResponse;
 import com.altafjava.school.api.mapper.AssetMapper;
 import com.altafjava.school.api.support.PlatformPageMapper;
 import com.altafjava.school.api.support.SpringDataPageableResolver;
+import com.altafjava.school.application.filter.AssetFilter;
 import com.altafjava.school.application.service.AssetService;
+import com.altafjava.school.domain.inventory.model.AssetStatus;
 
 @RestController
 @RequestMapping("/api/v1/assets")
@@ -43,9 +45,12 @@ public class AssetController implements AssetApi {
 	@PreAuthorize("@permissionAuthorizationService.hasPermission('ASSET_MANAGE')")
 	public ApiResponse<com.altafjava.platform.core.model.Page<AssetResponse>> list(
 			@RequestParam(defaultValue = "0") int page,
-			@RequestParam(defaultValue = "20") int size) {
+			@RequestParam(defaultValue = "20") int size,
+			@RequestParam(required = false) AssetStatus status,
+			@RequestParam(required = false) String q) {
 		return ApiResponse.success(PlatformPageMapper
-				.toPlatformPage(assetService.list(pageableResolver.resolve(page, size)).map(assetMapper::toResponse)));
+				.toPlatformPage(assetService.list(new AssetFilter(status, q), pageableResolver.resolve(page, size))
+						.map(assetMapper::toResponse)));
 	}
 
 	@Override

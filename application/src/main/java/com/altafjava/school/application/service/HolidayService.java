@@ -9,7 +9,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import com.altafjava.platform.core.concurrency.ExpectedVersion;
 import com.altafjava.platform.core.exception.ResourceNotFoundException;
+import com.altafjava.platform.core.search.LikePattern;
 import com.altafjava.platform.core.tenant.TenantContext;
+import com.altafjava.school.application.filter.HolidayFilter;
 import com.altafjava.school.domain.holiday.model.Holiday;
 import com.altafjava.school.domain.holiday.repository.HolidayRepository;
 import com.altafjava.school.domain.holiday.service.HolidayDateRangeResolver;
@@ -25,8 +27,9 @@ public class HolidayService {
 	}
 
 	@Transactional(readOnly = true)
-	public Page<Holiday> list(Pageable pageable) {
-		return holidayRepository.findAllByTenantId(TenantContext.getCurrentTenantId(), pageable);
+	public Page<Holiday> list(HolidayFilter filter, Pageable pageable) {
+		return holidayRepository.search(TenantContext.getCurrentTenantId(), filter.dates().from(), filter.dates().to(),
+				LikePattern.contains(filter.q()), pageable);
 	}
 
 	@Transactional(readOnly = true)

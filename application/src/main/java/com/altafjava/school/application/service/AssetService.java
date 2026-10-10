@@ -10,7 +10,9 @@ import org.springframework.transaction.annotation.Transactional;
 import com.altafjava.platform.core.concurrency.ExpectedVersion;
 import com.altafjava.platform.core.exception.BusinessException;
 import com.altafjava.platform.core.exception.ResourceNotFoundException;
+import com.altafjava.platform.core.search.LikePattern;
 import com.altafjava.platform.core.tenant.TenantContext;
+import com.altafjava.school.application.filter.AssetFilter;
 import com.altafjava.school.domain.inventory.model.Asset;
 import com.altafjava.school.domain.inventory.repository.AssetRepository;
 
@@ -24,8 +26,9 @@ public class AssetService {
 	}
 
 	@Transactional(readOnly = true)
-	public Page<Asset> list(Pageable pageable) {
-		return assetRepository.findAllByTenantId(TenantContext.getCurrentTenantId(), pageable);
+	public Page<Asset> list(AssetFilter filter, Pageable pageable) {
+		return assetRepository.search(TenantContext.getCurrentTenantId(), filter.status(),
+				LikePattern.contains(filter.q()), pageable);
 	}
 
 	@Transactional(readOnly = true)

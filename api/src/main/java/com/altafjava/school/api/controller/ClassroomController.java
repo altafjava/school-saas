@@ -30,11 +30,11 @@ import com.altafjava.school.api.dto.response.StudentResponse;
 import com.altafjava.school.api.dto.response.TimetableEntryResponse;
 import com.altafjava.school.api.mapper.ClassroomMapper;
 import com.altafjava.school.api.mapper.StudentClassroomLinkMapper;
-import com.altafjava.school.api.mapper.StudentMapper;
 import com.altafjava.school.api.mapper.TimetableEntryMapper;
 import com.altafjava.school.api.support.PlatformPageMapper;
 import com.altafjava.school.api.support.SortableBy;
 import com.altafjava.school.api.support.SpringDataPageableResolver;
+import com.altafjava.school.api.support.StudentResponseAssembler;
 import com.altafjava.school.application.service.ClassroomService;
 import com.altafjava.school.application.service.TimetableService;
 
@@ -47,20 +47,20 @@ public class ClassroomController implements ClassroomApi {
 	private final TimetableService timetableService;
 	private final TimetableEntryMapper timetableEntryMapper;
 	private final StudentClassroomLinkMapper studentClassroomLinkMapper;
-	private final StudentMapper studentMapper;
+	private final StudentResponseAssembler studentResponseAssembler;
 
 	private final SpringDataPageableResolver pageableResolver;
 
 	public ClassroomController(ClassroomService classroomService, ClassroomMapper classroomMapper,
 			TimetableService timetableService, TimetableEntryMapper timetableEntryMapper,
-			StudentClassroomLinkMapper studentClassroomLinkMapper, StudentMapper studentMapper,
+			StudentClassroomLinkMapper studentClassroomLinkMapper, StudentResponseAssembler studentResponseAssembler,
 			SpringDataPageableResolver pageableResolver) {
 		this.classroomService = classroomService;
 		this.classroomMapper = classroomMapper;
 		this.timetableService = timetableService;
 		this.timetableEntryMapper = timetableEntryMapper;
 		this.studentClassroomLinkMapper = studentClassroomLinkMapper;
-		this.studentMapper = studentMapper;
+		this.studentResponseAssembler = studentResponseAssembler;
 		this.pageableResolver = pageableResolver;
 	}
 
@@ -71,10 +71,13 @@ public class ClassroomController implements ClassroomApi {
 	public ApiResponse<com.altafjava.platform.core.model.Page<ClassroomResponse>> list(
 			@RequestParam(defaultValue = "0") int page,
 			@RequestParam(defaultValue = "20") int size,
-			@RequestParam(required = false) String q) {
+			@RequestParam(required = false) String q,
+			@RequestParam(required = false) String academicYearPublicId,
+			@RequestParam(required = false) String grade) {
 		return ApiResponse.success(
 				PlatformPageMapper
-						.toPlatformPage(classroomService.searchClassrooms(pageableResolver.resolve(page, size), q)
+						.toPlatformPage(classroomService
+								.searchClassrooms(pageableResolver.resolve(page, size), academicYearPublicId, grade, q)
 								.map(classroomMapper::toResponse)));
 	}
 
@@ -164,8 +167,8 @@ public class ClassroomController implements ClassroomApi {
 			@RequestParam(defaultValue = "0") int page,
 			@RequestParam(defaultValue = "20") int size) {
 		return ApiResponse.success(PlatformPageMapper
-				.toPlatformPage(classroomService.listRoster(publicId, pageableResolver.resolve(page, size))
-						.map(studentMapper::toResponse)));
+				.toPlatformPage(studentResponseAssembler
+						.toResponses(classroomService.listRoster(publicId, pageableResolver.resolve(page, size)))));
 	}
 
 	@Override

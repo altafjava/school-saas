@@ -4,6 +4,7 @@ import java.time.LocalDate;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
+import com.altafjava.school.domain.common.model.Gender;
 
 /**
  * Same field set as {@link SubmitAdmissionRequest} — deliberately a separate type (not reused)
@@ -15,6 +16,7 @@ public record PublicAdmissionApplicationRequest(
 		@NotBlank @Size(max = 100) String applicantFirstName,
 		@NotBlank @Size(max = 100) String applicantLastName,
 		LocalDate applicantDateOfBirth,
+		Gender applicantGender,
 		@NotBlank @Size(max = 100) String guardianFirstName,
 		@NotBlank @Size(max = 100) String guardianLastName,
 		@Email @Size(max = 255) String guardianEmail,

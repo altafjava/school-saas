@@ -1,6 +1,9 @@
 package com.altafjava.school.application.security;
 
 import java.time.LocalDate;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Component;
 import com.altafjava.platform.application.security.PermissionAuthorizationService;
@@ -48,6 +51,29 @@ public class AcademicAccessGuard {
 			return;
 		}
 		throw new AccessDeniedException("Not authorized to view this classroom's coursework");
+	}
+
+	/**
+	 * The classrooms a coursework list may draw from. For a requested classroom the caller must be able to view
+	 * it, and it alone is reachable; with none, they are the ones the caller teaches plus those their own
+	 * students attend.
+	 */
+	public CourseworkReach courseworkReach(Long tenantId, Long requestedClassroomId) {
+		if (requestedClassroomId != null) {
+			assertCanViewCoursework(tenantId, requestedClassroomId);
+			return CourseworkReach.ALL;
+		}
+		AcademicScope scope = academicScopeResolver.current(tenantId);
+		if (scope.readsAllClassrooms()) {
+			return CourseworkReach.ALL;
+		}
+		Set<Long> classroomIds = new HashSet<>(scope.teaching().classroomIds());
+		if (!scope.ownStudentIds().isEmpty()) {
+			studentClassroomLinkRepository
+					.findByStudentIdIn(tenantId, List.copyOf(scope.ownStudentIds()))
+					.forEach(link -> classroomIds.add(link.getClassroomId()));
+		}
+		return new CourseworkReach(false, classroomIds);
 	}
 
 	public void assertCanWriteClassroom(Long tenantId, Long classroomId) {

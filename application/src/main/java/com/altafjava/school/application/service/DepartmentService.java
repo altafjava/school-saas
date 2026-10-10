@@ -8,6 +8,7 @@ import org.springframework.transaction.annotation.Transactional;
 import com.altafjava.platform.core.concurrency.ExpectedVersion;
 import com.altafjava.platform.core.exception.BusinessException;
 import com.altafjava.platform.core.exception.ResourceNotFoundException;
+import com.altafjava.platform.core.search.LikePattern;
 import com.altafjava.platform.core.tenant.TenantContext;
 import com.altafjava.school.domain.department.model.Department;
 import com.altafjava.school.domain.department.repository.DepartmentRepository;
@@ -25,8 +26,8 @@ public class DepartmentService {
 	}
 
 	@Transactional(readOnly = true)
-	public Page<Department> list(Pageable pageable) {
-		return departmentRepository.findAllByTenantId(TenantContext.getCurrentTenantId(), pageable);
+	public Page<Department> list(String q, Pageable pageable) {
+		return departmentRepository.search(TenantContext.getCurrentTenantId(), LikePattern.contains(q), pageable);
 	}
 
 	@Transactional(readOnly = true)

@@ -1,5 +1,6 @@
 package com.altafjava.school.api.controller.api;
 
+import java.time.LocalDate;
 import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -20,11 +21,14 @@ public interface AssignmentApi {
 	@Operation(summary = "Create")
 	public ApiResponse<AssignmentResponse> create(@Valid @RequestBody CreateAssignmentRequest request);
 
-	@Operation(summary = "List by classroom")
-	public ApiResponse<com.altafjava.platform.core.model.Page<AssignmentResponse>> listByClassroom(
-			@PathVariable String classroomPublicId,
+	@Operation(summary = "List", description = "Filter by classroom, subject and a date range (due date for assignments, posting date for lessons). Without a classroom, covers the classrooms the caller can reach.")
+	public ApiResponse<com.altafjava.platform.core.model.Page<AssignmentResponse>> list(
 			@RequestParam(defaultValue = "0") int page,
-			@RequestParam(defaultValue = "20") int size);
+			@RequestParam(defaultValue = "20") int size,
+			@RequestParam(required = false) String classroomPublicId,
+			@RequestParam(required = false) String subjectPublicId,
+			@RequestParam(required = false) LocalDate from,
+			@RequestParam(required = false) LocalDate to);
 
 	@Operation(summary = "Reschedule")
 	public ApiResponse<AssignmentResponse> reschedule(@PathVariable String publicId,

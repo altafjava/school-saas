@@ -26,6 +26,8 @@ import com.altafjava.platform.core.exception.ResourceNotFoundException;
 import com.altafjava.platform.core.security.AuthenticatedUser;
 import com.altafjava.platform.core.tenant.TenantContext;
 import com.altafjava.platform.domain.tenant.model.Tenant;
+import com.altafjava.school.application.filter.AssetFilter;
+import com.altafjava.school.application.filter.EventFilter;
 import com.altafjava.school.application.service.AssetAssignmentService;
 import com.altafjava.school.application.service.AssetService;
 import com.altafjava.school.application.service.BookCatalogService;
@@ -157,7 +159,7 @@ class OperationsModulesTenantIsolationIntegrationTest extends SchoolIntegrationT
 
 		activateTenant(tenantB);
 		authenticateAsTenantAdmin();
-		Page<Vehicle> vehiclesB = vehicleService.list(PageRequest.of(0, 100));
+		Page<Vehicle> vehiclesB = vehicleService.list(null, PageRequest.of(0, 100));
 
 		assertTrue(vehiclesB.getContent().isEmpty(), "Tenant B must not see tenant A's vehicles");
 	}
@@ -189,7 +191,7 @@ class OperationsModulesTenantIsolationIntegrationTest extends SchoolIntegrationT
 
 		activateTenant(tenantB);
 		authenticateAsTenantAdmin();
-		Page<Event> eventsB = eventService.list(PageRequest.of(0, 100));
+		Page<Event> eventsB = eventService.list(EventFilter.NONE, PageRequest.of(0, 100));
 
 		assertTrue(eventsB.getContent().isEmpty(), "Tenant B must not see tenant A's events");
 	}
@@ -222,7 +224,7 @@ class OperationsModulesTenantIsolationIntegrationTest extends SchoolIntegrationT
 
 		activateTenant(tenantB);
 		authenticateAsTenantAdmin();
-		Page<Asset> assetsB = assetService.list(PageRequest.of(0, 100));
+		Page<Asset> assetsB = assetService.list(AssetFilter.NONE, PageRequest.of(0, 100));
 
 		assertTrue(assetsB.getContent().isEmpty(), "Tenant B must not see tenant A's assets");
 	}

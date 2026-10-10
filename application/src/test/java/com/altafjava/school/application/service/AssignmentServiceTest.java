@@ -6,6 +6,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -13,6 +14,7 @@ import static org.mockito.Mockito.when;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -31,8 +33,13 @@ import com.altafjava.platform.core.concurrency.ExpectedVersion;
 import com.altafjava.platform.core.exception.ResourceNotFoundException;
 import com.altafjava.platform.core.tenant.TenantContext;
 import com.altafjava.platform.core.tenant.TenantType;
+import com.altafjava.school.application.filter.CourseworkFilter;
+import com.altafjava.school.application.filter.DateWindow;
+import com.altafjava.school.application.reference.EntityRef;
+import com.altafjava.school.application.reference.PublicIdLookup;
 import com.altafjava.school.application.scheduler.support.StudentNotificationRecipientResolver;
 import com.altafjava.school.application.security.AcademicAccessGuard;
+import com.altafjava.school.application.security.CourseworkReach;
 import com.altafjava.school.domain.classroom.model.Classroom;
 import com.altafjava.school.domain.classroom.model.StudentClassroomLink;
 import com.altafjava.school.domain.classroom.repository.ClassroomRepository;
@@ -66,6 +73,8 @@ class AssignmentServiceTest {
 	private StudentNotificationRecipientResolver recipientResolver;
 	@Mock
 	private NotificationService notificationService;
+	@Mock
+	private PublicIdLookup publicIdLookup;
 
 	private AssignmentService assignmentService;
 
@@ -73,8 +82,10 @@ class AssignmentServiceTest {
 	void setUp() {
 		assignmentService = new AssignmentService(assignmentRepository, classroomRepository, subjectRepository,
 				studentClassroomLinkRepository, studentRepository, academicAccessGuard,
-				recipientResolver, notificationService);
+				recipientResolver, notificationService, publicIdLookup);
 		TenantContext.ForTesting.setCurrentTenant(1L, null, null, TenantType.SHARED);
+		// An absent filter resolves to no id; a bare Mockito mock would answer 0L.
+		lenient().when(publicIdLookup.idOrNull(any(), any())).thenReturn(null);
 	}
 
 	@AfterEach
@@ -180,17 +191,43 @@ class AssignmentServiceTest {
 	}
 
 	@Test
-	void listByClassroom_delegatesVisibilityCheck() {
-		when(classroomRepository.findByPublicIdAndTenantId(CLASSROOM_PUBLIC_ID, 1L))
-				.thenReturn(Optional.of(classroomWithId(5L)));
+	void listAssignments_forAClassroom_requiresItToBeReachableAndFilters() {
+		when(publicIdLookup.idOrNull(EntityRef.CLASSROOM, CLASSROOM_PUBLIC_ID.toString())).thenReturn(5L);
+		when(publicIdLookup.idOrNull(EntityRef.SUBJECT, SUBJECT_PUBLIC_ID.toString())).thenReturn(6L);
+		when(academicAccessGuard.courseworkReach(1L, 5L)).thenReturn(CourseworkReach.ALL);
+		LocalDate from = LocalDate.of(2026, 1, 1);
+		LocalDate to = LocalDate.of(2026, 1, 31);
 		Page<Assignment> expected = Page.empty();
-		when(assignmentRepository.findByClassroomIdAndTenantId(5L, 1L, PageRequest.of(0, 20))).thenReturn(expected);
+		when(assignmentRepository.search(1L, true, Set.of(), 5L, 6L, from, to, PageRequest.of(0, 20)))
+				.thenReturn(expected);
 
-		Page<Assignment> result = assignmentService.listByClassroom(CLASSROOM_PUBLIC_ID.toString(),
+		Page<Assignment> result = assignmentService.listAssignments(new CourseworkFilter(
+				CLASSROOM_PUBLIC_ID.toString(), SUBJECT_PUBLIC_ID.toString(), new DateWindow(from, to)),
 				PageRequest.of(0, 20));
 
-		verify(academicAccessGuard).assertCanViewCoursework(1L, 5L);
 		assertEquals(expected, result);
+	}
+
+	@Test
+	void listAssignments_forAnUnreachableClassroom_propagatesAccessDenied() {
+		when(publicIdLookup.idOrNull(EntityRef.CLASSROOM, CLASSROOM_PUBLIC_ID.toString())).thenReturn(5L);
+		when(academicAccessGuard.courseworkReach(1L, 5L)).thenThrow(new AccessDeniedException("denied"));
+
+		assertThrows(AccessDeniedException.class, () -> assignmentService.listAssignments(
+				new CourseworkFilter(CLASSROOM_PUBLIC_ID.toString(), null, DateWindow.UNBOUNDED),
+				PageRequest.of(0, 20)));
+	}
+
+	@Test
+	void listAssignments_withoutAClassroom_searchesTheClassroomsTheCallerReaches() {
+		when(academicAccessGuard.courseworkReach(1L, null)).thenReturn(new CourseworkReach(false, Set.of(5L, 8L)));
+		when(assignmentRepository.search(1L, false, Set.of(5L, 8L), null, null, null, null, PageRequest.of(0, 20)))
+				.thenReturn(Page.empty());
+
+		assignmentService.listAssignments(CourseworkFilter.NONE, PageRequest.of(0, 20));
+
+		verify(assignmentRepository).search(1L, false, Set.of(5L, 8L), null, null, null, null,
+				PageRequest.of(0, 20));
 	}
 
 	@Test

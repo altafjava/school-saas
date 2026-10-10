@@ -25,8 +25,10 @@ import com.altafjava.platform.core.exception.ResourceNotFoundException;
 import com.altafjava.platform.core.tenant.TenantContext;
 import com.altafjava.platform.core.tenant.TenantType;
 import com.altafjava.school.application.employee.EmployeeCodeAllocator;
+import com.altafjava.school.application.reference.PublicIdLookup;
 import com.altafjava.school.domain.classroom.repository.ClassroomRepository;
 import com.altafjava.school.domain.common.model.Address;
+import com.altafjava.school.domain.common.model.Gender;
 import com.altafjava.school.domain.department.model.Department;
 import com.altafjava.school.domain.department.repository.DepartmentRepository;
 import com.altafjava.school.domain.employee.model.Employee;
@@ -49,13 +51,15 @@ class EmployeeServiceTest {
 	private ClassroomRepository classroomRepository;
 	@Mock
 	private NumberSequenceService numberSequenceService;
+	@Mock
+	private PublicIdLookup publicIdLookup;
 
 	private EmployeeService service;
 
 	@BeforeEach
 	void setUp() {
 		service = new EmployeeService(employeeRepository, departmentRepository, classroomRepository,
-				new EmployeeCodeAllocator(employeeRepository, numberSequenceService));
+				new EmployeeCodeAllocator(employeeRepository, numberSequenceService), publicIdLookup);
 		TenantContext.ForTesting.setCurrentTenant(1L, null, null, TenantType.SHARED);
 	}
 
@@ -99,10 +103,11 @@ class EmployeeServiceTest {
 
 		Employee updated = assertDoesNotThrow(
 				() -> service.updateContactDetails(PUBLIC_ID.toString(), "Clara", "Clerk", "clara@school.test",
-						ExpectedVersion.any()));
+						Gender.FEMALE, ExpectedVersion.any()));
 
 		assertEquals("Clara", updated.getFirstName());
 		assertEquals("clara@school.test", updated.getEmail());
+		assertEquals(Gender.FEMALE, updated.getGender());
 	}
 
 	@Test
@@ -181,7 +186,8 @@ class EmployeeServiceTest {
 		employee.exit(EmployeeStatus.RETIRED, LocalDate.now(), null);
 
 		assertThrows(BusinessException.class,
-				() -> service.updateContactDetails(PUBLIC_ID.toString(), "A", "B", "a@b.test", ExpectedVersion.any()));
+				() -> service.updateContactDetails(PUBLIC_ID.toString(), "A", "B", "a@b.test", Gender.OTHER,
+						ExpectedVersion.any()));
 		assertThrows(BusinessException.class,
 				() -> service.updatePhone(PUBLIC_ID.toString(), "+14155552671", ExpectedVersion.any()));
 	}

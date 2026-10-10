@@ -37,23 +37,42 @@ public interface GradeRepository extends JpaRepository<Grade, Long> {
 	boolean existsByStudentIdAndExamIdAndTenantId(Long studentId, Long examId, Long tenantId);
 
 	// A caller's scoped view: every grade of the exams they teach, plus published grades of their own students.
+	/**
+	 * The grade list. Scope first: every grade, or only those of the exams the caller teaches plus the published
+	 * grades of the students who are theirs. Every other filter is optional (null matches all) and narrows within
+	 * that scope; the classroom is the one the grade's exam was set for.
+	 */
 	@Query(value = """
 			SELECT g FROM Grade g
 			WHERE g.tenantId = :tenantId
-			  AND (g.examId IN :examIds
+			  AND (:allClassrooms = true
+			       OR g.examId IN :examIds
 			       OR (g.studentId IN :studentIds
 			           AND EXISTS (SELECT 1 FROM Exam e WHERE e.id = g.examId AND e.tenantId = :tenantId
 			                       AND e.resultsPublishedAt IS NOT NULL)))
+			  AND (:examId IS NULL OR g.examId = :examId)
+			  AND (:studentId IS NULL OR g.studentId = :studentId)
+			  AND (:classroomId IS NULL
+			       OR EXISTS (SELECT 1 FROM Exam c WHERE c.id = g.examId AND c.tenantId = :tenantId
+			                  AND c.classroomId = :classroomId))
 			""", countQuery = """
 			SELECT COUNT(g) FROM Grade g
 			WHERE g.tenantId = :tenantId
-			  AND (g.examId IN :examIds
+			  AND (:allClassrooms = true
+			       OR g.examId IN :examIds
 			       OR (g.studentId IN :studentIds
 			           AND EXISTS (SELECT 1 FROM Exam e WHERE e.id = g.examId AND e.tenantId = :tenantId
 			                       AND e.resultsPublishedAt IS NOT NULL)))
+			  AND (:examId IS NULL OR g.examId = :examId)
+			  AND (:studentId IS NULL OR g.studentId = :studentId)
+			  AND (:classroomId IS NULL
+			       OR EXISTS (SELECT 1 FROM Exam c WHERE c.id = g.examId AND c.tenantId = :tenantId
+			                  AND c.classroomId = :classroomId))
 			""")
-	Page<Grade> findVisible(@Param("tenantId") Long tenantId, @Param("examIds") Collection<Long> examIds,
-			@Param("studentIds") Collection<Long> studentIds, Pageable pageable);
+	Page<Grade> search(@Param("tenantId") Long tenantId, @Param("allClassrooms") boolean allClassrooms,
+			@Param("examIds") Collection<Long> examIds, @Param("studentIds") Collection<Long> studentIds,
+			@Param("examId") Long examId, @Param("studentId") Long studentId,
+			@Param("classroomId") Long classroomId, Pageable pageable);
 
 	boolean existsByExamIdAndTenantId(Long examId, Long tenantId);
 

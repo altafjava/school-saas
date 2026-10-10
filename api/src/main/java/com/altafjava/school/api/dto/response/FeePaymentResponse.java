@@ -2,6 +2,7 @@ package com.altafjava.school.api.dto.response;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import com.altafjava.school.domain.fee.model.PaymentSource;
 
 public record FeePaymentResponse(
 		String publicId,
@@ -10,5 +11,7 @@ public record FeePaymentResponse(
 		String feeStructurePublicId,
 		BigDecimal paidAmount,
 		LocalDateTime paidAt,
-		String receiptNumber) {
+		String receiptNumber,
+		PaymentSource paymentSource,
+		String gatewayProviderType) {
 }

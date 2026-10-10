@@ -43,9 +43,10 @@ public class VehicleController implements VehicleApi {
 	@PreAuthorize("@permissionAuthorizationService.hasPermission('VEHICLE_READ')")
 	public ApiResponse<com.altafjava.platform.core.model.Page<VehicleResponse>> list(
 			@RequestParam(defaultValue = "0") int page,
-			@RequestParam(defaultValue = "20") int size) {
+			@RequestParam(defaultValue = "20") int size,
+			@RequestParam(required = false) String q) {
 		return ApiResponse.success(PlatformPageMapper.toPlatformPage(
-				vehicleService.list(pageableResolver.resolve(page, size)).map(vehicleMapper::toResponse)));
+				vehicleService.list(q, pageableResolver.resolve(page, size)).map(vehicleMapper::toResponse)));
 	}
 
 	@Override

@@ -12,6 +12,9 @@ import com.altafjava.platform.application.service.ActivityLogService;
 import com.altafjava.platform.core.concurrency.ExpectedVersion;
 import com.altafjava.platform.core.exception.ResourceNotFoundException;
 import com.altafjava.platform.core.tenant.TenantContext;
+import com.altafjava.school.application.filter.CounselingSessionFilter;
+import com.altafjava.school.application.reference.EntityRef;
+import com.altafjava.school.application.reference.PublicIdLookup;
 import com.altafjava.school.domain.counseling.model.CounselingSession;
 import com.altafjava.school.domain.counseling.repository.CounselingSessionRepository;
 import com.altafjava.school.domain.student.model.Student;
@@ -26,10 +29,12 @@ public class CounselingSessionService {
 	private final StudentRepository studentRepository;
 	private final TeacherRepository teacherRepository;
 	private final ActivityLogService activityLogService;
+	private final PublicIdLookup publicIdLookup;
 
 	public CounselingSessionService(CounselingSessionRepository counselingSessionRepository,
 			StudentRepository studentRepository, TeacherRepository teacherRepository,
-			ActivityLogService activityLogService) {
+			ActivityLogService activityLogService, PublicIdLookup publicIdLookup) {
+		this.publicIdLookup = publicIdLookup;
 		this.counselingSessionRepository = counselingSessionRepository;
 		this.studentRepository = studentRepository;
 		this.teacherRepository = teacherRepository;
@@ -37,8 +42,10 @@ public class CounselingSessionService {
 	}
 
 	@Transactional(readOnly = true)
-	public Page<CounselingSession> listAll(Pageable pageable) {
-		return counselingSessionRepository.findAllByTenantId(TenantContext.getCurrentTenantId(), pageable);
+	public Page<CounselingSession> listAll(CounselingSessionFilter filter, Pageable pageable) {
+		return counselingSessionRepository.search(TenantContext.getCurrentTenantId(),
+				publicIdLookup.idOrNull(EntityRef.STUDENT, filter.studentPublicId()), filter.followUpRequired(),
+				filter.dates().from(), filter.dates().to(), pageable);
 	}
 
 	@Transactional(readOnly = true)

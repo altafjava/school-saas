@@ -10,7 +10,10 @@ import org.springframework.transaction.annotation.Transactional;
 import com.altafjava.platform.core.exception.BusinessException;
 import com.altafjava.platform.core.exception.ResourceNotFoundException;
 import com.altafjava.platform.core.tenant.TenantContext;
+import com.altafjava.school.application.filter.BookReservationFilter;
 import com.altafjava.school.application.library.ReservationAllocator;
+import com.altafjava.school.application.reference.EntityRef;
+import com.altafjava.school.application.reference.PublicIdLookup;
 import com.altafjava.school.domain.library.model.Book;
 import com.altafjava.school.domain.library.model.BookCopy;
 import com.altafjava.school.domain.library.model.BookCopyStatus;
@@ -36,19 +39,13 @@ public class BookReservationService {
 	private final StudentRepository studentRepository;
 	private final CirculationRepository circulationRepository;
 	private final ReservationAllocator reservationAllocator;
+	private final PublicIdLookup publicIdLookup;
 
 	@Transactional(readOnly = true)
-	public Page<BookReservation> list(String bookPublicId, String studentPublicId, Pageable pageable) {
-		Long tenantId = TenantContext.getCurrentTenantId();
-		if ((bookPublicId == null) == (studentPublicId == null)) {
-			throw new BusinessException("Filter reservations by exactly one of bookPublicId or studentPublicId");
-		}
-		if (bookPublicId != null) {
-			return bookReservationRepository.findAllByBookIdAndTenantId(requireBook(tenantId, bookPublicId).getId(),
-					tenantId, pageable);
-		}
-		return bookReservationRepository.findAllByStudentIdAndTenantId(
-				requireStudent(tenantId, studentPublicId).getId(), tenantId, pageable);
+	public Page<BookReservation> list(BookReservationFilter filter, Pageable pageable) {
+		return bookReservationRepository.search(TenantContext.getCurrentTenantId(),
+				publicIdLookup.idOrNull(EntityRef.BOOK, filter.bookPublicId()),
+				publicIdLookup.idOrNull(EntityRef.STUDENT, filter.studentPublicId()), filter.status(), pageable);
 	}
 
 	@Transactional

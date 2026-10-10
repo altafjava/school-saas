@@ -26,6 +26,9 @@
                 <constraints nullable="false"/>
             </column>
             <column name="applicant_date_of_birth" type="DATE"/>
+            <column name="applicant_gender" type="VARCHAR(20)" defaultValue="NOT_SPECIFIED">
+                <constraints nullable="false"/>
+            </column>
             <column name="guardian_first_name" type="VARCHAR(100)">
                 <constraints nullable="false"/>
             </column>

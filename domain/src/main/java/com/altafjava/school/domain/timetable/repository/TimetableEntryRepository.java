@@ -7,11 +7,26 @@ import java.util.UUID;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import com.altafjava.school.domain.timetable.model.TimetableEntry;
 
 public interface TimetableEntryRepository extends JpaRepository<TimetableEntry, Long> {
 
 	Page<TimetableEntry> findAllByTenantId(Long tenantId, Pageable pageable);
+
+	// Every filter is optional (null matches all).
+	@Query("""
+			SELECT t FROM TimetableEntry t
+			WHERE t.tenantId = :tenantId
+			  AND (:classroomId IS NULL OR t.classroomId = :classroomId)
+			  AND (:teacherId IS NULL OR t.teacherId = :teacherId)
+			  AND (:subjectId IS NULL OR t.subjectId = :subjectId)
+			  AND (:dayOfWeek IS NULL OR t.dayOfWeek = :dayOfWeek)
+			""")
+	Page<TimetableEntry> search(@Param("tenantId") Long tenantId, @Param("classroomId") Long classroomId,
+			@Param("teacherId") Long teacherId, @Param("subjectId") Long subjectId,
+			@Param("dayOfWeek") DayOfWeek dayOfWeek, Pageable pageable);
 
 	Optional<TimetableEntry> findByPublicIdAndTenantId(UUID publicId, Long tenantId);
 

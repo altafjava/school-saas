@@ -34,6 +34,7 @@ import com.altafjava.platform.core.exception.BusinessException;
 import com.altafjava.platform.core.security.AuthenticatedUser;
 import com.altafjava.platform.core.tenant.TenantContext;
 import com.altafjava.platform.core.tenant.TenantType;
+import com.altafjava.school.application.reference.PublicIdLookup;
 import com.altafjava.school.application.scheduler.support.TenantAdminNotifier;
 import com.altafjava.school.application.security.LeaveApprovalAuthorizer;
 import com.altafjava.school.domain.academicyear.model.AcademicYear;
@@ -83,6 +84,8 @@ class LeaveRequestServiceTest {
 	private DepartmentRepository departmentRepository;
 	@Mock
 	private LeaveApprovalAuthorizer leaveApprovalAuthorizer;
+	@Mock
+	private PublicIdLookup publicIdLookup;
 
 	private LeaveRequestService leaveRequestService;
 
@@ -91,7 +94,7 @@ class LeaveRequestServiceTest {
 		leaveRequestService = new LeaveRequestService(leaveRequestRepository, leaveTypeRepository,
 				leaveBalanceRepository, employeeRepository, academicYearRepository, tenantAdminNotifier,
 				notificationService, holidayService, leaveApprovalRepository, departmentRepository,
-				leaveApprovalAuthorizer);
+				leaveApprovalAuthorizer, publicIdLookup);
 		TenantContext.ForTesting.setCurrentTenant(1L, null, null, TenantType.SHARED);
 	}
 

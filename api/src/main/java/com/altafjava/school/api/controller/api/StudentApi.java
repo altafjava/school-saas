@@ -22,6 +22,7 @@ import com.altafjava.school.api.dto.response.FeeBalanceResponse;
 import com.altafjava.school.api.dto.response.GpaResponse;
 import com.altafjava.school.api.dto.response.GradeResponse;
 import com.altafjava.school.api.dto.response.ReportCardResponse;
+import com.altafjava.school.api.dto.response.StudentGuardianResponse;
 import com.altafjava.school.api.dto.response.StudentResponse;
 import com.altafjava.school.domain.student.model.EnrollmentStatus;
 import io.swagger.v3.oas.annotations.Operation;
@@ -38,10 +39,14 @@ public interface StudentApi {
 			@RequestParam(defaultValue = "0") int page,
 			@RequestParam(defaultValue = "20") int size,
 			@RequestParam(required = false) EnrollmentStatus status,
+			@RequestParam(required = false) String classroomPublicId,
 			@RequestParam(required = false) String q);
 
 	@Operation(summary = "Get")
 	public ApiResponse<StudentResponse> get(@PathVariable String publicId);
+
+	@Operation(summary = "Guardians of a student", description = "Every guardian linked to the student with the relationship, primary-contact flag, pickup authorization and custody restriction. Staff-facing: carries contact details.")
+	public ApiResponse<List<StudentGuardianResponse>> guardians(@PathVariable String publicId);
 
 	@Operation(summary = "Bulk import")
 	public ApiResponse<BulkImportResponse> bulkImport(@RequestParam("file") MultipartFile file);

@@ -21,7 +21,8 @@ public interface CertificateTypeApi {
 	@Operation(summary = "List")
 	public ApiResponse<com.altafjava.platform.core.model.Page<CertificateTypeResponse>> list(
 			@RequestParam(defaultValue = "0") int page,
-			@RequestParam(defaultValue = "20") int size);
+			@RequestParam(defaultValue = "20") int size,
+			@RequestParam(required = false) String q);
 
 	@Operation(summary = "List active")
 	public ApiResponse<List<CertificateTypeResponse>> listActive();

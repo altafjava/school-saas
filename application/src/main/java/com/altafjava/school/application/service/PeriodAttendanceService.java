@@ -8,6 +8,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import com.altafjava.platform.core.exception.ResourceNotFoundException;
 import com.altafjava.platform.core.tenant.TenantContext;
+import com.altafjava.school.application.filter.AttendanceFilter;
+import com.altafjava.school.application.reference.EntityRef;
+import com.altafjava.school.application.reference.PublicIdLookup;
 import com.altafjava.school.application.security.AcademicAccessGuard;
 import com.altafjava.school.application.security.AcademicScope;
 import com.altafjava.school.application.security.AcademicScopeResolver;
@@ -30,12 +33,14 @@ public class PeriodAttendanceService {
 	private final AcademicScopeResolver academicScopeResolver;
 	private final AcademicAccessGuard academicAccessGuard;
 	private final StudentDataAccessGuard studentDataAccessGuard;
+	private final PublicIdLookup publicIdLookup;
 
 	public PeriodAttendanceService(PeriodAttendanceRepository periodAttendanceRepository,
 			StudentRepository studentRepository, TimetableEntryRepository timetableEntryRepository,
 			StudentClassroomLinkRepository studentClassroomLinkRepository,
 			AcademicScopeResolver academicScopeResolver, AcademicAccessGuard academicAccessGuard,
-			StudentDataAccessGuard studentDataAccessGuard) {
+			StudentDataAccessGuard studentDataAccessGuard, PublicIdLookup publicIdLookup) {
+		this.publicIdLookup = publicIdLookup;
 		this.periodAttendanceRepository = periodAttendanceRepository;
 		this.studentRepository = studentRepository;
 		this.timetableEntryRepository = timetableEntryRepository;
@@ -46,14 +51,14 @@ public class PeriodAttendanceService {
 	}
 
 	@Transactional(readOnly = true)
-	public Page<PeriodAttendance> listAttendance(Pageable pageable) {
+	public Page<PeriodAttendance> listAttendance(AttendanceFilter filter, Pageable pageable) {
 		Long tenantId = TenantContext.getCurrentTenantId();
 		AcademicScope scope = academicScopeResolver.current(tenantId);
-		if (scope.readsAllClassrooms()) {
-			return periodAttendanceRepository.findAllByTenantId(tenantId, pageable);
-		}
-		return periodAttendanceRepository.findVisible(tenantId, scope.teaching().classroomIds(),
-				scope.ownStudentIds(), pageable);
+		return periodAttendanceRepository.search(tenantId, scope.readsAllClassrooms(),
+				scope.teaching().classroomIds(), scope.ownStudentIds(),
+				publicIdLookup.idOrNull(EntityRef.CLASSROOM, filter.classroomPublicId()),
+				publicIdLookup.idOrNull(EntityRef.STUDENT, filter.studentPublicId()), filter.dates().from(),
+				filter.dates().to(), filter.status(), pageable);
 	}
 
 	@Transactional(readOnly = true)

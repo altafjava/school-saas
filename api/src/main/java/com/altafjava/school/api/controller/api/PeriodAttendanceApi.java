@@ -1,5 +1,6 @@
 package com.altafjava.school.api.controller.api;
 
+import java.time.LocalDate;
 import jakarta.validation.Valid;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -9,6 +10,7 @@ import com.altafjava.platform.api.dto.response.ApiResponse;
 import com.altafjava.platform.core.security.AuthenticatedUser;
 import com.altafjava.school.api.dto.request.MarkPeriodAttendanceRequest;
 import com.altafjava.school.api.dto.response.PeriodAttendanceResponse;
+import com.altafjava.school.domain.attendance.model.AttendanceStatus;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -21,7 +23,12 @@ public interface PeriodAttendanceApi {
 	@Operation(summary = "List")
 	public ApiResponse<com.altafjava.platform.core.model.Page<PeriodAttendanceResponse>> list(
 			@RequestParam(defaultValue = "0") int page,
-			@RequestParam(defaultValue = "20") int size);
+			@RequestParam(defaultValue = "20") int size,
+			@RequestParam(required = false) String classroomPublicId,
+			@RequestParam(required = false) String studentPublicId,
+			@RequestParam(required = false) LocalDate from,
+			@RequestParam(required = false) LocalDate to,
+			@RequestParam(required = false) AttendanceStatus status);
 
 	@Operation(summary = "Get")
 	public ApiResponse<PeriodAttendanceResponse> get(@PathVariable String publicId);

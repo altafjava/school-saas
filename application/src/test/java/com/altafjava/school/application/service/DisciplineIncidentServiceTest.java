@@ -28,6 +28,7 @@ import com.altafjava.platform.application.service.NotificationService;
 import com.altafjava.platform.core.security.AuthenticatedUser;
 import com.altafjava.platform.core.tenant.TenantContext;
 import com.altafjava.platform.core.tenant.TenantType;
+import com.altafjava.school.application.reference.PublicIdLookup;
 import com.altafjava.school.application.scheduler.support.StudentNotificationRecipientResolver;
 import com.altafjava.school.application.security.StudentDataAccessGuard;
 import com.altafjava.school.domain.discipline.model.DisciplineIncident;
@@ -55,6 +56,8 @@ class DisciplineIncidentServiceTest {
 	private NotificationService notificationService;
 	@Mock
 	private StudentDataAccessGuard studentDataAccessGuard;
+	@Mock
+	private PublicIdLookup publicIdLookup;
 	private final ActivityLogService activityLogService = new NoOpActivityLogService();
 
 	private DisciplineIncidentService disciplineIncidentService;
@@ -62,7 +65,8 @@ class DisciplineIncidentServiceTest {
 	@BeforeEach
 	void setUp() {
 		disciplineIncidentService = new DisciplineIncidentService(disciplineIncidentRepository, studentRepository,
-				teacherRepository, recipientResolver, notificationService, studentDataAccessGuard, activityLogService);
+				teacherRepository, recipientResolver, notificationService, studentDataAccessGuard, activityLogService,
+				publicIdLookup);
 		TenantContext.ForTesting.setCurrentTenant(1L, null, null, TenantType.SHARED);
 	}
 
