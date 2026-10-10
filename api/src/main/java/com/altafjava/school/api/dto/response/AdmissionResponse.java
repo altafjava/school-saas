@@ -8,6 +8,7 @@ import com.altafjava.school.domain.admission.model.ApplicationFeeStatus;
 
 public record AdmissionResponse(
 		String publicId,
+		Long version,
 		String applicantFirstName,
 		String applicantLastName,
 		LocalDate applicantDateOfBirth,

@@ -2,6 +2,7 @@ package com.altafjava.school.api.dto.response;
 
 public record CurriculumResponse(
 		String publicId,
+		Long version,
 		String boardPublicId,
 		String name,
 		String code,

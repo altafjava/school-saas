@@ -80,7 +80,8 @@ public class LeaveTypeController implements LeaveTypeApi {
 	public ApiResponse<LeaveTypeResponse> updateDetails(@PathVariable String publicId,
 			@Valid @RequestBody UpdateLeaveTypeRequest request) {
 		return ApiResponse.success(leaveTypeMapper
-				.toResponse(leaveTypeService.updateDetails(publicId, request.name(), request.defaultAnnualDays())));
+				.toResponse(leaveTypeService.updateDetails(publicId, request.name(), request.defaultAnnualDays(),
+						request.expectedVersion())));
 	}
 
 	@Override
@@ -127,7 +128,7 @@ public class LeaveTypeController implements LeaveTypeApi {
 			@Valid @RequestBody ConfigureLeaveCarryForwardRequest request) {
 		return ApiResponse
 				.success(leaveTypeMapper.toResponse(leaveTypeService.configureCarryForward(publicId, request.enabled(),
-						request.maxCarryForwardDays(), request.carryForwardExpiryMonths())));
+						request.maxCarryForwardDays(), request.carryForwardExpiryMonths(), request.expectedVersion())));
 	}
 
 	@Override
@@ -136,6 +137,7 @@ public class LeaveTypeController implements LeaveTypeApi {
 	public ApiResponse<LeaveTypeResponse> configureApprovalLevels(@PathVariable String publicId,
 			@Valid @RequestBody ConfigureLeaveApprovalRequest request) {
 		return ApiResponse.success(leaveTypeMapper
-				.toResponse(leaveTypeService.configureApprovalLevels(publicId, request.approvalLevels())));
+				.toResponse(leaveTypeService.configureApprovalLevels(publicId, request.approvalLevels(),
+						request.expectedVersion())));
 	}
 }

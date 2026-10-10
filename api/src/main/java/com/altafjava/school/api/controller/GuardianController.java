@@ -106,7 +106,8 @@ public class GuardianController implements GuardianApi {
 	public ApiResponse<GuardianResponse> updateAddress(@PathVariable String publicId,
 			@Valid @RequestBody AddressRequest request) {
 		return ApiResponse.success(
-				guardianMapper.toResponse(guardianService.updateAddress(publicId, addressMapper.toDomain(request))));
+				guardianMapper.toResponse(guardianService.updateAddress(publicId, addressMapper.toDomain(request),
+						request.expectedVersion())));
 	}
 
 	@Override
@@ -114,7 +115,8 @@ public class GuardianController implements GuardianApi {
 	@PreAuthorize("@permissionAuthorizationService.hasPermission('GUARDIAN_MANAGE')")
 	public ApiResponse<GuardianResponse> updatePhone(@PathVariable String publicId,
 			@Valid @RequestBody UpdatePhoneRequest request) {
-		return ApiResponse.success(guardianMapper.toResponse(guardianService.updatePhone(publicId, request.phone())));
+		return ApiResponse.success(guardianMapper
+				.toResponse(guardianService.updatePhone(publicId, request.phone(), request.expectedVersion())));
 	}
 
 	@Override
@@ -123,7 +125,8 @@ public class GuardianController implements GuardianApi {
 	public ApiResponse<GuardianResponse> updatePhoto(@PathVariable String publicId,
 			@Valid @RequestBody UpdatePhotoRequest request) {
 		return ApiResponse
-				.success(guardianMapper.toResponse(guardianService.updatePhoto(publicId, request.filePublicId())));
+				.success(guardianMapper.toResponse(
+						guardianService.updatePhoto(publicId, request.filePublicId(), request.expectedVersion())));
 	}
 
 	@Override

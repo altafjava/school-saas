@@ -4,6 +4,7 @@ import java.time.LocalDate;
 
 public record CounselingSessionResponse(
 		String publicId,
+		Long version,
 		String studentPublicId,
 		String counselorTeacherPublicId,
 		LocalDate sessionDate,

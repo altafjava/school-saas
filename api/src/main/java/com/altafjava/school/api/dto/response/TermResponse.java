@@ -4,6 +4,7 @@ import java.time.LocalDate;
 
 public record TermResponse(
 		String publicId,
+		Long version,
 		String name,
 		LocalDate startDate,
 		LocalDate endDate,

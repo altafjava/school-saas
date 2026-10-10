@@ -4,6 +4,7 @@ import java.math.BigDecimal;
 
 public record GradeResponse(
 		String publicId,
+		Long version,
 		String studentPublicId,
 		String subjectPublicId,
 		String examPublicId,

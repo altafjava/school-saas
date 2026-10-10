@@ -16,6 +16,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import com.altafjava.platform.application.service.ActivityLogService;
+import com.altafjava.platform.core.concurrency.ExpectedVersion;
 import com.altafjava.platform.core.exception.ResourceNotFoundException;
 import com.altafjava.platform.core.tenant.TenantContext;
 import com.altafjava.platform.core.tenant.TenantType;
@@ -97,7 +98,8 @@ class CounselingSessionServiceTest {
 		when(counselingSessionRepository.findByPublicIdAndTenantId(publicId, 1L)).thenReturn(Optional.of(session));
 		when(counselingSessionRepository.save(any(CounselingSession.class))).thenAnswer(persisted());
 
-		CounselingSession updated = counselingSessionService.updateNotes(publicId.toString(), "Resolved", false);
+		CounselingSession updated = counselingSessionService.updateNotes(publicId.toString(), "Resolved", false,
+				ExpectedVersion.any());
 
 		assertEquals("Resolved", updated.getNotes());
 	}

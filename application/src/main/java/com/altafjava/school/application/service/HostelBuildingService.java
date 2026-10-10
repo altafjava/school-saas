@@ -5,6 +5,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import com.altafjava.platform.core.concurrency.ExpectedVersion;
 import com.altafjava.platform.core.exception.ResourceNotFoundException;
 import com.altafjava.platform.core.tenant.TenantContext;
 import com.altafjava.school.domain.hostel.model.HostelBuilding;
@@ -37,8 +38,9 @@ public class HostelBuildingService {
 	}
 
 	@Transactional
-	public HostelBuilding updateDetails(String publicId, String name, String address) {
+	public HostelBuilding updateDetails(String publicId, String name, String address, ExpectedVersion expectedVersion) {
 		HostelBuilding building = findByPublicId(publicId);
+		expectedVersion.verify(building);
 		building.updateDetails(name, address);
 		return hostelBuildingRepository.save(building);
 	}

@@ -5,6 +5,7 @@ import java.time.LocalDate;
 
 public record AssetResponse(
 		String publicId,
+		Long version,
 		String assetCode,
 		String name,
 		String category,

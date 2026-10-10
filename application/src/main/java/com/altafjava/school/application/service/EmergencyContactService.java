@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.UUID;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import com.altafjava.platform.core.concurrency.ExpectedVersion;
 import com.altafjava.platform.core.exception.ResourceNotFoundException;
 import com.altafjava.platform.core.tenant.TenantContext;
 import com.altafjava.school.domain.guardian.model.EmergencyContact;
@@ -37,8 +38,9 @@ public class EmergencyContactService {
 
 	@Transactional
 	public EmergencyContact update(String studentPublicId, String contactPublicId, String name, String relationship,
-			String phone, String alternatePhone, int priority) {
+			String phone, String alternatePhone, int priority, ExpectedVersion expectedVersion) {
 		EmergencyContact contact = requireOwnedContact(studentPublicId, contactPublicId);
+		expectedVersion.verify(contact);
 		contact.update(name, relationship, phone, alternatePhone, priority);
 		return emergencyContactRepository.save(contact);
 	}

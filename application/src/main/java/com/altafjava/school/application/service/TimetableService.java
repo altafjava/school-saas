@@ -7,6 +7,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import com.altafjava.platform.core.concurrency.ExpectedVersion;
 import com.altafjava.platform.core.exception.BusinessException;
 import com.altafjava.platform.core.exception.ResourceNotFoundException;
 import com.altafjava.platform.core.tenant.TenantContext;
@@ -95,9 +96,10 @@ public class TimetableService {
 	}
 
 	@Transactional
-	public TimetableEntry assignVenue(String publicId, String venuePublicId) {
+	public TimetableEntry assignVenue(String publicId, String venuePublicId, ExpectedVersion expectedVersion) {
 		Long tenantId = TenantContext.getCurrentTenantId();
 		TimetableEntry entry = findByPublicId(publicId);
+		expectedVersion.verify(entry);
 		entry.assignVenue(requireFreeVenue(tenantId, venuePublicId, entry.getDayOfWeek(), entry.getPeriodId(),
 				entry.getId()));
 		return timetableEntryRepository.save(entry);

@@ -10,6 +10,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import com.altafjava.platform.core.concurrency.ExpectedVersion;
 import com.altafjava.platform.core.exception.BusinessException;
 import com.altafjava.platform.core.exception.ResourceNotFoundException;
 import com.altafjava.platform.core.tenant.TenantContext;
@@ -91,10 +92,14 @@ public class GradingScaleService {
 
 	@Transactional
 	@CacheEvict(cacheNames = CACHE_GRADING_SCALE_THRESHOLDS, allEntries = true)
-	public GradingScale updateThresholds(String publicId, List<GradingScaleThresholdInput> thresholds) {
+	public GradingScale updateThresholds(String publicId, List<GradingScaleThresholdInput> thresholds,
+			ExpectedVersion expectedVersion) {
 		validateCoverage(thresholds);
-		GradingScale scale = findByPublicId(publicId);
 		Long tenantId = TenantContext.getCurrentTenantId();
+		GradingScale scale = gradingScaleRepository
+				.findWithVersionIncrementByPublicIdAndTenantId(UUID.fromString(publicId), tenantId)
+				.orElseThrow(() -> new ResourceNotFoundException("Grading scale not found: " + publicId));
+		expectedVersion.verify(scale);
 		gradingScaleThresholdRepository.findAllByGradingScaleIdAndTenantId(scale.getId(), tenantId)
 				.forEach(gradingScaleThresholdRepository::delete);
 		saveThresholds(scale.getId(), thresholds);

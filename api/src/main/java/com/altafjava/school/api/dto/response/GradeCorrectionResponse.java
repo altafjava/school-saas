@@ -5,6 +5,7 @@ import java.time.Instant;
 
 public record GradeCorrectionResponse(
 		String publicId,
+		Long version,
 		BigDecimal oldMarks,
 		String oldGradeLetter,
 		BigDecimal newMarks,

@@ -44,6 +44,6 @@ public class ReportCardTemplateController implements ReportCardTemplateApi {
 			@Valid @RequestBody ConfigureReportCardTemplateRequest request) {
 		return ApiResponse.success(reportCardTemplateMapper.toResponse(reportCardTemplateService.configure(
 				request.showAttendanceSummary(), request.showRemarks(), request.showCompetencyGrid(),
-				request.showRank())));
+				request.showRank(), request.expectedVersion())));
 	}
 }

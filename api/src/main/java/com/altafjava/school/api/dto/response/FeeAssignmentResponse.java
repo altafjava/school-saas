@@ -5,6 +5,7 @@ import java.time.LocalDate;
 
 public record FeeAssignmentResponse(
 		String publicId,
+		Long version,
 		String feeStructurePublicId,
 		String scope,
 		String studentPublicId,

@@ -1,4 +1,8 @@
 package com.altafjava.school.api.dto.request;
 
-public record ReassignClassTeacherRequest(String teacherPublicId) {
+import jakarta.validation.constraints.NotNull;
+import com.altafjava.platform.core.concurrency.Versioned;
+
+public record ReassignClassTeacherRequest(String teacherPublicId,
+		@NotNull Long version) implements Versioned {
 }

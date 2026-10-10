@@ -4,6 +4,7 @@ import java.time.LocalDate;
 
 public record RoomAllocationResponse(
 		String publicId,
+		Long version,
 		String studentPublicId,
 		String roomPublicId,
 		LocalDate allocatedFrom,

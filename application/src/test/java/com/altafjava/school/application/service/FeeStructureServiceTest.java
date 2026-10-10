@@ -16,6 +16,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import com.altafjava.platform.core.concurrency.ExpectedVersion;
 import com.altafjava.platform.core.exception.ResourceNotFoundException;
 import com.altafjava.platform.core.tenant.TenantContext;
 import com.altafjava.platform.core.tenant.TenantType;
@@ -83,7 +84,8 @@ class FeeStructureServiceTest {
 		when(feeStructureRepository.save(any(FeeStructure.class))).thenAnswer(inv -> inv.getArgument(0));
 
 		FeeStructure revised = assertDoesNotThrow(
-				() -> feeStructureService.reviseAmount(publicId.toString(), BigDecimal.valueOf(600)));
+				() -> feeStructureService.reviseAmount(publicId.toString(), BigDecimal.valueOf(600),
+						ExpectedVersion.any()));
 
 		assertEquals(BigDecimal.valueOf(600), revised.getAmount());
 	}
@@ -97,7 +99,7 @@ class FeeStructureServiceTest {
 		when(feeStructureRepository.findByPublicIdAndTenantId(publicId, 1L)).thenReturn(Optional.of(feeStructure));
 		when(feeStructureRepository.save(any(FeeStructure.class))).thenAnswer(inv -> inv.getArgument(0));
 
-		feeStructureService.reviseAmount(publicId.toString(), BigDecimal.valueOf(600));
+		feeStructureService.reviseAmount(publicId.toString(), BigDecimal.valueOf(600), ExpectedVersion.any());
 
 		ArgumentCaptor<FeeStructureRevision> captor = ArgumentCaptor.forClass(FeeStructureRevision.class);
 		verify(feeStructureRevisionRepository).save(captor.capture());

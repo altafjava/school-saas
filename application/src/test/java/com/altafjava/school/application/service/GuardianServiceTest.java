@@ -18,6 +18,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import com.altafjava.platform.application.event.publisher.EventPublisher;
+import com.altafjava.platform.core.concurrency.ExpectedVersion;
 import com.altafjava.platform.core.exception.BusinessException;
 import com.altafjava.platform.core.exception.ResourceNotFoundException;
 import com.altafjava.platform.core.tenant.TenantContext;
@@ -98,7 +99,8 @@ class GuardianServiceTest {
 		when(guardianRepository.findByPublicIdAndTenantId(GUARDIAN_PUBLIC_ID, 1L)).thenReturn(Optional.of(guardian));
 		when(guardianRepository.save(any(Guardian.class))).thenAnswer(inv -> inv.getArgument(0));
 
-		Guardian updated = guardianService.updatePhone(GUARDIAN_PUBLIC_ID.toString(), "+14155552671");
+		Guardian updated = guardianService.updatePhone(GUARDIAN_PUBLIC_ID.toString(), "+14155552671",
+				ExpectedVersion.any());
 
 		assertEquals("+14155552671", updated.getPhone());
 	}
@@ -109,7 +111,7 @@ class GuardianServiceTest {
 		when(guardianRepository.findByPublicIdAndTenantId(GUARDIAN_PUBLIC_ID, 1L)).thenReturn(Optional.of(guardian));
 
 		assertThrows(BusinessException.class,
-				() -> guardianService.updatePhone(GUARDIAN_PUBLIC_ID.toString(), "not-a-phone"));
+				() -> guardianService.updatePhone(GUARDIAN_PUBLIC_ID.toString(), "not-a-phone", ExpectedVersion.any()));
 	}
 
 	@Test
@@ -120,7 +122,7 @@ class GuardianServiceTest {
 		Address address = Address.builder().line1("42 Wallaby Way").locality("Sydney").postalCode("2000")
 				.countryCode("AU").build();
 
-		Guardian updated = guardianService.updateAddress(GUARDIAN_PUBLIC_ID.toString(), address);
+		Guardian updated = guardianService.updateAddress(GUARDIAN_PUBLIC_ID.toString(), address, ExpectedVersion.any());
 
 		assertEquals("Sydney", updated.getAddress().getLocality());
 		assertEquals("AU", updated.getAddress().getCountryCode());

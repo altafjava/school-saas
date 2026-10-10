@@ -6,6 +6,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import com.altafjava.platform.core.concurrency.ExpectedVersion;
 import com.altafjava.platform.core.exception.ResourceNotFoundException;
 import com.altafjava.platform.core.tenant.TenantContext;
 import com.altafjava.school.domain.event.model.Event;
@@ -41,8 +42,9 @@ public class EventService {
 
 	@Transactional
 	public Event updateDetails(String publicId, String title, String description, LocalDateTime eventDate,
-			String location) {
+			String location, ExpectedVersion expectedVersion) {
 		Event event = findByPublicId(publicId);
+		expectedVersion.verify(event);
 		event.updateDetails(title, description, eventDate, location);
 		return eventRepository.save(event);
 	}

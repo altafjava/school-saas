@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import com.altafjava.platform.api.dto.response.ApiResponse;
+import com.altafjava.platform.core.annotation.Command;
 import com.altafjava.school.api.controller.api.RoomAllocationApi;
 import com.altafjava.school.api.dto.request.AllocateRoomRequest;
 import com.altafjava.school.api.dto.request.VacateRoomAllocationRequest;
@@ -62,6 +63,7 @@ public class RoomAllocationController implements RoomAllocationApi {
 
 	@Override
 	@PatchMapping("/{publicId}/vacate")
+	@Command
 	@PreAuthorize("@permissionAuthorizationService.hasPermission('ROOM_ALLOCATION_WRITE')")
 	public ApiResponse<RoomAllocationResponse> vacate(@PathVariable String publicId,
 			@Valid @RequestBody VacateRoomAllocationRequest request) {

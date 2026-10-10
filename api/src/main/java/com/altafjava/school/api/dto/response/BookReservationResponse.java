@@ -5,6 +5,7 @@ import java.time.LocalDate;
 
 public record BookReservationResponse(
 		String publicId,
+		Long version,
 		String bookPublicId,
 		String studentPublicId,
 		String status,

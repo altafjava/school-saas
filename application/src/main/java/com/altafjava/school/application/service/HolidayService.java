@@ -7,6 +7,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import com.altafjava.platform.core.concurrency.ExpectedVersion;
 import com.altafjava.platform.core.exception.ResourceNotFoundException;
 import com.altafjava.platform.core.tenant.TenantContext;
 import com.altafjava.school.domain.holiday.model.Holiday;
@@ -41,8 +42,10 @@ public class HolidayService {
 	}
 
 	@Transactional
-	public Holiday updateDetails(String publicId, LocalDate date, String name, boolean recurring) {
+	public Holiday updateDetails(String publicId, LocalDate date, String name, boolean recurring,
+			ExpectedVersion expectedVersion) {
 		Holiday holiday = findByPublicId(publicId);
+		expectedVersion.verify(holiday);
 		holiday.updateDetails(date, name, recurring);
 		return holidayRepository.save(holiday);
 	}

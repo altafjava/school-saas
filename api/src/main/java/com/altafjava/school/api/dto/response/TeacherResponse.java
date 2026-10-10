@@ -4,6 +4,7 @@ import java.time.LocalDate;
 
 public record TeacherResponse(
 		String publicId,
+		Long version,
 		String employeeCode,
 		String firstName,
 		String lastName,

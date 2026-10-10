@@ -8,6 +8,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import com.altafjava.platform.core.concurrency.ExpectedVersion;
 import com.altafjava.platform.core.exception.BusinessException;
 import com.altafjava.platform.core.exception.ResourceNotFoundException;
 import com.altafjava.platform.core.tenant.TenantContext;
@@ -59,8 +60,10 @@ public class CurriculumService {
 
 	@Transactional
 	@CacheEvict(cacheNames = CACHE_CURRICULUM_LOOKUP, allEntries = true)
-	public Curriculum updateDetails(String publicId, String name, String code, String description) {
+	public Curriculum updateDetails(String publicId, String name, String code, String description,
+			ExpectedVersion expectedVersion) {
 		Curriculum curriculum = findByPublicId(publicId);
+		expectedVersion.verify(curriculum);
 		curriculum.updateDetails(name, code, description);
 		return curriculumRepository.save(curriculum);
 	}
@@ -73,9 +76,11 @@ public class CurriculumService {
 			@CacheEvict(cacheNames = CACHE_CURRICULUM_LOOKUP, allEntries = true),
 			@CacheEvict(cacheNames = GradingScaleService.CACHE_GRADING_SCALE_THRESHOLDS, allEntries = true)
 	})
-	public Curriculum assignGradingScale(String publicId, String gradingScalePublicId) {
+	public Curriculum assignGradingScale(String publicId, String gradingScalePublicId,
+			ExpectedVersion expectedVersion) {
 		Long tenantId = TenantContext.getCurrentTenantId();
 		Curriculum curriculum = findByPublicId(publicId);
+		expectedVersion.verify(curriculum);
 		var gradingScale = gradingScaleRepository
 				.findByPublicIdAndTenantId(UUID.fromString(gradingScalePublicId), tenantId)
 				.orElseThrow(() -> new ResourceNotFoundException("Grading scale not found: " + gradingScalePublicId));

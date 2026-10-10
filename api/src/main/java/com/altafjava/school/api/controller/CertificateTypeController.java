@@ -86,7 +86,8 @@ public class CertificateTypeController implements CertificateTypeApi {
 	public ApiResponse<CertificateTypeResponse> updateDetails(@PathVariable String publicId,
 			@Valid @RequestBody UpdateCertificateTypeRequest request) {
 		return ApiResponse.success(certificateTypeMapper.toResponse(
-				certificateTypeService.updateDetails(publicId, request.name(), request.wording())));
+				certificateTypeService.updateDetails(publicId, request.name(), request.wording(),
+						request.expectedVersion())));
 	}
 
 	@Override

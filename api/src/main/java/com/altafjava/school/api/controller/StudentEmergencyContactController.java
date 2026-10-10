@@ -18,6 +18,7 @@ import com.altafjava.platform.api.dto.response.ApiResponse;
 import com.altafjava.platform.core.security.AuthenticatedUser;
 import com.altafjava.school.api.controller.api.StudentEmergencyContactApi;
 import com.altafjava.school.api.dto.request.EmergencyContactRequest;
+import com.altafjava.school.api.dto.request.UpdateEmergencyContactRequest;
 import com.altafjava.school.api.dto.response.EmergencyContactResponse;
 import com.altafjava.school.api.mapper.EmergencyContactMapper;
 import com.altafjava.school.application.service.EmergencyContactService;
@@ -58,10 +59,11 @@ public class StudentEmergencyContactController implements StudentEmergencyContac
 	@PutMapping("/{contactPublicId}")
 	@PreAuthorize("@permissionAuthorizationService.hasPermission('EMERGENCY_CONTACT_MANAGE')")
 	public ApiResponse<EmergencyContactResponse> update(@PathVariable String studentPublicId,
-			@PathVariable String contactPublicId, @Valid @RequestBody EmergencyContactRequest request) {
+			@PathVariable String contactPublicId, @Valid @RequestBody UpdateEmergencyContactRequest request) {
 		return ApiResponse.success(emergencyContactMapper.toResponse(
 				emergencyContactService.update(studentPublicId, contactPublicId, request.name(),
-						request.relationship(), request.phone(), request.alternatePhone(), request.priority())));
+						request.relationship(), request.phone(), request.alternatePhone(), request.priority(),
+						request.expectedVersion())));
 	}
 
 	@Override

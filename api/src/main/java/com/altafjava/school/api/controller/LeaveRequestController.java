@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import com.altafjava.platform.api.dto.response.ApiResponse;
+import com.altafjava.platform.core.annotation.Command;
 import com.altafjava.school.api.controller.api.LeaveRequestApi;
 import com.altafjava.school.api.dto.request.RejectLeaveRequestRequest;
 import com.altafjava.school.api.dto.request.SubmitLeaveRequestRequest;
@@ -110,6 +111,7 @@ public class LeaveRequestController implements LeaveRequestApi {
 
 	@Override
 	@PatchMapping("/{publicId}/reject")
+	@Command
 	@PreAuthorize(DECIDE_LEAVE)
 	public ApiResponse<LeaveRequestResponse> reject(@PathVariable String publicId,
 			@Valid @RequestBody RejectLeaveRequestRequest request) {

@@ -22,6 +22,7 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 import com.altafjava.platform.api.dto.response.ApiResponse;
+import com.altafjava.platform.core.annotation.Command;
 import com.altafjava.platform.core.idempotency.RequireIdempotencyKey;
 import com.altafjava.school.api.controller.api.StudentApi;
 import com.altafjava.school.api.dto.request.AddressRequest;
@@ -164,6 +165,7 @@ public class StudentController implements StudentApi {
 
 	@Override
 	@PatchMapping("/{publicId}/withdraw")
+	@Command
 	@PreAuthorize("@permissionAuthorizationService.hasPermission('STUDENT_MANAGE')")
 	public ApiResponse<StudentResponse> withdraw(@PathVariable String publicId,
 			@RequestBody(required = false) @Valid LifecycleChangeRequest request) {
@@ -172,6 +174,7 @@ public class StudentController implements StudentApi {
 
 	@Override
 	@PatchMapping("/{publicId}/transfer")
+	@Command
 	@PreAuthorize("@permissionAuthorizationService.hasPermission('STUDENT_MANAGE')")
 	public ApiResponse<StudentResponse> transfer(@PathVariable String publicId,
 			@RequestBody(required = false) @Valid LifecycleChangeRequest request) {
@@ -180,6 +183,7 @@ public class StudentController implements StudentApi {
 
 	@Override
 	@PatchMapping("/{publicId}/graduate")
+	@Command
 	@PreAuthorize("@permissionAuthorizationService.hasPermission('STUDENT_MANAGE')")
 	public ApiResponse<StudentResponse> graduate(@PathVariable String publicId,
 			@RequestBody(required = false) @Valid LifecycleChangeRequest request) {
@@ -188,6 +192,7 @@ public class StudentController implements StudentApi {
 
 	@Override
 	@PatchMapping("/{publicId}/suspend")
+	@Command
 	@PreAuthorize("@permissionAuthorizationService.hasPermission('STUDENT_MANAGE')")
 	public ApiResponse<StudentResponse> suspend(@PathVariable String publicId,
 			@RequestBody(required = false) @Valid LifecycleChangeRequest request) {
@@ -196,6 +201,7 @@ public class StudentController implements StudentApi {
 
 	@Override
 	@PatchMapping("/{publicId}/reinstate")
+	@Command
 	@PreAuthorize("@permissionAuthorizationService.hasPermission('STUDENT_MANAGE')")
 	public ApiResponse<StudentResponse> reinstate(@PathVariable String publicId,
 			@RequestBody(required = false) @Valid LifecycleChangeRequest request) {
@@ -213,7 +219,7 @@ public class StudentController implements StudentApi {
 			@Valid @RequestBody UpdateStudentContactDetailsRequest request) {
 		return ApiResponse
 				.success(studentMapper.toResponse(studentService.updateContactDetails(publicId, request.firstName(),
-						request.lastName(), request.email(), request.dateOfBirth())));
+						request.lastName(), request.email(), request.dateOfBirth(), request.expectedVersion())));
 	}
 
 	@Override
@@ -221,7 +227,8 @@ public class StudentController implements StudentApi {
 	@PreAuthorize("@permissionAuthorizationService.hasPermission('STUDENT_MANAGE')")
 	public ApiResponse<StudentResponse> updatePhone(@PathVariable String publicId,
 			@Valid @RequestBody UpdatePhoneRequest request) {
-		return ApiResponse.success(studentMapper.toResponse(studentService.updatePhone(publicId, request.phone())));
+		return ApiResponse.success(studentMapper
+				.toResponse(studentService.updatePhone(publicId, request.phone(), request.expectedVersion())));
 	}
 
 	@Override
@@ -230,7 +237,8 @@ public class StudentController implements StudentApi {
 	public ApiResponse<StudentResponse> updateAddress(@PathVariable String publicId,
 			@Valid @RequestBody AddressRequest request) {
 		return ApiResponse.success(
-				studentMapper.toResponse(studentService.updateAddress(publicId, addressMapper.toDomain(request))));
+				studentMapper.toResponse(studentService.updateAddress(publicId, addressMapper.toDomain(request),
+						request.expectedVersion())));
 	}
 
 	@Override
@@ -239,7 +247,8 @@ public class StudentController implements StudentApi {
 	public ApiResponse<StudentResponse> updatePhoto(@PathVariable String publicId,
 			@Valid @RequestBody UpdatePhotoRequest request) {
 		return ApiResponse
-				.success(studentMapper.toResponse(studentService.updatePhoto(publicId, request.filePublicId())));
+				.success(studentMapper.toResponse(
+						studentService.updatePhoto(publicId, request.filePublicId(), request.expectedVersion())));
 	}
 
 	@Override

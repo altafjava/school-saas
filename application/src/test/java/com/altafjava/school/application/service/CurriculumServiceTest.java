@@ -13,6 +13,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import com.altafjava.platform.core.concurrency.ExpectedVersion;
 import com.altafjava.platform.core.exception.BusinessException;
 import com.altafjava.platform.core.exception.ResourceNotFoundException;
 import com.altafjava.platform.core.tenant.TenantContext;
@@ -96,7 +97,7 @@ class CurriculumServiceTest {
 		when(curriculumRepository.save(any(Curriculum.class))).thenAnswer(inv -> inv.getArgument(0));
 
 		Curriculum updated = assertDoesNotThrow(() -> curriculumService.assignGradingScale(
-				curriculumPublicId.toString(), gradingScalePublicId.toString()));
+				curriculumPublicId.toString(), gradingScalePublicId.toString(), ExpectedVersion.any()));
 
 		assertEquals(7L, updated.getGradingScaleId());
 	}

@@ -70,7 +70,8 @@ public class VenueController implements VenueApi {
 	public ApiResponse<VenueResponse> update(@PathVariable String publicId,
 			@Valid @RequestBody UpdateVenueRequest request) {
 		return ApiResponse.success(venueMapper.toResponse(
-				venueService.update(publicId, request.name(), request.venueType(), request.capacity())));
+				venueService.update(publicId, request.name(), request.venueType(), request.capacity(),
+						request.expectedVersion())));
 	}
 
 	@Override

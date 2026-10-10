@@ -14,6 +14,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import com.altafjava.platform.core.concurrency.ExpectedVersion;
 import com.altafjava.platform.core.exception.BusinessException;
 import com.altafjava.platform.core.exception.ResourceNotFoundException;
 import com.altafjava.platform.core.tenant.TenantContext;
@@ -107,7 +108,7 @@ class AlumniProfileServiceTest {
 		when(alumniProfileRepository.save(any(AlumniProfile.class))).thenAnswer(inv -> inv.getArgument(0));
 
 		AlumniProfile updated = alumniProfileService.updateContactInfo(publicId.toString(), "Senior Engineer",
-				"alice.smith@alumni.test", "555-0200");
+				"alice.smith@alumni.test", "555-0200", ExpectedVersion.any());
 
 		assertEquals("Senior Engineer", updated.getCurrentOccupation());
 	}

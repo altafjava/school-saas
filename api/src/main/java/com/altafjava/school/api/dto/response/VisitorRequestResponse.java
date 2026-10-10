@@ -5,6 +5,7 @@ import java.time.LocalDate;
 
 public record VisitorRequestResponse(
 		String publicId,
+		Long version,
 		String visitorName,
 		String visitorPhone,
 		String purpose,

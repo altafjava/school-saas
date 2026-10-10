@@ -82,7 +82,8 @@ public class ExamController implements ExamApi {
 	@PreAuthorize("@permissionAuthorizationService.hasPermission('EXAM_WRITE')")
 	public ApiResponse<ExamResponse> reschedule(@PathVariable String publicId,
 			@Valid @RequestBody RescheduleExamRequest request) {
-		return ApiResponse.success(examMapper.toResponse(examService.reschedule(publicId, request.scheduledAt())));
+		return ApiResponse.success(examMapper
+				.toResponse(examService.reschedule(publicId, request.scheduledAt(), request.expectedVersion())));
 	}
 
 	@Override
@@ -90,7 +91,8 @@ public class ExamController implements ExamApi {
 	@PreAuthorize("@permissionAuthorizationService.hasPermission('EXAM_WRITE')")
 	public ApiResponse<ExamResponse> assignTerm(@PathVariable String publicId,
 			@Valid @RequestBody AssignExamTermRequest request) {
-		return ApiResponse.success(examMapper.toResponse(examService.assignTerm(publicId, request.termPublicId())));
+		return ApiResponse.success(examMapper
+				.toResponse(examService.assignTerm(publicId, request.termPublicId(), request.expectedVersion())));
 	}
 
 	@Override
@@ -98,7 +100,8 @@ public class ExamController implements ExamApi {
 	@PreAuthorize("@permissionAuthorizationService.hasPermission('EXAM_WRITE')")
 	public ApiResponse<ExamResponse> reweight(@PathVariable String publicId,
 			@Valid @RequestBody ReweightExamRequest request) {
-		return ApiResponse.success(examMapper.toResponse(examService.reweight(publicId, request.weightage())));
+		return ApiResponse.success(
+				examMapper.toResponse(examService.reweight(publicId, request.weightage(), request.expectedVersion())));
 	}
 
 	@Override

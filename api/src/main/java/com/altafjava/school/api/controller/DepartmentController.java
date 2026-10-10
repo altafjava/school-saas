@@ -71,7 +71,8 @@ public class DepartmentController implements DepartmentApi {
 	public ApiResponse<DepartmentResponse> updateDetails(@PathVariable String publicId,
 			@Valid @RequestBody UpdateDepartmentRequest request) {
 		return ApiResponse.success(departmentMapper.toResponse(
-				departmentService.updateDetails(publicId, request.name(), request.code(), request.description())));
+				departmentService.updateDetails(publicId, request.name(), request.code(), request.description(),
+						request.expectedVersion())));
 	}
 
 	@Override
@@ -80,7 +81,8 @@ public class DepartmentController implements DepartmentApi {
 	public ApiResponse<DepartmentResponse> assignHeadEmployee(@PathVariable String publicId,
 			@Valid @RequestBody AssignHeadEmployeeRequest request) {
 		return ApiResponse.success(departmentMapper
-				.toResponse(departmentService.assignHeadEmployee(publicId, request.headEmployeePublicId())));
+				.toResponse(departmentService.assignHeadEmployee(publicId, request.headEmployeePublicId(),
+						request.expectedVersion())));
 	}
 
 	@Override

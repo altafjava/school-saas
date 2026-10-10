@@ -2,6 +2,7 @@ package com.altafjava.school.api.dto.response;
 
 public record CustomFieldDefinitionResponse(
 		String publicId,
+		Long version,
 		String entityType,
 		String fieldKey,
 		String label,

@@ -9,6 +9,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import com.altafjava.platform.application.service.ActivityLogService;
+import com.altafjava.platform.core.concurrency.ExpectedVersion;
 import com.altafjava.platform.core.exception.ResourceNotFoundException;
 import com.altafjava.platform.core.tenant.TenantContext;
 import com.altafjava.school.domain.counseling.model.CounselingSession;
@@ -69,8 +70,10 @@ public class CounselingSessionService {
 	}
 
 	@Transactional
-	public CounselingSession updateNotes(String publicId, String notes, boolean followUpRequired) {
+	public CounselingSession updateNotes(String publicId, String notes, boolean followUpRequired,
+			ExpectedVersion expectedVersion) {
 		CounselingSession session = findByPublicId(publicId);
+		expectedVersion.verify(session);
 		session.updateNotes(notes, followUpRequired);
 		CounselingSession saved = counselingSessionRepository.save(session);
 		// Note content is deliberately excluded from the audit trail — confidential counseling notes.

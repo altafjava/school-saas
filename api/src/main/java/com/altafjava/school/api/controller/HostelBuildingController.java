@@ -72,7 +72,8 @@ public class HostelBuildingController implements HostelBuildingApi {
 	public ApiResponse<HostelBuildingResponse> updateDetails(@PathVariable String publicId,
 			@Valid @RequestBody UpdateHostelBuildingRequest request) {
 		return ApiResponse.success(hostelBuildingMapper.toResponse(
-				hostelBuildingService.updateDetails(publicId, request.name(), request.address())));
+				hostelBuildingService.updateDetails(publicId, request.name(), request.address(),
+						request.expectedVersion())));
 	}
 
 	@Override

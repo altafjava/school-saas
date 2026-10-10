@@ -7,6 +7,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import com.altafjava.platform.core.concurrency.ExpectedVersion;
 import com.altafjava.platform.core.exception.BusinessException;
 import com.altafjava.platform.core.exception.ResourceNotFoundException;
 import com.altafjava.platform.core.tenant.TenantContext;
@@ -146,9 +147,10 @@ public class GradeService {
 	 * {@code updatedAt} bump.
 	 */
 	@Transactional
-	public Grade correct(String publicId, BigDecimal marks) {
+	public Grade correct(String publicId, BigDecimal marks, ExpectedVersion expectedVersion) {
 		Long tenantId = TenantContext.getCurrentTenantId();
 		Grade grade = requireGrade(tenantId, publicId);
+		expectedVersion.verify(grade);
 		Exam exam = examRepository.findByIdAndTenantId(grade.getExamId(), tenantId)
 				.orElseThrow(() -> new ResourceNotFoundException("Exam not found: " + grade.getExamId()));
 		academicAccessGuard.assertCanWriteSubject(tenantId, exam.getClassroomId(), exam.getSubjectId());

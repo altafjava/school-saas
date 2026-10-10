@@ -5,6 +5,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import com.altafjava.platform.core.concurrency.ExpectedVersion;
 import com.altafjava.platform.core.exception.BusinessException;
 import com.altafjava.platform.core.exception.ResourceNotFoundException;
 import com.altafjava.platform.core.tenant.TenantContext;
@@ -65,8 +66,9 @@ public class AlumniProfileService {
 
 	@Transactional
 	public AlumniProfile updateContactInfo(String publicId, String currentOccupation, String contactEmail,
-			String contactPhone) {
+			String contactPhone, ExpectedVersion expectedVersion) {
 		AlumniProfile profile = findByPublicId(publicId);
+		expectedVersion.verify(profile);
 		profile.updateContactInfo(currentOccupation, contactEmail, contactPhone);
 		return alumniProfileRepository.save(profile);
 	}

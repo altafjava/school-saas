@@ -6,6 +6,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import com.altafjava.platform.core.concurrency.ExpectedVersion;
 import com.altafjava.platform.core.exception.BusinessException;
 import com.altafjava.platform.core.exception.ResourceNotFoundException;
 import com.altafjava.platform.core.tenant.TenantContext;
@@ -49,8 +50,10 @@ public class CertificateTypeService {
 	}
 
 	@Transactional
-	public CertificateType updateDetails(String publicId, String name, String wording) {
+	public CertificateType updateDetails(String publicId, String name, String wording,
+			ExpectedVersion expectedVersion) {
 		CertificateType type = findByPublicId(publicId);
+		expectedVersion.verify(type);
 		type.updateDetails(name, wording);
 		return certificateTypeRepository.save(type);
 	}

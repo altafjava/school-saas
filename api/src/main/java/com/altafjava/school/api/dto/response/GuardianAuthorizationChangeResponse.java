@@ -4,6 +4,7 @@ import java.time.Instant;
 
 public record GuardianAuthorizationChangeResponse(
 		String publicId,
+		Long version,
 		String guardianPublicId,
 		boolean oldAuthorizedForPickup,
 		boolean newAuthorizedForPickup,

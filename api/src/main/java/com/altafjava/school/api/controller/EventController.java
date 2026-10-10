@@ -82,7 +82,7 @@ public class EventController implements EventApi {
 			@Valid @RequestBody UpdateEventRequest request) {
 		return ApiResponse.success(
 				eventMapper.toResponse(eventService.updateDetails(publicId, request.title(), request.description(),
-						request.eventDate(), request.location())));
+						request.eventDate(), request.location(), request.expectedVersion())));
 	}
 
 	@Override

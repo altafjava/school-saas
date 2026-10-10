@@ -6,6 +6,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import com.altafjava.platform.core.concurrency.ExpectedVersion;
 import com.altafjava.platform.core.exception.ResourceNotFoundException;
 import com.altafjava.platform.core.tenant.TenantContext;
 import com.altafjava.school.domain.fee.model.FeeFrequency;
@@ -51,8 +52,9 @@ public class FeeStructureService {
 	// Records a FeeStructureRevision with the pre-revision amount before mutating, so a fee-amount
 	// dispute is answerable from history data rather than only visible as an opaque updatedAt bump.
 	@Transactional
-	public FeeStructure reviseAmount(String publicId, BigDecimal amount) {
+	public FeeStructure reviseAmount(String publicId, BigDecimal amount, ExpectedVersion expectedVersion) {
 		FeeStructure feeStructure = findByPublicId(publicId);
+		expectedVersion.verify(feeStructure);
 		feeStructureRevisionRepository
 				.save(FeeStructureRevision.record(feeStructure.getId(), feeStructure.getAmount(), amount));
 		feeStructure.reviseAmount(amount);
@@ -67,8 +69,10 @@ public class FeeStructureService {
 	}
 
 	@Transactional
-	public FeeStructure configureLateFeePolicy(String publicId, Integer graceDays, BigDecimal lateFeePercentage) {
+	public FeeStructure configureLateFeePolicy(String publicId, Integer graceDays, BigDecimal lateFeePercentage,
+			ExpectedVersion expectedVersion) {
 		FeeStructure feeStructure = findByPublicId(publicId);
+		expectedVersion.verify(feeStructure);
 		feeStructure.configureLateFeePolicy(graceDays, lateFeePercentage);
 		return feeStructureRepository.save(feeStructure);
 	}

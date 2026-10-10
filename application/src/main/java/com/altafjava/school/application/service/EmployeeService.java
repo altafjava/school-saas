@@ -9,6 +9,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import com.altafjava.platform.core.audit.AuditAction;
 import com.altafjava.platform.core.audit.annotation.Audited;
+import com.altafjava.platform.core.concurrency.ExpectedVersion;
 import com.altafjava.platform.core.exception.BusinessException;
 import com.altafjava.platform.core.exception.ResourceNotFoundException;
 import com.altafjava.platform.core.search.LikePattern;
@@ -63,24 +64,28 @@ public class EmployeeService {
 	}
 
 	@Transactional
-	public Employee updateContactDetails(String publicId, String firstName, String lastName, String email) {
+	public Employee updateContactDetails(String publicId, String firstName, String lastName, String email,
+			ExpectedVersion expectedVersion) {
 		Employee employee = requireActive(findByPublicId(publicId));
+		expectedVersion.verify(employee);
 		employee.updateContactDetails(firstName, lastName, email);
 		return employeeRepository.save(employee);
 	}
 
 	@Transactional
 	public Employee updateHrDetails(String publicId, String departmentPublicId, String designation,
-			String qualification, EmploymentType employmentType) {
+			String qualification, EmploymentType employmentType, ExpectedVersion expectedVersion) {
 		Employee employee = requireActive(findByPublicId(publicId));
+		expectedVersion.verify(employee);
 		employee.assignHrDetails(resolveDepartmentId(departmentPublicId), designation, qualification,
 				employmentType);
 		return employeeRepository.save(employee);
 	}
 
 	@Transactional
-	public Employee updatePhone(String publicId, String phone) {
+	public Employee updatePhone(String publicId, String phone, ExpectedVersion expectedVersion) {
 		Employee employee = requireActive(findByPublicId(publicId));
+		expectedVersion.verify(employee);
 		String defaultRegion = employee.getAddress() != null ? employee.getAddress().getCountryCode() : null;
 		if (!phoneNumberValidator.isValid(phone, defaultRegion)) {
 			throw new BusinessException("Invalid phone number: " + phone);
@@ -90,22 +95,25 @@ public class EmployeeService {
 	}
 
 	@Transactional
-	public Employee updateAddress(String publicId, Address address) {
+	public Employee updateAddress(String publicId, Address address, ExpectedVersion expectedVersion) {
 		Employee employee = requireActive(findByPublicId(publicId));
+		expectedVersion.verify(employee);
 		employee.updateAddress(address);
 		return employeeRepository.save(employee);
 	}
 
 	@Transactional
-	public Employee updatePhoto(String publicId, String filePublicId) {
+	public Employee updatePhoto(String publicId, String filePublicId, ExpectedVersion expectedVersion) {
 		Employee employee = requireActive(findByPublicId(publicId));
+		expectedVersion.verify(employee);
 		employee.updatePhoto(Optional.ofNullable(filePublicId).map(UUID::fromString).orElse(null));
 		return employeeRepository.save(employee);
 	}
 
 	@Transactional
-	public Employee setProbationPeriod(String publicId, LocalDate probationEndDate) {
+	public Employee setProbationPeriod(String publicId, LocalDate probationEndDate, ExpectedVersion expectedVersion) {
 		Employee employee = requireActive(findByPublicId(publicId));
+		expectedVersion.verify(employee);
 		employee.setProbationPeriod(probationEndDate);
 		return employeeRepository.save(employee);
 	}

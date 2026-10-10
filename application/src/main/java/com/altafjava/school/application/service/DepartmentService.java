@@ -5,6 +5,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import com.altafjava.platform.core.concurrency.ExpectedVersion;
 import com.altafjava.platform.core.exception.BusinessException;
 import com.altafjava.platform.core.exception.ResourceNotFoundException;
 import com.altafjava.platform.core.tenant.TenantContext;
@@ -45,16 +46,20 @@ public class DepartmentService {
 	}
 
 	@Transactional
-	public Department updateDetails(String publicId, String name, String code, String description) {
+	public Department updateDetails(String publicId, String name, String code, String description,
+			ExpectedVersion expectedVersion) {
 		Department department = findByPublicId(publicId);
+		expectedVersion.verify(department);
 		department.updateDetails(name, code, description);
 		return departmentRepository.save(department);
 	}
 
 	@Transactional
-	public Department assignHeadEmployee(String publicId, String headEmployeePublicId) {
+	public Department assignHeadEmployee(String publicId, String headEmployeePublicId,
+			ExpectedVersion expectedVersion) {
 		Long tenantId = TenantContext.getCurrentTenantId();
 		Department department = findByPublicId(publicId);
+		expectedVersion.verify(department);
 		var headEmployee = employeeRepository.findByPublicIdAndTenantId(UUID.fromString(headEmployeePublicId), tenantId)
 				.orElseThrow(() -> new ResourceNotFoundException("Employee not found: " + headEmployeePublicId));
 		department.assignHeadEmployee(headEmployee.getId());

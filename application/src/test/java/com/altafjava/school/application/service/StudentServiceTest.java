@@ -18,6 +18,7 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import com.altafjava.platform.application.service.NumberSequenceService;
+import com.altafjava.platform.core.concurrency.ExpectedVersion;
 import com.altafjava.platform.core.exception.BusinessException;
 import com.altafjava.platform.core.tenant.TenantContext;
 import com.altafjava.platform.core.tenant.TenantType;
@@ -133,7 +134,7 @@ class StudentServiceTest {
 		when(studentRepository.save(any(Student.class))).thenAnswer(inv -> inv.getArgument(0));
 
 		Student updated = studentService.updateContactDetails(publicId.toString(), "Carolyn", "Jones",
-				"carolyn@school.test", LocalDate.of(2010, 6, 6));
+				"carolyn@school.test", LocalDate.of(2010, 6, 6), ExpectedVersion.any());
 
 		assertEquals("Carolyn", updated.getFirstName());
 		assertEquals("Jones", updated.getLastName());
@@ -147,7 +148,7 @@ class StudentServiceTest {
 		when(studentRepository.findByPublicIdAndTenantId(publicId, 1L)).thenReturn(Optional.of(student));
 		when(studentRepository.save(any(Student.class))).thenAnswer(inv -> inv.getArgument(0));
 
-		Student updated = studentService.updatePhone(publicId.toString(), "+14155552671");
+		Student updated = studentService.updatePhone(publicId.toString(), "+14155552671", ExpectedVersion.any());
 
 		assertEquals("+14155552671", updated.getPhone());
 	}
@@ -158,7 +159,8 @@ class StudentServiceTest {
 		Student student = Student.create("STU-005", "Eve", "Adams", "eve@school.test", LocalDate.of(2010, 4, 4));
 		when(studentRepository.findByPublicIdAndTenantId(publicId, 1L)).thenReturn(Optional.of(student));
 
-		assertThrows(BusinessException.class, () -> studentService.updatePhone(publicId.toString(), "not-a-phone"));
+		assertThrows(BusinessException.class,
+				() -> studentService.updatePhone(publicId.toString(), "not-a-phone", ExpectedVersion.any()));
 	}
 
 	@Test
@@ -169,7 +171,7 @@ class StudentServiceTest {
 		when(studentRepository.findByPublicIdAndTenantId(publicId, 1L)).thenReturn(Optional.of(student));
 		when(studentRepository.save(any(Student.class))).thenAnswer(inv -> inv.getArgument(0));
 
-		Student updated = studentService.updatePhone(publicId.toString(), "(415) 555-2671");
+		Student updated = studentService.updatePhone(publicId.toString(), "(415) 555-2671", ExpectedVersion.any());
 
 		assertEquals("(415) 555-2671", updated.getPhone());
 	}
@@ -183,7 +185,7 @@ class StudentServiceTest {
 		Address address = Address.builder().line1("221B Baker Street").locality("London").postalCode("NW1 6XE")
 				.countryCode("GB").build();
 
-		Student updated = studentService.updateAddress(publicId.toString(), address);
+		Student updated = studentService.updateAddress(publicId.toString(), address, ExpectedVersion.any());
 
 		assertEquals("London", updated.getAddress().getLocality());
 		assertEquals("GB", updated.getAddress().getCountryCode());
@@ -197,7 +199,8 @@ class StudentServiceTest {
 		when(studentRepository.findByPublicIdAndTenantId(publicId, 1L)).thenReturn(Optional.of(student));
 		when(studentRepository.save(any(Student.class))).thenAnswer(inv -> inv.getArgument(0));
 
-		Student updated = studentService.updatePhoto(publicId.toString(), filePublicId.toString());
+		Student updated = studentService.updatePhoto(publicId.toString(), filePublicId.toString(),
+				ExpectedVersion.any());
 
 		assertEquals(filePublicId, updated.getPhotoFilePublicId());
 	}
@@ -210,7 +213,7 @@ class StudentServiceTest {
 		when(studentRepository.findByPublicIdAndTenantId(publicId, 1L)).thenReturn(Optional.of(student));
 		when(studentRepository.save(any(Student.class))).thenAnswer(inv -> inv.getArgument(0));
 
-		Student updated = studentService.updatePhoto(publicId.toString(), null);
+		Student updated = studentService.updatePhoto(publicId.toString(), null, ExpectedVersion.any());
 
 		assertEquals(null, updated.getPhotoFilePublicId());
 	}

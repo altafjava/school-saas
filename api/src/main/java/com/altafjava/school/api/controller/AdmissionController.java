@@ -19,6 +19,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import com.altafjava.platform.api.dto.response.ApiResponse;
+import com.altafjava.platform.core.annotation.Command;
 import com.altafjava.platform.core.exception.BusinessException;
 import com.altafjava.platform.core.idempotency.RequireIdempotencyKey;
 import com.altafjava.school.api.controller.api.AdmissionApi;
@@ -125,6 +126,7 @@ public class AdmissionController implements AdmissionApi {
 
 	@Override
 	@PatchMapping("/{publicId}/decision")
+	@Command
 	@PreAuthorize("@permissionAuthorizationService.hasPermission('ADMISSION_MANAGE')")
 	@RequireIdempotencyKey
 	public ApiResponse<AdmissionResponse> decide(@PathVariable String publicId,
@@ -177,6 +179,7 @@ public class AdmissionController implements AdmissionApi {
 
 	@Override
 	@PatchMapping("/{publicId}/application-fee/waive")
+	@Command
 	@PreAuthorize("@permissionAuthorizationService.hasPermission('ADMISSION_FEE_MANAGE')")
 	public ApiResponse<AdmissionResponse> waiveApplicationFee(@PathVariable String publicId,
 			@Valid @RequestBody WaiveApplicationFeeRequest request) {

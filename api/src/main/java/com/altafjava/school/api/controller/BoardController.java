@@ -70,7 +70,8 @@ public class BoardController implements BoardApi {
 	public ApiResponse<BoardResponse> updateDetails(@PathVariable String publicId,
 			@Valid @RequestBody UpdateBoardRequest request) {
 		return ApiResponse.success(boardMapper.toResponse(
-				boardService.updateDetails(publicId, request.name(), request.code(), request.description())));
+				boardService.updateDetails(publicId, request.name(), request.code(), request.description(),
+						request.expectedVersion())));
 	}
 
 	@Override

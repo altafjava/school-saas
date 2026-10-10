@@ -76,6 +76,7 @@ public class TimetableController implements TimetableApi {
 	public ApiResponse<TimetableEntryResponse> assignVenue(@PathVariable String publicId,
 			@Valid @RequestBody AssignTimetableVenueRequest request) {
 		return ApiResponse.success(
-				timetableEntryMapper.toResponse(timetableService.assignVenue(publicId, request.venuePublicId())));
+				timetableEntryMapper.toResponse(
+						timetableService.assignVenue(publicId, request.venuePublicId(), request.expectedVersion())));
 	}
 }

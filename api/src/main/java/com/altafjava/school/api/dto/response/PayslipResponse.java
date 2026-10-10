@@ -6,6 +6,7 @@ import java.util.List;
 
 public record PayslipResponse(
 		String publicId,
+		Long version,
 		String employeePublicId,
 		int payYear,
 		int payMonth,

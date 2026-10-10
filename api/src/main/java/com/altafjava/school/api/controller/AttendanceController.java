@@ -87,7 +87,8 @@ public class AttendanceController implements AttendanceApi {
 	public ApiResponse<AttendanceResponse> updateStatus(@PathVariable String publicId,
 			@Valid @RequestBody UpdateAttendanceStatusRequest request) {
 		return ApiResponse
-				.success(attendanceMapper.toResponse(attendanceService.updateStatus(publicId, request.status())));
+				.success(attendanceMapper.toResponse(
+						attendanceService.updateStatus(publicId, request.status(), request.expectedVersion())));
 	}
 
 	@Override

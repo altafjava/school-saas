@@ -11,6 +11,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Import;
 import com.altafjava.platform.application.dto.RegisterTenantCommand;
 import com.altafjava.platform.application.service.TenantOnboardingService;
+import com.altafjava.platform.core.concurrency.ExpectedVersion;
 import com.altafjava.platform.core.exception.BusinessException;
 import com.altafjava.platform.core.tenant.TenantContext;
 import com.altafjava.platform.domain.tenant.model.Tenant;
@@ -79,7 +80,7 @@ class ClassroomCapacityIntegrationTest extends SchoolIntegrationTestBase {
 		activateTenant(tenantA);
 		String academicYearPublicId = createAcademicYear("2024-25");
 		Classroom classroom = classroomService.create("CLS-CAP-1", "Grade 5", "A", academicYearPublicId, null);
-		classroomService.updateCapacity(classroom.getPublicId().toString(), 1);
+		classroomService.updateCapacity(classroom.getPublicId().toString(), 1, ExpectedVersion.any());
 
 		Student first = studentService.enroll("STU-CAP-1", "Alice", "Smith", "alice@cap-a.test",
 				LocalDate.of(2010, 1, 1));
@@ -118,7 +119,7 @@ class ClassroomCapacityIntegrationTest extends SchoolIntegrationTestBase {
 		activateTenant(tenantA);
 		String academicYearPublicIdA = createAcademicYear("2024-25");
 		Classroom classroomA = classroomService.create("CLS-CAP-5", "Grade 5", "A", academicYearPublicIdA, null);
-		classroomService.updateCapacity(classroomA.getPublicId().toString(), 1);
+		classroomService.updateCapacity(classroomA.getPublicId().toString(), 1, ExpectedVersion.any());
 		Student studentA1 = studentService.enroll("STU-CAP-5", "Eve", "Wu", "eve@cap-a.test",
 				LocalDate.of(2010, 5, 5));
 		classroomService.enrollStudent(classroomA.getPublicId().toString(), studentA1.getPublicId().toString(),

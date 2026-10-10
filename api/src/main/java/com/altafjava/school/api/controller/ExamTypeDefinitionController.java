@@ -72,6 +72,7 @@ public class ExamTypeDefinitionController implements ExamTypeDefinitionApi {
 	public ApiResponse<ExamTypeDefinitionResponse> update(@PathVariable String publicId,
 			@Valid @RequestBody UpdateExamTypeDefinitionRequest request) {
 		return ApiResponse.success(examTypeDefinitionMapper.toResponse(
-				examTypeDefinitionService.update(publicId, request.name(), request.active(), request.displayOrder())));
+				examTypeDefinitionService.update(publicId, request.name(), request.active(), request.displayOrder(),
+						request.expectedVersion())));
 	}
 }

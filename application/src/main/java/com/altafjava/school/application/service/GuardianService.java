@@ -12,6 +12,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import com.altafjava.platform.application.event.publisher.EventPublisher;
+import com.altafjava.platform.core.concurrency.ExpectedVersion;
 import com.altafjava.platform.core.exception.BusinessException;
 import com.altafjava.platform.core.exception.ResourceNotFoundException;
 import com.altafjava.platform.core.search.LikePattern;
@@ -78,15 +79,17 @@ public class GuardianService {
 	}
 
 	@Transactional
-	public Guardian updateAddress(String publicId, Address address) {
+	public Guardian updateAddress(String publicId, Address address, ExpectedVersion expectedVersion) {
 		Guardian guardian = findByPublicId(publicId);
+		expectedVersion.verify(guardian);
 		guardian.updateAddress(address);
 		return guardianRepository.save(guardian);
 	}
 
 	@Transactional
-	public Guardian updatePhone(String publicId, String phone) {
+	public Guardian updatePhone(String publicId, String phone, ExpectedVersion expectedVersion) {
 		Guardian guardian = findByPublicId(publicId);
+		expectedVersion.verify(guardian);
 		String defaultRegion = guardian.getAddress() != null ? guardian.getAddress().getCountryCode() : null;
 		if (!phoneNumberValidator.isValid(phone, defaultRegion)) {
 			throw new BusinessException("Invalid phone number: " + phone);
@@ -96,8 +99,9 @@ public class GuardianService {
 	}
 
 	@Transactional
-	public Guardian updatePhoto(String publicId, String filePublicId) {
+	public Guardian updatePhoto(String publicId, String filePublicId, ExpectedVersion expectedVersion) {
 		Guardian guardian = findByPublicId(publicId);
+		expectedVersion.verify(guardian);
 		guardian.updatePhoto(Optional.ofNullable(filePublicId).map(UUID::fromString).orElse(null));
 		return guardianRepository.save(guardian);
 	}

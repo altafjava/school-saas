@@ -4,6 +4,7 @@ import java.time.Instant;
 
 public record LeaveApprovalResponse(
 		String publicId,
+		Long version,
 		String stage,
 		String decision,
 		String decidedByUserPublicId,

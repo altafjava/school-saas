@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import com.altafjava.platform.api.dto.response.ApiResponse;
+import com.altafjava.platform.core.annotation.Command;
 import com.altafjava.school.api.controller.api.ClassroomApi;
 import com.altafjava.school.api.dto.request.AssignClassroomCurriculumRequest;
 import com.altafjava.school.api.dto.request.AssignRollNumberRequest;
@@ -104,7 +105,8 @@ public class ClassroomController implements ClassroomApi {
 			@Valid @RequestBody ReassignClassTeacherRequest request) {
 		return ApiResponse
 				.success(classroomMapper
-						.toResponse(classroomService.reassignTeacher(publicId, request.teacherPublicId())));
+						.toResponse(classroomService.reassignTeacher(publicId, request.teacherPublicId(),
+								request.expectedVersion())));
 	}
 
 	@Override
@@ -113,7 +115,8 @@ public class ClassroomController implements ClassroomApi {
 	public ApiResponse<ClassroomResponse> moveToAcademicYear(@PathVariable String publicId,
 			@Valid @RequestBody MoveClassroomAcademicYearRequest request) {
 		return ApiResponse.success(classroomMapper.toResponse(
-				classroomService.moveToAcademicYear(publicId, request.academicYearPublicId())));
+				classroomService.moveToAcademicYear(publicId, request.academicYearPublicId(),
+						request.expectedVersion())));
 	}
 
 	@Override
@@ -122,7 +125,8 @@ public class ClassroomController implements ClassroomApi {
 	public ApiResponse<ClassroomResponse> updateCapacity(@PathVariable String publicId,
 			@Valid @RequestBody UpdateClassroomCapacityRequest request) {
 		return ApiResponse
-				.success(classroomMapper.toResponse(classroomService.updateCapacity(publicId, request.capacity())));
+				.success(classroomMapper.toResponse(
+						classroomService.updateCapacity(publicId, request.capacity(), request.expectedVersion())));
 	}
 
 	@Override
@@ -131,7 +135,8 @@ public class ClassroomController implements ClassroomApi {
 	public ApiResponse<ClassroomResponse> assignCurriculum(@PathVariable String publicId,
 			@Valid @RequestBody AssignClassroomCurriculumRequest request) {
 		return ApiResponse.success(
-				classroomMapper.toResponse(classroomService.assignCurriculum(publicId, request.curriculumPublicId())));
+				classroomMapper.toResponse(classroomService.assignCurriculum(publicId, request.curriculumPublicId(),
+						request.expectedVersion())));
 	}
 
 	@Override
@@ -173,6 +178,7 @@ public class ClassroomController implements ClassroomApi {
 
 	@Override
 	@PatchMapping("/{publicId}/students/{studentPublicId}/roll-number")
+	@Command
 	@PreAuthorize("@permissionAuthorizationService.hasPermission('CLASSROOM_WRITE')")
 	public ApiResponse<RollNumberResponse> assignRollNumber(@PathVariable String publicId,
 			@PathVariable String studentPublicId, @Valid @RequestBody AssignRollNumberRequest request) {

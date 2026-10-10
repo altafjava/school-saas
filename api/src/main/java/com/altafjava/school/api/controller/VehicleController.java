@@ -71,7 +71,7 @@ public class VehicleController implements VehicleApi {
 	public ApiResponse<VehicleResponse> updateDetails(@PathVariable String publicId,
 			@Valid @RequestBody UpdateVehicleRequest request) {
 		return ApiResponse.success(vehicleMapper.toResponse(vehicleService.updateDetails(publicId, request.capacity(),
-				request.driverName(), request.driverContact())));
+				request.driverName(), request.driverContact(), request.expectedVersion())));
 	}
 
 	@Override

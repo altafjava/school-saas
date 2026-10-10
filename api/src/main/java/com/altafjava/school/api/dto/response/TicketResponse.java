@@ -5,6 +5,7 @@ import com.altafjava.school.domain.helpdesk.model.TicketStatus;
 
 public record TicketResponse(
 		String publicId,
+		Long version,
 		String raisedByUserPublicId,
 		TicketCategory category,
 		String subject,

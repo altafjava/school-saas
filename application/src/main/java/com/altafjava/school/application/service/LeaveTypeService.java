@@ -7,6 +7,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import com.altafjava.platform.core.concurrency.ExpectedVersion;
 import com.altafjava.platform.core.exception.BusinessException;
 import com.altafjava.platform.core.exception.ResourceNotFoundException;
 import com.altafjava.platform.core.tenant.TenantContext;
@@ -49,8 +50,10 @@ public class LeaveTypeService {
 	}
 
 	@Transactional
-	public LeaveType updateDetails(String publicId, String name, BigDecimal defaultAnnualDays) {
+	public LeaveType updateDetails(String publicId, String name, BigDecimal defaultAnnualDays,
+			ExpectedVersion expectedVersion) {
 		LeaveType leaveType = findByPublicId(publicId);
+		expectedVersion.verify(leaveType);
 		leaveType.updateDetails(name, defaultAnnualDays);
 		return leaveTypeRepository.save(leaveType);
 	}
@@ -91,16 +94,18 @@ public class LeaveTypeService {
 	}
 
 	@Transactional
-	public LeaveType configureApprovalLevels(String publicId, int approvalLevels) {
+	public LeaveType configureApprovalLevels(String publicId, int approvalLevels, ExpectedVersion expectedVersion) {
 		LeaveType leaveType = findByPublicId(publicId);
+		expectedVersion.verify(leaveType);
 		leaveType.configureApprovalLevels(approvalLevels);
 		return leaveTypeRepository.save(leaveType);
 	}
 
 	@Transactional
 	public LeaveType configureCarryForward(String publicId, boolean enabled, BigDecimal maxCarryForwardDays,
-			Integer carryForwardExpiryMonths) {
+			Integer carryForwardExpiryMonths, ExpectedVersion expectedVersion) {
 		LeaveType leaveType = findByPublicId(publicId);
+		expectedVersion.verify(leaveType);
 		leaveType.configureCarryForward(enabled, maxCarryForwardDays, carryForwardExpiryMonths);
 		return leaveTypeRepository.save(leaveType);
 	}

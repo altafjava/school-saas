@@ -12,6 +12,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import com.altafjava.platform.application.dto.notification.SendNotificationCommand;
 import com.altafjava.platform.application.service.NotificationService;
+import com.altafjava.platform.core.concurrency.ExpectedVersion;
 import com.altafjava.platform.core.exception.ResourceNotFoundException;
 import com.altafjava.platform.core.tenant.TenantContext;
 import com.altafjava.platform.domain.notification.model.NotificationPriority;
@@ -87,11 +88,12 @@ public class AssignmentService {
 	}
 
 	@Transactional
-	public Assignment reschedule(String assignmentPublicId, LocalDate newDueDate) {
+	public Assignment reschedule(String assignmentPublicId, LocalDate newDueDate, ExpectedVersion expectedVersion) {
 		Long tenantId = TenantContext.getCurrentTenantId();
 		Assignment assignment = assignmentRepository
 				.findByPublicIdAndTenantId(UUID.fromString(assignmentPublicId), tenantId)
 				.orElseThrow(() -> new ResourceNotFoundException("Assignment not found: " + assignmentPublicId));
+		expectedVersion.verify(assignment);
 		academicAccessGuard.assertCanWriteSubject(tenantId, assignment.getClassroomId(), assignment.getSubjectId());
 		assignment.reschedule(newDueDate);
 		return assignmentRepository.save(assignment);

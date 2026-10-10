@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import com.altafjava.platform.api.dto.response.ApiResponse;
+import com.altafjava.platform.core.annotation.Command;
 import com.altafjava.platform.core.security.AuthenticatedUser;
 import com.altafjava.school.api.controller.api.SubstitutionApi;
 import com.altafjava.school.api.dto.request.AssignSubstituteRequest;
@@ -83,6 +84,7 @@ public class SubstitutionController implements SubstitutionApi {
 
 	@Override
 	@PatchMapping("/{publicId}/cancel")
+	@Command
 	@PreAuthorize("@permissionAuthorizationService.hasPermission('SUBSTITUTION_MANAGE')")
 	public ApiResponse<SubstitutionResponse> cancel(@PathVariable String publicId,
 			@Valid @RequestBody CancelSubstitutionRequest request) {

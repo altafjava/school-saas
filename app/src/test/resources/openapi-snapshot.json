@@ -2698,7 +2698,7 @@
           "content" : {
             "application/json" : {
               "schema" : {
-                "$ref" : "#/components/schemas/EmergencyContactRequest"
+                "$ref" : "#/components/schemas/UpdateEmergencyContactRequest"
               }
             }
           },
@@ -3147,7 +3147,7 @@
           "content" : {
             "application/json" : {
               "schema" : {
-                "$ref" : "#/components/schemas/ReportDefinitionRequest"
+                "$ref" : "#/components/schemas/UpdateReportDefinitionRequest"
               }
             }
           },
@@ -5434,7 +5434,7 @@
           "content" : {
             "application/json" : {
               "schema" : {
-                "$ref" : "#/components/schemas/TaxJurisdictionRequest"
+                "$ref" : "#/components/schemas/UpdateTaxJurisdictionRequest"
               }
             }
           },
@@ -62649,6 +62649,10 @@
           "id" : {
             "type" : "string"
           },
+          "version" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
           "email" : {
             "type" : "string"
           },
@@ -62776,6 +62780,10 @@
           },
           "ssoDefaultRole" : {
             "type" : "string"
+          },
+          "version" : {
+            "type" : "integer",
+            "format" : "int64"
           }
         },
         "required" : [ "ssoProvider" ]
@@ -62801,6 +62809,10 @@
       "SsoConfigurationResponse" : {
         "type" : "object",
         "properties" : {
+          "version" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
           "ssoEnabled" : {
             "type" : "boolean"
           },
@@ -63235,7 +63247,7 @@
         },
         "required" : [ "sequenceNumber" ]
       },
-      "EmergencyContactRequest" : {
+      "UpdateEmergencyContactRequest" : {
         "type" : "object",
         "properties" : {
           "name" : {
@@ -63261,9 +63273,13 @@
             "type" : "integer",
             "format" : "int32",
             "minimum" : 1
+          },
+          "version" : {
+            "type" : "integer",
+            "format" : "int64"
           }
         },
-        "required" : [ "name", "phone", "priority", "relationship" ]
+        "required" : [ "name", "phone", "priority", "relationship", "version" ]
       },
       "ApiResponseEmergencyContactResponse" : {
         "type" : "object",
@@ -63288,6 +63304,10 @@
         "properties" : {
           "publicId" : {
             "type" : "string"
+          },
+          "version" : {
+            "type" : "integer",
+            "format" : "int64"
           },
           "name" : {
             "type" : "string"
@@ -63315,8 +63335,13 @@
             "type" : "string",
             "maxLength" : 255,
             "minLength" : 0
+          },
+          "version" : {
+            "type" : "integer",
+            "format" : "int64"
           }
-        }
+        },
+        "required" : [ "version" ]
       },
       "ApiResponseRoleResponse" : {
         "type" : "object",
@@ -63342,6 +63367,10 @@
           "id" : {
             "type" : "string"
           },
+          "version" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
           "name" : {
             "type" : "string"
           },
@@ -63361,7 +63390,7 @@
         },
         "required" : [ "id", "systemRole" ]
       },
-      "ReportDefinitionRequest" : {
+      "UpdateReportDefinitionRequest" : {
         "type" : "object",
         "properties" : {
           "name" : {
@@ -63390,9 +63419,13 @@
           },
           "active" : {
             "type" : "boolean"
+          },
+          "version" : {
+            "type" : "integer",
+            "format" : "int64"
           }
         },
-        "required" : [ "name", "outputFormat", "type" ]
+        "required" : [ "active", "name", "outputFormat", "type", "version" ]
       },
       "ApiResponseReportDefinitionResponse" : {
         "type" : "object",
@@ -63417,6 +63450,10 @@
         "properties" : {
           "id" : {
             "type" : "string"
+          },
+          "version" : {
+            "type" : "integer",
+            "format" : "int64"
           },
           "tenantId" : {
             "type" : "string"
@@ -63472,6 +63509,10 @@
           },
           "showRank" : {
             "type" : "boolean"
+          },
+          "version" : {
+            "type" : "integer",
+            "format" : "int64"
           }
         },
         "required" : [ "showAttendanceSummary", "showCompetencyGrid", "showRank", "showRemarks" ]
@@ -63497,6 +63538,10 @@
       "ReportCardTemplateResponse" : {
         "type" : "object",
         "properties" : {
+          "version" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
           "showAttendanceSummary" : {
             "type" : "boolean"
           },
@@ -63697,6 +63742,10 @@
             "type" : "string",
             "maxLength" : 1000,
             "minLength" : 0
+          },
+          "version" : {
+            "type" : "integer",
+            "format" : "int64"
           }
         }
       },
@@ -63723,6 +63772,10 @@
         "properties" : {
           "publicId" : {
             "type" : "string"
+          },
+          "version" : {
+            "type" : "integer",
+            "format" : "int64"
           },
           "studentPublicId" : {
             "type" : "string"
@@ -63805,6 +63858,11 @@
             "type" : "string",
             "description" : "Public UUID of the template"
           },
+          "version" : {
+            "type" : "integer",
+            "format" : "int64",
+            "description" : "Send this back when editing; a stale version is rejected"
+          },
           "documentType" : {
             "type" : "string",
             "description" : "Consumer-defined document type, e.g. STUDENT_ID_CARD"
@@ -63857,9 +63915,13 @@
             "type" : "string",
             "maxLength" : 524288,
             "minLength" : 0
+          },
+          "version" : {
+            "type" : "integer",
+            "format" : "int64"
           }
         },
-        "required" : [ "content", "format", "name" ]
+        "required" : [ "content", "format", "name", "version" ]
       },
       "UpdateDataRetentionPolicyRequest" : {
         "type" : "object",
@@ -63880,9 +63942,13 @@
           "description" : {
             "type" : "string",
             "description" : "Human-readable note, e.g. the jurisdiction/legal basis this window was set for"
+          },
+          "version" : {
+            "type" : "integer",
+            "format" : "int64"
           }
         },
-        "required" : [ "deletionPolicy", "retentionPeriodDays" ]
+        "required" : [ "deletionPolicy", "retentionPeriodDays", "version" ]
       },
       "ApiResponseDataRetentionPolicyResponse" : {
         "type" : "object",
@@ -63909,6 +63975,11 @@
           "id" : {
             "type" : "string",
             "description" : "Public UUID of the policy"
+          },
+          "version" : {
+            "type" : "integer",
+            "format" : "int64",
+            "description" : "Send this back when editing; a stale version is rejected"
           },
           "entityType" : {
             "type" : "string",
@@ -64088,8 +64159,13 @@
             "type" : "number",
             "description" : "New threshold value",
             "example" : 80
+          },
+          "version" : {
+            "type" : "integer",
+            "format" : "int64"
           }
-        }
+        },
+        "required" : [ "version" ]
       },
       "AlertRuleResponse" : {
         "type" : "object",
@@ -64098,6 +64174,11 @@
           "id" : {
             "type" : "string",
             "description" : "Public UUID of the alert rule"
+          },
+          "version" : {
+            "type" : "integer",
+            "format" : "int64",
+            "description" : "Send this back when editing; a stale version is rejected"
           },
           "ruleType" : {
             "type" : "string",
@@ -64204,28 +64285,12 @@
         },
         "required" : [ "success" ]
       },
-      "TaxJurisdictionRequest" : {
+      "UpdateTaxJurisdictionRequest" : {
         "type" : "object",
         "properties" : {
-          "countryCode" : {
-            "type" : "string",
-            "maxLength" : 2,
-            "minLength" : 2,
-            "pattern" : "[A-Z]{2}"
-          },
-          "regionCode" : {
-            "type" : "string",
-            "maxLength" : 10,
-            "minLength" : 0
-          },
           "name" : {
             "type" : "string",
             "maxLength" : 255,
-            "minLength" : 0
-          },
-          "taxType" : {
-            "type" : "string",
-            "maxLength" : 50,
             "minLength" : 0
           },
           "standardRate" : {
@@ -64242,9 +64307,13 @@
             "type" : "string",
             "maxLength" : 255,
             "minLength" : 0
+          },
+          "version" : {
+            "type" : "integer",
+            "format" : "int64"
           }
         },
-        "required" : [ "countryCode", "name", "standardRate", "taxType" ]
+        "required" : [ "name", "standardRate", "version" ]
       },
       "ApiResponseTaxJurisdictionResponse" : {
         "type" : "object",
@@ -64269,6 +64338,10 @@
         "properties" : {
           "id" : {
             "type" : "string"
+          },
+          "version" : {
+            "type" : "integer",
+            "format" : "int64"
           },
           "countryCode" : {
             "type" : "string"
@@ -64513,6 +64586,10 @@
           "publicId" : {
             "type" : "string"
           },
+          "version" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
           "visitorName" : {
             "type" : "string"
           },
@@ -64587,6 +64664,10 @@
         "properties" : {
           "publicId" : {
             "type" : "string"
+          },
+          "version" : {
+            "type" : "integer",
+            "format" : "int64"
           },
           "visitorName" : {
             "type" : "string"
@@ -64665,6 +64746,10 @@
           "publicId" : {
             "type" : "string"
           },
+          "version" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
           "code" : {
             "type" : "string"
           },
@@ -64733,6 +64818,10 @@
         "properties" : {
           "publicId" : {
             "type" : "string"
+          },
+          "version" : {
+            "type" : "integer",
+            "format" : "int64"
           },
           "registrationNumber" : {
             "type" : "string"
@@ -65021,6 +65110,10 @@
           "publicId" : {
             "type" : "string"
           },
+          "version" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
           "studentPublicId" : {
             "type" : "string"
           },
@@ -65191,6 +65284,10 @@
           "publicId" : {
             "type" : "string"
           },
+          "version" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
           "dayOfWeek" : {
             "type" : "string"
           },
@@ -65255,6 +65352,10 @@
         "properties" : {
           "publicId" : {
             "type" : "string"
+          },
+          "version" : {
+            "type" : "integer",
+            "format" : "int64"
           },
           "raisedByUserPublicId" : {
             "type" : "string"
@@ -65328,6 +65429,10 @@
         "properties" : {
           "publicId" : {
             "type" : "string"
+          },
+          "version" : {
+            "type" : "integer",
+            "format" : "int64"
           },
           "name" : {
             "type" : "string"
@@ -65460,6 +65565,11 @@
             "type" : "string",
             "description" : "Unique identifier of the tenant",
             "example" : "tenant_12345"
+          },
+          "version" : {
+            "type" : "integer",
+            "format" : "int64",
+            "description" : "Send this back when editing; a stale version is rejected"
           },
           "name" : {
             "type" : "string",
@@ -65873,6 +65983,10 @@
         "properties" : {
           "publicId" : {
             "type" : "string"
+          },
+          "version" : {
+            "type" : "integer",
+            "format" : "int64"
           },
           "employeeCode" : {
             "type" : "string"
@@ -66409,6 +66523,10 @@
           "publicId" : {
             "type" : "string"
           },
+          "version" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
           "code" : {
             "type" : "string"
           },
@@ -66482,6 +66600,10 @@
           "publicId" : {
             "type" : "string"
           },
+          "version" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
           "studentCode" : {
             "type" : "string"
           },
@@ -66549,6 +66671,10 @@
         "properties" : {
           "publicId" : {
             "type" : "string"
+          },
+          "version" : {
+            "type" : "integer",
+            "format" : "int64"
           },
           "studentCode" : {
             "type" : "string"
@@ -66671,6 +66797,10 @@
           "publicId" : {
             "type" : "string"
           },
+          "version" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
           "feeStructurePublicId" : {
             "type" : "string"
           },
@@ -66705,6 +66835,36 @@
           }
         },
         "required" : [ "active", "publicId" ]
+      },
+      "EmergencyContactRequest" : {
+        "type" : "object",
+        "properties" : {
+          "name" : {
+            "type" : "string",
+            "maxLength" : 200,
+            "minLength" : 0
+          },
+          "relationship" : {
+            "type" : "string",
+            "maxLength" : 100,
+            "minLength" : 0
+          },
+          "phone" : {
+            "type" : "string",
+            "minLength" : 1,
+            "pattern" : "^\\+?[0-9 ()-]{7,30}$"
+          },
+          "alternatePhone" : {
+            "type" : "string",
+            "pattern" : "^\\+?[0-9 ()-]{7,30}$"
+          },
+          "priority" : {
+            "type" : "integer",
+            "format" : "int32",
+            "minimum" : 1
+          }
+        },
+        "required" : [ "name", "phone", "priority", "relationship" ]
       },
       "UploadStudentDocumentRequest" : {
         "type" : "object",
@@ -66791,6 +66951,10 @@
         "properties" : {
           "publicId" : {
             "type" : "string"
+          },
+          "version" : {
+            "type" : "integer",
+            "format" : "int64"
           },
           "termPublicId" : {
             "type" : "string"
@@ -66974,6 +67138,10 @@
           "publicId" : {
             "type" : "string"
           },
+          "version" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
           "employeePublicId" : {
             "type" : "string"
           },
@@ -67041,6 +67209,10 @@
           "publicId" : {
             "type" : "string"
           },
+          "version" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
           "name" : {
             "type" : "string"
           },
@@ -67099,6 +67271,10 @@
         "properties" : {
           "publicId" : {
             "type" : "string"
+          },
+          "version" : {
+            "type" : "integer",
+            "format" : "int64"
           },
           "routePublicId" : {
             "type" : "string"
@@ -67159,6 +67335,10 @@
           "publicId" : {
             "type" : "string"
           },
+          "version" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
           "hostelBuildingPublicId" : {
             "type" : "string"
           },
@@ -67217,6 +67397,10 @@
           "publicId" : {
             "type" : "string"
           },
+          "version" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
           "studentPublicId" : {
             "type" : "string"
           },
@@ -67262,6 +67446,39 @@
           }
         },
         "required" : [ "code" ]
+      },
+      "ReportDefinitionRequest" : {
+        "type" : "object",
+        "properties" : {
+          "name" : {
+            "type" : "string",
+            "minLength" : 1
+          },
+          "description" : {
+            "type" : "string"
+          },
+          "type" : {
+            "type" : "string",
+            "enum" : [ "SQL", "JPQL", "SERVICE_CALL" ]
+          },
+          "queryTemplate" : {
+            "type" : "string"
+          },
+          "parameters" : {
+            "type" : "string"
+          },
+          "schedule" : {
+            "type" : "string"
+          },
+          "outputFormat" : {
+            "type" : "string",
+            "enum" : [ "PDF", "EXCEL", "CSV", "JSON" ]
+          },
+          "active" : {
+            "type" : "boolean"
+          }
+        },
+        "required" : [ "name", "outputFormat", "type" ]
       },
       "ApiResponseReportExecutionResponse" : {
         "type" : "object",
@@ -67562,6 +67779,10 @@
           "publicId" : {
             "type" : "string"
           },
+          "version" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
           "name" : {
             "type" : "string"
           },
@@ -67623,6 +67844,10 @@
         "properties" : {
           "publicId" : {
             "type" : "string"
+          },
+          "version" : {
+            "type" : "integer",
+            "format" : "int64"
           },
           "studentPublicId" : {
             "type" : "string"
@@ -67691,6 +67916,10 @@
         "properties" : {
           "publicId" : {
             "type" : "string"
+          },
+          "version" : {
+            "type" : "integer",
+            "format" : "int64"
           },
           "code" : {
             "type" : "string"
@@ -68107,6 +68336,10 @@
           "publicId" : {
             "type" : "string"
           },
+          "version" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
           "studentPublicId" : {
             "type" : "string"
           },
@@ -68180,6 +68413,10 @@
           "publicId" : {
             "type" : "string"
           },
+          "version" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
           "classroomPublicId" : {
             "type" : "string"
           },
@@ -68243,6 +68480,10 @@
         "properties" : {
           "publicId" : {
             "type" : "string"
+          },
+          "version" : {
+            "type" : "integer",
+            "format" : "int64"
           },
           "name" : {
             "type" : "string"
@@ -68322,6 +68563,10 @@
         "properties" : {
           "publicId" : {
             "type" : "string"
+          },
+          "version" : {
+            "type" : "integer",
+            "format" : "int64"
           },
           "employeePublicId" : {
             "type" : "string"
@@ -68410,6 +68655,10 @@
           "publicId" : {
             "type" : "string"
           },
+          "version" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
           "name" : {
             "type" : "string"
           },
@@ -68463,6 +68712,10 @@
         "properties" : {
           "publicId" : {
             "type" : "string"
+          },
+          "version" : {
+            "type" : "integer",
+            "format" : "int64"
           },
           "date" : {
             "type" : "string",
@@ -68531,6 +68784,10 @@
           "publicId" : {
             "type" : "string"
           },
+          "version" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
           "firstName" : {
             "type" : "string"
           },
@@ -68592,6 +68849,10 @@
         "properties" : {
           "publicId" : {
             "type" : "string"
+          },
+          "version" : {
+            "type" : "integer",
+            "format" : "int64"
           },
           "studentPublicId" : {
             "type" : "string"
@@ -68785,6 +69046,10 @@
           "publicId" : {
             "type" : "string"
           },
+          "version" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
           "name" : {
             "type" : "string"
           },
@@ -68858,6 +69123,10 @@
         "properties" : {
           "publicId" : {
             "type" : "string"
+          },
+          "version" : {
+            "type" : "integer",
+            "format" : "int64"
           },
           "studentPublicId" : {
             "type" : "string"
@@ -68986,6 +69255,10 @@
           "publicId" : {
             "type" : "string"
           },
+          "version" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
           "name" : {
             "type" : "string"
           },
@@ -69042,6 +69315,10 @@
         "properties" : {
           "publicId" : {
             "type" : "string"
+          },
+          "version" : {
+            "type" : "integer",
+            "format" : "int64"
           },
           "feeStructurePublicId" : {
             "type" : "string"
@@ -69120,6 +69397,10 @@
           "publicId" : {
             "type" : "string"
           },
+          "version" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
           "studentPublicId" : {
             "type" : "string"
           },
@@ -69177,6 +69458,10 @@
         "properties" : {
           "publicId" : {
             "type" : "string"
+          },
+          "version" : {
+            "type" : "integer",
+            "format" : "int64"
           },
           "amount" : {
             "type" : "number"
@@ -69332,6 +69617,10 @@
           "publicId" : {
             "type" : "string"
           },
+          "version" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
           "title" : {
             "type" : "string"
           },
@@ -69412,6 +69701,10 @@
           "publicId" : {
             "type" : "string"
           },
+          "version" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
           "code" : {
             "type" : "string"
           },
@@ -69485,6 +69778,10 @@
           "publicId" : {
             "type" : "string"
           },
+          "version" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
           "title" : {
             "type" : "string"
           },
@@ -69544,6 +69841,10 @@
         "properties" : {
           "publicId" : {
             "type" : "string"
+          },
+          "version" : {
+            "type" : "integer",
+            "format" : "int64"
           },
           "eventPublicId" : {
             "type" : "string"
@@ -69616,6 +69917,10 @@
         "properties" : {
           "publicId" : {
             "type" : "string"
+          },
+          "version" : {
+            "type" : "integer",
+            "format" : "int64"
           },
           "employeeCode" : {
             "type" : "string"
@@ -69770,6 +70075,10 @@
           "publicId" : {
             "type" : "string"
           },
+          "version" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
           "studentPublicId" : {
             "type" : "string"
           },
@@ -69902,6 +70211,10 @@
         "properties" : {
           "publicId" : {
             "type" : "string"
+          },
+          "version" : {
+            "type" : "integer",
+            "format" : "int64"
           },
           "name" : {
             "type" : "string"
@@ -70066,6 +70379,10 @@
           "publicId" : {
             "type" : "string"
           },
+          "version" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
           "entityType" : {
             "type" : "string"
           },
@@ -70191,6 +70508,10 @@
           "publicId" : {
             "type" : "string"
           },
+          "version" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
           "boardPublicId" : {
             "type" : "string"
           },
@@ -70262,6 +70583,10 @@
           "publicId" : {
             "type" : "string"
           },
+          "version" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
           "studentPublicId" : {
             "type" : "string"
           },
@@ -70319,6 +70644,10 @@
         "properties" : {
           "publicId" : {
             "type" : "string"
+          },
+          "version" : {
+            "type" : "integer",
+            "format" : "int64"
           },
           "studentPublicId" : {
             "type" : "string"
@@ -70394,6 +70723,10 @@
         "properties" : {
           "publicId" : {
             "type" : "string"
+          },
+          "version" : {
+            "type" : "integer",
+            "format" : "int64"
           },
           "classCode" : {
             "type" : "string"
@@ -70515,6 +70848,10 @@
           "publicId" : {
             "type" : "string"
           },
+          "version" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
           "bookCopyPublicId" : {
             "type" : "string"
           },
@@ -70591,6 +70928,10 @@
           "publicId" : {
             "type" : "string"
           },
+          "version" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
           "code" : {
             "type" : "string"
           },
@@ -70664,6 +71005,10 @@
           "publicId" : {
             "type" : "string"
           },
+          "version" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
           "isbn" : {
             "type" : "string"
           },
@@ -70720,6 +71065,10 @@
           "publicId" : {
             "type" : "string"
           },
+          "version" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
           "bookPublicId" : {
             "type" : "string"
           },
@@ -70769,6 +71118,10 @@
         "properties" : {
           "publicId" : {
             "type" : "string"
+          },
+          "version" : {
+            "type" : "integer",
+            "format" : "int64"
           },
           "bookPublicId" : {
             "type" : "string"
@@ -70841,6 +71194,10 @@
         "properties" : {
           "publicId" : {
             "type" : "string"
+          },
+          "version" : {
+            "type" : "integer",
+            "format" : "int64"
           },
           "name" : {
             "type" : "string"
@@ -71699,6 +72056,10 @@
           "publicId" : {
             "type" : "string"
           },
+          "version" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
           "studentPublicId" : {
             "type" : "string"
           },
@@ -71834,6 +72195,10 @@
           "publicId" : {
             "type" : "string"
           },
+          "version" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
           "classroomPublicId" : {
             "type" : "string"
           },
@@ -71898,6 +72263,10 @@
         "properties" : {
           "publicId" : {
             "type" : "string"
+          },
+          "version" : {
+            "type" : "integer",
+            "format" : "int64"
           },
           "assignmentPublicId" : {
             "type" : "string"
@@ -71992,6 +72361,10 @@
           "publicId" : {
             "type" : "string"
           },
+          "version" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
           "assetCode" : {
             "type" : "string"
           },
@@ -72058,6 +72431,10 @@
         "properties" : {
           "publicId" : {
             "type" : "string"
+          },
+          "version" : {
+            "type" : "integer",
+            "format" : "int64"
           },
           "assetPublicId" : {
             "type" : "string"
@@ -72325,6 +72702,10 @@
           "publicId" : {
             "type" : "string"
           },
+          "version" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
           "studentPublicId" : {
             "type" : "string"
           },
@@ -72454,6 +72835,10 @@
         "properties" : {
           "publicId" : {
             "type" : "string"
+          },
+          "version" : {
+            "type" : "integer",
+            "format" : "int64"
           },
           "applicantFirstName" : {
             "type" : "string"
@@ -72751,6 +73136,48 @@
           }
         },
         "required" : [ "days" ]
+      },
+      "TaxJurisdictionRequest" : {
+        "type" : "object",
+        "properties" : {
+          "countryCode" : {
+            "type" : "string",
+            "maxLength" : 2,
+            "minLength" : 2,
+            "pattern" : "[A-Z]{2}"
+          },
+          "regionCode" : {
+            "type" : "string",
+            "maxLength" : 10,
+            "minLength" : 0
+          },
+          "name" : {
+            "type" : "string",
+            "maxLength" : 255,
+            "minLength" : 0
+          },
+          "taxType" : {
+            "type" : "string",
+            "maxLength" : 50,
+            "minLength" : 0
+          },
+          "standardRate" : {
+            "type" : "number",
+            "maximum" : 1.0,
+            "minimum" : 0.0
+          },
+          "taxIdLabel" : {
+            "type" : "string",
+            "maxLength" : 100,
+            "minLength" : 0
+          },
+          "taxIdPattern" : {
+            "type" : "string",
+            "maxLength" : 255,
+            "minLength" : 0
+          }
+        },
+        "required" : [ "countryCode", "name", "standardRate", "taxType" ]
       },
       "JobDefinitionRequest" : {
         "type" : "object",
@@ -73096,6 +73523,11 @@
             "description" : "Unique identifier",
             "example" : "flag_123"
           },
+          "version" : {
+            "type" : "integer",
+            "format" : "int64",
+            "description" : "Send this back when editing; a stale version is rejected"
+          },
           "key" : {
             "type" : "string",
             "description" : "Unique key",
@@ -73193,6 +73625,10 @@
         "properties" : {
           "publicId" : {
             "type" : "string"
+          },
+          "version" : {
+            "type" : "integer",
+            "format" : "int64"
           },
           "name" : {
             "type" : "string"
@@ -73653,9 +74089,13 @@
           "capacity" : {
             "type" : "integer",
             "format" : "int32"
+          },
+          "version" : {
+            "type" : "integer",
+            "format" : "int64"
           }
         },
-        "required" : [ "name", "venueType" ]
+        "required" : [ "name", "venueType", "version" ]
       },
       "UpdateVehicleRequest" : {
         "type" : "object",
@@ -73674,9 +74114,13 @@
             "type" : "string",
             "maxLength" : 50,
             "minLength" : 0
+          },
+          "version" : {
+            "type" : "integer",
+            "format" : "int64"
           }
         },
-        "required" : [ "capacity" ]
+        "required" : [ "capacity", "version" ]
       },
       "UpdateUserRequest" : {
         "type" : "object",
@@ -73706,8 +74150,13 @@
               "minLength" : 1
             },
             "uniqueItems" : true
+          },
+          "version" : {
+            "type" : "integer",
+            "format" : "int64"
           }
-        }
+        },
+        "required" : [ "version" ]
       },
       "EndTransportAssignmentRequest" : {
         "type" : "object",
@@ -73736,9 +74185,13 @@
           "venuePublicId" : {
             "type" : "string",
             "minLength" : 1
+          },
+          "version" : {
+            "type" : "integer",
+            "format" : "int64"
           }
         },
-        "required" : [ "venuePublicId" ]
+        "required" : [ "venuePublicId", "version" ]
       },
       "ResolveTicketRequest" : {
         "type" : "object",
@@ -73810,8 +74263,14 @@
             "description" : "Tenant's declared data-residency region (DPDP/GDPR). Currently routes object/file storage to a region-specific bucket when provisioned — see StorageRegionConfig. Does not relocate the tenant's database.",
             "enum" : [ "IN", "EU", "US", "GLOBAL" ],
             "example" : "IN"
+          },
+          "version" : {
+            "type" : "integer",
+            "format" : "int64",
+            "description" : "The version read with the tenant; a stale one is rejected"
           }
-        }
+        },
+        "required" : [ "version" ]
       },
       "UpdateTenantSettingsRequest" : {
         "type" : "object",
@@ -73875,6 +74334,10 @@
           },
           "dpoEmail" : {
             "type" : "string"
+          },
+          "version" : {
+            "type" : "integer",
+            "format" : "int64"
           }
         }
       },
@@ -73899,6 +74362,10 @@
       "TenantSettingsResponse" : {
         "type" : "object",
         "properties" : {
+          "version" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
           "timezone" : {
             "type" : "string"
           },
@@ -74003,6 +74470,10 @@
           "passwordResetFrequencyDays" : {
             "type" : "integer",
             "format" : "int32"
+          },
+          "version" : {
+            "type" : "integer",
+            "format" : "int64"
           }
         }
       },
@@ -74027,6 +74498,10 @@
       "TenantSecuritySettingsResponse" : {
         "type" : "object",
         "properties" : {
+          "version" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
           "enforceMfa" : {
             "type" : "boolean"
           },
@@ -74072,9 +74547,13 @@
           "curriculumPublicId" : {
             "type" : "string",
             "minLength" : 1
+          },
+          "version" : {
+            "type" : "integer",
+            "format" : "int64"
           }
         },
-        "required" : [ "curriculumPublicId" ]
+        "required" : [ "curriculumPublicId", "version" ]
       },
       "RevokeFeeDiscountRequest" : {
         "type" : "object",
@@ -74130,8 +74609,13 @@
             "type" : "string",
             "maxLength" : 36,
             "minLength" : 0
+          },
+          "version" : {
+            "type" : "integer",
+            "format" : "int64"
           }
-        }
+        },
+        "required" : [ "version" ]
       },
       "UpdatePhoneRequest" : {
         "type" : "object",
@@ -74140,8 +74624,13 @@
             "type" : "string",
             "maxLength" : 30,
             "minLength" : 0
+          },
+          "version" : {
+            "type" : "integer",
+            "format" : "int64"
           }
-        }
+        },
+        "required" : [ "version" ]
       },
       "UpdateStudentContactDetailsRequest" : {
         "type" : "object",
@@ -74165,9 +74654,13 @@
           "dateOfBirth" : {
             "type" : "string",
             "format" : "date"
+          },
+          "version" : {
+            "type" : "integer",
+            "format" : "int64"
           }
         },
-        "required" : [ "dateOfBirth", "firstName", "lastName" ]
+        "required" : [ "dateOfBirth", "firstName", "lastName", "version" ]
       },
       "AddressRequest" : {
         "type" : "object",
@@ -74200,8 +74693,13 @@
           "countryCode" : {
             "type" : "string",
             "pattern" : "^[A-Z]{2}$"
+          },
+          "version" : {
+            "type" : "integer",
+            "format" : "int64"
           }
-        }
+        },
+        "required" : [ "version" ]
       },
       "SupersedeSalaryStructureRequest" : {
         "type" : "object",
@@ -74237,9 +74735,13 @@
             "type" : "string",
             "maxLength" : 500,
             "minLength" : 0
+          },
+          "version" : {
+            "type" : "integer",
+            "format" : "int64"
           }
         },
-        "required" : [ "code", "name" ]
+        "required" : [ "code", "name", "version" ]
       },
       "UpdateRoomRequest" : {
         "type" : "object",
@@ -74253,9 +74755,13 @@
             "type" : "integer",
             "format" : "int32",
             "minimum" : 1
+          },
+          "version" : {
+            "type" : "integer",
+            "format" : "int64"
           }
         },
-        "required" : [ "capacity", "roomNumber" ]
+        "required" : [ "capacity", "roomNumber", "version" ]
       },
       "VacateRoomAllocationRequest" : {
         "type" : "object",
@@ -74290,6 +74796,10 @@
         "properties" : {
           "publicId" : {
             "type" : "string"
+          },
+          "version" : {
+            "type" : "integer",
+            "format" : "int64"
           },
           "employeePublicId" : {
             "type" : "string"
@@ -74347,9 +74857,13 @@
           "displayOrder" : {
             "type" : "integer",
             "format" : "int32"
+          },
+          "version" : {
+            "type" : "integer",
+            "format" : "int64"
           }
         },
-        "required" : [ "active", "displayOrder", "name" ]
+        "required" : [ "active", "displayOrder", "name", "version" ]
       },
       "UpdateLeaveTypeRequest" : {
         "type" : "object",
@@ -74362,9 +74876,13 @@
           "defaultAnnualDays" : {
             "type" : "number",
             "minimum" : 0.0
+          },
+          "version" : {
+            "type" : "integer",
+            "format" : "int64"
           }
         },
-        "required" : [ "defaultAnnualDays", "name" ]
+        "required" : [ "defaultAnnualDays", "name", "version" ]
       },
       "ConfigureLeaveCarryForwardRequest" : {
         "type" : "object",
@@ -74380,9 +74898,13 @@
             "type" : "integer",
             "format" : "int32",
             "minimum" : 1
+          },
+          "version" : {
+            "type" : "integer",
+            "format" : "int64"
           }
         },
-        "required" : [ "enabled" ]
+        "required" : [ "enabled", "version" ]
       },
       "ConfigureLeaveApprovalRequest" : {
         "type" : "object",
@@ -74392,9 +74914,13 @@
             "format" : "int32",
             "maximum" : 2,
             "minimum" : 1
+          },
+          "version" : {
+            "type" : "integer",
+            "format" : "int64"
           }
         },
-        "required" : [ "approvalLevels" ]
+        "required" : [ "approvalLevels", "version" ]
       },
       "RejectLeaveRequestRequest" : {
         "type" : "object",
@@ -74419,9 +74945,13 @@
             "type" : "string",
             "maxLength" : 500,
             "minLength" : 0
+          },
+          "version" : {
+            "type" : "integer",
+            "format" : "int64"
           }
         },
-        "required" : [ "name" ]
+        "required" : [ "name", "version" ]
       },
       "UpdateHolidayRequest" : {
         "type" : "object",
@@ -74437,9 +74967,13 @@
           },
           "recurring" : {
             "type" : "boolean"
+          },
+          "version" : {
+            "type" : "integer",
+            "format" : "int64"
           }
         },
-        "required" : [ "date", "name", "recurring" ]
+        "required" : [ "date", "name", "recurring", "version" ]
       },
       "RestrictCustodyRequest" : {
         "type" : "object",
@@ -74461,9 +74995,13 @@
               "$ref" : "#/components/schemas/GradingScaleThresholdRequest"
             },
             "minItems" : 1
+          },
+          "version" : {
+            "type" : "integer",
+            "format" : "int64"
           }
         },
-        "required" : [ "thresholds" ]
+        "required" : [ "thresholds", "version" ]
       },
       "CorrectGradeRequest" : {
         "type" : "object",
@@ -74471,9 +75009,13 @@
           "marks" : {
             "type" : "number",
             "minimum" : 0.0
+          },
+          "version" : {
+            "type" : "integer",
+            "format" : "int64"
           }
         },
-        "required" : [ "marks" ]
+        "required" : [ "marks", "version" ]
       },
       "ConfigureFeeLateFeePolicyRequest" : {
         "type" : "object",
@@ -74487,8 +75029,13 @@
             "type" : "number",
             "maximum" : 100.0,
             "minimum" : 0.0
+          },
+          "version" : {
+            "type" : "integer",
+            "format" : "int64"
           }
-        }
+        },
+        "required" : [ "version" ]
       },
       "ConfigureFeeAssignmentDueDateRequest" : {
         "type" : "object",
@@ -74506,9 +75053,13 @@
             "type" : "number",
             "maximum" : 100.0,
             "minimum" : 0.0
+          },
+          "version" : {
+            "type" : "integer",
+            "format" : "int64"
           }
         },
-        "required" : [ "dueDate" ]
+        "required" : [ "dueDate", "version" ]
       },
       "ReviseFeeAmountRequest" : {
         "type" : "object",
@@ -74516,9 +75067,13 @@
           "amount" : {
             "type" : "number",
             "minimum" : 0.01
+          },
+          "version" : {
+            "type" : "integer",
+            "format" : "int64"
           }
         },
-        "required" : [ "amount" ]
+        "required" : [ "amount", "version" ]
       },
       "ReweightExamRequest" : {
         "type" : "object",
@@ -74527,9 +75082,13 @@
             "type" : "number",
             "maximum" : 100,
             "minimum" : 0.01
+          },
+          "version" : {
+            "type" : "integer",
+            "format" : "int64"
           }
         },
-        "required" : [ "weightage" ]
+        "required" : [ "version", "weightage" ]
       },
       "AssignExamTermRequest" : {
         "type" : "object",
@@ -74537,9 +75096,13 @@
           "termPublicId" : {
             "type" : "string",
             "minLength" : 1
+          },
+          "version" : {
+            "type" : "integer",
+            "format" : "int64"
           }
         },
-        "required" : [ "termPublicId" ]
+        "required" : [ "termPublicId", "version" ]
       },
       "RescheduleExamRequest" : {
         "type" : "object",
@@ -74547,9 +75110,13 @@
           "scheduledAt" : {
             "type" : "string",
             "format" : "date-time"
+          },
+          "version" : {
+            "type" : "integer",
+            "format" : "int64"
           }
         },
-        "required" : [ "scheduledAt" ]
+        "required" : [ "scheduledAt", "version" ]
       },
       "UpdateExamTypeDefinitionRequest" : {
         "type" : "object",
@@ -74564,9 +75131,13 @@
           "displayOrder" : {
             "type" : "integer",
             "format" : "int32"
+          },
+          "version" : {
+            "type" : "integer",
+            "format" : "int64"
           }
         },
-        "required" : [ "active", "displayOrder", "name" ]
+        "required" : [ "active", "displayOrder", "name", "version" ]
       },
       "UpdateEventRequest" : {
         "type" : "object",
@@ -74589,9 +75160,13 @@
             "type" : "string",
             "maxLength" : 200,
             "minLength" : 0
+          },
+          "version" : {
+            "type" : "integer",
+            "format" : "int64"
           }
         },
-        "required" : [ "eventDate", "title" ]
+        "required" : [ "eventDate", "title", "version" ]
       },
       "SetEmployeeProbationRequest" : {
         "type" : "object",
@@ -74599,9 +75174,13 @@
           "probationEndDate" : {
             "type" : "string",
             "format" : "date"
+          },
+          "version" : {
+            "type" : "integer",
+            "format" : "int64"
           }
         },
-        "required" : [ "probationEndDate" ]
+        "required" : [ "probationEndDate", "version" ]
       },
       "UpdateEmployeeHrDetailsRequest" : {
         "type" : "object",
@@ -74622,8 +75201,13 @@
           "employmentType" : {
             "type" : "string",
             "enum" : [ "FULL_TIME", "PART_TIME", "CONTRACT", "VISITING" ]
+          },
+          "version" : {
+            "type" : "integer",
+            "format" : "int64"
           }
-        }
+        },
+        "required" : [ "version" ]
       },
       "ExitEmployeeRequest" : {
         "type" : "object",
@@ -74663,9 +75247,13 @@
             "format" : "email",
             "maxLength" : 255,
             "minLength" : 0
+          },
+          "version" : {
+            "type" : "integer",
+            "format" : "int64"
           }
         },
-        "required" : [ "email", "firstName", "lastName" ]
+        "required" : [ "email", "firstName", "lastName", "version" ]
       },
       "RecordDisciplineActionRequest" : {
         "type" : "object",
@@ -74695,9 +75283,13 @@
             "type" : "string",
             "maxLength" : 500,
             "minLength" : 0
+          },
+          "version" : {
+            "type" : "integer",
+            "format" : "int64"
           }
         },
-        "required" : [ "code", "name" ]
+        "required" : [ "code", "name", "version" ]
       },
       "AssignHeadEmployeeRequest" : {
         "type" : "object",
@@ -74705,9 +75297,13 @@
           "headEmployeePublicId" : {
             "type" : "string",
             "minLength" : 1
+          },
+          "version" : {
+            "type" : "integer",
+            "format" : "int64"
           }
         },
-        "required" : [ "headEmployeePublicId" ]
+        "required" : [ "headEmployeePublicId", "version" ]
       },
       "UpdateCustomFieldDefinitionRequest" : {
         "type" : "object",
@@ -74742,9 +75338,13 @@
           },
           "visibilityCondition" : {
             "$ref" : "#/components/schemas/CustomFieldVisibilityConditionRequest"
+          },
+          "version" : {
+            "type" : "integer",
+            "format" : "int64"
           }
         },
-        "required" : [ "displayGroupOrder", "displayOrder", "fieldType", "label", "required" ]
+        "required" : [ "displayGroupOrder", "displayOrder", "fieldType", "label", "required", "version" ]
       },
       "UpdateCurriculumRequest" : {
         "type" : "object",
@@ -74763,9 +75363,13 @@
             "type" : "string",
             "maxLength" : 500,
             "minLength" : 0
+          },
+          "version" : {
+            "type" : "integer",
+            "format" : "int64"
           }
         },
-        "required" : [ "code", "name" ]
+        "required" : [ "code", "name", "version" ]
       },
       "AssignGradingScaleRequest" : {
         "type" : "object",
@@ -74773,9 +75377,13 @@
           "gradingScalePublicId" : {
             "type" : "string",
             "minLength" : 1
+          },
+          "version" : {
+            "type" : "integer",
+            "format" : "int64"
           }
         },
-        "required" : [ "gradingScalePublicId" ]
+        "required" : [ "gradingScalePublicId", "version" ]
       },
       "UpdateCounselingSessionNotesRequest" : {
         "type" : "object",
@@ -74787,9 +75395,13 @@
           },
           "followUpRequired" : {
             "type" : "boolean"
+          },
+          "version" : {
+            "type" : "integer",
+            "format" : "int64"
           }
         },
-        "required" : [ "followUpRequired" ]
+        "required" : [ "followUpRequired", "version" ]
       },
       "ScheduleCounselingReferralRequest" : {
         "type" : "object",
@@ -74806,8 +75418,13 @@
         "properties" : {
           "teacherPublicId" : {
             "type" : "string"
+          },
+          "version" : {
+            "type" : "integer",
+            "format" : "int64"
           }
-        }
+        },
+        "required" : [ "version" ]
       },
       "AssignRollNumberRequest" : {
         "type" : "object",
@@ -74858,9 +75475,13 @@
           "curriculumPublicId" : {
             "type" : "string",
             "minLength" : 1
+          },
+          "version" : {
+            "type" : "integer",
+            "format" : "int64"
           }
         },
-        "required" : [ "curriculumPublicId" ]
+        "required" : [ "curriculumPublicId", "version" ]
       },
       "UpdateClassroomCapacityRequest" : {
         "type" : "object",
@@ -74869,8 +75490,13 @@
             "type" : "integer",
             "format" : "int32",
             "minimum" : 1
+          },
+          "version" : {
+            "type" : "integer",
+            "format" : "int64"
           }
-        }
+        },
+        "required" : [ "version" ]
       },
       "MoveClassroomAcademicYearRequest" : {
         "type" : "object",
@@ -74878,9 +75504,13 @@
           "academicYearPublicId" : {
             "type" : "string",
             "minLength" : 1
+          },
+          "version" : {
+            "type" : "integer",
+            "format" : "int64"
           }
         },
-        "required" : [ "academicYearPublicId" ]
+        "required" : [ "academicYearPublicId", "version" ]
       },
       "ReturnBookRequest" : {
         "type" : "object",
@@ -74903,9 +75533,13 @@
           "wording" : {
             "type" : "string",
             "minLength" : 1
+          },
+          "version" : {
+            "type" : "integer",
+            "format" : "int64"
           }
         },
-        "required" : [ "name", "wording" ]
+        "required" : [ "name", "version", "wording" ]
       },
       "UpdateBoardRequest" : {
         "type" : "object",
@@ -74924,9 +75558,13 @@
             "type" : "string",
             "maxLength" : 500,
             "minLength" : 0
+          },
+          "version" : {
+            "type" : "integer",
+            "format" : "int64"
           }
         },
-        "required" : [ "code", "name" ]
+        "required" : [ "code", "name", "version" ]
       },
       "UpdateAttendanceStatusRequest" : {
         "type" : "object",
@@ -74934,9 +75572,13 @@
           "status" : {
             "type" : "string",
             "enum" : [ "PRESENT", "ABSENT", "LATE", "EXCUSED" ]
+          },
+          "version" : {
+            "type" : "integer",
+            "format" : "int64"
           }
         },
-        "required" : [ "status" ]
+        "required" : [ "status", "version" ]
       },
       "RescheduleAssignmentRequest" : {
         "type" : "object",
@@ -74944,9 +75586,13 @@
           "dueDate" : {
             "type" : "string",
             "format" : "date"
+          },
+          "version" : {
+            "type" : "integer",
+            "format" : "int64"
           }
         },
-        "required" : [ "dueDate" ]
+        "required" : [ "dueDate", "version" ]
       },
       "GradeSubmissionRequest" : {
         "type" : "object",
@@ -74968,8 +75614,13 @@
             "type" : "string",
             "maxLength" : 150,
             "minLength" : 0
+          },
+          "version" : {
+            "type" : "integer",
+            "format" : "int64"
           }
-        }
+        },
+        "required" : [ "version" ]
       },
       "ReturnAssetRequest" : {
         "type" : "object",
@@ -74999,8 +75650,13 @@
             "type" : "string",
             "maxLength" : 50,
             "minLength" : 0
+          },
+          "version" : {
+            "type" : "integer",
+            "format" : "int64"
           }
-        }
+        },
+        "required" : [ "version" ]
       },
       "DecideAdmissionRequest" : {
         "type" : "object",
@@ -75080,8 +75736,13 @@
             "description" : "Targeting rules as a JSON document",
             "maxLength" : 10000,
             "minLength" : 0
+          },
+          "version" : {
+            "type" : "integer",
+            "format" : "int64"
           }
-        }
+        },
+        "required" : [ "version" ]
       },
       "ResolveErrorRequest" : {
         "type" : "object",
@@ -75957,6 +76618,10 @@
           "publicId" : {
             "type" : "string"
           },
+          "version" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
           "employeeCode" : {
             "type" : "string"
           },
@@ -76643,6 +77308,10 @@
           "publicId" : {
             "type" : "string"
           },
+          "version" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
           "guardianPublicId" : {
             "type" : "string"
           },
@@ -76727,6 +77396,10 @@
         "properties" : {
           "publicId" : {
             "type" : "string"
+          },
+          "version" : {
+            "type" : "integer",
+            "format" : "int64"
           },
           "fromStage" : {
             "type" : "string"
@@ -78688,6 +79361,10 @@
           "publicId" : {
             "type" : "string"
           },
+          "version" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
           "stage" : {
             "type" : "string"
           },
@@ -78733,6 +79410,10 @@
         "properties" : {
           "publicId" : {
             "type" : "string"
+          },
+          "version" : {
+            "type" : "integer",
+            "format" : "int64"
           },
           "employeePublicId" : {
             "type" : "string"
@@ -78901,6 +79582,10 @@
         "properties" : {
           "publicId" : {
             "type" : "string"
+          },
+          "version" : {
+            "type" : "integer",
+            "format" : "int64"
           },
           "oldBloodGroup" : {
             "type" : "string"
@@ -79088,6 +79773,10 @@
         "properties" : {
           "publicId" : {
             "type" : "string"
+          },
+          "version" : {
+            "type" : "integer",
+            "format" : "int64"
           },
           "oldMarks" : {
             "type" : "number"
@@ -79296,6 +79985,10 @@
         "properties" : {
           "publicId" : {
             "type" : "string"
+          },
+          "version" : {
+            "type" : "integer",
+            "format" : "int64"
           },
           "oldAmount" : {
             "type" : "number"
@@ -81009,6 +81702,10 @@
         "properties" : {
           "publicId" : {
             "type" : "string"
+          },
+          "version" : {
+            "type" : "integer",
+            "format" : "int64"
           },
           "oldStatus" : {
             "type" : "string"

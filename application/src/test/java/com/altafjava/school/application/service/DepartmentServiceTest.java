@@ -13,6 +13,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import com.altafjava.platform.core.concurrency.ExpectedVersion;
 import com.altafjava.platform.core.exception.BusinessException;
 import com.altafjava.platform.core.tenant.TenantContext;
 import com.altafjava.platform.core.tenant.TenantType;
@@ -73,7 +74,7 @@ class DepartmentServiceTest {
 		when(departmentRepository.save(any(Department.class))).thenAnswer(inv -> inv.getArgument(0));
 
 		Department updated = assertDoesNotThrow(() -> departmentService.assignHeadEmployee(
-				departmentPublicId.toString(), employeePublicId.toString()));
+				departmentPublicId.toString(), employeePublicId.toString(), ExpectedVersion.any()));
 
 		assertEquals(7L, updated.getHeadEmployeeId());
 	}

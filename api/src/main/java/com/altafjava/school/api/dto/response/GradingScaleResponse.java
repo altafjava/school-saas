@@ -5,6 +5,7 @@ import java.util.List;
 
 public record GradingScaleResponse(
 		String publicId,
+		Long version,
 		String name,
 		boolean isDefault,
 		boolean active,

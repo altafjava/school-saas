@@ -7,6 +7,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import com.altafjava.platform.core.concurrency.ExpectedVersion;
 import com.altafjava.platform.core.exception.ResourceNotFoundException;
 import com.altafjava.platform.core.tenant.TenantContext;
 import com.altafjava.school.application.security.AcademicAccessGuard;
@@ -143,9 +144,10 @@ public class AttendanceService {
 	// disputed attendance record is answerable from history data rather than only visible as an
 	// opaque updatedAt bump.
 	@Transactional
-	public Attendance updateStatus(String publicId, AttendanceStatus status) {
+	public Attendance updateStatus(String publicId, AttendanceStatus status, ExpectedVersion expectedVersion) {
 		Long tenantId = TenantContext.getCurrentTenantId();
 		Attendance attendance = requireAttendance(tenantId, publicId);
+		expectedVersion.verify(attendance);
 		academicAccessGuard.assertCanWriteClassroom(tenantId, attendance.getClassroomId());
 		AttendanceStatus oldStatus = attendance.getStatus();
 		if (oldStatus != status) {
