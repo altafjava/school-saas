@@ -16,10 +16,11 @@ public interface TicketRepository extends JpaRepository<Ticket, Long> {
 	@Query("SELECT t FROM Ticket t WHERE t.tenantId = :tenantId "
 			+ "AND (:status IS NULL OR t.status = :status) "
 			+ "AND (:category IS NULL OR t.category = :category) "
-			+ "AND (:assignedToUserId IS NULL OR t.assignedToUserId = :assignedToUserId)")
+			+ "AND (:assignedToUserId IS NULL OR t.assignedToUserId = :assignedToUserId) "
+			+ "AND (:pattern IS NULL OR LOWER(t.subject) LIKE :pattern ESCAPE '!')")
 	Page<Ticket> search(@Param("tenantId") Long tenantId, @Param("status") TicketStatus status,
 			@Param("category") TicketCategory category, @Param("assignedToUserId") Long assignedToUserId,
-			Pageable pageable);
+			@Param("pattern") String pattern, Pageable pageable);
 
 	Page<Ticket> findAllByTenantIdAndRaisedByUserId(Long tenantId, Long raisedByUserId, Pageable pageable);
 

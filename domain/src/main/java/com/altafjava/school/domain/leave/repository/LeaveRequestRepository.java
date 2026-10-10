@@ -20,6 +20,20 @@ public interface LeaveRequestRepository extends JpaRepository<LeaveRequest, Long
 
 	Page<LeaveRequest> findAllByEmployeeIdAndTenantId(Long employeeId, Long tenantId, Pageable pageable);
 
+	// Every filter is optional (null matches all); the dates match any leave overlapping [from, to].
+	@Query("""
+			SELECT lr FROM LeaveRequest lr
+			WHERE lr.tenantId = :tenantId
+			  AND (:employeeId IS NULL OR lr.employeeId = :employeeId)
+			  AND (:leaveTypeId IS NULL OR lr.leaveTypeId = :leaveTypeId)
+			  AND (:status IS NULL OR lr.status = :status)
+			  AND (:from IS NULL OR lr.endDate >= :from)
+			  AND (:to IS NULL OR lr.startDate <= :to)
+			""")
+	Page<LeaveRequest> search(@Param("tenantId") Long tenantId, @Param("employeeId") Long employeeId,
+			@Param("leaveTypeId") Long leaveTypeId, @Param("status") LeaveRequestStatus status,
+			@Param("from") LocalDate from, @Param("to") LocalDate to, Pageable pageable);
+
 	Optional<LeaveRequest> findByPublicIdAndTenantId(UUID publicId, Long tenantId);
 
 	long countByTenantIdAndStatus(Long tenantId, LeaveRequestStatus status);

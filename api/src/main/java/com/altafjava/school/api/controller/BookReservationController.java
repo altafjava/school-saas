@@ -20,7 +20,9 @@ import com.altafjava.school.api.mapper.BookReservationMapper;
 import com.altafjava.school.api.support.PlatformPageMapper;
 import com.altafjava.school.api.support.SortableBy;
 import com.altafjava.school.api.support.SpringDataPageableResolver;
+import com.altafjava.school.application.filter.BookReservationFilter;
 import com.altafjava.school.application.service.BookReservationService;
+import com.altafjava.school.domain.library.model.ReservationStatus;
 
 @RestController
 @RequestMapping("/api/v1/book-reservations")
@@ -45,9 +47,11 @@ public class BookReservationController implements BookReservationApi {
 			@RequestParam(required = false) String bookPublicId,
 			@RequestParam(required = false) String studentPublicId,
 			@RequestParam(defaultValue = "0") int page,
-			@RequestParam(defaultValue = "20") int size) {
+			@RequestParam(defaultValue = "20") int size,
+			@RequestParam(required = false) ReservationStatus status) {
 		return ApiResponse.success(PlatformPageMapper.toPlatformPage(
-				bookReservationService.list(bookPublicId, studentPublicId, pageableResolver.resolve(page, size))
+				bookReservationService.list(new BookReservationFilter(bookPublicId, studentPublicId, status),
+						pageableResolver.resolve(page, size))
 						.map(bookReservationMapper::toResponse)));
 	}
 

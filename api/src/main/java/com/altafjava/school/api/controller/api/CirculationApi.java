@@ -1,5 +1,6 @@
 package com.altafjava.school.api.controller.api;
 
+import java.time.LocalDate;
 import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -18,10 +19,14 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 public interface CirculationApi {
 
 	@Operation(summary = "List for student")
-	public ApiResponse<com.altafjava.platform.core.model.Page<CirculationResponse>> listForStudent(
-			@RequestParam String studentPublicId,
+	public ApiResponse<com.altafjava.platform.core.model.Page<CirculationResponse>> list(
 			@RequestParam(defaultValue = "0") int page,
-			@RequestParam(defaultValue = "20") int size);
+			@RequestParam(defaultValue = "20") int size,
+			@RequestParam(required = false) String studentPublicId,
+			@RequestParam(required = false) String bookPublicId,
+			@RequestParam(required = false) Boolean returned,
+			@RequestParam(required = false) LocalDate from,
+			@RequestParam(required = false) LocalDate to);
 
 	@Operation(summary = "Checkout", description = "A copy held for a reservation can only be checked out by the member it is held for.")
 	public ApiResponse<CirculationResponse> checkout(@Valid @RequestBody CheckoutBookRequest request);

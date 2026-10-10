@@ -6,15 +6,30 @@ import java.util.UUID;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import com.altafjava.school.domain.academicyear.model.AcademicYear;
 
 public interface AcademicYearRepository extends JpaRepository<AcademicYear, Long> {
 
 	Page<AcademicYear> findAllByTenantId(Long tenantId, Pageable pageable);
 
+	// Blank {@code q} matches all; the pattern comes from LikePattern.contains.
+	@Query("""
+			SELECT a FROM AcademicYear a
+			WHERE a.tenantId = :tenantId
+			  AND (:pattern IS NULL OR LOWER(a.name) LIKE :pattern ESCAPE '!')
+			""")
+	Page<AcademicYear> search(@Param("tenantId") Long tenantId, @Param("pattern") String pattern, Pageable pageable);
+
 	Optional<AcademicYear> findByPublicIdAndTenantId(UUID publicId, Long tenantId);
 
 	Optional<AcademicYear> findByCurrentTrueAndTenantId(Long tenantId);
+
+	// Tolerates a tenant that ended up with two current years: the one that started last wins.
+	Optional<AcademicYear> findFirstByCurrentTrueAndTenantIdOrderByStartDateDesc(Long tenantId);
+
+	boolean existsByTenantId(Long tenantId);
 
 	Optional<AcademicYear> findByIdAndTenantId(Long id, Long tenantId);
 

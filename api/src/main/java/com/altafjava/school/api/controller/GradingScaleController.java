@@ -46,9 +46,11 @@ public class GradingScaleController implements GradingScaleApi {
 	@PreAuthorize("@permissionAuthorizationService.hasPermission('GRADING_SCALE_READ')")
 	public ApiResponse<com.altafjava.platform.core.model.Page<GradingScaleResponse>> list(
 			@RequestParam(defaultValue = "0") int page,
-			@RequestParam(defaultValue = "20") int size) {
+			@RequestParam(defaultValue = "20") int size,
+			@RequestParam(required = false) String q) {
 		return ApiResponse.success(PlatformPageMapper
-				.toPlatformPage(gradingScaleService.list(pageableResolver.resolve(page, size)).map(this::toResponse)));
+				.toPlatformPage(
+						gradingScaleService.list(q, pageableResolver.resolve(page, size)).map(this::toResponse)));
 	}
 
 	@Override

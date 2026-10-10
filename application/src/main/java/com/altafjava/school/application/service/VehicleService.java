@@ -8,6 +8,7 @@ import org.springframework.transaction.annotation.Transactional;
 import com.altafjava.platform.core.concurrency.ExpectedVersion;
 import com.altafjava.platform.core.exception.BusinessException;
 import com.altafjava.platform.core.exception.ResourceNotFoundException;
+import com.altafjava.platform.core.search.LikePattern;
 import com.altafjava.platform.core.tenant.TenantContext;
 import com.altafjava.school.domain.transport.model.Vehicle;
 import com.altafjava.school.domain.transport.repository.VehicleRepository;
@@ -22,8 +23,8 @@ public class VehicleService {
 	}
 
 	@Transactional(readOnly = true)
-	public Page<Vehicle> list(Pageable pageable) {
-		return vehicleRepository.findAllByTenantId(TenantContext.getCurrentTenantId(), pageable);
+	public Page<Vehicle> list(String q, Pageable pageable) {
+		return vehicleRepository.search(TenantContext.getCurrentTenantId(), LikePattern.contains(q), pageable);
 	}
 
 	@Transactional(readOnly = true)

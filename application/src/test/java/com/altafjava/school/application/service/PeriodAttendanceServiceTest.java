@@ -3,7 +3,9 @@ package com.altafjava.school.application.service;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -24,6 +26,10 @@ import org.springframework.security.access.AccessDeniedException;
 import com.altafjava.platform.core.exception.ResourceNotFoundException;
 import com.altafjava.platform.core.tenant.TenantContext;
 import com.altafjava.platform.core.tenant.TenantType;
+import com.altafjava.school.application.filter.AttendanceFilter;
+import com.altafjava.school.application.filter.DateWindow;
+import com.altafjava.school.application.reference.EntityRef;
+import com.altafjava.school.application.reference.PublicIdLookup;
 import com.altafjava.school.application.security.AcademicAccessGuard;
 import com.altafjava.school.application.security.AcademicScope;
 import com.altafjava.school.application.security.AcademicScopeResolver;
@@ -59,6 +65,8 @@ class PeriodAttendanceServiceTest {
 	private AcademicAccessGuard academicAccessGuard;
 	@Mock
 	private StudentDataAccessGuard studentDataAccessGuard;
+	@Mock
+	private PublicIdLookup publicIdLookup;
 
 	private PeriodAttendanceService periodAttendanceService;
 
@@ -66,8 +74,10 @@ class PeriodAttendanceServiceTest {
 	void setUp() {
 		periodAttendanceService = new PeriodAttendanceService(periodAttendanceRepository, studentRepository,
 				timetableEntryRepository, studentClassroomLinkRepository, academicScopeResolver,
-				academicAccessGuard, studentDataAccessGuard);
+				academicAccessGuard, studentDataAccessGuard, publicIdLookup);
 		TenantContext.ForTesting.setCurrentTenant(1L, null, null, TenantType.SHARED);
+		// An absent filter resolves to no id; a bare Mockito mock would answer 0L.
+		lenient().when(publicIdLookup.idOrNull(any(), any())).thenReturn(null);
 	}
 
 	@AfterEach
@@ -169,28 +179,34 @@ class PeriodAttendanceServiceTest {
 	}
 
 	@Test
-	void listAttendance_withAllClassroomsScope_returnsAllTenantRecords() {
+	void listAttendance_withAllClassroomsScope_searchesEveryClassroom() {
 		when(academicScopeResolver.current(1L))
 				.thenReturn(new AcademicScope(true, false, TeachingAssignments.NONE, Set.of()));
 		PageRequest pageable = PageRequest.of(0, 20);
-		when(periodAttendanceRepository.findAllByTenantId(1L, pageable)).thenReturn(Page.empty());
+		when(periodAttendanceRepository.search(any(), anyBoolean(), any(), any(), any(), any(), any(), any(), any(),
+				any())).thenReturn(Page.empty());
 
-		periodAttendanceService.listAttendance(pageable);
+		periodAttendanceService.listAttendance(AttendanceFilter.NONE, pageable);
 
-		verify(periodAttendanceRepository).findAllByTenantId(1L, pageable);
+		verify(periodAttendanceRepository).search(1L, true, Set.of(), Set.of(), null, null, null, null, null,
+				pageable);
 	}
 
 	@Test
-	void listAttendance_asTeacher_filtersByTaughtClassrooms() {
+	void listAttendance_asTeacher_scopesToTaughtClassroomsAndKeepsTheFilter() {
 		TeachingAssignments teaching = new TeachingAssignments(70L, Set.of(), Map.of(10L, Set.of(5L)));
 		when(academicScopeResolver.current(1L)).thenReturn(new AcademicScope(false, false, teaching, Set.of()));
+		when(publicIdLookup.idOrNull(EntityRef.STUDENT, "student-public")).thenReturn(30L);
 		PageRequest pageable = PageRequest.of(0, 20);
-		when(periodAttendanceRepository.findVisible(1L, Set.of(10L), Set.of(), pageable)).thenReturn(Page.empty());
+		LocalDate from = LocalDate.of(2026, 1, 1);
+		when(periodAttendanceRepository.search(any(), anyBoolean(), any(), any(), any(), any(), any(), any(), any(),
+				any())).thenReturn(Page.empty());
 
-		periodAttendanceService.listAttendance(pageable);
+		periodAttendanceService.listAttendance(new AttendanceFilter(null, "student-public",
+				new DateWindow(from, null), AttendanceStatus.ABSENT), pageable);
 
-		verify(periodAttendanceRepository).findVisible(1L, Set.of(10L), Set.of(), pageable);
-		verify(periodAttendanceRepository, never()).findAllByTenantId(any(), any());
+		verify(periodAttendanceRepository).search(1L, false, Set.of(10L), Set.of(), null, 30L, from, null,
+				AttendanceStatus.ABSENT, pageable);
 	}
 
 	private Student studentWithId(Long id) {

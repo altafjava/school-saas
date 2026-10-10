@@ -24,6 +24,7 @@ import com.altafjava.platform.core.exception.BusinessException;
 import com.altafjava.platform.core.exception.ResourceNotFoundException;
 import com.altafjava.platform.core.tenant.TenantContext;
 import com.altafjava.platform.core.tenant.TenantType;
+import com.altafjava.school.application.reference.PublicIdLookup;
 import com.altafjava.school.domain.classroom.model.Classroom;
 import com.altafjava.school.domain.classroom.repository.ClassroomRepository;
 import com.altafjava.school.domain.subject.model.Subject;
@@ -54,13 +55,15 @@ class TimetableServiceTest {
 	private TeacherRepository teacherRepository;
 	@Mock
 	private VenueRepository venueRepository;
+	@Mock
+	private PublicIdLookup publicIdLookup;
 
 	private TimetableService timetableService;
 
 	@BeforeEach
 	void setUp() {
 		timetableService = new TimetableService(timetableEntryRepository, periodRepository, classroomRepository,
-				subjectRepository, teacherRepository, venueRepository);
+				subjectRepository, teacherRepository, venueRepository, publicIdLookup);
 		TenantContext.ForTesting.setCurrentTenant(1L, null, null, TenantType.SHARED);
 	}
 

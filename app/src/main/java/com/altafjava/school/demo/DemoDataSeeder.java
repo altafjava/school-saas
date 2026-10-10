@@ -47,6 +47,7 @@ import com.altafjava.school.application.service.TermService;
 import com.altafjava.school.domain.academicyear.model.AcademicYear;
 import com.altafjava.school.domain.attendance.model.AttendanceStatus;
 import com.altafjava.school.domain.classroom.model.Classroom;
+import com.altafjava.school.domain.common.model.Gender;
 import com.altafjava.school.domain.employee.model.StaffCategory;
 import com.altafjava.school.domain.exam.model.Exam;
 import com.altafjava.school.domain.exam.model.ExamTypeDefinition;
@@ -187,11 +188,11 @@ public class DemoDataSeeder {
 		List<Teacher> teachers = new ArrayList<>();
 		for (int i = 0; i < 6; i++) {
 			teachers.add(teacherService.hire(null, GIVEN[i], FAMILY[i], "teacher" + (i + 1) + "@demo.school",
-					today.minusYears(2 + i)));
+					genderOf(i), today.minusYears(2 + i)));
 		}
-		employeeService.hire(StaffCategory.ADMINISTRATIVE, null, "Ravi", "Kumar", "clerk@demo.school",
+		employeeService.hire(StaffCategory.ADMINISTRATIVE, null, "Ravi", "Kumar", "clerk@demo.school", Gender.MALE,
 				today.minusYears(3));
-		employeeService.hire(StaffCategory.SUPPORT, null, "Suresh", "Yadav", "driver@demo.school",
+		employeeService.hire(StaffCategory.SUPPORT, null, "Suresh", "Yadav", "driver@demo.school", Gender.MALE,
 				today.minusYears(1));
 
 		List<Classroom> classrooms = new ArrayList<>();
@@ -208,7 +209,8 @@ public class DemoDataSeeder {
 			for (int n = 0; n < STUDENTS_PER_CLASS; n++) {
 				int i = students.size();
 				Student student = studentService.enroll(null, GIVEN[i % GIVEN.length], FAMILY[(i / 2) % FAMILY.length],
-						"student" + (i + 1) + "@demo.school", LocalDate.of(2020 - c / 2, 1 + i % 12, 1 + i % 27));
+						"student" + (i + 1) + "@demo.school", LocalDate.of(2020 - c / 2, 1 + i % 12, 1 + i % 27),
+						genderOf(i), null);
 				classroomService.enrollStudent(classrooms.get(c).getPublicId().toString(),
 						student.getPublicId().toString(), year.getPublicId().toString());
 				students.add(student);
@@ -220,6 +222,11 @@ public class DemoDataSeeder {
 		seedExamsAndGrades(random, term1, subjects, classrooms, students);
 		seedAttendance(random, classrooms, students, today);
 		seedLogins(teachers.get(0), students.get(0), guardians.get(0));
+	}
+
+	// GIVEN alternates male and female names.
+	private static Gender genderOf(int givenNameIndex) {
+		return givenNameIndex % 2 == 0 ? Gender.MALE : Gender.FEMALE;
 	}
 
 	/** Each of the first twelve guardians has two children (siblings); the rest have one. */

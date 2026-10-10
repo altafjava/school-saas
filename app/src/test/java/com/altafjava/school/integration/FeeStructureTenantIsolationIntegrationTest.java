@@ -66,7 +66,7 @@ class FeeStructureTenantIsolationIntegrationTest extends SchoolIntegrationTestBa
 				BigDecimal.valueOf(500), FeeFrequency.MONTHLY, "Standard");
 
 		activateTenant(tenantB);
-		Page<FeeStructure> tenantBStructures = feeStructureService.listFeeStructures(PageRequest.of(0, 100));
+		Page<FeeStructure> tenantBStructures = feeStructureService.listFeeStructures(null, PageRequest.of(0, 100));
 
 		boolean found = tenantBStructures.getContent().stream()
 				.anyMatch(fs -> tenantA.getId().equals(fs.getTenantId()));

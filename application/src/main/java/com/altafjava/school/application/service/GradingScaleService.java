@@ -13,6 +13,7 @@ import org.springframework.transaction.annotation.Transactional;
 import com.altafjava.platform.core.concurrency.ExpectedVersion;
 import com.altafjava.platform.core.exception.BusinessException;
 import com.altafjava.platform.core.exception.ResourceNotFoundException;
+import com.altafjava.platform.core.search.LikePattern;
 import com.altafjava.platform.core.tenant.TenantContext;
 import com.altafjava.school.domain.classroom.model.Classroom;
 import com.altafjava.school.domain.classroom.repository.ClassroomRepository;
@@ -56,8 +57,8 @@ public class GradingScaleService {
 	}
 
 	@Transactional(readOnly = true)
-	public Page<GradingScale> list(Pageable pageable) {
-		return gradingScaleRepository.findAllByTenantId(TenantContext.getCurrentTenantId(), pageable);
+	public Page<GradingScale> list(String q, Pageable pageable) {
+		return gradingScaleRepository.search(TenantContext.getCurrentTenantId(), LikePattern.contains(q), pageable);
 	}
 
 	@Transactional(readOnly = true)

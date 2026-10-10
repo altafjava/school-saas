@@ -61,9 +61,10 @@ public class FeeStructureController implements FeeStructureApi {
 	@SortableBy({ "name", "amount", "frequency" })
 	public ApiResponse<com.altafjava.platform.core.model.Page<FeeStructureResponse>> list(
 			@RequestParam(defaultValue = "0") int page,
-			@RequestParam(defaultValue = "20") int size) {
+			@RequestParam(defaultValue = "20") int size,
+			@RequestParam(required = false) String q) {
 		return ApiResponse.success(PlatformPageMapper
-				.toPlatformPage(feeStructureService.listFeeStructures(pageableResolver.resolve(page, size))
+				.toPlatformPage(feeStructureService.listFeeStructures(q, pageableResolver.resolve(page, size))
 						.map(feeStructureMapper::toResponse)));
 	}
 

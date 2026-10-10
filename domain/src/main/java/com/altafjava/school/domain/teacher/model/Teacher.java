@@ -4,6 +4,7 @@ import java.time.LocalDate;
 import jakarta.persistence.Entity;
 import jakarta.persistence.PrimaryKeyJoinColumn;
 import jakarta.persistence.Table;
+import com.altafjava.school.domain.common.model.Gender;
 import com.altafjava.school.domain.employee.model.Employee;
 import com.altafjava.school.domain.employee.model.EmployeeStatus;
 import com.altafjava.school.domain.employee.model.StaffCategory;
@@ -24,6 +25,11 @@ public class Teacher extends Employee {
 
 	public static Teacher create(String employeeCode, String firstName, String lastName, String email,
 			LocalDate joinDate) {
+		return create(employeeCode, firstName, lastName, email, Gender.NOT_SPECIFIED, joinDate);
+	}
+
+	public static Teacher create(String employeeCode, String firstName, String lastName, String email,
+			Gender gender, LocalDate joinDate) {
 		return Teacher.builder()
 				.staffCategory(StaffCategory.TEACHING)
 				.status(EmployeeStatus.ACTIVE)
@@ -31,6 +37,7 @@ public class Teacher extends Employee {
 				.firstName(firstName)
 				.lastName(lastName)
 				.email(email)
+				.gender(gender != null ? gender : Gender.NOT_SPECIFIED)
 				.joinDate(joinDate)
 				.build();
 	}

@@ -1,5 +1,6 @@
 package com.altafjava.school.api.controller.api;
 
+import java.time.LocalDate;
 import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -8,6 +9,7 @@ import com.altafjava.platform.api.dto.response.ApiResponse;
 import com.altafjava.school.api.dto.request.ReferForCounselingRequest;
 import com.altafjava.school.api.dto.request.ScheduleCounselingReferralRequest;
 import com.altafjava.school.api.dto.response.CounselingReferralResponse;
+import com.altafjava.school.domain.counseling.model.CounselingReferralStatus;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -20,7 +22,11 @@ public interface CounselingReferralApi {
 	@Operation(summary = "List all")
 	public ApiResponse<com.altafjava.platform.core.model.Page<CounselingReferralResponse>> listAll(
 			@RequestParam(defaultValue = "0") int page,
-			@RequestParam(defaultValue = "20") int size);
+			@RequestParam(defaultValue = "20") int size,
+			@RequestParam(required = false) String studentPublicId,
+			@RequestParam(required = false) CounselingReferralStatus status,
+			@RequestParam(required = false) LocalDate from,
+			@RequestParam(required = false) LocalDate to);
 
 	@Operation(summary = "List for student")
 	public ApiResponse<com.altafjava.platform.core.model.Page<CounselingReferralResponse>> listForStudent(

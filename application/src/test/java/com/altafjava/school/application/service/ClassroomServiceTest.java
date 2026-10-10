@@ -30,6 +30,7 @@ import com.altafjava.platform.core.exception.BusinessException;
 import com.altafjava.platform.core.exception.ResourceNotFoundException;
 import com.altafjava.platform.core.tenant.TenantContext;
 import com.altafjava.platform.core.tenant.TenantType;
+import com.altafjava.school.application.reference.PublicIdLookup;
 import com.altafjava.school.application.security.AcademicAccessGuard;
 import com.altafjava.school.domain.academicyear.model.AcademicYear;
 import com.altafjava.school.domain.academicyear.repository.AcademicYearRepository;
@@ -63,6 +64,8 @@ class ClassroomServiceTest {
 	private EventPublisher eventPublisher;
 	@Mock
 	private AcademicAccessGuard academicAccessGuard;
+	@Mock
+	private PublicIdLookup publicIdLookup;
 
 	private ClassroomService classroomService;
 
@@ -70,7 +73,7 @@ class ClassroomServiceTest {
 	void setUp() {
 		classroomService = new ClassroomService(classroomRepository, teacherRepository, academicYearRepository,
 				studentClassroomLinkRepository, studentRepository, curriculumRepository, eventPublisher,
-				academicAccessGuard);
+				academicAccessGuard, publicIdLookup);
 		TenantContext.ForTesting.setCurrentTenant(1L, null, null, TenantType.SHARED);
 		AcademicYear academicYear = AcademicYear.create("2024-25", LocalDate.of(2024, 6, 1),
 				LocalDate.of(2025, 5, 31), true);

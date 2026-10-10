@@ -11,6 +11,7 @@ import org.springframework.transaction.annotation.Transactional;
 import com.altafjava.platform.core.concurrency.ExpectedVersion;
 import com.altafjava.platform.core.exception.BusinessException;
 import com.altafjava.platform.core.exception.ResourceNotFoundException;
+import com.altafjava.platform.core.search.LikePattern;
 import com.altafjava.platform.core.tenant.TenantContext;
 import com.altafjava.school.domain.curriculum.model.Curriculum;
 import com.altafjava.school.domain.curriculum.repository.BoardRepository;
@@ -35,8 +36,8 @@ public class CurriculumService {
 	}
 
 	@Transactional(readOnly = true)
-	public Page<Curriculum> list(Pageable pageable) {
-		return curriculumRepository.findAllByTenantId(TenantContext.getCurrentTenantId(), pageable);
+	public Page<Curriculum> list(String q, Pageable pageable) {
+		return curriculumRepository.search(TenantContext.getCurrentTenantId(), LikePattern.contains(q), pageable);
 	}
 
 	@Transactional(readOnly = true)

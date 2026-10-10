@@ -15,6 +15,8 @@ import com.altafjava.platform.core.exception.BusinessException;
 import com.altafjava.platform.core.model.SoftDeletableEntity;
 import com.altafjava.platform.core.security.annotation.Pii;
 import com.altafjava.school.domain.common.model.Address;
+import com.altafjava.school.domain.common.model.Gender;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -65,6 +67,11 @@ public class Employee extends SoftDeletableEntity {
 	@Column(name = "email", nullable = false, length = 255)
 	private String email;
 
+	@Enumerated(EnumType.STRING)
+	@Column(name = "gender", nullable = false, length = 20)
+	@Builder.Default
+	private Gender gender = Gender.NOT_SPECIFIED;
+
 	@Pii(type = Pii.PiiType.PHONE)
 	@Column(name = "phone", length = 30)
 	private String phone;
@@ -107,6 +114,11 @@ public class Employee extends SoftDeletableEntity {
 	/** Non-teaching staff; teachers are created with {@code Teacher.create}. */
 	public static Employee create(StaffCategory staffCategory, String employeeCode, String firstName,
 			String lastName, String email, LocalDate joinDate) {
+		return create(staffCategory, employeeCode, firstName, lastName, email, Gender.NOT_SPECIFIED, joinDate);
+	}
+
+	public static Employee create(StaffCategory staffCategory, String employeeCode, String firstName,
+			String lastName, String email, Gender gender, LocalDate joinDate) {
 		if (staffCategory == null || staffCategory == StaffCategory.TEACHING) {
 			throw new BusinessException("Teaching staff are hired as teachers; use a non-teaching category here");
 		}
@@ -117,6 +129,7 @@ public class Employee extends SoftDeletableEntity {
 				.firstName(firstName)
 				.lastName(lastName)
 				.email(email)
+				.gender(gender != null ? gender : Gender.NOT_SPECIFIED)
 				.joinDate(joinDate)
 				.build();
 	}
@@ -147,10 +160,11 @@ public class Employee extends SoftDeletableEntity {
 		this.exitReason = reason;
 	}
 
-	public void updateContactDetails(String firstName, String lastName, String email) {
+	public void updateContactDetails(String firstName, String lastName, String email, Gender gender) {
 		this.firstName = firstName;
 		this.lastName = lastName;
 		this.email = email;
+		this.gender = gender;
 	}
 
 	public void assignHrDetails(Long departmentId, String designation, String qualification,
@@ -193,6 +207,7 @@ public class Employee extends SoftDeletableEntity {
 		this.firstName = "[erased]";
 		this.lastName = "[erased]";
 		this.email = "[erased]";
+		this.gender = Gender.NOT_SPECIFIED;
 		this.phone = null;
 		this.address = null;
 		this.photoFilePublicId = null;

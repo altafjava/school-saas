@@ -21,7 +21,8 @@ public interface CurriculumApi {
 	@Operation(summary = "List")
 	public ApiResponse<com.altafjava.platform.core.model.Page<CurriculumResponse>> list(
 			@RequestParam(defaultValue = "0") int page,
-			@RequestParam(defaultValue = "20") int size);
+			@RequestParam(defaultValue = "20") int size,
+			@RequestParam(required = false) String q);
 
 	@Operation(summary = "Get")
 	public ApiResponse<CurriculumResponse> get(@PathVariable String publicId);

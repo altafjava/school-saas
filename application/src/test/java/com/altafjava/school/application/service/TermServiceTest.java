@@ -19,6 +19,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import com.altafjava.platform.core.exception.ResourceNotFoundException;
 import com.altafjava.platform.core.tenant.TenantContext;
 import com.altafjava.platform.core.tenant.TenantType;
+import com.altafjava.school.application.reference.PublicIdLookup;
 import com.altafjava.school.domain.academicyear.model.AcademicYear;
 import com.altafjava.school.domain.academicyear.repository.AcademicYearRepository;
 import com.altafjava.school.domain.term.model.Term;
@@ -31,12 +32,14 @@ class TermServiceTest {
 	private TermRepository termRepository;
 	@Mock
 	private AcademicYearRepository academicYearRepository;
+	@Mock
+	private PublicIdLookup publicIdLookup;
 
 	private TermService termService;
 
 	@BeforeEach
 	void setUp() {
-		termService = new TermService(termRepository, academicYearRepository);
+		termService = new TermService(termRepository, academicYearRepository, publicIdLookup);
 		TenantContext.ForTesting.setCurrentTenant(1L, null, null, TenantType.SHARED);
 	}
 

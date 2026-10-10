@@ -114,7 +114,7 @@ class LmsCrudE2ETest extends SchoolIntegrationTestBase {
 				.header("X-Tenant-ID", tenantId)
 				.header("Authorization", "Bearer " + adminToken)
 				.when()
-				.get("/api/v1/lessons/classroom/" + classroomPublicId)
+				.get("/api/v1/lessons?classroomPublicId=" + classroomPublicId)
 				.then()
 				.statusCode(HttpStatus.OK.value())
 				.body("data.content.size()", org.hamcrest.Matchers.equalTo(1))
@@ -138,7 +138,7 @@ class LmsCrudE2ETest extends SchoolIntegrationTestBase {
 				.header("X-Tenant-ID", tenantId)
 				.header("Authorization", "Bearer " + adminToken)
 				.when()
-				.get("/api/v1/assignments/classroom/" + classroomPublicId)
+				.get("/api/v1/assignments?classroomPublicId=" + classroomPublicId)
 				.then()
 				.statusCode(HttpStatus.OK.value())
 				.body("data.content.size()", org.hamcrest.Matchers.equalTo(1));

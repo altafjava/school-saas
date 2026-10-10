@@ -7,11 +7,21 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Lock;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import com.altafjava.school.domain.curriculum.model.GradingScale;
 
 public interface GradingScaleRepository extends JpaRepository<GradingScale, Long> {
 
 	Page<GradingScale> findAllByTenantId(Long tenantId, Pageable pageable);
+
+	// Blank {@code q} matches all; the pattern comes from LikePattern.contains.
+	@Query("""
+			SELECT g FROM GradingScale g
+			WHERE g.tenantId = :tenantId
+			  AND (:pattern IS NULL OR LOWER(g.name) LIKE :pattern ESCAPE '!')
+			""")
+	Page<GradingScale> search(@Param("tenantId") Long tenantId, @Param("pattern") String pattern, Pageable pageable);
 
 	Optional<GradingScale> findByPublicIdAndTenantId(UUID publicId, Long tenantId);
 

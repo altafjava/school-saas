@@ -1,5 +1,6 @@
 package com.altafjava.school.api.controller.api;
 
+import java.time.LocalDate;
 import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -8,6 +9,7 @@ import com.altafjava.platform.api.dto.response.ApiResponse;
 import com.altafjava.school.api.dto.request.RecordDisciplineActionRequest;
 import com.altafjava.school.api.dto.request.RecordDisciplineIncidentRequest;
 import com.altafjava.school.api.dto.response.DisciplineIncidentResponse;
+import com.altafjava.school.domain.discipline.model.IncidentSeverity;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -20,7 +22,11 @@ public interface DisciplineIncidentApi {
 	@Operation(summary = "List all")
 	public ApiResponse<com.altafjava.platform.core.model.Page<DisciplineIncidentResponse>> listAll(
 			@RequestParam(defaultValue = "0") int page,
-			@RequestParam(defaultValue = "20") int size);
+			@RequestParam(defaultValue = "20") int size,
+			@RequestParam(required = false) String studentPublicId,
+			@RequestParam(required = false) IncidentSeverity severity,
+			@RequestParam(required = false) LocalDate from,
+			@RequestParam(required = false) LocalDate to);
 
 	@Operation(summary = "List for student")
 	public ApiResponse<com.altafjava.platform.core.model.Page<DisciplineIncidentResponse>> listForStudent(

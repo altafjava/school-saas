@@ -18,6 +18,7 @@ import com.altafjava.platform.application.service.TenantOnboardingService;
 import com.altafjava.platform.core.exception.ResourceNotFoundException;
 import com.altafjava.platform.core.tenant.TenantContext;
 import com.altafjava.platform.domain.tenant.model.Tenant;
+import com.altafjava.school.application.filter.AttendanceFilter;
 import com.altafjava.school.application.service.AcademicYearService;
 import com.altafjava.school.application.service.ClassroomService;
 import com.altafjava.school.application.service.PeriodAttendanceService;
@@ -134,7 +135,8 @@ class PeriodAttendanceTenantIsolationIntegrationTest extends SchoolIntegrationTe
 				AttendanceStatus.PRESENT, "teacher-a");
 
 		activateTenant(tenantB);
-		Page<PeriodAttendance> tenantBRecords = periodAttendanceService.listAttendance(PageRequest.of(0, 100));
+		Page<PeriodAttendance> tenantBRecords = periodAttendanceService.listAttendance(AttendanceFilter.NONE,
+				PageRequest.of(0, 100));
 
 		boolean found = tenantBRecords.getContent().stream()
 				.anyMatch(a -> tenantA.getId().equals(a.getTenantId()));

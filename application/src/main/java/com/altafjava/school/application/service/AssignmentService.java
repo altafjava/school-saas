@@ -17,8 +17,12 @@ import com.altafjava.platform.core.exception.ResourceNotFoundException;
 import com.altafjava.platform.core.tenant.TenantContext;
 import com.altafjava.platform.domain.notification.model.NotificationPriority;
 import com.altafjava.platform.domain.notification.model.NotificationType;
+import com.altafjava.school.application.filter.CourseworkFilter;
+import com.altafjava.school.application.reference.EntityRef;
+import com.altafjava.school.application.reference.PublicIdLookup;
 import com.altafjava.school.application.scheduler.support.StudentNotificationRecipientResolver;
 import com.altafjava.school.application.security.AcademicAccessGuard;
+import com.altafjava.school.application.security.CourseworkReach;
 import com.altafjava.school.domain.classroom.model.Classroom;
 import com.altafjava.school.domain.classroom.model.StudentClassroomLink;
 import com.altafjava.school.domain.classroom.repository.ClassroomRepository;
@@ -44,11 +48,14 @@ public class AssignmentService {
 	private final AcademicAccessGuard academicAccessGuard;
 	private final StudentNotificationRecipientResolver recipientResolver;
 	private final NotificationService notificationService;
+	private final PublicIdLookup publicIdLookup;
 
 	public AssignmentService(AssignmentRepository assignmentRepository, ClassroomRepository classroomRepository,
 			SubjectRepository subjectRepository, StudentClassroomLinkRepository studentClassroomLinkRepository,
 			StudentRepository studentRepository, AcademicAccessGuard academicAccessGuard,
-			StudentNotificationRecipientResolver recipientResolver, NotificationService notificationService) {
+			StudentNotificationRecipientResolver recipientResolver, NotificationService notificationService,
+			PublicIdLookup publicIdLookup) {
+		this.publicIdLookup = publicIdLookup;
 		this.assignmentRepository = assignmentRepository;
 		this.classroomRepository = classroomRepository;
 		this.subjectRepository = subjectRepository;
@@ -78,13 +85,13 @@ public class AssignmentService {
 	}
 
 	@Transactional(readOnly = true)
-	public Page<Assignment> listByClassroom(String classroomPublicId, Pageable pageable) {
+	public Page<Assignment> listAssignments(CourseworkFilter filter, Pageable pageable) {
 		Long tenantId = TenantContext.getCurrentTenantId();
-		Classroom classroom = classroomRepository
-				.findByPublicIdAndTenantId(UUID.fromString(classroomPublicId), tenantId)
-				.orElseThrow(() -> new ResourceNotFoundException("Classroom not found: " + classroomPublicId));
-		academicAccessGuard.assertCanViewCoursework(tenantId, classroom.getId());
-		return assignmentRepository.findByClassroomIdAndTenantId(classroom.getId(), tenantId, pageable);
+		Long classroomId = publicIdLookup.idOrNull(EntityRef.CLASSROOM, filter.classroomPublicId());
+		CourseworkReach reach = academicAccessGuard.courseworkReach(tenantId, classroomId);
+		return assignmentRepository.search(tenantId, reach.everyClassroom(), reach.classroomIds(), classroomId,
+				publicIdLookup.idOrNull(EntityRef.SUBJECT, filter.subjectPublicId()), filter.dates().from(),
+				filter.dates().to(), pageable);
 	}
 
 	@Transactional

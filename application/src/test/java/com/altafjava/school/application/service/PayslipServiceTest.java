@@ -23,6 +23,7 @@ import com.altafjava.platform.core.exception.BusinessException;
 import com.altafjava.platform.core.exception.ResourceNotFoundException;
 import com.altafjava.platform.core.tenant.TenantContext;
 import com.altafjava.platform.core.tenant.TenantType;
+import com.altafjava.school.application.reference.PublicIdLookup;
 import com.altafjava.school.domain.employee.repository.EmployeeRepository;
 import com.altafjava.school.domain.leave.model.LeaveRequestStatus;
 import com.altafjava.school.domain.leave.model.LeaveType;
@@ -50,13 +51,15 @@ class PayslipServiceTest {
 	private LeaveTypeRepository leaveTypeRepository;
 	@Mock
 	private EmployeeRepository employeeRepository;
+	@Mock
+	private PublicIdLookup publicIdLookup;
 
 	private PayslipService payslipService;
 
 	@BeforeEach
 	void setUp() {
 		payslipService = new PayslipService(payslipRepository, salaryStructureRepository, leaveRequestRepository,
-				leaveTypeRepository, employeeRepository);
+				leaveTypeRepository, employeeRepository, publicIdLookup);
 		TenantContext.ForTesting.setCurrentTenant(1L, null, null, TenantType.SHARED);
 	}
 

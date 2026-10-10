@@ -23,6 +23,9 @@ import com.altafjava.platform.core.audit.annotation.Audited;
 import com.altafjava.platform.core.exception.ResourceNotFoundException;
 import com.altafjava.platform.core.tenant.TenantContext;
 import com.altafjava.platform.domain.numbering.model.ResetPeriod;
+import com.altafjava.school.application.filter.FeePaymentFilter;
+import com.altafjava.school.application.reference.EntityRef;
+import com.altafjava.school.application.reference.PublicIdLookup;
 import com.altafjava.school.application.security.StudentDataAccessGuard;
 import com.altafjava.school.domain.classroom.repository.StudentClassroomLinkRepository;
 import com.altafjava.school.domain.fee.model.FeeAssignment;
@@ -57,6 +60,7 @@ public class FeePaymentService {
 	private final FeeDiscountRepository feeDiscountRepository;
 	private final FeeInstallmentRepository feeInstallmentRepository;
 	private final FeeRefundRepository feeRefundRepository;
+	private final PublicIdLookup publicIdLookup;
 	private final FeeBalanceCalculator feeBalanceCalculator = new FeeBalanceCalculator();
 
 	public FeePaymentService(FeePaymentRepository feePaymentRepository, StudentRepository studentRepository,
@@ -64,7 +68,8 @@ public class FeePaymentService {
 			StudentClassroomLinkRepository studentClassroomLinkRepository,
 			StudentDataAccessGuard studentDataAccessGuard, NumberSequenceService numberSequenceService,
 			FeeDiscountRepository feeDiscountRepository, FeeInstallmentRepository feeInstallmentRepository,
-			FeeRefundRepository feeRefundRepository) {
+			FeeRefundRepository feeRefundRepository, PublicIdLookup publicIdLookup) {
+		this.publicIdLookup = publicIdLookup;
 		this.feePaymentRepository = feePaymentRepository;
 		this.studentRepository = studentRepository;
 		this.feeStructureRepository = feeStructureRepository;
@@ -78,8 +83,14 @@ public class FeePaymentService {
 	}
 
 	@Transactional(readOnly = true)
-	public Page<FeePayment> listFeePayments(Pageable pageable) {
-		return feePaymentRepository.findAllByTenantId(TenantContext.getCurrentTenantId(), pageable);
+	public Page<FeePayment> listFeePayments(FeePaymentFilter filter, Pageable pageable) {
+		LocalDate from = filter.dates().from();
+		LocalDate to = filter.dates().to();
+		return feePaymentRepository.search(TenantContext.getCurrentTenantId(),
+				publicIdLookup.idOrNull(EntityRef.STUDENT, filter.studentPublicId()),
+				publicIdLookup.idOrNull(EntityRef.FEE_STRUCTURE, filter.feeStructurePublicId()),
+				from != null ? from.atStartOfDay() : null, to != null ? to.plusDays(1).atStartOfDay() : null,
+				filter.paymentSource(), pageable);
 	}
 
 	@Transactional(readOnly = true)

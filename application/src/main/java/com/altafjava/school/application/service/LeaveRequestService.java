@@ -22,6 +22,9 @@ import com.altafjava.platform.core.security.AuthenticatedUser;
 import com.altafjava.platform.core.tenant.TenantContext;
 import com.altafjava.platform.domain.notification.model.NotificationPriority;
 import com.altafjava.platform.domain.notification.model.NotificationType;
+import com.altafjava.school.application.filter.LeaveRequestFilter;
+import com.altafjava.school.application.reference.EntityRef;
+import com.altafjava.school.application.reference.PublicIdLookup;
 import com.altafjava.school.application.scheduler.support.TenantAdminNotifier;
 import com.altafjava.school.application.security.LeaveApprovalAuthorizer;
 import com.altafjava.school.domain.academicyear.model.AcademicYear;
@@ -57,13 +60,15 @@ public class LeaveRequestService {
 	private final DepartmentRepository departmentRepository;
 	private final LeaveApprovalAuthorizer leaveApprovalAuthorizer;
 	private final LeaveDayCalculator leaveDayCalculator = new LeaveDayCalculator();
+	private final PublicIdLookup publicIdLookup;
 
 	public LeaveRequestService(LeaveRequestRepository leaveRequestRepository, LeaveTypeRepository leaveTypeRepository,
 			LeaveBalanceRepository leaveBalanceRepository, EmployeeRepository employeeRepository,
 			AcademicYearRepository academicYearRepository, TenantAdminNotifier tenantAdminNotifier,
 			NotificationService notificationService, HolidayService holidayService,
 			LeaveApprovalRepository leaveApprovalRepository, DepartmentRepository departmentRepository,
-			LeaveApprovalAuthorizer leaveApprovalAuthorizer) {
+			LeaveApprovalAuthorizer leaveApprovalAuthorizer, PublicIdLookup publicIdLookup) {
+		this.publicIdLookup = publicIdLookup;
 		this.leaveRequestRepository = leaveRequestRepository;
 		this.leaveTypeRepository = leaveTypeRepository;
 		this.leaveBalanceRepository = leaveBalanceRepository;
@@ -78,15 +83,24 @@ public class LeaveRequestService {
 	}
 
 	@Transactional(readOnly = true)
-	public Page<LeaveRequest> listForCurrentEmployee(Pageable pageable) {
+	public Page<LeaveRequest> listForCurrentEmployee(LeaveRequestFilter filter, Pageable pageable) {
 		Long tenantId = TenantContext.getCurrentTenantId();
 		Employee employee = resolveCurrentEmployee(tenantId);
-		return leaveRequestRepository.findAllByEmployeeIdAndTenantId(employee.getId(), tenantId, pageable);
+		return search(tenantId, employee.getId(), filter, pageable);
 	}
 
 	@Transactional(readOnly = true)
-	public Page<LeaveRequest> listAll(Pageable pageable) {
-		return leaveRequestRepository.findAllByTenantId(TenantContext.getCurrentTenantId(), pageable);
+	public Page<LeaveRequest> listAll(LeaveRequestFilter filter, Pageable pageable) {
+		Long tenantId = TenantContext.getCurrentTenantId();
+		return search(tenantId, publicIdLookup.idOrNull(EntityRef.EMPLOYEE, filter.employeePublicId()), filter,
+				pageable);
+	}
+
+	private Page<LeaveRequest> search(Long tenantId, Long employeeId, LeaveRequestFilter filter,
+			Pageable pageable) {
+		return leaveRequestRepository.search(tenantId, employeeId,
+				publicIdLookup.idOrNull(EntityRef.LEAVE_TYPE, filter.leaveTypePublicId()), filter.status(),
+				filter.dates().from(), filter.dates().to(), pageable);
 	}
 
 	@Transactional(readOnly = true)

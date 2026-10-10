@@ -1,5 +1,6 @@
 package com.altafjava.school.api.controller;
 
+import java.time.LocalDate;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -18,6 +19,8 @@ import com.altafjava.school.api.dto.response.MedicalIncidentResponse;
 import com.altafjava.school.api.mapper.MedicalIncidentMapper;
 import com.altafjava.school.api.support.PlatformPageMapper;
 import com.altafjava.school.api.support.SpringDataPageableResolver;
+import com.altafjava.school.application.filter.DateWindow;
+import com.altafjava.school.application.filter.MedicalIncidentFilter;
 import com.altafjava.school.application.service.MedicalIncidentService;
 
 // See HealthRecordController for the TENANT_ADMIN-only rationale (PHI-grade data, no dedicated
@@ -43,9 +46,14 @@ public class MedicalIncidentController implements MedicalIncidentApi {
 	@PreAuthorize("@permissionAuthorizationService.hasPermission('MEDICAL_INCIDENT_MANAGE')")
 	public ApiResponse<com.altafjava.platform.core.model.Page<MedicalIncidentResponse>> listAll(
 			@RequestParam(defaultValue = "0") int page,
-			@RequestParam(defaultValue = "20") int size) {
+			@RequestParam(defaultValue = "20") int size,
+			@RequestParam(required = false) String studentPublicId,
+			@RequestParam(required = false) LocalDate from,
+			@RequestParam(required = false) LocalDate to) {
 		return ApiResponse.success(
-				PlatformPageMapper.toPlatformPage(medicalIncidentService.listAll(pageableResolver.resolve(page, size))
+				PlatformPageMapper.toPlatformPage(medicalIncidentService
+						.listAll(new MedicalIncidentFilter(studentPublicId, new DateWindow(from, to)),
+								pageableResolver.resolve(page, size))
 						.map(medicalIncidentMapper::toResponse)));
 	}
 

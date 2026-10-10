@@ -9,6 +9,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import com.altafjava.platform.core.exception.ResourceNotFoundException;
+import com.altafjava.platform.core.search.LikePattern;
 import com.altafjava.platform.core.security.AuthenticatedUser;
 import com.altafjava.platform.core.tenant.TenantContext;
 import com.altafjava.school.application.reference.UserReferenceResolver;
@@ -29,12 +30,12 @@ public class TicketService {
 	}
 
 	@Transactional(readOnly = true)
-	public Page<Ticket> search(TicketStatus status, TicketCategory category, String assignedToUserPublicId,
+	public Page<Ticket> search(TicketStatus status, TicketCategory category, String assignedToUserPublicId, String q,
 			Pageable pageable) {
 		Long assignedToUserId = assignedToUserPublicId == null ? null
 				: userReferenceResolver.requireUserId(assignedToUserPublicId);
 		return ticketRepository.search(TenantContext.getCurrentTenantId(), status, category, assignedToUserId,
-				pageable);
+				LikePattern.contains(q), pageable);
 	}
 
 	@Transactional(readOnly = true)

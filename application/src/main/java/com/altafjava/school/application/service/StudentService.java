@@ -17,7 +17,10 @@ import com.altafjava.platform.core.tenant.TenantContext;
 import com.altafjava.platform.domain.numbering.model.ResetPeriod;
 import com.altafjava.school.application.lifecycle.LifecycleChange;
 import com.altafjava.school.application.lifecycle.LifecycleRecorder;
+import com.altafjava.school.application.reference.EntityRef;
+import com.altafjava.school.application.reference.PublicIdLookup;
 import com.altafjava.school.domain.common.model.Address;
+import com.altafjava.school.domain.common.model.Gender;
 import com.altafjava.school.domain.common.service.PhoneNumberValidator;
 import com.altafjava.school.domain.student.model.EnrollmentStatus;
 import com.altafjava.school.domain.student.model.Student;
@@ -31,19 +34,27 @@ public class StudentService {
 	private final StudentRepository studentRepository;
 	private final NumberSequenceService numberSequenceService;
 	private final LifecycleRecorder lifecycleRecorder;
+	private final PublicIdLookup publicIdLookup;
 	private final PhoneNumberValidator phoneNumberValidator = new PhoneNumberValidator();
 
 	public StudentService(StudentRepository studentRepository, NumberSequenceService numberSequenceService,
-			LifecycleRecorder lifecycleRecorder) {
+			LifecycleRecorder lifecycleRecorder, PublicIdLookup publicIdLookup) {
+		this.publicIdLookup = publicIdLookup;
 		this.studentRepository = studentRepository;
 		this.numberSequenceService = numberSequenceService;
 		this.lifecycleRecorder = lifecycleRecorder;
 	}
 
-	/** Free-text {@code q} (blank = no filter) over the entity's identifying fields. */
+	/**
+	 * Every filter is optional: a status, the classroom a student is placed in, and a free-text {@code q}
+	 * (blank = no filter) over the entity's identifying fields.
+	 */
 	@Transactional(readOnly = true)
-	public Page<Student> searchStudents(Pageable pageable, EnrollmentStatus status, String q) {
-		return studentRepository.search(TenantContext.getCurrentTenantId(), status, LikePattern.contains(q), pageable);
+	public Page<Student> searchStudents(Pageable pageable, EnrollmentStatus status, String classroomPublicId,
+			String q) {
+		Long classroomId = publicIdLookup.idOrNull(EntityRef.CLASSROOM, classroomPublicId);
+		return studentRepository.search(TenantContext.getCurrentTenantId(), status, classroomId,
+				LikePattern.contains(q), pageable);
 	}
 
 	@Transactional(readOnly = true)
@@ -70,20 +81,27 @@ public class StudentService {
 	@Transactional
 	public Student enroll(String studentCode, String firstName, String lastName,
 			String email, LocalDate dateOfBirth) {
-		return enroll(studentCode, firstName, lastName, email, dateOfBirth, null);
+		return enroll(studentCode, firstName, lastName, email, dateOfBirth, Gender.NOT_SPECIFIED, null);
 	}
 
 	/** {@code sourceAdmissionId} is set when the student comes from an approved admission. */
 	@Transactional
 	public Student enroll(String studentCode, String firstName, String lastName,
 			String email, LocalDate dateOfBirth, Long sourceAdmissionId) {
+		return enroll(studentCode, firstName, lastName, email, dateOfBirth, Gender.NOT_SPECIFIED,
+				sourceAdmissionId);
+	}
+
+	@Transactional
+	public Student enroll(String studentCode, String firstName, String lastName,
+			String email, LocalDate dateOfBirth, Gender gender, Long sourceAdmissionId) {
 		Long tenantId = TenantContext.getCurrentTenantId();
 		String resolvedCode = resolveStudentCode(tenantId, studentCode);
 		if (studentRepository.existsByStudentCodeAndTenantId(resolvedCode, tenantId)) {
 			throw new BusinessException("Student code already exists: " + resolvedCode);
 		}
 		Student student = studentRepository
-				.save(Student.create(resolvedCode, firstName, lastName, email, dateOfBirth));
+				.save(Student.create(resolvedCode, firstName, lastName, email, dateOfBirth, gender));
 		if (sourceAdmissionId != null) {
 			lifecycleRecorder.enrolledFromAdmission(sourceAdmissionId, student.getId(), LifecycleChange.NONE);
 		} else {
@@ -137,10 +155,10 @@ public class StudentService {
 
 	@Transactional
 	public Student updateContactDetails(String publicId, String firstName, String lastName, String email,
-			LocalDate dateOfBirth, ExpectedVersion expectedVersion) {
+			LocalDate dateOfBirth, Gender gender, ExpectedVersion expectedVersion) {
 		Student student = findByPublicId(publicId);
 		expectedVersion.verify(student);
-		student.updateContactDetails(firstName, lastName, email, dateOfBirth);
+		student.updateContactDetails(firstName, lastName, email, dateOfBirth, gender);
 		return studentRepository.save(student);
 	}
 

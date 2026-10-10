@@ -42,9 +42,11 @@ public class VenueController implements VenueApi {
 	@PreAuthorize("@permissionAuthorizationService.hasPermission('TIMETABLE_READ')")
 	public ApiResponse<com.altafjava.platform.core.model.Page<VenueResponse>> list(
 			@RequestParam(defaultValue = "0") int page,
-			@RequestParam(defaultValue = "20") int size) {
+			@RequestParam(defaultValue = "20") int size,
+			@RequestParam(required = false) String q) {
 		return ApiResponse.success(PlatformPageMapper
-				.toPlatformPage(venueService.list(pageableResolver.resolve(page, size)).map(venueMapper::toResponse)));
+				.toPlatformPage(
+						venueService.list(q, pageableResolver.resolve(page, size)).map(venueMapper::toResponse)));
 	}
 
 	@Override

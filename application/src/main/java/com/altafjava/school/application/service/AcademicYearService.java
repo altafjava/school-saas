@@ -7,6 +7,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import com.altafjava.platform.core.exception.ResourceNotFoundException;
+import com.altafjava.platform.core.search.LikePattern;
 import com.altafjava.platform.core.tenant.TenantContext;
 import com.altafjava.school.domain.academicyear.model.AcademicYear;
 import com.altafjava.school.domain.academicyear.repository.AcademicYearRepository;
@@ -21,8 +22,8 @@ public class AcademicYearService {
 	}
 
 	@Transactional(readOnly = true)
-	public Page<AcademicYear> listAcademicYears(Pageable pageable) {
-		return academicYearRepository.findAllByTenantId(TenantContext.getCurrentTenantId(), pageable);
+	public Page<AcademicYear> listAcademicYears(String q, Pageable pageable) {
+		return academicYearRepository.search(TenantContext.getCurrentTenantId(), LikePattern.contains(q), pageable);
 	}
 
 	@Transactional(readOnly = true)

@@ -1,5 +1,6 @@
 package com.altafjava.school.api.controller;
 
+import java.time.LocalDate;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -24,6 +25,8 @@ import com.altafjava.school.api.mapper.EventRegistrationMapper;
 import com.altafjava.school.api.support.PlatformPageMapper;
 import com.altafjava.school.api.support.SortableBy;
 import com.altafjava.school.api.support.SpringDataPageableResolver;
+import com.altafjava.school.application.filter.DateWindow;
+import com.altafjava.school.application.filter.EventFilter;
 import com.altafjava.school.application.service.EventRegistrationService;
 import com.altafjava.school.application.service.EventService;
 
@@ -54,9 +57,14 @@ public class EventController implements EventApi {
 	@SortableBy({ "title", "eventDate" })
 	public ApiResponse<com.altafjava.platform.core.model.Page<EventResponse>> list(
 			@RequestParam(defaultValue = "0") int page,
-			@RequestParam(defaultValue = "20") int size) {
+			@RequestParam(defaultValue = "20") int size,
+			@RequestParam(required = false) LocalDate from,
+			@RequestParam(required = false) LocalDate to,
+			@RequestParam(required = false) String q) {
 		return ApiResponse.success(PlatformPageMapper
-				.toPlatformPage(eventService.list(pageableResolver.resolve(page, size)).map(eventMapper::toResponse)));
+				.toPlatformPage(eventService
+						.list(new EventFilter(new DateWindow(from, to), q), pageableResolver.resolve(page, size))
+						.map(eventMapper::toResponse)));
 	}
 
 	@Override

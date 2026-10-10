@@ -12,6 +12,7 @@ import com.altafjava.school.api.dto.request.RescheduleExamRequest;
 import com.altafjava.school.api.dto.request.ReweightExamRequest;
 import com.altafjava.school.api.dto.request.ScheduleExamRequest;
 import com.altafjava.school.api.dto.response.ExamResponse;
+import com.altafjava.school.domain.exam.model.ExamStatus;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -24,7 +25,11 @@ public interface ExamApi {
 	@Operation(summary = "List")
 	public ApiResponse<com.altafjava.platform.core.model.Page<ExamResponse>> list(
 			@RequestParam(defaultValue = "0") int page,
-			@RequestParam(defaultValue = "20") int size);
+			@RequestParam(defaultValue = "20") int size,
+			@RequestParam(required = false) String classroomPublicId,
+			@RequestParam(required = false) String termPublicId,
+			@RequestParam(required = false) String subjectPublicId,
+			@RequestParam(required = false) ExamStatus status);
 
 	@Operation(summary = "Get")
 	public ApiResponse<ExamResponse> get(@PathVariable String publicId);

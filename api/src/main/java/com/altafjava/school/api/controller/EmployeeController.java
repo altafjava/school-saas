@@ -53,9 +53,10 @@ public class EmployeeController implements EmployeeApi {
 			@RequestParam(required = false) EmployeeStatus status,
 			@RequestParam(defaultValue = "0") int page,
 			@RequestParam(defaultValue = "20") int size,
-			@RequestParam(required = false) String q) {
+			@RequestParam(required = false) String q,
+			@RequestParam(required = false) String departmentPublicId) {
 		return ApiResponse.success(PlatformPageMapper.toPlatformPage(
-				employeeService.search(category, status, q, pageableResolver.resolve(page, size))
+				employeeService.search(category, status, departmentPublicId, q, pageableResolver.resolve(page, size))
 						.map(employeeMapper::toResponse)));
 	}
 
@@ -73,7 +74,7 @@ public class EmployeeController implements EmployeeApi {
 	public ApiResponse<EmployeeResponse> hire(@Valid @RequestBody CreateEmployeeRequest request) {
 		return ApiResponse.success(employeeMapper.toResponse(employeeService.hire(request.staffCategory(),
 				request.employeeCode(), request.firstName(), request.lastName(), request.email(),
-				request.joinDate())));
+				request.gender(), request.joinDate())));
 	}
 
 	@Override
@@ -82,7 +83,8 @@ public class EmployeeController implements EmployeeApi {
 	public ApiResponse<EmployeeResponse> updateContactDetails(@PathVariable String publicId,
 			@Valid @RequestBody UpdateEmployeeContactDetailsRequest request) {
 		return ApiResponse.success(employeeMapper.toResponse(employeeService.updateContactDetails(publicId,
-				request.firstName(), request.lastName(), request.email(), request.expectedVersion())));
+				request.firstName(), request.lastName(), request.email(), request.gender(),
+				request.expectedVersion())));
 	}
 
 	@Override

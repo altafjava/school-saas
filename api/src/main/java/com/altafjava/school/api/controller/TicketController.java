@@ -61,9 +61,10 @@ public class TicketController implements TicketApi {
 			@RequestParam(required = false) TicketCategory category,
 			@RequestParam(required = false) String assignedToUserPublicId,
 			@RequestParam(defaultValue = "0") int page,
-			@RequestParam(defaultValue = "20") int size) {
+			@RequestParam(defaultValue = "20") int size,
+			@RequestParam(required = false) String q) {
 		return ApiResponse.success(PlatformPageMapper.toPlatformPage(
-				ticketService.search(status, category, assignedToUserPublicId, pageableResolver.resolve(page, size))
+				ticketService.search(status, category, assignedToUserPublicId, q, pageableResolver.resolve(page, size))
 						.map(ticketMapper::toResponse)));
 	}
 

@@ -31,7 +31,9 @@ public interface ClassroomApi {
 	public ApiResponse<com.altafjava.platform.core.model.Page<ClassroomResponse>> list(
 			@RequestParam(defaultValue = "0") int page,
 			@RequestParam(defaultValue = "20") int size,
-			@RequestParam(required = false) String q);
+			@RequestParam(required = false) String q,
+			@RequestParam(required = false) String academicYearPublicId,
+			@RequestParam(required = false) String grade);
 
 	@Operation(summary = "Get")
 	public ApiResponse<ClassroomResponse> get(@PathVariable String publicId);

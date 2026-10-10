@@ -1,5 +1,6 @@
 package com.altafjava.school.api.controller;
 
+import java.time.LocalDate;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -27,7 +28,10 @@ import com.altafjava.school.api.mapper.AttendanceMapper;
 import com.altafjava.school.api.support.PlatformPageMapper;
 import com.altafjava.school.api.support.SortableBy;
 import com.altafjava.school.api.support.SpringDataPageableResolver;
+import com.altafjava.school.application.filter.AttendanceFilter;
+import com.altafjava.school.application.filter.DateWindow;
 import com.altafjava.school.application.service.AttendanceService;
+import com.altafjava.school.domain.attendance.model.AttendanceStatus;
 
 @RestController
 @RequestMapping("/api/v1/attendance")
@@ -53,9 +57,16 @@ public class AttendanceController implements AttendanceApi {
 	@SortableBy({ "attendanceDate", "status" })
 	public ApiResponse<com.altafjava.platform.core.model.Page<AttendanceResponse>> list(
 			@RequestParam(defaultValue = "0") int page,
-			@RequestParam(defaultValue = "20") int size) {
-		return ApiResponse.success(
-				PlatformPageMapper.toPlatformPage(attendanceService.listAttendance(pageableResolver.resolve(page, size))
+			@RequestParam(defaultValue = "20") int size,
+			@RequestParam(required = false) String classroomPublicId,
+			@RequestParam(required = false) String studentPublicId,
+			@RequestParam(required = false) LocalDate from,
+			@RequestParam(required = false) LocalDate to,
+			@RequestParam(required = false) AttendanceStatus status) {
+		AttendanceFilter filter = new AttendanceFilter(classroomPublicId, studentPublicId, new DateWindow(from, to),
+				status);
+		return ApiResponse.success(PlatformPageMapper
+				.toPlatformPage(attendanceService.listAttendance(filter, pageableResolver.resolve(page, size))
 						.map(attendanceMapper::toResponse)));
 	}
 

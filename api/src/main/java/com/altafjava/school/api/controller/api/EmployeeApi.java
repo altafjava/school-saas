@@ -31,7 +31,8 @@ public interface EmployeeApi {
 			@RequestParam(required = false) EmployeeStatus status,
 			@RequestParam(defaultValue = "0") int page,
 			@RequestParam(defaultValue = "20") int size,
-			@RequestParam(required = false) String q);
+			@RequestParam(required = false) String q,
+			@RequestParam(required = false) String departmentPublicId);
 
 	@Operation(summary = "Get")
 	ApiResponse<EmployeeResponse> get(@PathVariable String publicId);

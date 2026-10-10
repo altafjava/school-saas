@@ -10,6 +10,7 @@ import org.springframework.transaction.annotation.Transactional;
 import com.altafjava.platform.core.concurrency.ExpectedVersion;
 import com.altafjava.platform.core.exception.BusinessException;
 import com.altafjava.platform.core.exception.ResourceNotFoundException;
+import com.altafjava.platform.core.search.LikePattern;
 import com.altafjava.platform.core.tenant.TenantContext;
 import com.altafjava.school.domain.transport.model.Route;
 import com.altafjava.school.domain.transport.model.RouteStop;
@@ -28,8 +29,8 @@ public class RouteService {
 	}
 
 	@Transactional(readOnly = true)
-	public Page<Route> list(Pageable pageable) {
-		return routeRepository.findAllByTenantId(TenantContext.getCurrentTenantId(), pageable);
+	public Page<Route> list(String q, Pageable pageable) {
+		return routeRepository.search(TenantContext.getCurrentTenantId(), LikePattern.contains(q), pageable);
 	}
 
 	@Transactional(readOnly = true)

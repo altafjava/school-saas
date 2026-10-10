@@ -32,6 +32,8 @@ import com.altafjava.platform.domain.user.model.User;
 import com.altafjava.platform.domain.user.model.UserStatus;
 import com.altafjava.platform.domain.user.repository.RoleRepository;
 import com.altafjava.platform.domain.user.repository.UserRepository;
+import com.altafjava.school.application.filter.CourseworkFilter;
+import com.altafjava.school.application.filter.DateWindow;
 import com.altafjava.school.application.service.AcademicYearService;
 import com.altafjava.school.application.service.AssignmentService;
 import com.altafjava.school.application.service.ClassroomService;
@@ -215,7 +217,8 @@ class LmsTenantIsolationIntegrationTest extends SchoolIntegrationTestBase {
 		activateTenant(tenantB);
 		ClassroomFixture fixtureB = createClassroomWithTeacher("lsb-" + UUID.randomUUID().toString().substring(0, 6));
 		authenticateAsTenantAdmin();
-		Page<Lesson> lessonsB = lessonService.listByClassroom(fixtureB.classroom().getPublicId().toString(),
+		Page<Lesson> lessonsB = lessonService.listLessons(
+				new CourseworkFilter(fixtureB.classroom().getPublicId().toString(), null, DateWindow.UNBOUNDED),
 				PageRequest.of(0, 100));
 
 		assertTrue(lessonsB.getContent().isEmpty(), "Tenant B's classroom must not see tenant A's lessons");
@@ -271,8 +274,9 @@ class LmsTenantIsolationIntegrationTest extends SchoolIntegrationTestBase {
 		activateTenant(tenantB);
 		ClassroomFixture fixtureB = createClassroomWithTeacher("lib-" + UUID.randomUUID().toString().substring(0, 6));
 		authenticateAsTenantAdmin();
-		Page<Assignment> assignmentsB = assignmentService.listByClassroom(
-				fixtureB.classroom().getPublicId().toString(), PageRequest.of(0, 100));
+		Page<Assignment> assignmentsB = assignmentService.listAssignments(
+				new CourseworkFilter(fixtureB.classroom().getPublicId().toString(), null, DateWindow.UNBOUNDED),
+				PageRequest.of(0, 100));
 
 		assertFalse(assignmentsB.getContent().stream()
 				.anyMatch(a -> tenantA.getId().equals(a.getTenantId())),

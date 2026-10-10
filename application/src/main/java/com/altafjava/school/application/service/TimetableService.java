@@ -11,6 +11,9 @@ import com.altafjava.platform.core.concurrency.ExpectedVersion;
 import com.altafjava.platform.core.exception.BusinessException;
 import com.altafjava.platform.core.exception.ResourceNotFoundException;
 import com.altafjava.platform.core.tenant.TenantContext;
+import com.altafjava.school.application.filter.TimetableEntryFilter;
+import com.altafjava.school.application.reference.EntityRef;
+import com.altafjava.school.application.reference.PublicIdLookup;
 import com.altafjava.school.domain.classroom.repository.ClassroomRepository;
 import com.altafjava.school.domain.employee.model.EmployeeStatus;
 import com.altafjava.school.domain.subject.repository.SubjectRepository;
@@ -30,10 +33,12 @@ public class TimetableService {
 	private final SubjectRepository subjectRepository;
 	private final TeacherRepository teacherRepository;
 	private final VenueRepository venueRepository;
+	private final PublicIdLookup publicIdLookup;
 
 	public TimetableService(TimetableEntryRepository timetableEntryRepository, PeriodRepository periodRepository,
 			ClassroomRepository classroomRepository, SubjectRepository subjectRepository,
-			TeacherRepository teacherRepository, VenueRepository venueRepository) {
+			TeacherRepository teacherRepository, VenueRepository venueRepository, PublicIdLookup publicIdLookup) {
+		this.publicIdLookup = publicIdLookup;
 		this.timetableEntryRepository = timetableEntryRepository;
 		this.periodRepository = periodRepository;
 		this.classroomRepository = classroomRepository;
@@ -43,8 +48,11 @@ public class TimetableService {
 	}
 
 	@Transactional(readOnly = true)
-	public Page<TimetableEntry> listEntries(Pageable pageable) {
-		return timetableEntryRepository.findAllByTenantId(TenantContext.getCurrentTenantId(), pageable);
+	public Page<TimetableEntry> listEntries(TimetableEntryFilter filter, Pageable pageable) {
+		return timetableEntryRepository.search(TenantContext.getCurrentTenantId(),
+				publicIdLookup.idOrNull(EntityRef.CLASSROOM, filter.classroomPublicId()),
+				publicIdLookup.idOrNull(EntityRef.EMPLOYEE, filter.teacherPublicId()),
+				publicIdLookup.idOrNull(EntityRef.SUBJECT, filter.subjectPublicId()), filter.dayOfWeek(), pageable);
 	}
 
 	@Transactional(readOnly = true)

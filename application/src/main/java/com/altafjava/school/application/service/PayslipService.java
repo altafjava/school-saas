@@ -13,6 +13,9 @@ import com.altafjava.platform.core.audit.annotation.Audited;
 import com.altafjava.platform.core.exception.BusinessException;
 import com.altafjava.platform.core.exception.ResourceNotFoundException;
 import com.altafjava.platform.core.tenant.TenantContext;
+import com.altafjava.school.application.filter.PayslipFilter;
+import com.altafjava.school.application.reference.EntityRef;
+import com.altafjava.school.application.reference.PublicIdLookup;
 import com.altafjava.school.domain.employee.model.Employee;
 import com.altafjava.school.domain.employee.repository.EmployeeRepository;
 import com.altafjava.school.domain.leave.model.LeaveRequest;
@@ -38,10 +41,12 @@ public class PayslipService {
 	// Pure domain logic, no Spring wiring — instantiated directly, mirroring how FeePaymentService
 	// holds its FeeBalanceCalculator.
 	private final PayrollCalculator payrollCalculator = new PayrollCalculator();
+	private final PublicIdLookup publicIdLookup;
 
 	public PayslipService(PayslipRepository payslipRepository, SalaryStructureRepository salaryStructureRepository,
 			LeaveRequestRepository leaveRequestRepository, LeaveTypeRepository leaveTypeRepository,
-			EmployeeRepository employeeRepository) {
+			EmployeeRepository employeeRepository, PublicIdLookup publicIdLookup) {
+		this.publicIdLookup = publicIdLookup;
 		this.payslipRepository = payslipRepository;
 		this.salaryStructureRepository = salaryStructureRepository;
 		this.leaveRequestRepository = leaveRequestRepository;
@@ -50,16 +55,10 @@ public class PayslipService {
 	}
 
 	@Transactional(readOnly = true)
-	public Page<Payslip> listAll(Pageable pageable) {
-		return payslipRepository.findAllByTenantId(TenantContext.getCurrentTenantId(), pageable);
-	}
-
-	@Transactional(readOnly = true)
-	public Page<Payslip> listForEmployee(String employeePublicId, Pageable pageable) {
-		Long tenantId = TenantContext.getCurrentTenantId();
-		Employee employee = employeeRepository.findByPublicIdAndTenantId(UUID.fromString(employeePublicId), tenantId)
-				.orElseThrow(() -> new ResourceNotFoundException("Employee not found: " + employeePublicId));
-		return payslipRepository.findAllByEmployeeIdAndTenantId(employee.getId(), tenantId, pageable);
+	public Page<Payslip> list(PayslipFilter filter, Pageable pageable) {
+		return payslipRepository.search(TenantContext.getCurrentTenantId(),
+				publicIdLookup.idOrNull(EntityRef.EMPLOYEE, filter.employeePublicId()), filter.payYear(),
+				filter.payMonth(), filter.status(), pageable);
 	}
 
 	@Transactional(readOnly = true)

@@ -11,6 +11,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import com.altafjava.platform.application.lookup.LookupOption;
 import com.altafjava.platform.application.lookup.LookupProvider;
+import com.altafjava.school.application.filter.TermFilter;
 import com.altafjava.school.application.service.AcademicYearService;
 import com.altafjava.school.application.service.ClassroomService;
 import com.altafjava.school.application.service.DepartmentService;
@@ -34,7 +35,7 @@ public class SchoolLookupConfiguration {
 	@Bean
 	LookupProvider studentLookup(StudentService students) {
 		return searching("students", "STUDENT_READ",
-				(q, size) -> students.searchStudents(page(size, "firstName"), null, q),
+				(q, size) -> students.searchStudents(page(size, "firstName"), null, null, q),
 				s -> new LookupOption(s.getPublicId().toString(), s.getFirstName() + " " + s.getLastName(),
 						s.getStudentCode()));
 	}
@@ -57,7 +58,7 @@ public class SchoolLookupConfiguration {
 	@Bean
 	LookupProvider employeeLookup(EmployeeService employees) {
 		return searching("employees", "EMPLOYEE_READ",
-				(q, size) -> employees.search(null, null, q, page(size, "firstName")),
+				(q, size) -> employees.search(null, null, null, q, page(size, "firstName")),
 				e -> new LookupOption(e.getPublicId().toString(), e.getFirstName() + " " + e.getLastName(),
 						e.getEmployeeCode()));
 	}
@@ -65,7 +66,7 @@ public class SchoolLookupConfiguration {
 	@Bean
 	LookupProvider classroomLookup(ClassroomService classrooms) {
 		return searching("classrooms", "CLASSROOM_READ",
-				(q, size) -> classrooms.searchClassrooms(page(size, "grade"), q),
+				(q, size) -> classrooms.searchClassrooms(page(size, "grade"), null, null, q),
 				c -> new LookupOption(c.getPublicId().toString(), c.getGrade() + " " + c.getSection(),
 						c.getClassCode()));
 	}
@@ -79,40 +80,42 @@ public class SchoolLookupConfiguration {
 	@Bean
 	LookupProvider academicYearLookup(AcademicYearService academicYears) {
 		return new CatalogLookupProvider<>("academic-years", "ACADEMIC_YEAR_READ",
-				() -> academicYears.listAcademicYears(catalogPage()).getContent(),
+				() -> academicYears.listAcademicYears(null, catalogPage()).getContent(),
 				y -> LookupOption.of(y.getPublicId().toString(), y.getName()));
 	}
 
 	@Bean
 	LookupProvider termLookup(TermService terms) {
-		return new CatalogLookupProvider<>("terms", "TERM_READ", () -> terms.listTerms(catalogPage()).getContent(),
+		return new CatalogLookupProvider<>("terms", "TERM_READ",
+				() -> terms.listTerms(TermFilter.NONE, catalogPage()).getContent(),
 				t -> LookupOption.of(t.getPublicId().toString(), t.getName()));
 	}
 
 	@Bean
 	LookupProvider departmentLookup(DepartmentService departments) {
 		return new CatalogLookupProvider<>("departments", "DEPARTMENT_MANAGE",
-				() -> departments.list(catalogPage()).getContent(),
+				() -> departments.list(null, catalogPage()).getContent(),
 				d -> new LookupOption(d.getPublicId().toString(), d.getName(), d.getCode()));
 	}
 
 	@Bean
 	LookupProvider feeStructureLookup(FeeStructureService feeStructures) {
 		return new CatalogLookupProvider<>("fee-structures", "FEE_STRUCTURE_MANAGE",
-				() -> feeStructures.listFeeStructures(catalogPage()).getContent(),
+				() -> feeStructures.listFeeStructures(null, catalogPage()).getContent(),
 				f -> LookupOption.of(f.getPublicId().toString(), f.getName()));
 	}
 
 	@Bean
 	LookupProvider leaveTypeLookup(LeaveTypeService leaveTypes) {
 		return new CatalogLookupProvider<>("leave-types", "LEAVE_TYPE_READ",
-				() -> leaveTypes.list(catalogPage()).getContent(),
+				() -> leaveTypes.list(null, catalogPage()).getContent(),
 				l -> LookupOption.of(l.getPublicId().toString(), l.getName()));
 	}
 
 	@Bean
 	LookupProvider venueLookup(VenueService venues) {
-		return new CatalogLookupProvider<>("venues", "TIMETABLE_READ", () -> venues.list(catalogPage()).getContent(),
+		return new CatalogLookupProvider<>("venues", "TIMETABLE_READ",
+				() -> venues.list(null, catalogPage()).getContent(),
 				v -> new LookupOption(v.getPublicId().toString(), v.getName(), v.getCode()));
 	}
 

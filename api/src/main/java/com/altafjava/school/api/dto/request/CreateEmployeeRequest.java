@@ -5,6 +5,7 @@ import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
+import com.altafjava.school.domain.common.model.Gender;
 import com.altafjava.school.domain.employee.model.StaffCategory;
 import io.swagger.v3.oas.annotations.media.Schema;
 
@@ -16,5 +17,6 @@ public record CreateEmployeeRequest(
 		@NotBlank @Size(max = 100) String firstName,
 		@NotBlank @Size(max = 100) String lastName,
 		@NotBlank @Email @Size(max = 255) String email,
+		Gender gender,
 		@NotNull LocalDate joinDate) {
 }

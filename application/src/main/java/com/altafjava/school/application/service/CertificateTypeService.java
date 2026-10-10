@@ -9,6 +9,7 @@ import org.springframework.transaction.annotation.Transactional;
 import com.altafjava.platform.core.concurrency.ExpectedVersion;
 import com.altafjava.platform.core.exception.BusinessException;
 import com.altafjava.platform.core.exception.ResourceNotFoundException;
+import com.altafjava.platform.core.search.LikePattern;
 import com.altafjava.platform.core.tenant.TenantContext;
 import com.altafjava.school.domain.certificate.model.CertificateType;
 import com.altafjava.school.domain.certificate.repository.CertificateTypeRepository;
@@ -21,8 +22,8 @@ public class CertificateTypeService {
 	private final CertificateTypeRepository certificateTypeRepository;
 
 	@Transactional(readOnly = true)
-	public Page<CertificateType> list(Pageable pageable) {
-		return certificateTypeRepository.findAllByTenantId(TenantContext.getCurrentTenantId(), pageable);
+	public Page<CertificateType> list(String q, Pageable pageable) {
+		return certificateTypeRepository.search(TenantContext.getCurrentTenantId(), LikePattern.contains(q), pageable);
 	}
 
 	@Transactional(readOnly = true)

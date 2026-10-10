@@ -108,7 +108,8 @@ public class AdmissionEnrollmentSaga extends SagaCoordinator {
 		try {
 			startStep(sagaId, STEP_ENROLL_STUDENT);
 			Student student = studentService.enroll(studentCode, admission.getApplicantFirstName(),
-					admission.getApplicantLastName(), null, admission.getApplicantDateOfBirth(), admission.getId());
+					admission.getApplicantLastName(), null, admission.getApplicantDateOfBirth(),
+					admission.getApplicantGender(), admission.getId());
 			admission.recordEnrolledStudent(student.getId());
 			admission = admissionRepository.save(admission);
 			completeStep(sagaId, STEP_ENROLL_STUDENT, "studentId=" + student.getId());

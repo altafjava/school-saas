@@ -15,8 +15,11 @@ import com.altafjava.platform.core.exception.ResourceNotFoundException;
 import com.altafjava.platform.core.search.LikePattern;
 import com.altafjava.platform.core.tenant.TenantContext;
 import com.altafjava.school.application.employee.EmployeeCodeAllocator;
+import com.altafjava.school.application.reference.EntityRef;
+import com.altafjava.school.application.reference.PublicIdLookup;
 import com.altafjava.school.domain.classroom.repository.ClassroomRepository;
 import com.altafjava.school.domain.common.model.Address;
+import com.altafjava.school.domain.common.model.Gender;
 import com.altafjava.school.domain.common.service.PhoneNumberValidator;
 import com.altafjava.school.domain.department.repository.DepartmentRepository;
 import com.altafjava.school.domain.employee.model.Employee;
@@ -40,11 +43,13 @@ public class EmployeeService {
 	private final ClassroomRepository classroomRepository;
 	private final EmployeeCodeAllocator employeeCodeAllocator;
 	private final PhoneNumberValidator phoneNumberValidator = new PhoneNumberValidator();
+	private final PublicIdLookup publicIdLookup;
 
 	@Transactional(readOnly = true)
-	public Page<Employee> search(StaffCategory category, EmployeeStatus status, String q, Pageable pageable) {
+	public Page<Employee> search(StaffCategory category, EmployeeStatus status, String departmentPublicId, String q,
+			Pageable pageable) {
 		return employeeRepository.search(TenantContext.getCurrentTenantId(), category, status,
-				LikePattern.contains(q), pageable);
+				publicIdLookup.idOrNull(EntityRef.DEPARTMENT, departmentPublicId), LikePattern.contains(q), pageable);
 	}
 
 	@Transactional(readOnly = true)
@@ -54,21 +59,27 @@ public class EmployeeService {
 				.orElseThrow(() -> new ResourceNotFoundException("Employee not found: " + publicId));
 	}
 
+	public Employee hire(StaffCategory category, String employeeCode, String firstName, String lastName,
+			String email, LocalDate joinDate) {
+		return hire(category, employeeCode, firstName, lastName, email, Gender.NOT_SPECIFIED, joinDate);
+	}
+
 	@Transactional
 	@Audited(action = AuditAction.CREATE, resourceType = "Employee", details = "Employee hired")
 	public Employee hire(StaffCategory category, String employeeCode, String firstName, String lastName,
-			String email, LocalDate joinDate) {
+			String email, Gender gender, LocalDate joinDate) {
 		Long tenantId = TenantContext.getCurrentTenantId();
 		String code = employeeCodeAllocator.allocate(tenantId, employeeCode);
-		return employeeRepository.save(Employee.create(category, code, firstName, lastName, email, joinDate));
+		return employeeRepository
+				.save(Employee.create(category, code, firstName, lastName, email, gender, joinDate));
 	}
 
 	@Transactional
 	public Employee updateContactDetails(String publicId, String firstName, String lastName, String email,
-			ExpectedVersion expectedVersion) {
+			Gender gender, ExpectedVersion expectedVersion) {
 		Employee employee = requireActive(findByPublicId(publicId));
 		expectedVersion.verify(employee);
-		employee.updateContactDetails(firstName, lastName, email);
+		employee.updateContactDetails(firstName, lastName, email, gender);
 		return employeeRepository.save(employee);
 	}
 

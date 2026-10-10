@@ -1,8 +1,12 @@
 package com.altafjava.school.application.service;
 
+import java.util.Comparator;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
@@ -19,6 +23,8 @@ import com.altafjava.platform.core.search.LikePattern;
 import com.altafjava.platform.core.security.AuthenticatedUser;
 import com.altafjava.platform.core.tenant.TenantContext;
 import com.altafjava.school.application.reference.UserReferenceResolver;
+import com.altafjava.school.application.security.StudentDataAccessGuard;
+import com.altafjava.school.application.student.StudentGuardian;
 import com.altafjava.school.domain.common.model.Address;
 import com.altafjava.school.domain.common.service.PhoneNumberValidator;
 import com.altafjava.school.domain.guardian.event.GuardianLinkedEvent;
@@ -38,12 +44,15 @@ public class GuardianService {
 	private final StudentRepository studentRepository;
 	private final EventPublisher eventPublisher;
 	private final UserReferenceResolver userReferenceResolver;
+	private final StudentDataAccessGuard studentDataAccessGuard;
 	private final PhoneNumberValidator phoneNumberValidator = new PhoneNumberValidator();
 
 	public GuardianService(GuardianRepository guardianRepository,
 			StudentGuardianLinkRepository studentGuardianLinkRepository, StudentRepository studentRepository,
-			EventPublisher eventPublisher, UserReferenceResolver userReferenceResolver) {
+			EventPublisher eventPublisher, UserReferenceResolver userReferenceResolver,
+			StudentDataAccessGuard studentDataAccessGuard) {
 		this.guardianRepository = guardianRepository;
+		this.studentDataAccessGuard = studentDataAccessGuard;
 		this.userReferenceResolver = userReferenceResolver;
 		this.studentGuardianLinkRepository = studentGuardianLinkRepository;
 		this.studentRepository = studentRepository;
@@ -154,6 +163,26 @@ public class GuardianService {
 								+ studentPublicId));
 	}
 
+	/** Primary contact first, then by name. Staff-facing: carries contact details and custody restrictions. */
+	@Transactional(readOnly = true)
+	public List<StudentGuardian> listGuardiansOfStudent(String studentPublicId) {
+		Long tenantId = TenantContext.getCurrentTenantId();
+		Student student = studentRepository.findByPublicIdAndTenantId(UUID.fromString(studentPublicId), tenantId)
+				.orElseThrow(() -> new ResourceNotFoundException("Student not found: " + studentPublicId));
+		studentDataAccessGuard.assertCanView(tenantId, studentPublicId);
+		List<StudentGuardianLink> links = studentGuardianLinkRepository.findByStudentId(tenantId, student.getId());
+		Map<Long, Guardian> guardians = guardianRepository
+				.findAllByIdInAndTenantId(links.stream().map(StudentGuardianLink::getGuardianId).toList(), tenantId)
+				.stream().collect(Collectors.toMap(Guardian::getId, Function.identity()));
+		return links.stream()
+				.filter(link -> guardians.containsKey(link.getGuardianId()))
+				.map(link -> StudentGuardian.of(link, guardians.get(link.getGuardianId())))
+				.sorted(Comparator.comparing((StudentGuardian guardian) -> !guardian.primaryContact())
+						.thenComparing(StudentGuardian::lastName)
+						.thenComparing(StudentGuardian::firstName))
+				.toList();
+	}
+
 	@Transactional(readOnly = true)
 	public Page<Student> listLinkedStudentsForCurrentUser(Pageable pageable) {
 		Long tenantId = TenantContext.getCurrentTenantId();
@@ -162,8 +191,12 @@ public class GuardianService {
 				.orElseThrow(() -> new ResourceNotFoundException("No guardian record linked to the current user"));
 		Page<StudentGuardianLink> links = studentGuardianLinkRepository.findByGuardianId(tenantId, guardian.getId(),
 				pageable);
+		Map<Long, Student> studentsById = studentRepository
+				.findAllByIdInAndTenantId(links.getContent().stream().map(StudentGuardianLink::getStudentId).toList(),
+						tenantId)
+				.stream().collect(Collectors.toMap(Student::getId, Function.identity()));
 		List<Student> students = links.getContent().stream()
-				.map(link -> studentRepository.findByIdAndTenantId(link.getStudentId(), tenantId)
+				.map(link -> Optional.ofNullable(studentsById.get(link.getStudentId()))
 						.orElseThrow(() -> new ResourceNotFoundException("Student not found: " + link.getStudentId())))
 				.toList();
 		return new PageImpl<>(students, pageable, links.getTotalElements());

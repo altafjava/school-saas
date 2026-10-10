@@ -5,6 +5,7 @@ import java.time.Instant;
 import java.time.LocalDate;
 import com.altafjava.school.domain.admission.model.AdmissionStatus;
 import com.altafjava.school.domain.admission.model.ApplicationFeeStatus;
+import com.altafjava.school.domain.common.model.Gender;
 
 public record AdmissionResponse(
 		String publicId,
@@ -12,6 +13,7 @@ public record AdmissionResponse(
 		String applicantFirstName,
 		String applicantLastName,
 		LocalDate applicantDateOfBirth,
+		Gender applicantGender,
 		String guardianFirstName,
 		String guardianLastName,
 		String guardianEmail,

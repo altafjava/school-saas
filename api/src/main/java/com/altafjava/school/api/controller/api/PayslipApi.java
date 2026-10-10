@@ -4,6 +4,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestParam;
 import com.altafjava.platform.api.dto.response.ApiResponse;
 import com.altafjava.school.api.dto.response.PayslipResponse;
+import com.altafjava.school.domain.payroll.model.PayslipStatus;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -17,7 +18,10 @@ public interface PayslipApi {
 	public ApiResponse<com.altafjava.platform.core.model.Page<PayslipResponse>> list(
 			@RequestParam(required = false) String employeePublicId,
 			@RequestParam(defaultValue = "0") int page,
-			@RequestParam(defaultValue = "20") int size);
+			@RequestParam(defaultValue = "20") int size,
+			@RequestParam(required = false) Integer payYear,
+			@RequestParam(required = false) Integer payMonth,
+			@RequestParam(required = false) PayslipStatus status);
 
 	@Operation(summary = "Get")
 	public ApiResponse<PayslipResponse> get(@PathVariable String publicId);

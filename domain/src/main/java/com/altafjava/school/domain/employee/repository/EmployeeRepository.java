@@ -22,13 +22,15 @@ public interface EmployeeRepository extends JpaRepository<Employee, Long> {
 			WHERE e.tenantId = :tenantId
 			  AND (:category IS NULL OR e.staffCategory = :category)
 			  AND (:status IS NULL OR e.status = :status)
+			  AND (:departmentId IS NULL OR e.departmentId = :departmentId)
 			  AND (:pattern IS NULL
 			       OR LOWER(e.employeeCode) LIKE :pattern ESCAPE '!'
 			       OR LOWER(CONCAT(e.firstName, ' ', e.lastName)) LIKE :pattern ESCAPE '!'
 			       OR LOWER(e.email) LIKE :pattern ESCAPE '!')
 			""")
 	Page<Employee> search(@Param("tenantId") Long tenantId, @Param("category") StaffCategory category,
-			@Param("status") EmployeeStatus status, @Param("pattern") String pattern, Pageable pageable);
+			@Param("status") EmployeeStatus status, @Param("departmentId") Long departmentId,
+			@Param("pattern") String pattern, Pageable pageable);
 
 	// Unpaged, batch-context-only: scheduler jobs (payslips, leave allocation) that must process every
 	// current employee in a tenant — never for a client-facing endpoint. Leavers are excluded.

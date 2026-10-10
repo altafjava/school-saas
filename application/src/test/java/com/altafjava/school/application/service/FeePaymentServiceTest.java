@@ -24,6 +24,7 @@ import com.altafjava.platform.core.exception.ResourceNotFoundException;
 import com.altafjava.platform.core.tenant.TenantContext;
 import com.altafjava.platform.core.tenant.TenantType;
 import com.altafjava.platform.domain.numbering.model.ResetPeriod;
+import com.altafjava.school.application.reference.PublicIdLookup;
 import com.altafjava.school.application.security.StudentDataAccessGuard;
 import com.altafjava.school.domain.classroom.repository.StudentClassroomLinkRepository;
 import com.altafjava.school.domain.fee.model.FeeAssignment;
@@ -61,6 +62,8 @@ class FeePaymentServiceTest {
 	private FeeInstallmentRepository feeInstallmentRepository;
 	@Mock
 	private FeeRefundRepository feeRefundRepository;
+	@Mock
+	private PublicIdLookup publicIdLookup;
 
 	private FeePaymentService feePaymentService;
 
@@ -68,7 +71,8 @@ class FeePaymentServiceTest {
 	void setUp() {
 		feePaymentService = new FeePaymentService(feePaymentRepository, studentRepository, feeStructureRepository,
 				feeAssignmentRepository, studentClassroomLinkRepository, studentDataAccessGuard,
-				numberSequenceService, feeDiscountRepository, feeInstallmentRepository, feeRefundRepository);
+				numberSequenceService, feeDiscountRepository, feeInstallmentRepository, feeRefundRepository,
+				publicIdLookup);
 		TenantContext.ForTesting.setCurrentTenant(1L, null, null, TenantType.SHARED);
 	}
 

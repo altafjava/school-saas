@@ -18,6 +18,9 @@ import com.altafjava.platform.core.security.AuthenticatedUser;
 import com.altafjava.platform.core.tenant.TenantContext;
 import com.altafjava.platform.domain.notification.model.NotificationPriority;
 import com.altafjava.platform.domain.notification.model.NotificationType;
+import com.altafjava.school.application.filter.DisciplineIncidentFilter;
+import com.altafjava.school.application.reference.EntityRef;
+import com.altafjava.school.application.reference.PublicIdLookup;
 import com.altafjava.school.application.scheduler.support.StudentNotificationRecipientResolver;
 import com.altafjava.school.application.security.StudentDataAccessGuard;
 import com.altafjava.school.domain.discipline.model.DisciplineIncident;
@@ -38,11 +41,14 @@ public class DisciplineIncidentService {
 	private final NotificationService notificationService;
 	private final StudentDataAccessGuard studentDataAccessGuard;
 	private final ActivityLogService activityLogService;
+	private final PublicIdLookup publicIdLookup;
 
 	public DisciplineIncidentService(DisciplineIncidentRepository disciplineIncidentRepository,
 			StudentRepository studentRepository, TeacherRepository teacherRepository,
 			StudentNotificationRecipientResolver recipientResolver, NotificationService notificationService,
-			StudentDataAccessGuard studentDataAccessGuard, ActivityLogService activityLogService) {
+			StudentDataAccessGuard studentDataAccessGuard, ActivityLogService activityLogService,
+			PublicIdLookup publicIdLookup) {
+		this.publicIdLookup = publicIdLookup;
 		this.disciplineIncidentRepository = disciplineIncidentRepository;
 		this.studentRepository = studentRepository;
 		this.teacherRepository = teacherRepository;
@@ -53,8 +59,10 @@ public class DisciplineIncidentService {
 	}
 
 	@Transactional(readOnly = true)
-	public Page<DisciplineIncident> listAll(Pageable pageable) {
-		return disciplineIncidentRepository.findAllByTenantId(TenantContext.getCurrentTenantId(), pageable);
+	public Page<DisciplineIncident> listAll(DisciplineIncidentFilter filter, Pageable pageable) {
+		return disciplineIncidentRepository.search(TenantContext.getCurrentTenantId(),
+				publicIdLookup.idOrNull(EntityRef.STUDENT, filter.studentPublicId()), filter.severity(),
+				filter.dates().from(), filter.dates().to(), pageable);
 	}
 
 	@Transactional(readOnly = true)

@@ -7,6 +7,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import com.altafjava.platform.core.concurrency.ExpectedVersion;
 import com.altafjava.platform.core.exception.ResourceNotFoundException;
+import com.altafjava.platform.core.search.LikePattern;
 import com.altafjava.platform.core.tenant.TenantContext;
 import com.altafjava.school.domain.hostel.model.HostelBuilding;
 import com.altafjava.school.domain.hostel.model.Room;
@@ -25,13 +26,13 @@ public class RoomService {
 	}
 
 	@Transactional(readOnly = true)
-	public Page<Room> listForBuilding(String hostelBuildingPublicId, Pageable pageable) {
+	public Page<Room> listForBuilding(String hostelBuildingPublicId, String q, Pageable pageable) {
 		Long tenantId = TenantContext.getCurrentTenantId();
 		HostelBuilding building = hostelBuildingRepository
 				.findByPublicIdAndTenantId(UUID.fromString(hostelBuildingPublicId), tenantId)
 				.orElseThrow(
 						() -> new ResourceNotFoundException("Hostel building not found: " + hostelBuildingPublicId));
-		return roomRepository.findAllByHostelBuildingIdAndTenantId(building.getId(), tenantId, pageable);
+		return roomRepository.search(tenantId, building.getId(), LikePattern.contains(q), pageable);
 	}
 
 	@Transactional(readOnly = true)

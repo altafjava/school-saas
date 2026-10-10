@@ -9,6 +9,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import com.altafjava.platform.core.exception.BusinessException;
 import com.altafjava.platform.core.exception.ResourceNotFoundException;
+import com.altafjava.platform.core.search.LikePattern;
 import com.altafjava.platform.core.tenant.TenantContext;
 import com.altafjava.school.domain.timetable.model.Period;
 import com.altafjava.school.domain.timetable.repository.PeriodRepository;
@@ -23,8 +24,8 @@ public class PeriodService {
 	}
 
 	@Transactional(readOnly = true)
-	public Page<Period> listPeriods(Pageable pageable) {
-		return periodRepository.findAllByTenantId(TenantContext.getCurrentTenantId(), pageable);
+	public Page<Period> listPeriods(String q, Pageable pageable) {
+		return periodRepository.search(TenantContext.getCurrentTenantId(), LikePattern.contains(q), pageable);
 	}
 
 	@Transactional(readOnly = true)

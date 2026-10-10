@@ -25,7 +25,8 @@ class CreateStudentRequestValidationTest {
 	}
 
 	private CreateStudentRequest valid() {
-		return new CreateStudentRequest("STU-001", "Alice", "Smith", "alice@school.com", LocalDate.of(2010, 5, 15));
+		return new CreateStudentRequest("STU-001", "Alice", "Smith", "alice@school.com", LocalDate.of(2010, 5, 15),
+				null);
 	}
 
 	@Test
@@ -37,58 +38,60 @@ class CreateStudentRequestValidationTest {
 	void studentCode_blank_passesValidation() {
 		// studentCode is an explicit-override path — blank/omitted defers to the tenant's
 		// configured numbering sequence, see StudentService#enroll.
-		var req = new CreateStudentRequest("", "Alice", "Smith", "alice@school.com", LocalDate.of(2010, 5, 15));
+		var req = new CreateStudentRequest("", "Alice", "Smith", "alice@school.com", LocalDate.of(2010, 5, 15), null);
 		assertTrue(violationsFor(req).isEmpty());
 	}
 
 	@Test
 	void studentCode_null_passesValidation() {
-		var req = new CreateStudentRequest(null, "Alice", "Smith", "alice@school.com", LocalDate.of(2010, 5, 15));
+		var req = new CreateStudentRequest(null, "Alice", "Smith", "alice@school.com", LocalDate.of(2010, 5, 15), null);
 		assertTrue(violationsFor(req).isEmpty());
 	}
 
 	@Test
 	void studentCode_tooLong_failsValidation() {
 		String longCode = "S".repeat(51);
-		var req = new CreateStudentRequest(longCode, "Alice", "Smith", "alice@school.com", LocalDate.of(2010, 5, 15));
+		var req = new CreateStudentRequest(longCode, "Alice", "Smith", "alice@school.com", LocalDate.of(2010, 5, 15),
+				null);
 		assertFalse(violationsFor(req).isEmpty());
 	}
 
 	@Test
 	void firstName_blank_failsValidation() {
-		var req = new CreateStudentRequest("STU-001", "", "Smith", "alice@school.com", LocalDate.of(2010, 5, 15));
+		var req = new CreateStudentRequest("STU-001", "", "Smith", "alice@school.com", LocalDate.of(2010, 5, 15), null);
 		assertFalse(violationsFor(req).isEmpty());
 	}
 
 	@Test
 	void firstName_tooLong_failsValidation() {
 		var req = new CreateStudentRequest("STU-001", "A".repeat(101), "Smith", "alice@school.com",
-				LocalDate.of(2010, 5, 15));
+				LocalDate.of(2010, 5, 15), null);
 		assertFalse(violationsFor(req).isEmpty());
 	}
 
 	@Test
 	void lastName_blank_failsValidation() {
-		var req = new CreateStudentRequest("STU-001", "Alice", "", "alice@school.com", LocalDate.of(2010, 5, 15));
+		var req = new CreateStudentRequest("STU-001", "Alice", "", "alice@school.com", LocalDate.of(2010, 5, 15), null);
 		assertFalse(violationsFor(req).isEmpty());
 	}
 
 	@Test
 	void email_invalidFormat_failsValidation() {
-		var req = new CreateStudentRequest("STU-001", "Alice", "Smith", "not-an-email", LocalDate.of(2010, 5, 15));
+		var req = new CreateStudentRequest("STU-001", "Alice", "Smith", "not-an-email", LocalDate.of(2010, 5, 15),
+				null);
 		assertFalse(violationsFor(req).isEmpty());
 	}
 
 	@Test
 	void email_null_passesValidation() {
 		// email has no @NotNull — optional field
-		var req = new CreateStudentRequest("STU-001", "Alice", "Smith", null, LocalDate.of(2010, 5, 15));
+		var req = new CreateStudentRequest("STU-001", "Alice", "Smith", null, LocalDate.of(2010, 5, 15), null);
 		assertTrue(violationsFor(req).isEmpty());
 	}
 
 	@Test
 	void dateOfBirth_null_failsValidation() {
-		var req = new CreateStudentRequest("STU-001", "Alice", "Smith", "alice@school.com", null);
+		var req = new CreateStudentRequest("STU-001", "Alice", "Smith", "alice@school.com", null, null);
 		assertFalse(violationsFor(req).isEmpty());
 	}
 }

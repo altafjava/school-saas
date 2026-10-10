@@ -8,6 +8,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import com.altafjava.platform.core.concurrency.ExpectedVersion;
 import com.altafjava.platform.core.exception.ResourceNotFoundException;
+import com.altafjava.platform.core.search.LikePattern;
 import com.altafjava.platform.core.tenant.TenantContext;
 import com.altafjava.school.domain.fee.model.FeeFrequency;
 import com.altafjava.school.domain.fee.model.FeeStructure;
@@ -28,8 +29,8 @@ public class FeeStructureService {
 	}
 
 	@Transactional(readOnly = true)
-	public Page<FeeStructure> listFeeStructures(Pageable pageable) {
-		return feeStructureRepository.findAllByTenantId(TenantContext.getCurrentTenantId(), pageable);
+	public Page<FeeStructure> listFeeStructures(String q, Pageable pageable) {
+		return feeStructureRepository.search(TenantContext.getCurrentTenantId(), LikePattern.contains(q), pageable);
 	}
 
 	@Transactional(readOnly = true)

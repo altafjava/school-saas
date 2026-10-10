@@ -25,7 +25,8 @@ public interface FeeStructureApi {
 	@Operation(summary = "List")
 	public ApiResponse<com.altafjava.platform.core.model.Page<FeeStructureResponse>> list(
 			@RequestParam(defaultValue = "0") int page,
-			@RequestParam(defaultValue = "20") int size);
+			@RequestParam(defaultValue = "20") int size,
+			@RequestParam(required = false) String q);
 
 	@Operation(summary = "Get")
 	public ApiResponse<FeeStructureResponse> get(@PathVariable String publicId);

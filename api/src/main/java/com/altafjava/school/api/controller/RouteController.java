@@ -49,9 +49,11 @@ public class RouteController implements RouteApi {
 	@PreAuthorize("@permissionAuthorizationService.hasPermission('TRANSPORT_ROUTE_READ')")
 	public ApiResponse<com.altafjava.platform.core.model.Page<RouteResponse>> list(
 			@RequestParam(defaultValue = "0") int page,
-			@RequestParam(defaultValue = "20") int size) {
+			@RequestParam(defaultValue = "20") int size,
+			@RequestParam(required = false) String q) {
 		return ApiResponse.success(PlatformPageMapper
-				.toPlatformPage(routeService.list(pageableResolver.resolve(page, size)).map(routeMapper::toResponse)));
+				.toPlatformPage(
+						routeService.list(q, pageableResolver.resolve(page, size)).map(routeMapper::toResponse)));
 	}
 
 	@Override

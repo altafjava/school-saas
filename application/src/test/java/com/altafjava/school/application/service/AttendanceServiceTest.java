@@ -3,7 +3,9 @@ package com.altafjava.school.application.service;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -25,6 +27,10 @@ import com.altafjava.platform.core.concurrency.ExpectedVersion;
 import com.altafjava.platform.core.exception.ResourceNotFoundException;
 import com.altafjava.platform.core.tenant.TenantContext;
 import com.altafjava.platform.core.tenant.TenantType;
+import com.altafjava.school.application.filter.AttendanceFilter;
+import com.altafjava.school.application.filter.DateWindow;
+import com.altafjava.school.application.reference.EntityRef;
+import com.altafjava.school.application.reference.PublicIdLookup;
 import com.altafjava.school.application.security.AcademicAccessGuard;
 import com.altafjava.school.application.security.AcademicScope;
 import com.altafjava.school.application.security.AcademicScopeResolver;
@@ -66,6 +72,8 @@ class AttendanceServiceTest {
 	private AcademicAccessGuard academicAccessGuard;
 	@Mock
 	private HolidayService holidayService;
+	@Mock
+	private PublicIdLookup publicIdLookup;
 
 	private AttendanceService attendanceService;
 
@@ -73,8 +81,10 @@ class AttendanceServiceTest {
 	void setUp() {
 		attendanceService = new AttendanceService(attendanceRepository, attendanceCorrectionRepository,
 				studentRepository, classroomRepository, studentClassroomLinkRepository, studentDataAccessGuard,
-				academicScopeResolver, academicAccessGuard, holidayService);
+				academicScopeResolver, academicAccessGuard, holidayService, publicIdLookup);
 		TenantContext.ForTesting.setCurrentTenant(1L, null, null, TenantType.SHARED);
+		// An absent filter resolves to no id; a bare Mockito mock would answer 0L.
+		lenient().when(publicIdLookup.idOrNull(any(), any())).thenReturn(null);
 	}
 
 	@AfterEach
@@ -144,41 +154,68 @@ class AttendanceServiceTest {
 	}
 
 	@Test
-	void listAttendance_withAllClassroomsScope_returnsAllTenantAttendance() {
+	void listAttendance_withAllClassroomsScope_searchesEveryClassroom() {
 		when(academicScopeResolver.current(1L))
 				.thenReturn(new AcademicScope(true, false, TeachingAssignments.NONE, Set.of()));
 		PageRequest pageable = PageRequest.of(0, 20);
-		when(attendanceRepository.findAllByTenantId(1L, pageable)).thenReturn(Page.empty());
+		when(attendanceRepository.search(any(), anyBoolean(), any(), any(), any(), any(), any(), any(), any(), any()))
+				.thenReturn(Page.empty());
 
-		attendanceService.listAttendance(pageable);
+		attendanceService.listAttendance(AttendanceFilter.NONE, pageable);
 
-		verify(attendanceRepository).findAllByTenantId(1L, pageable);
-		verify(attendanceRepository, never()).findVisible(any(), any(), any(), any());
+		verify(attendanceRepository).search(1L, true, Set.of(), Set.of(), null, null, null, null, null, pageable);
 	}
 
 	@Test
-	void listAttendance_asTeacher_filtersByHomeroomAndTimetabledClassrooms() {
+	void listAttendance_asTeacher_scopesToHomeroomAndTimetabledClassrooms() {
 		TeachingAssignments teaching = new TeachingAssignments(70L, Set.of(10L), Map.of(11L, Set.of(5L)));
 		when(academicScopeResolver.current(1L)).thenReturn(new AcademicScope(false, false, teaching, Set.of()));
 		PageRequest pageable = PageRequest.of(0, 20);
-		when(attendanceRepository.findVisible(1L, Set.of(10L, 11L), Set.of(), pageable)).thenReturn(Page.empty());
+		when(attendanceRepository.search(any(), anyBoolean(), any(), any(), any(), any(), any(), any(), any(), any()))
+				.thenReturn(Page.empty());
 
-		attendanceService.listAttendance(pageable);
+		attendanceService.listAttendance(AttendanceFilter.NONE, pageable);
 
-		verify(attendanceRepository).findVisible(1L, Set.of(10L, 11L), Set.of(), pageable);
-		verify(attendanceRepository, never()).findAllByTenantId(any(), any());
+		verify(attendanceRepository).search(1L, false, Set.of(10L, 11L), Set.of(), null, null, null, null, null,
+				pageable);
 	}
 
 	@Test
-	void listAttendance_asParent_filtersByOwnStudents() {
+	void listAttendance_asParent_scopesToOwnStudents() {
 		when(academicScopeResolver.current(1L))
 				.thenReturn(new AcademicScope(false, false, TeachingAssignments.NONE, Set.of(30L)));
 		PageRequest pageable = PageRequest.of(0, 20);
-		when(attendanceRepository.findVisible(1L, Set.of(), Set.of(30L), pageable)).thenReturn(Page.empty());
+		when(attendanceRepository.search(any(), anyBoolean(), any(), any(), any(), any(), any(), any(), any(), any()))
+				.thenReturn(Page.empty());
 
-		attendanceService.listAttendance(pageable);
+		attendanceService.listAttendance(AttendanceFilter.NONE, pageable);
 
-		verify(attendanceRepository).findVisible(1L, Set.of(), Set.of(30L), pageable);
+		verify(attendanceRepository).search(1L, false, Set.of(), Set.of(30L), null, null, null, null, null, pageable);
+	}
+
+	@Test
+	void listAttendance_resolvesThePublicIdsOfTheFilterAndKeepsTheScope() {
+		TeachingAssignments teaching = new TeachingAssignments(70L, Set.of(10L), Map.of());
+		when(academicScopeResolver.current(1L)).thenReturn(new AcademicScope(false, false, teaching, Set.of()));
+		when(publicIdLookup.idOrNull(EntityRef.CLASSROOM, "classroom-public")).thenReturn(10L);
+		when(publicIdLookup.idOrNull(EntityRef.STUDENT, "student-public")).thenReturn(30L);
+		PageRequest pageable = PageRequest.of(0, 20);
+		LocalDate from = LocalDate.of(2026, 1, 1);
+		LocalDate to = LocalDate.of(2026, 1, 31);
+		when(attendanceRepository.search(any(), anyBoolean(), any(), any(), any(), any(), any(), any(), any(), any()))
+				.thenReturn(Page.empty());
+
+		attendanceService.listAttendance(new AttendanceFilter("classroom-public", "student-public",
+				new DateWindow(from, to), AttendanceStatus.ABSENT), pageable);
+
+		verify(attendanceRepository).search(1L, false, Set.of(10L), Set.of(), 10L, 30L, from, to,
+				AttendanceStatus.ABSENT, pageable);
+	}
+
+	@Test
+	void dateWindow_rejectsAnInvertedRange() {
+		assertThrows(IllegalArgumentException.class,
+				() -> new DateWindow(LocalDate.of(2026, 2, 1), LocalDate.of(2026, 1, 1)));
 	}
 
 	@Test

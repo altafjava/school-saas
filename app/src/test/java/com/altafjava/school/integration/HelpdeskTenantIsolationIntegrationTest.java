@@ -90,7 +90,7 @@ class HelpdeskTenantIsolationIntegrationTest extends SchoolIntegrationTestBase {
 		ticketService.raise(TicketCategory.FEE, "Fee discrepancy", "Amount charged is higher than the fee structure");
 
 		activateTenant(tenantB);
-		var results = ticketService.search(null, null, null, PageRequest.of(0, 20));
+		var results = ticketService.search(null, null, null, null, PageRequest.of(0, 20));
 		assertTrue(results.isEmpty(), "Tenant B's search must not include tenant A's tickets");
 	}
 }

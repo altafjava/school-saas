@@ -13,6 +13,7 @@ import org.hibernate.annotations.SQLRestriction;
 import com.altafjava.platform.core.exception.BusinessException;
 import com.altafjava.platform.core.model.SoftDeletableEntity;
 import com.altafjava.platform.core.security.annotation.Pii;
+import com.altafjava.school.domain.common.model.Gender;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -49,6 +50,11 @@ public class Admission extends SoftDeletableEntity {
 
 	@Column(name = "applicant_date_of_birth")
 	private LocalDate applicantDateOfBirth;
+
+	@Enumerated(EnumType.STRING)
+	@Column(name = "applicant_gender", nullable = false, length = 20)
+	@Builder.Default
+	private Gender applicantGender = Gender.NOT_SPECIFIED;
 
 	@Pii
 	@Column(name = "guardian_first_name", nullable = false, length = 100)
@@ -121,6 +127,14 @@ public class Admission extends SoftDeletableEntity {
 	public static Admission submit(String applicantFirstName, String applicantLastName,
 			LocalDate applicantDateOfBirth, String guardianFirstName, String guardianLastName,
 			String guardianEmail, String guardianPhone, String appliedGrade, BigDecimal applicationFee) {
+		return submit(applicantFirstName, applicantLastName, applicantDateOfBirth, Gender.NOT_SPECIFIED,
+				guardianFirstName, guardianLastName, guardianEmail, guardianPhone, appliedGrade, applicationFee);
+	}
+
+	public static Admission submit(String applicantFirstName, String applicantLastName,
+			LocalDate applicantDateOfBirth, Gender applicantGender, String guardianFirstName,
+			String guardianLastName, String guardianEmail, String guardianPhone, String appliedGrade,
+			BigDecimal applicationFee) {
 		boolean feeRequired = applicationFee != null && applicationFee.signum() > 0;
 		return Admission.builder()
 				.applicationFeeStatus(feeRequired ? ApplicationFeeStatus.PENDING : ApplicationFeeStatus.NOT_REQUIRED)
@@ -128,6 +142,7 @@ public class Admission extends SoftDeletableEntity {
 				.applicantFirstName(applicantFirstName)
 				.applicantLastName(applicantLastName)
 				.applicantDateOfBirth(applicantDateOfBirth)
+				.applicantGender(applicantGender != null ? applicantGender : Gender.NOT_SPECIFIED)
 				.guardianFirstName(guardianFirstName)
 				.guardianLastName(guardianLastName)
 				.guardianEmail(guardianEmail)

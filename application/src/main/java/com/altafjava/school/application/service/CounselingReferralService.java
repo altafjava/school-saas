@@ -13,6 +13,9 @@ import com.altafjava.platform.core.exception.BusinessException;
 import com.altafjava.platform.core.exception.ResourceNotFoundException;
 import com.altafjava.platform.core.security.AuthenticatedUser;
 import com.altafjava.platform.core.tenant.TenantContext;
+import com.altafjava.school.application.filter.CounselingReferralFilter;
+import com.altafjava.school.application.reference.EntityRef;
+import com.altafjava.school.application.reference.PublicIdLookup;
 import com.altafjava.school.domain.counseling.model.CounselingReferral;
 import com.altafjava.school.domain.counseling.model.CounselingSession;
 import com.altafjava.school.domain.counseling.repository.CounselingReferralRepository;
@@ -27,10 +30,12 @@ public class CounselingReferralService {
 	private final CounselingSessionRepository counselingSessionRepository;
 	private final StudentRepository studentRepository;
 	private final ActivityLogService activityLogService;
+	private final PublicIdLookup publicIdLookup;
 
 	public CounselingReferralService(CounselingReferralRepository counselingReferralRepository,
 			CounselingSessionRepository counselingSessionRepository, StudentRepository studentRepository,
-			ActivityLogService activityLogService) {
+			ActivityLogService activityLogService, PublicIdLookup publicIdLookup) {
+		this.publicIdLookup = publicIdLookup;
 		this.counselingReferralRepository = counselingReferralRepository;
 		this.counselingSessionRepository = counselingSessionRepository;
 		this.studentRepository = studentRepository;
@@ -38,8 +43,11 @@ public class CounselingReferralService {
 	}
 
 	@Transactional(readOnly = true)
-	public Page<CounselingReferral> listAll(Pageable pageable) {
-		return counselingReferralRepository.findAllByTenantId(TenantContext.getCurrentTenantId(), pageable);
+	public Page<CounselingReferral> listAll(CounselingReferralFilter filter, Pageable pageable) {
+		return counselingReferralRepository.search(TenantContext.getCurrentTenantId(),
+				publicIdLookup.idOrNull(EntityRef.STUDENT, filter.studentPublicId()), filter.status(),
+				filter.dates().from() != null ? filter.dates().from().atStartOfDay() : null,
+				filter.dates().to() != null ? filter.dates().to().plusDays(1).atStartOfDay() : null, pageable);
 	}
 
 	@Transactional(readOnly = true)

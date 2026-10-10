@@ -20,7 +20,8 @@ public interface VenueApi {
 	@Operation(summary = "List")
 	public ApiResponse<com.altafjava.platform.core.model.Page<VenueResponse>> list(
 			@RequestParam(defaultValue = "0") int page,
-			@RequestParam(defaultValue = "20") int size);
+			@RequestParam(defaultValue = "20") int size,
+			@RequestParam(required = false) String q);
 
 	@Operation(summary = "Get")
 	public ApiResponse<VenueResponse> get(@PathVariable String publicId);

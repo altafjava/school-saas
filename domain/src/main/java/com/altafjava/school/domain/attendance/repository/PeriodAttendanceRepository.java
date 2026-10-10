@@ -9,6 +9,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
+import com.altafjava.school.domain.attendance.model.AttendanceStatus;
 import com.altafjava.school.domain.attendance.model.PeriodAttendance;
 
 public interface PeriodAttendanceRepository extends JpaRepository<PeriodAttendance, Long> {
@@ -17,14 +18,24 @@ public interface PeriodAttendanceRepository extends JpaRepository<PeriodAttendan
 
 	Optional<PeriodAttendance> findByPublicIdAndTenantId(UUID publicId, Long tenantId);
 
-	// A caller's scoped view: the classrooms they teach plus the students who are theirs.
+	/**
+	 * The period-attendance list. Scope first: every classroom, or only the classrooms the caller teaches plus
+	 * the students who are theirs. Every other filter is optional (null matches all) and narrows within that scope.
+	 */
 	@Query("""
 			SELECT a FROM PeriodAttendance a
 			WHERE a.tenantId = :tenantId
-			  AND (a.classroomId IN :classroomIds OR a.studentId IN :studentIds)
+			  AND (:allClassrooms = true OR a.classroomId IN :classroomIds OR a.studentId IN :studentIds)
+			  AND (:classroomId IS NULL OR a.classroomId = :classroomId)
+			  AND (:studentId IS NULL OR a.studentId = :studentId)
+			  AND (:from IS NULL OR a.attendanceDate >= :from)
+			  AND (:to IS NULL OR a.attendanceDate <= :to)
+			  AND (:status IS NULL OR a.status = :status)
 			""")
-	Page<PeriodAttendance> findVisible(@Param("tenantId") Long tenantId,
+	Page<PeriodAttendance> search(@Param("tenantId") Long tenantId, @Param("allClassrooms") boolean allClassrooms,
 			@Param("classroomIds") Collection<Long> classroomIds, @Param("studentIds") Collection<Long> studentIds,
+			@Param("classroomId") Long classroomId, @Param("studentId") Long studentId,
+			@Param("from") LocalDate from, @Param("to") LocalDate to, @Param("status") AttendanceStatus status,
 			Pageable pageable);
 
 	Page<PeriodAttendance> findByStudentIdAndTenantId(Long studentId, Long tenantId, Pageable pageable);

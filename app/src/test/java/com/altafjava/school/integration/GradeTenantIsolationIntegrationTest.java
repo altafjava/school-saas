@@ -18,6 +18,7 @@ import com.altafjava.platform.application.service.TenantOnboardingService;
 import com.altafjava.platform.core.exception.ResourceNotFoundException;
 import com.altafjava.platform.core.tenant.TenantContext;
 import com.altafjava.platform.domain.tenant.model.Tenant;
+import com.altafjava.school.application.filter.GradeFilter;
 import com.altafjava.school.application.service.AcademicYearService;
 import com.altafjava.school.application.service.ClassroomService;
 import com.altafjava.school.application.service.ExamService;
@@ -121,7 +122,7 @@ class GradeTenantIsolationIntegrationTest extends SchoolIntegrationTestBase {
 				"teacher-a");
 
 		activateTenant(tenantB);
-		Page<Grade> tenantBGrades = gradeService.listGrades(PageRequest.of(0, 100));
+		Page<Grade> tenantBGrades = gradeService.listGrades(GradeFilter.NONE, PageRequest.of(0, 100));
 
 		boolean found = tenantBGrades.getContent().stream()
 				.anyMatch(g -> tenantA.getId().equals(g.getTenantId()));

@@ -41,9 +41,10 @@ public class PeriodController implements PeriodApi {
 	@PreAuthorize("@permissionAuthorizationService.hasPermission('PERIOD_READ')")
 	public ApiResponse<com.altafjava.platform.core.model.Page<PeriodResponse>> list(
 			@RequestParam(defaultValue = "0") int page,
-			@RequestParam(defaultValue = "20") int size) {
+			@RequestParam(defaultValue = "20") int size,
+			@RequestParam(required = false) String q) {
 		return ApiResponse.success(
-				PlatformPageMapper.toPlatformPage(periodService.listPeriods(pageableResolver.resolve(page, size))
+				PlatformPageMapper.toPlatformPage(periodService.listPeriods(q, pageableResolver.resolve(page, size))
 						.map(periodMapper::toResponse)));
 	}
 

@@ -1,5 +1,6 @@
 package com.altafjava.school.api.controller;
 
+import java.time.LocalDate;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -21,7 +22,10 @@ import com.altafjava.school.api.dto.response.DisciplineIncidentResponse;
 import com.altafjava.school.api.mapper.DisciplineIncidentMapper;
 import com.altafjava.school.api.support.PlatformPageMapper;
 import com.altafjava.school.api.support.SpringDataPageableResolver;
+import com.altafjava.school.application.filter.DateWindow;
+import com.altafjava.school.application.filter.DisciplineIncidentFilter;
 import com.altafjava.school.application.service.DisciplineIncidentService;
+import com.altafjava.school.domain.discipline.model.IncidentSeverity;
 
 @RestController
 @RequestMapping("/api/v1/discipline-incidents")
@@ -44,9 +48,15 @@ public class DisciplineIncidentController implements DisciplineIncidentApi {
 	@PreAuthorize("@permissionAuthorizationService.hasPermission('DISCIPLINE_MANAGE')")
 	public ApiResponse<com.altafjava.platform.core.model.Page<DisciplineIncidentResponse>> listAll(
 			@RequestParam(defaultValue = "0") int page,
-			@RequestParam(defaultValue = "20") int size) {
+			@RequestParam(defaultValue = "20") int size,
+			@RequestParam(required = false) String studentPublicId,
+			@RequestParam(required = false) IncidentSeverity severity,
+			@RequestParam(required = false) LocalDate from,
+			@RequestParam(required = false) LocalDate to) {
 		return ApiResponse.success(PlatformPageMapper
-				.toPlatformPage(disciplineIncidentService.listAll(pageableResolver.resolve(page, size))
+				.toPlatformPage(disciplineIncidentService
+						.listAll(new DisciplineIncidentFilter(studentPublicId, severity, new DateWindow(from, to)),
+								pageableResolver.resolve(page, size))
 						.map(disciplineIncidentMapper::toResponse)));
 	}
 

@@ -30,10 +30,10 @@ import com.altafjava.school.api.mapper.AddressMapper;
 import com.altafjava.school.api.mapper.GuardianConsentRecordMapper;
 import com.altafjava.school.api.mapper.GuardianMapper;
 import com.altafjava.school.api.mapper.StudentGuardianLinkMapper;
-import com.altafjava.school.api.mapper.StudentMapper;
 import com.altafjava.school.api.support.PlatformPageMapper;
 import com.altafjava.school.api.support.SortableBy;
 import com.altafjava.school.api.support.SpringDataPageableResolver;
+import com.altafjava.school.api.support.StudentResponseAssembler;
 import com.altafjava.school.application.service.GuardianConsentService;
 import com.altafjava.school.application.service.GuardianService;
 import com.altafjava.school.domain.guardian.model.GuardianConsentType;
@@ -47,21 +47,21 @@ public class GuardianController implements GuardianApi {
 	private final GuardianMapper guardianMapper;
 	private final AddressMapper addressMapper;
 	private final StudentGuardianLinkMapper studentGuardianLinkMapper;
-	private final StudentMapper studentMapper;
+	private final StudentResponseAssembler studentResponseAssembler;
 	private final GuardianConsentRecordMapper guardianConsentRecordMapper;
 
 	private final SpringDataPageableResolver pageableResolver;
 
 	public GuardianController(GuardianService guardianService, GuardianConsentService guardianConsentService,
 			GuardianMapper guardianMapper, AddressMapper addressMapper,
-			StudentGuardianLinkMapper studentGuardianLinkMapper, StudentMapper studentMapper,
+			StudentGuardianLinkMapper studentGuardianLinkMapper, StudentResponseAssembler studentResponseAssembler,
 			GuardianConsentRecordMapper guardianConsentRecordMapper, SpringDataPageableResolver pageableResolver) {
 		this.guardianService = guardianService;
 		this.guardianConsentService = guardianConsentService;
 		this.guardianMapper = guardianMapper;
 		this.addressMapper = addressMapper;
 		this.studentGuardianLinkMapper = studentGuardianLinkMapper;
-		this.studentMapper = studentMapper;
+		this.studentResponseAssembler = studentResponseAssembler;
 		this.guardianConsentRecordMapper = guardianConsentRecordMapper;
 		this.pageableResolver = pageableResolver;
 	}
@@ -167,8 +167,9 @@ public class GuardianController implements GuardianApi {
 			@RequestParam(defaultValue = "0") int page,
 			@RequestParam(defaultValue = "20") int size) {
 		return ApiResponse.success(PlatformPageMapper
-				.toPlatformPage(guardianService.listLinkedStudentsForCurrentUser(pageableResolver.resolve(page, size))
-						.map(studentMapper::toResponse)));
+				.toPlatformPage(studentResponseAssembler
+						.toResponses(guardianService
+								.listLinkedStudentsForCurrentUser(pageableResolver.resolve(page, size)))));
 	}
 
 	@Override

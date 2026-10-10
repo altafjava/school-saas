@@ -26,6 +26,7 @@ import com.altafjava.platform.core.exception.ResourceNotFoundException;
 import com.altafjava.platform.core.security.AuthenticatedUser;
 import com.altafjava.platform.core.tenant.TenantContext;
 import com.altafjava.platform.core.tenant.TenantType;
+import com.altafjava.school.application.reference.PublicIdLookup;
 import com.altafjava.school.domain.counseling.model.CounselingReferral;
 import com.altafjava.school.domain.counseling.model.CounselingSession;
 import com.altafjava.school.domain.counseling.repository.CounselingReferralRepository;
@@ -45,6 +46,8 @@ class CounselingReferralServiceTest {
 	private CounselingSessionRepository counselingSessionRepository;
 	@Mock
 	private StudentRepository studentRepository;
+	@Mock
+	private PublicIdLookup publicIdLookup;
 	private final ActivityLogService activityLogService = new NoOpActivityLogService();
 
 	private CounselingReferralService counselingReferralService;
@@ -52,7 +55,7 @@ class CounselingReferralServiceTest {
 	@BeforeEach
 	void setUp() {
 		counselingReferralService = new CounselingReferralService(counselingReferralRepository,
-				counselingSessionRepository, studentRepository, activityLogService);
+				counselingSessionRepository, studentRepository, activityLogService, publicIdLookup);
 		TenantContext.ForTesting.setCurrentTenant(1L, null, null, TenantType.SHARED);
 	}
 

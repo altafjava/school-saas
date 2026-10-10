@@ -16,11 +16,15 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import com.altafjava.platform.core.exception.BusinessException;
 import com.altafjava.platform.core.tenant.TenantContext;
 import com.altafjava.platform.core.tenant.TenantType;
+import com.altafjava.school.application.filter.BookReservationFilter;
 import com.altafjava.school.application.library.ReservationAllocator;
+import com.altafjava.school.application.reference.EntityRef;
+import com.altafjava.school.application.reference.PublicIdLookup;
 import com.altafjava.school.domain.library.model.Book;
 import com.altafjava.school.domain.library.model.BookCopy;
 import com.altafjava.school.domain.library.model.BookCopyStatus;
@@ -53,6 +57,8 @@ class BookReservationServiceTest {
 	private CirculationRepository circulationRepository;
 	@Mock
 	private ReservationAllocator reservationAllocator;
+	@Mock
+	private PublicIdLookup publicIdLookup;
 
 	private BookReservationService service;
 	private Book book;
@@ -61,7 +67,7 @@ class BookReservationServiceTest {
 	@BeforeEach
 	void setUp() {
 		service = new BookReservationService(bookReservationRepository, bookRepository, bookCopyRepository,
-				studentRepository, circulationRepository, reservationAllocator);
+				studentRepository, circulationRepository, reservationAllocator, publicIdLookup);
 		TenantContext.ForTesting.setCurrentTenant(TENANT_ID, null, null, TenantType.SHARED);
 		book = Book.create("978", "Dune", "Herbert", "Ace", "Fiction");
 		book.setId(7L);
@@ -198,9 +204,27 @@ class BookReservationServiceTest {
 	}
 
 	@Test
-	void list_withNeitherOrBothFilters_throwsBusinessException() {
-		assertThrows(BusinessException.class, () -> service.list(null, null, PageRequest.of(0, 20)));
-		assertThrows(BusinessException.class,
-				() -> service.list(BOOK_PUBLIC_ID.toString(), STUDENT_PUBLIC_ID.toString(), PageRequest.of(0, 20)));
+	void list_resolvesEveryFilterAndSearches() {
+		when(publicIdLookup.idOrNull(EntityRef.BOOK, BOOK_PUBLIC_ID.toString())).thenReturn(7L);
+		when(publicIdLookup.idOrNull(EntityRef.STUDENT, STUDENT_PUBLIC_ID.toString())).thenReturn(11L);
+		PageRequest pageable = PageRequest.of(0, 20);
+		when(bookReservationRepository.search(TENANT_ID, 7L, 11L, ReservationStatus.READY, pageable))
+				.thenReturn(Page.empty());
+
+		service.list(new BookReservationFilter(BOOK_PUBLIC_ID.toString(), STUDENT_PUBLIC_ID.toString(),
+				ReservationStatus.READY), pageable);
+
+		verify(bookReservationRepository).search(TENANT_ID, 7L, 11L, ReservationStatus.READY, pageable);
+	}
+
+	@Test
+	void list_withNoFilter_searchesEveryReservation() {
+		PageRequest pageable = PageRequest.of(0, 20);
+		when(publicIdLookup.idOrNull(any(), any())).thenReturn(null);
+		when(bookReservationRepository.search(TENANT_ID, null, null, null, pageable)).thenReturn(Page.empty());
+
+		service.list(BookReservationFilter.NONE, pageable);
+
+		verify(bookReservationRepository).search(TENANT_ID, null, null, null, pageable);
 	}
 }

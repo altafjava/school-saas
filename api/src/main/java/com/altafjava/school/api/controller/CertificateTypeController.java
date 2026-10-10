@@ -48,9 +48,10 @@ public class CertificateTypeController implements CertificateTypeApi {
 	@PreAuthorize("@permissionAuthorizationService.hasPermission('CERTIFICATE_TYPE_READ')")
 	public ApiResponse<com.altafjava.platform.core.model.Page<CertificateTypeResponse>> list(
 			@RequestParam(defaultValue = "0") int page,
-			@RequestParam(defaultValue = "20") int size) {
+			@RequestParam(defaultValue = "20") int size,
+			@RequestParam(required = false) String q) {
 		return ApiResponse.success(
-				PlatformPageMapper.toPlatformPage(certificateTypeService.list(pageableResolver.resolve(page, size))
+				PlatformPageMapper.toPlatformPage(certificateTypeService.list(q, pageableResolver.resolve(page, size))
 						.map(certificateTypeMapper::toResponse)));
 	}
 

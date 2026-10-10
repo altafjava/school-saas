@@ -23,6 +23,7 @@ import com.altafjava.platform.core.exception.ResourceNotFoundException;
 import com.altafjava.platform.core.security.AuthenticatedUser;
 import com.altafjava.platform.core.tenant.TenantContext;
 import com.altafjava.platform.domain.tenant.model.Tenant;
+import com.altafjava.school.application.filter.AttendanceFilter;
 import com.altafjava.school.application.service.AcademicYearService;
 import com.altafjava.school.application.service.AttendanceService;
 import com.altafjava.school.application.service.ClassroomService;
@@ -139,7 +140,8 @@ class AttendanceTenantIsolationIntegrationTest extends SchoolIntegrationTestBase
 
 		// When — tenant B lists attendance
 		activateTenant(tenantB);
-		Page<Attendance> tenantBAttendance = attendanceService.listAttendance(PageRequest.of(0, 100));
+		Page<Attendance> tenantBAttendance = attendanceService.listAttendance(AttendanceFilter.NONE,
+				PageRequest.of(0, 100));
 
 		// Then — tenant B must not see tenant A's records
 		boolean found = tenantBAttendance.getContent().stream()

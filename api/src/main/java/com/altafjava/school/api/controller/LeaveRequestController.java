@@ -1,5 +1,6 @@
 package com.altafjava.school.api.controller;
 
+import java.time.LocalDate;
 import java.util.List;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
@@ -25,7 +26,10 @@ import com.altafjava.school.api.mapper.LeaveRequestMapper;
 import com.altafjava.school.api.support.PlatformPageMapper;
 import com.altafjava.school.api.support.SortableBy;
 import com.altafjava.school.api.support.SpringDataPageableResolver;
+import com.altafjava.school.application.filter.DateWindow;
+import com.altafjava.school.application.filter.LeaveRequestFilter;
 import com.altafjava.school.application.service.LeaveRequestService;
+import com.altafjava.school.domain.leave.model.LeaveRequestStatus;
 
 @RestController
 @RequestMapping("/api/v1/leave-requests")
@@ -56,9 +60,16 @@ public class LeaveRequestController implements LeaveRequestApi {
 	@SortableBy({ "startDate", "endDate", "status", "daysRequested" })
 	public ApiResponse<com.altafjava.platform.core.model.Page<LeaveRequestResponse>> list(
 			@RequestParam(defaultValue = "0") int page,
-			@RequestParam(defaultValue = "20") int size) {
-		return ApiResponse.success(
-				PlatformPageMapper.toPlatformPage(leaveRequestService.listAll(pageableResolver.resolve(page, size))
+			@RequestParam(defaultValue = "20") int size,
+			@RequestParam(required = false) String employeePublicId,
+			@RequestParam(required = false) String leaveTypePublicId,
+			@RequestParam(required = false) LeaveRequestStatus status,
+			@RequestParam(required = false) LocalDate from,
+			@RequestParam(required = false) LocalDate to) {
+		LeaveRequestFilter filter = new LeaveRequestFilter(employeePublicId, leaveTypePublicId, status,
+				new DateWindow(from, to));
+		return ApiResponse.success(PlatformPageMapper
+				.toPlatformPage(leaveRequestService.listAll(filter, pageableResolver.resolve(page, size))
 						.map(leaveRequestMapper::toResponse)));
 	}
 
@@ -68,9 +79,14 @@ public class LeaveRequestController implements LeaveRequestApi {
 	@SortableBy({ "startDate", "endDate", "status", "daysRequested" })
 	public ApiResponse<com.altafjava.platform.core.model.Page<LeaveRequestResponse>> listMine(
 			@RequestParam(defaultValue = "0") int page,
-			@RequestParam(defaultValue = "20") int size) {
+			@RequestParam(defaultValue = "20") int size,
+			@RequestParam(required = false) String leaveTypePublicId,
+			@RequestParam(required = false) LeaveRequestStatus status,
+			@RequestParam(required = false) LocalDate from,
+			@RequestParam(required = false) LocalDate to) {
+		LeaveRequestFilter filter = new LeaveRequestFilter(null, leaveTypePublicId, status, new DateWindow(from, to));
 		return ApiResponse.success(PlatformPageMapper
-				.toPlatformPage(leaveRequestService.listForCurrentEmployee(pageableResolver.resolve(page, size))
+				.toPlatformPage(leaveRequestService.listForCurrentEmployee(filter, pageableResolver.resolve(page, size))
 						.map(leaveRequestMapper::toResponse)));
 	}
 

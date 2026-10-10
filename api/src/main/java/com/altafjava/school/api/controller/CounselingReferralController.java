@@ -1,5 +1,6 @@
 package com.altafjava.school.api.controller;
 
+import java.time.LocalDate;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -21,7 +22,10 @@ import com.altafjava.school.api.dto.response.CounselingReferralResponse;
 import com.altafjava.school.api.mapper.CounselingReferralMapper;
 import com.altafjava.school.api.support.PlatformPageMapper;
 import com.altafjava.school.api.support.SpringDataPageableResolver;
+import com.altafjava.school.application.filter.CounselingReferralFilter;
+import com.altafjava.school.application.filter.DateWindow;
 import com.altafjava.school.application.service.CounselingReferralService;
+import com.altafjava.school.domain.counseling.model.CounselingReferralStatus;
 
 // See CounselingSessionController for the TENANT_ADMIN-only rationale (PHI-grade data, no
 // dedicated counselor role in the seeded catalog).
@@ -46,9 +50,15 @@ public class CounselingReferralController implements CounselingReferralApi {
 	@PreAuthorize("@permissionAuthorizationService.hasPermission('COUNSELING_MANAGE')")
 	public ApiResponse<com.altafjava.platform.core.model.Page<CounselingReferralResponse>> listAll(
 			@RequestParam(defaultValue = "0") int page,
-			@RequestParam(defaultValue = "20") int size) {
+			@RequestParam(defaultValue = "20") int size,
+			@RequestParam(required = false) String studentPublicId,
+			@RequestParam(required = false) CounselingReferralStatus status,
+			@RequestParam(required = false) LocalDate from,
+			@RequestParam(required = false) LocalDate to) {
 		return ApiResponse.success(PlatformPageMapper
-				.toPlatformPage(counselingReferralService.listAll(pageableResolver.resolve(page, size))
+				.toPlatformPage(counselingReferralService
+						.listAll(new CounselingReferralFilter(studentPublicId, status, new DateWindow(from, to)),
+								pageableResolver.resolve(page, size))
 						.map(counselingReferralMapper::toResponse)));
 	}
 

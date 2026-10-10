@@ -1,5 +1,6 @@
 package com.altafjava.school.api.controller.api;
 
+import java.time.LocalDate;
 import java.util.List;
 import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -10,6 +11,7 @@ import com.altafjava.school.api.dto.request.RejectLeaveRequestRequest;
 import com.altafjava.school.api.dto.request.SubmitLeaveRequestRequest;
 import com.altafjava.school.api.dto.response.LeaveApprovalResponse;
 import com.altafjava.school.api.dto.response.LeaveRequestResponse;
+import com.altafjava.school.domain.leave.model.LeaveRequestStatus;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -22,12 +24,21 @@ public interface LeaveRequestApi {
 	@Operation(summary = "List")
 	public ApiResponse<com.altafjava.platform.core.model.Page<LeaveRequestResponse>> list(
 			@RequestParam(defaultValue = "0") int page,
-			@RequestParam(defaultValue = "20") int size);
+			@RequestParam(defaultValue = "20") int size,
+			@RequestParam(required = false) String employeePublicId,
+			@RequestParam(required = false) String leaveTypePublicId,
+			@RequestParam(required = false) LeaveRequestStatus status,
+			@RequestParam(required = false) LocalDate from,
+			@RequestParam(required = false) LocalDate to);
 
 	@Operation(summary = "List mine", description = "Lists the current employee's own leave requests.")
 	public ApiResponse<com.altafjava.platform.core.model.Page<LeaveRequestResponse>> listMine(
 			@RequestParam(defaultValue = "0") int page,
-			@RequestParam(defaultValue = "20") int size);
+			@RequestParam(defaultValue = "20") int size,
+			@RequestParam(required = false) String leaveTypePublicId,
+			@RequestParam(required = false) LeaveRequestStatus status,
+			@RequestParam(required = false) LocalDate from,
+			@RequestParam(required = false) LocalDate to);
 
 	@Operation(summary = "Submit", description = "Requests leave for a date range. Days requested exclude holidays and are validated "
 			+ "against the leave type's probation-eligibility rule for the requesting employee.")

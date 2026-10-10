@@ -13,6 +13,7 @@ import com.altafjava.school.api.dto.request.RecordEntranceTestScoreRequest;
 import com.altafjava.school.api.dto.request.SubmitAdmissionRequest;
 import com.altafjava.school.api.dto.request.WaiveApplicationFeeRequest;
 import com.altafjava.school.api.dto.response.AdmissionResponse;
+import com.altafjava.school.domain.admission.model.AdmissionStatus;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -26,7 +27,8 @@ public interface AdmissionApi {
 	public ApiResponse<com.altafjava.platform.core.model.Page<AdmissionResponse>> list(
 			@RequestParam(defaultValue = "0") int page,
 			@RequestParam(defaultValue = "20") int size,
-			@RequestParam(required = false) String q);
+			@RequestParam(required = false) String q,
+			@RequestParam(required = false) AdmissionStatus status);
 
 	@Operation(summary = "Get")
 	public ApiResponse<AdmissionResponse> get(@PathVariable String publicId);

@@ -65,7 +65,7 @@ class PeriodTenantIsolationIntegrationTest extends SchoolIntegrationTestBase {
 		periodService.create("Period 1", LocalTime.of(9, 0), LocalTime.of(9, 45), 1);
 
 		activateTenant(tenantB);
-		Page<Period> tenantBPeriods = periodService.listPeriods(PageRequest.of(0, 100));
+		Page<Period> tenantBPeriods = periodService.listPeriods(null, PageRequest.of(0, 100));
 
 		boolean found = tenantBPeriods.getContent().stream()
 				.anyMatch(p -> tenantA.getId().equals(p.getTenantId()));

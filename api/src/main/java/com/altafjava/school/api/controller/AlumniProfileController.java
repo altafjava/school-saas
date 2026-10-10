@@ -20,6 +20,7 @@ import com.altafjava.school.api.dto.response.AlumniProfileResponse;
 import com.altafjava.school.api.mapper.AlumniProfileMapper;
 import com.altafjava.school.api.support.PlatformPageMapper;
 import com.altafjava.school.api.support.SpringDataPageableResolver;
+import com.altafjava.school.application.filter.AlumniProfileFilter;
 import com.altafjava.school.application.service.AlumniProfileService;
 
 /**
@@ -50,9 +51,14 @@ public class AlumniProfileController implements AlumniProfileApi {
 	@PreAuthorize("@permissionAuthorizationService.hasPermission('ALUMNI_MANAGE')")
 	public ApiResponse<com.altafjava.platform.core.model.Page<AlumniProfileResponse>> list(
 			@RequestParam(defaultValue = "0") int page,
-			@RequestParam(defaultValue = "20") int size) {
+			@RequestParam(defaultValue = "20") int size,
+			@RequestParam(required = false) Integer graduationYear,
+			@RequestParam(required = false) Boolean active,
+			@RequestParam(required = false) String q) {
 		return ApiResponse.success(PlatformPageMapper.toPlatformPage(
-				alumniProfileService.list(pageableResolver.resolve(page, size)).map(alumniProfileMapper::toResponse)));
+				alumniProfileService
+						.list(new AlumniProfileFilter(graduationYear, active, q), pageableResolver.resolve(page, size))
+						.map(alumniProfileMapper::toResponse)));
 	}
 
 	@Override

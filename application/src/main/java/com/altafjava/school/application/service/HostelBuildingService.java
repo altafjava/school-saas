@@ -7,6 +7,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import com.altafjava.platform.core.concurrency.ExpectedVersion;
 import com.altafjava.platform.core.exception.ResourceNotFoundException;
+import com.altafjava.platform.core.search.LikePattern;
 import com.altafjava.platform.core.tenant.TenantContext;
 import com.altafjava.school.domain.hostel.model.HostelBuilding;
 import com.altafjava.school.domain.hostel.repository.HostelBuildingRepository;
@@ -21,8 +22,8 @@ public class HostelBuildingService {
 	}
 
 	@Transactional(readOnly = true)
-	public Page<HostelBuilding> list(Pageable pageable) {
-		return hostelBuildingRepository.findAllByTenantId(TenantContext.getCurrentTenantId(), pageable);
+	public Page<HostelBuilding> list(String q, Pageable pageable) {
+		return hostelBuildingRepository.search(TenantContext.getCurrentTenantId(), LikePattern.contains(q), pageable);
 	}
 
 	@Transactional(readOnly = true)

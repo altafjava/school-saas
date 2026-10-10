@@ -4,8 +4,10 @@ import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -29,6 +31,9 @@ import com.altafjava.platform.core.exception.BusinessException;
 import com.altafjava.platform.core.exception.ResourceNotFoundException;
 import com.altafjava.platform.core.tenant.TenantContext;
 import com.altafjava.platform.core.tenant.TenantType;
+import com.altafjava.school.application.filter.GradeFilter;
+import com.altafjava.school.application.reference.EntityRef;
+import com.altafjava.school.application.reference.PublicIdLookup;
 import com.altafjava.school.application.security.AcademicAccessGuard;
 import com.altafjava.school.application.security.AcademicScope;
 import com.altafjava.school.application.security.AcademicScopeResolver;
@@ -69,6 +74,8 @@ class GradeServiceTest {
 	private AcademicAccessGuard academicAccessGuard;
 	@Mock
 	private ExamResultVisibilityPolicy examResultVisibilityPolicy;
+	@Mock
+	private PublicIdLookup publicIdLookup;
 
 	private GradeService gradeService;
 
@@ -76,8 +83,10 @@ class GradeServiceTest {
 	void setUp() {
 		gradeService = new GradeService(gradeRepository, gradeCorrectionRepository, studentRepository, examRepository,
 				gradingScaleService, studentDataAccessGuard, academicScopeResolver, academicAccessGuard,
-				examResultVisibilityPolicy);
+				examResultVisibilityPolicy, publicIdLookup);
 		TenantContext.ForTesting.setCurrentTenant(1L, null, null, TenantType.SHARED);
+		// An absent filter resolves to no id; a bare Mockito mock would answer 0L.
+		lenient().when(publicIdLookup.idOrNull(any(), any())).thenReturn(null);
 	}
 
 	@AfterEach
@@ -145,20 +154,21 @@ class GradeServiceTest {
 	}
 
 	@Test
-	void listGrades_withAllClassroomsScope_returnsAllTenantGrades() {
+	void listGrades_withAllClassroomsScope_searchesEveryGrade() {
 		when(academicScopeResolver.current(1L))
 				.thenReturn(new AcademicScope(true, false, TeachingAssignments.NONE, Set.of()));
 		PageRequest pageable = PageRequest.of(0, 20);
-		when(gradeRepository.findAllByTenantId(1L, pageable)).thenReturn(Page.empty());
+		when(gradeRepository.search(any(), anyBoolean(), any(), any(), any(), any(), any(), any()))
+				.thenReturn(Page.empty());
 
-		gradeService.listGrades(pageable);
+		gradeService.listGrades(GradeFilter.NONE, pageable);
 
-		verify(gradeRepository).findAllByTenantId(1L, pageable);
-		verify(gradeRepository, never()).findVisible(any(), any(), any(), any());
+		verify(gradeRepository).search(1L, true, List.of(), Set.of(), null, null, null, pageable);
+		verify(examRepository, never()).findAllByClassroomIdInAndTenantId(any(), any());
 	}
 
 	@Test
-	void listGrades_asSubjectTeacher_listsOnlyExamsOfSubjectsTheyTeach() {
+	void listGrades_asSubjectTeacher_scopesToExamsOfSubjectsTheyTeach() {
 		TeachingAssignments teaching = new TeachingAssignments(70L, Set.of(), Map.of(10L, Set.of(5L)));
 		when(academicScopeResolver.current(1L)).thenReturn(new AcademicScope(false, false, teaching, Set.of()));
 		Exam taught = examWithId(50L, 5L, 10L);
@@ -166,25 +176,43 @@ class GradeServiceTest {
 		when(examRepository.findAllByClassroomIdInAndTenantId(Set.of(10L), 1L))
 				.thenReturn(List.of(taught, otherSubject));
 		PageRequest pageable = PageRequest.of(0, 20);
-		when(gradeRepository.findVisible(1L, List.of(50L), Set.of(), pageable)).thenReturn(Page.empty());
+		when(gradeRepository.search(any(), anyBoolean(), any(), any(), any(), any(), any(), any()))
+				.thenReturn(Page.empty());
 
-		gradeService.listGrades(pageable);
+		gradeService.listGrades(GradeFilter.NONE, pageable);
 
-		verify(gradeRepository).findVisible(1L, List.of(50L), Set.of(), pageable);
-		verify(gradeRepository, never()).findAllByTenantId(any(), any());
+		verify(gradeRepository).search(1L, false, List.of(50L), Set.of(), null, null, null, pageable);
 	}
 
 	@Test
-	void listGrades_asParent_listsOnlyOwnStudentsGrades() {
+	void listGrades_asParent_scopesToOwnStudentsGrades() {
 		when(academicScopeResolver.current(1L))
 				.thenReturn(new AcademicScope(false, false, TeachingAssignments.NONE, Set.of(30L)));
 		when(examRepository.findAllByClassroomIdInAndTenantId(Set.of(), 1L)).thenReturn(List.of());
 		PageRequest pageable = PageRequest.of(0, 20);
-		when(gradeRepository.findVisible(1L, List.of(), Set.of(30L), pageable)).thenReturn(Page.empty());
+		when(gradeRepository.search(any(), anyBoolean(), any(), any(), any(), any(), any(), any()))
+				.thenReturn(Page.empty());
 
-		gradeService.listGrades(pageable);
+		gradeService.listGrades(GradeFilter.NONE, pageable);
 
-		verify(gradeRepository).findVisible(1L, List.of(), Set.of(30L), pageable);
+		verify(gradeRepository).search(1L, false, List.of(), Set.of(30L), null, null, null, pageable);
+	}
+
+	@Test
+	void listGrades_resolvesThePublicIdsOfTheFilterAndKeepsTheScope() {
+		when(academicScopeResolver.current(1L))
+				.thenReturn(new AcademicScope(false, false, TeachingAssignments.NONE, Set.of(30L)));
+		when(examRepository.findAllByClassroomIdInAndTenantId(Set.of(), 1L)).thenReturn(List.of());
+		when(publicIdLookup.idOrNull(EntityRef.EXAM, "exam-public")).thenReturn(50L);
+		when(publicIdLookup.idOrNull(EntityRef.STUDENT, "student-public")).thenReturn(30L);
+		when(publicIdLookup.idOrNull(EntityRef.CLASSROOM, "classroom-public")).thenReturn(10L);
+		PageRequest pageable = PageRequest.of(0, 20);
+		when(gradeRepository.search(any(), anyBoolean(), any(), any(), any(), any(), any(), any()))
+				.thenReturn(Page.empty());
+
+		gradeService.listGrades(new GradeFilter("exam-public", "student-public", "classroom-public"), pageable);
+
+		verify(gradeRepository).search(1L, false, List.of(), Set.of(30L), 50L, 30L, 10L, pageable);
 	}
 
 	@Test

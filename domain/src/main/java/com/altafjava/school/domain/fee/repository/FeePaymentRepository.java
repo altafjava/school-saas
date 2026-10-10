@@ -13,10 +13,26 @@ import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import com.altafjava.school.domain.fee.model.FeePayment;
+import com.altafjava.school.domain.fee.model.PaymentSource;
 
 public interface FeePaymentRepository extends JpaRepository<FeePayment, Long> {
 
 	Page<FeePayment> findAllByTenantId(Long tenantId, Pageable pageable);
+
+	// Every filter is optional (null matches all); {@code paidFrom} is inclusive and {@code paidBefore} exclusive.
+	@Query("""
+			SELECT fp FROM FeePayment fp
+			WHERE fp.tenantId = :tenantId
+			  AND (:studentId IS NULL OR fp.studentId = :studentId)
+			  AND (:feeStructureId IS NULL OR fp.feeStructureId = :feeStructureId)
+			  AND (:paidFrom IS NULL OR fp.paidAt >= :paidFrom)
+			  AND (:paidBefore IS NULL OR fp.paidAt < :paidBefore)
+			  AND (:paymentSource IS NULL OR fp.paymentSource = :paymentSource)
+			""")
+	Page<FeePayment> search(@Param("tenantId") Long tenantId, @Param("studentId") Long studentId,
+			@Param("feeStructureId") Long feeStructureId, @Param("paidFrom") LocalDateTime paidFrom,
+			@Param("paidBefore") LocalDateTime paidBefore, @Param("paymentSource") PaymentSource paymentSource,
+			Pageable pageable);
 
 	Optional<FeePayment> findByPublicIdAndTenantId(UUID publicId, Long tenantId);
 

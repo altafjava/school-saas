@@ -1,5 +1,6 @@
 package com.altafjava.school.api.controller;
 
+import java.time.LocalDate;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -20,6 +21,8 @@ import com.altafjava.school.api.dto.response.AssignmentResponse;
 import com.altafjava.school.api.mapper.AssignmentMapper;
 import com.altafjava.school.api.support.PlatformPageMapper;
 import com.altafjava.school.api.support.SpringDataPageableResolver;
+import com.altafjava.school.application.filter.CourseworkFilter;
+import com.altafjava.school.application.filter.DateWindow;
 import com.altafjava.school.application.service.AssignmentService;
 
 @RestController
@@ -54,14 +57,18 @@ public class AssignmentController implements AssignmentApi {
 	}
 
 	@Override
-	@GetMapping("/classroom/{classroomPublicId}")
+	@GetMapping
 	@PreAuthorize("@permissionAuthorizationService.hasPermission('ASSIGNMENT_READ')")
-	public ApiResponse<com.altafjava.platform.core.model.Page<AssignmentResponse>> listByClassroom(
-			@PathVariable String classroomPublicId,
+	public ApiResponse<com.altafjava.platform.core.model.Page<AssignmentResponse>> list(
 			@RequestParam(defaultValue = "0") int page,
-			@RequestParam(defaultValue = "20") int size) {
-		return ApiResponse.success(PlatformPageMapper.toPlatformPage(
-				assignmentService.listByClassroom(classroomPublicId, pageableResolver.resolve(page, size))
+			@RequestParam(defaultValue = "20") int size,
+			@RequestParam(required = false) String classroomPublicId,
+			@RequestParam(required = false) String subjectPublicId,
+			@RequestParam(required = false) LocalDate from,
+			@RequestParam(required = false) LocalDate to) {
+		CourseworkFilter filter = new CourseworkFilter(classroomPublicId, subjectPublicId, new DateWindow(from, to));
+		return ApiResponse.success(PlatformPageMapper
+				.toPlatformPage(assignmentService.listAssignments(filter, pageableResolver.resolve(page, size))
 						.map(assignmentMapper::toResponse)));
 	}
 

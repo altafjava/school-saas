@@ -8,7 +8,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import com.altafjava.platform.core.concurrency.ExpectedVersion;
 import com.altafjava.platform.core.exception.ResourceNotFoundException;
+import com.altafjava.platform.core.search.LikePattern;
 import com.altafjava.platform.core.tenant.TenantContext;
+import com.altafjava.school.application.filter.EventFilter;
 import com.altafjava.school.domain.event.model.Event;
 import com.altafjava.school.domain.event.repository.EventRepository;
 
@@ -22,8 +24,11 @@ public class EventService {
 	}
 
 	@Transactional(readOnly = true)
-	public Page<Event> list(Pageable pageable) {
-		return eventRepository.findAllByTenantId(TenantContext.getCurrentTenantId(), pageable);
+	public Page<Event> list(EventFilter filter, Pageable pageable) {
+		return eventRepository.search(TenantContext.getCurrentTenantId(),
+				filter.dates().from() != null ? filter.dates().from().atStartOfDay() : null,
+				filter.dates().to() != null ? filter.dates().to().plusDays(1).atStartOfDay() : null,
+				LikePattern.contains(filter.q()), pageable);
 	}
 
 	@Transactional(readOnly = true)

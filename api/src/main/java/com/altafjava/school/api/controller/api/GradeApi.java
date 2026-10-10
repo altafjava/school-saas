@@ -23,7 +23,10 @@ public interface GradeApi {
 	@Operation(summary = "List")
 	public ApiResponse<com.altafjava.platform.core.model.Page<GradeResponse>> list(
 			@RequestParam(defaultValue = "0") int page,
-			@RequestParam(defaultValue = "20") int size);
+			@RequestParam(defaultValue = "20") int size,
+			@RequestParam(required = false) String examPublicId,
+			@RequestParam(required = false) String studentPublicId,
+			@RequestParam(required = false) String classroomPublicId);
 
 	@Operation(summary = "Get")
 	public ApiResponse<GradeResponse> get(@PathVariable String publicId);

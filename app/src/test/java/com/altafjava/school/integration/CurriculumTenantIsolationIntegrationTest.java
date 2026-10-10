@@ -171,7 +171,7 @@ class CurriculumTenantIsolationIntegrationTest extends SchoolIntegrationTestBase
 
 		activateTenant(tenantB);
 		authenticateAsTenantAdmin();
-		Page<Board> boardsB = boardService.list(PageRequest.of(0, 100));
+		Page<Board> boardsB = boardService.list(null, PageRequest.of(0, 100));
 
 		assertTrue(boardsB.getContent().isEmpty(), "Tenant B must not see tenant A's boards");
 	}

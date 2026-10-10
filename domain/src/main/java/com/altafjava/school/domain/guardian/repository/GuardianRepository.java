@@ -1,5 +1,7 @@
 package com.altafjava.school.domain.guardian.repository;
 
+import java.util.Collection;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import org.springframework.data.domain.Page;
@@ -10,6 +12,8 @@ import org.springframework.data.repository.query.Param;
 import com.altafjava.school.domain.guardian.model.Guardian;
 
 public interface GuardianRepository extends JpaRepository<Guardian, Long> {
+
+	List<Guardian> findAllByIdInAndTenantId(Collection<Long> ids, Long tenantId);
 
 	// Blank q matches everything; pattern comes from LikePattern.contains.
 	@Query("""

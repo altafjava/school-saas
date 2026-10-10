@@ -47,14 +47,24 @@ public interface AttendanceRepository extends JpaRepository<Attendance, Long> {
 
 	long countByTenantIdAndAttendanceDateBetween(Long tenantId, LocalDate from, LocalDate to);
 
-	// A caller's scoped view: the classrooms they teach plus the students who are theirs.
+	/**
+	 * The attendance list. Scope first: every classroom, or only the classrooms the caller teaches plus the
+	 * students who are theirs. Every other filter is optional (null matches all) and narrows within that scope.
+	 */
 	@Query("""
 			SELECT a FROM Attendance a
 			WHERE a.tenantId = :tenantId
-			  AND (a.classroomId IN :classroomIds OR a.studentId IN :studentIds)
+			  AND (:allClassrooms = true OR a.classroomId IN :classroomIds OR a.studentId IN :studentIds)
+			  AND (:classroomId IS NULL OR a.classroomId = :classroomId)
+			  AND (:studentId IS NULL OR a.studentId = :studentId)
+			  AND (:from IS NULL OR a.attendanceDate >= :from)
+			  AND (:to IS NULL OR a.attendanceDate <= :to)
+			  AND (:status IS NULL OR a.status = :status)
 			""")
-	Page<Attendance> findVisible(@Param("tenantId") Long tenantId,
+	Page<Attendance> search(@Param("tenantId") Long tenantId, @Param("allClassrooms") boolean allClassrooms,
 			@Param("classroomIds") Collection<Long> classroomIds, @Param("studentIds") Collection<Long> studentIds,
+			@Param("classroomId") Long classroomId, @Param("studentId") Long studentId,
+			@Param("from") LocalDate from, @Param("to") LocalDate to, @Param("status") AttendanceStatus status,
 			Pageable pageable);
 
 	@Query("""

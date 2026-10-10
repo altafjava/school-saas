@@ -18,6 +18,7 @@ import com.altafjava.platform.application.service.TenantOnboardingService;
 import com.altafjava.platform.core.exception.ResourceNotFoundException;
 import com.altafjava.platform.core.tenant.TenantContext;
 import com.altafjava.platform.domain.tenant.model.Tenant;
+import com.altafjava.school.application.filter.ExamFilter;
 import com.altafjava.school.application.service.AcademicYearService;
 import com.altafjava.school.application.service.ClassroomService;
 import com.altafjava.school.application.service.ExamService;
@@ -103,7 +104,7 @@ class ExamTenantIsolationIntegrationTest extends SchoolIntegrationTestBase {
 				BigDecimal.valueOf(100), null, examTypeIdFor("MIDTERM"), Exam.FULL_WEIGHTAGE);
 
 		activateTenant(tenantB);
-		Page<Exam> tenantBExams = examService.listExams(PageRequest.of(0, 100));
+		Page<Exam> tenantBExams = examService.listExams(ExamFilter.NONE, PageRequest.of(0, 100));
 
 		boolean found = tenantBExams.getContent().stream()
 				.anyMatch(e -> tenantA.getId().equals(e.getTenantId()));

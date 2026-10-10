@@ -20,7 +20,10 @@ public interface AlumniProfileApi {
 	@Operation(summary = "List")
 	public ApiResponse<com.altafjava.platform.core.model.Page<AlumniProfileResponse>> list(
 			@RequestParam(defaultValue = "0") int page,
-			@RequestParam(defaultValue = "20") int size);
+			@RequestParam(defaultValue = "20") int size,
+			@RequestParam(required = false) Integer graduationYear,
+			@RequestParam(required = false) Boolean active,
+			@RequestParam(required = false) String q);
 
 	@Operation(summary = "Get")
 	public ApiResponse<AlumniProfileResponse> get(@PathVariable String publicId);

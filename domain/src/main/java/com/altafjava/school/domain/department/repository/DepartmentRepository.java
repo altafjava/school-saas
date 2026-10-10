@@ -14,6 +14,15 @@ public interface DepartmentRepository extends JpaRepository<Department, Long> {
 
 	Page<Department> findAllByTenantId(Long tenantId, Pageable pageable);
 
+	// Blank {@code q} matches all; the pattern comes from LikePattern.contains.
+	@Query("""
+			SELECT d FROM Department d
+			WHERE d.tenantId = :tenantId
+			  AND (:pattern IS NULL OR LOWER(d.name) LIKE :pattern ESCAPE '!'
+			       OR LOWER(d.code) LIKE :pattern ESCAPE '!')
+			""")
+	Page<Department> search(@Param("tenantId") Long tenantId, @Param("pattern") String pattern, Pageable pageable);
+
 	Optional<Department> findByPublicIdAndTenantId(UUID publicId, Long tenantId);
 
 	Optional<Department> findByIdAndTenantId(Long id, Long tenantId);

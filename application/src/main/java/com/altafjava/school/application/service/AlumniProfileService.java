@@ -8,7 +8,9 @@ import org.springframework.transaction.annotation.Transactional;
 import com.altafjava.platform.core.concurrency.ExpectedVersion;
 import com.altafjava.platform.core.exception.BusinessException;
 import com.altafjava.platform.core.exception.ResourceNotFoundException;
+import com.altafjava.platform.core.search.LikePattern;
 import com.altafjava.platform.core.tenant.TenantContext;
+import com.altafjava.school.application.filter.AlumniProfileFilter;
 import com.altafjava.school.application.lifecycle.LifecycleChange;
 import com.altafjava.school.application.lifecycle.LifecycleRecorder;
 import com.altafjava.school.domain.alumni.model.AlumniProfile;
@@ -32,8 +34,9 @@ public class AlumniProfileService {
 	}
 
 	@Transactional(readOnly = true)
-	public Page<AlumniProfile> list(Pageable pageable) {
-		return alumniProfileRepository.findAllByTenantId(TenantContext.getCurrentTenantId(), pageable);
+	public Page<AlumniProfile> list(AlumniProfileFilter filter, Pageable pageable) {
+		return alumniProfileRepository.search(TenantContext.getCurrentTenantId(), filter.graduationYear(),
+				filter.active(), LikePattern.contains(filter.q()), pageable);
 	}
 
 	@Transactional(readOnly = true)

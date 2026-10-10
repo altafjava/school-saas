@@ -66,7 +66,7 @@ class AcademicYearTenantIsolationIntegrationTest extends SchoolIntegrationTestBa
 		academicYearService.create("2025-26", LocalDate.of(2025, 6, 1), LocalDate.of(2026, 5, 31), true);
 
 		activateTenant(tenantB);
-		Page<AcademicYear> tenantBYears = academicYearService.listAcademicYears(PageRequest.of(0, 100));
+		Page<AcademicYear> tenantBYears = academicYearService.listAcademicYears(null, PageRequest.of(0, 100));
 
 		boolean found = tenantBYears.getContent().stream()
 				.anyMatch(y -> tenantA.getId().equals(y.getTenantId()));

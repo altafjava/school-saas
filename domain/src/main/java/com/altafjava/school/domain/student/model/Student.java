@@ -14,6 +14,8 @@ import com.altafjava.platform.core.exception.BusinessException;
 import com.altafjava.platform.core.model.SoftDeletableEntity;
 import com.altafjava.platform.core.security.annotation.Pii;
 import com.altafjava.school.domain.common.model.Address;
+import com.altafjava.school.domain.common.model.Gender;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -61,6 +63,11 @@ public class Student extends SoftDeletableEntity {
 	@Column(name = "date_of_birth")
 	private LocalDate dateOfBirth;
 
+	@Enumerated(EnumType.STRING)
+	@Column(name = "gender", nullable = false, length = 20)
+	@Builder.Default
+	private Gender gender = Gender.NOT_SPECIFIED;
+
 	@Pii(type = Pii.PiiType.PHONE)
 	@Column(name = "phone", length = 30)
 	private String phone;
@@ -79,12 +86,18 @@ public class Student extends SoftDeletableEntity {
 
 	public static Student create(String studentCode, String firstName, String lastName,
 			String email, LocalDate dateOfBirth) {
+		return create(studentCode, firstName, lastName, email, dateOfBirth, Gender.NOT_SPECIFIED);
+	}
+
+	public static Student create(String studentCode, String firstName, String lastName,
+			String email, LocalDate dateOfBirth, Gender gender) {
 		return Student.builder()
 				.studentCode(studentCode)
 				.firstName(firstName)
 				.lastName(lastName)
 				.email(email)
 				.dateOfBirth(dateOfBirth)
+				.gender(gender != null ? gender : Gender.NOT_SPECIFIED)
 				.enrollmentStatus(EnrollmentStatus.ACTIVE)
 				.build();
 	}
@@ -137,11 +150,13 @@ public class Student extends SoftDeletableEntity {
 		this.enrollmentStatusChangedAt = Instant.now();
 	}
 
-	public void updateContactDetails(String firstName, String lastName, String email, LocalDate dateOfBirth) {
+	public void updateContactDetails(String firstName, String lastName, String email, LocalDate dateOfBirth,
+			Gender gender) {
 		this.firstName = firstName;
 		this.lastName = lastName;
 		this.email = email;
 		this.dateOfBirth = dateOfBirth;
+		this.gender = gender;
 	}
 
 	// Caller (StudentService) validates the phone against PhoneNumberValidator first — this
@@ -178,6 +193,7 @@ public class Student extends SoftDeletableEntity {
 		this.firstName = "[erased]";
 		this.lastName = "[erased]";
 		this.email = null;
+		this.gender = Gender.NOT_SPECIFIED;
 		this.phone = null;
 		this.address = null;
 		this.photoFilePublicId = null;

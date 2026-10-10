@@ -26,7 +26,8 @@ public interface TicketApi {
 			@RequestParam(required = false) TicketCategory category,
 			@RequestParam(required = false) String assignedToUserPublicId,
 			@RequestParam(defaultValue = "0") int page,
-			@RequestParam(defaultValue = "20") int size);
+			@RequestParam(defaultValue = "20") int size,
+			@RequestParam(required = false) String q);
 
 	@Operation(summary = "List mine")
 	public ApiResponse<com.altafjava.platform.core.model.Page<TicketResponse>> listMine(

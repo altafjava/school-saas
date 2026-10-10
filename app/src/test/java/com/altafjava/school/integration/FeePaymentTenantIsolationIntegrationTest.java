@@ -18,6 +18,7 @@ import com.altafjava.platform.application.service.TenantOnboardingService;
 import com.altafjava.platform.core.exception.ResourceNotFoundException;
 import com.altafjava.platform.core.tenant.TenantContext;
 import com.altafjava.platform.domain.tenant.model.Tenant;
+import com.altafjava.school.application.filter.FeePaymentFilter;
 import com.altafjava.school.application.service.FeePaymentService;
 import com.altafjava.school.application.service.FeeStructureService;
 import com.altafjava.school.application.service.StudentService;
@@ -84,7 +85,8 @@ class FeePaymentTenantIsolationIntegrationTest extends SchoolIntegrationTestBase
 				LocalDateTime.now(), "RCPT-" + UUID.randomUUID().toString().substring(0, 8));
 
 		activateTenant(tenantB);
-		Page<FeePayment> tenantBPayments = feePaymentService.listFeePayments(PageRequest.of(0, 100));
+		Page<FeePayment> tenantBPayments = feePaymentService.listFeePayments(FeePaymentFilter.NONE,
+				PageRequest.of(0, 100));
 
 		boolean found = tenantBPayments.getContent().stream()
 				.anyMatch(p -> tenantA.getId().equals(p.getTenantId()));

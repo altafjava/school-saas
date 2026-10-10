@@ -37,6 +37,7 @@ import com.altafjava.school.domain.admission.model.AdmissionStatus;
 import com.altafjava.school.domain.admission.model.DecisionOutcome;
 import com.altafjava.school.domain.admission.repository.AdmissionDecisionRepository;
 import com.altafjava.school.domain.admission.repository.AdmissionRepository;
+import com.altafjava.school.domain.common.model.Gender;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
@@ -74,8 +75,9 @@ public class AdmissionService {
 
 	/** Free-text {@code q} (blank = no filter) over the entity's identifying fields. */
 	@Transactional(readOnly = true)
-	public Page<Admission> searchAdmissions(Pageable pageable, String q) {
-		return admissionRepository.search(TenantContext.getCurrentTenantId(), LikePattern.contains(q), pageable);
+	public Page<Admission> searchAdmissions(Pageable pageable, AdmissionStatus status, String q) {
+		return admissionRepository.search(TenantContext.getCurrentTenantId(), status, LikePattern.contains(q),
+				pageable);
 	}
 
 	@Transactional(readOnly = true)
@@ -90,13 +92,21 @@ public class AdmissionService {
 				.orElseThrow(() -> new ResourceNotFoundException("Admission not found: " + publicId));
 	}
 
-	@Transactional
 	public Admission submit(String applicantFirstName, String applicantLastName, LocalDate applicantDateOfBirth,
 			String guardianFirstName, String guardianLastName, String guardianEmail, String guardianPhone,
 			String appliedGrade) {
+		return submit(applicantFirstName, applicantLastName, applicantDateOfBirth, Gender.NOT_SPECIFIED,
+				guardianFirstName, guardianLastName, guardianEmail, guardianPhone, appliedGrade);
+	}
+
+	@Transactional
+	public Admission submit(String applicantFirstName, String applicantLastName, LocalDate applicantDateOfBirth,
+			Gender applicantGender, String guardianFirstName, String guardianLastName, String guardianEmail,
+			String guardianPhone, String appliedGrade) {
 		BigDecimal applicationFee = applicationFeePolicy.feeFor(TenantContext.getCurrentTenantId()).orElse(null);
 		Admission admission = Admission.submit(applicantFirstName, applicantLastName, applicantDateOfBirth,
-				guardianFirstName, guardianLastName, guardianEmail, guardianPhone, appliedGrade, applicationFee);
+				applicantGender, guardianFirstName, guardianLastName, guardianEmail, guardianPhone, appliedGrade,
+				applicationFee);
 		Admission saved = admissionRepository.save(admission);
 		lifecycleRecorder.admission(saved.getId(), null, AdmissionStatus.SUBMITTED, LifecycleChange.NONE);
 		return saved;
