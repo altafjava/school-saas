@@ -5894,7 +5894,7 @@
             "content" : {
               "application/json" : {
                 "schema" : {
-                  "$ref" : "#/components/schemas/JobDefinitionResponse"
+                  "$ref" : "#/components/schemas/ApiResponseJobDefinitionResponse"
                 }
               }
             }
@@ -17583,7 +17583,7 @@
             "content" : {
               "application/json" : {
                 "schema" : {
-                  "$ref" : "#/components/schemas/UploadResponse"
+                  "$ref" : "#/components/schemas/ApiResponseUploadResponse"
                 }
               }
             }
@@ -24510,11 +24510,30 @@
       "post" : {
         "tags" : [ "Authentication" ],
         "summary" : "Logout",
-        "description" : "Logs out the user by invalidating the token.",
+        "description" : "Ends the session behind the Bearer access token and/or the refresh token in the body. Public and idempotent: either token may be expired, and a missing or unverifiable one is ignored, so the call always succeeds and never reveals whether a token was valid.",
         "operationId" : "authLogout",
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/LogoutRequest"
+              }
+            }
+          }
+        },
         "responses" : {
-          "200" : {
-            "description" : "Logout successful"
+          "204" : {
+            "description" : "Session ended (or there was none)"
+          },
+          "400" : {
+            "description" : "Validation failed or a business rule rejected the request",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
           },
           "401" : {
             "description" : "Missing, expired or revoked access token",
@@ -27751,10 +27770,7 @@
             "content" : {
               "application/json" : {
                 "schema" : {
-                  "type" : "array",
-                  "items" : {
-                    "$ref" : "#/components/schemas/JobDefinitionResponse"
-                  }
+                  "$ref" : "#/components/schemas/ApiResponseListJobDefinitionResponse"
                 }
               }
             }
@@ -27900,7 +27916,7 @@
             "content" : {
               "application/json" : {
                 "schema" : {
-                  "$ref" : "#/components/schemas/JobTriggerResponse"
+                  "$ref" : "#/components/schemas/ApiResponseJobTriggerResponse"
                 }
               }
             }
@@ -27910,7 +27926,7 @@
             "content" : {
               "application/json" : {
                 "schema" : {
-                  "$ref" : "#/components/schemas/JobTriggerResponse"
+                  "$ref" : "#/components/schemas/ApiResponseJobTriggerResponse"
                 }
               }
             }
@@ -30819,7 +30835,7 @@
             "content" : {
               "application/json" : {
                 "schema" : {
-                  "$ref" : "#/components/schemas/AlertResponse"
+                  "$ref" : "#/components/schemas/ApiResponseAlertResponse"
                 }
               }
             }
@@ -52311,7 +52327,7 @@
             "content" : {
               "application/json" : {
                 "schema" : {
-                  "$ref" : "#/components/schemas/PageFileMetadataResponse"
+                  "$ref" : "#/components/schemas/ApiResponsePageFileMetadataResponse"
                 }
               }
             }
@@ -52380,9 +52396,9 @@
           "200" : {
             "description" : "OK",
             "content" : {
-              "*/*" : {
+              "application/json" : {
                 "schema" : {
-                  "type" : "string"
+                  "$ref" : "#/components/schemas/ApiResponseString"
                 }
               }
             }
@@ -57698,7 +57714,7 @@
             "content" : {
               "application/json" : {
                 "schema" : {
-                  "$ref" : "#/components/schemas/GlobalStatisticsResponse"
+                  "$ref" : "#/components/schemas/ApiResponseGlobalStatisticsResponse"
                 }
               }
             }
@@ -57752,11 +57768,7 @@
             "content" : {
               "application/json" : {
                 "schema" : {
-                  "type" : "array",
-                  "items" : {
-                    "type" : "object",
-                    "additionalProperties" : { }
-                  }
+                  "$ref" : "#/components/schemas/ApiResponseListMapStringObject"
                 }
               }
             }
@@ -57817,7 +57829,7 @@
             "content" : {
               "application/json" : {
                 "schema" : {
-                  "$ref" : "#/components/schemas/JobStatisticsResponse"
+                  "$ref" : "#/components/schemas/ApiResponseJobStatisticsResponse"
                 }
               }
             }
@@ -57898,11 +57910,7 @@
             "content" : {
               "application/json" : {
                 "schema" : {
-                  "type" : "array",
-                  "items" : {
-                    "type" : "string",
-                    "format" : "date-time"
-                  }
+                  "$ref" : "#/components/schemas/ApiResponseListInstant"
                 }
               }
             }
@@ -58029,7 +58037,7 @@
             "content" : {
               "application/json" : {
                 "schema" : {
-                  "$ref" : "#/components/schemas/PageJobExecutionHistoryResponse"
+                  "$ref" : "#/components/schemas/ApiResponsePageJobExecutionHistoryResponse"
                 }
               }
             }
@@ -58102,7 +58110,7 @@
             "content" : {
               "application/json" : {
                 "schema" : {
-                  "$ref" : "#/components/schemas/SchedulerHealthResponse"
+                  "$ref" : "#/components/schemas/ApiResponseSchedulerHealthResponse"
                 }
               }
             }
@@ -58186,7 +58194,7 @@
             "content" : {
               "application/json" : {
                 "schema" : {
-                  "$ref" : "#/components/schemas/PageDeadLetterResponse"
+                  "$ref" : "#/components/schemas/ApiResponsePageDeadLetterResponse"
                 }
               }
             }
@@ -59134,8 +59142,7 @@
             "content" : {
               "application/json" : {
                 "schema" : {
-                  "type" : "object",
-                  "additionalProperties" : { }
+                  "$ref" : "#/components/schemas/ApiResponseMapStringObject"
                 }
               }
             }
@@ -59189,8 +59196,7 @@
             "content" : {
               "application/json" : {
                 "schema" : {
-                  "type" : "object",
-                  "additionalProperties" : { }
+                  "$ref" : "#/components/schemas/ApiResponseMapStringObject"
                 }
               }
             }
@@ -59244,8 +59250,7 @@
             "content" : {
               "application/json" : {
                 "schema" : {
-                  "type" : "object",
-                  "additionalProperties" : { }
+                  "$ref" : "#/components/schemas/ApiResponseMapStringObject"
                 }
               }
             }
@@ -59299,8 +59304,7 @@
             "content" : {
               "application/json" : {
                 "schema" : {
-                  "type" : "object",
-                  "additionalProperties" : { }
+                  "$ref" : "#/components/schemas/ApiResponseMapStringObject"
                 }
               }
             }
@@ -59354,8 +59358,7 @@
             "content" : {
               "application/json" : {
                 "schema" : {
-                  "type" : "object",
-                  "additionalProperties" : { }
+                  "$ref" : "#/components/schemas/ApiResponseMapStringObject"
                 }
               }
             }
@@ -60764,10 +60767,7 @@
             "content" : {
               "application/json" : {
                 "schema" : {
-                  "type" : "array",
-                  "items" : {
-                    "$ref" : "#/components/schemas/RevenueMetricResponse"
-                  }
+                  "$ref" : "#/components/schemas/ApiResponseListRevenueMetricResponse"
                 }
               }
             }
@@ -60847,10 +60847,7 @@
             "content" : {
               "application/json" : {
                 "schema" : {
-                  "type" : "object",
-                  "additionalProperties" : {
-                    "type" : "number"
-                  }
+                  "$ref" : "#/components/schemas/ApiResponseMapStringBigDecimal"
                 }
               }
             }
@@ -60930,10 +60927,7 @@
             "content" : {
               "application/json" : {
                 "schema" : {
-                  "type" : "array",
-                  "items" : {
-                    "$ref" : "#/components/schemas/PaymentMetricResponse"
-                  }
+                  "$ref" : "#/components/schemas/ApiResponseListPaymentMetricResponse"
                 }
               }
             }
@@ -61013,10 +61007,7 @@
             "content" : {
               "application/json" : {
                 "schema" : {
-                  "type" : "array",
-                  "items" : {
-                    "$ref" : "#/components/schemas/RevenueCohortResponse"
-                  }
+                  "$ref" : "#/components/schemas/ApiResponseListRevenueCohortResponse"
                 }
               }
             }
@@ -61089,10 +61080,7 @@
             "content" : {
               "application/json" : {
                 "schema" : {
-                  "type" : "array",
-                  "items" : {
-                    "$ref" : "#/components/schemas/AtRiskSubscriptionResponse"
-                  }
+                  "$ref" : "#/components/schemas/ApiResponseListAtRiskSubscriptionResponse"
                 }
               }
             }
@@ -61156,10 +61144,7 @@
             "content" : {
               "application/json" : {
                 "schema" : {
-                  "type" : "array",
-                  "items" : {
-                    "$ref" : "#/components/schemas/AlertResponse"
-                  }
+                  "$ref" : "#/components/schemas/ApiResponseListAlertResponse"
                 }
               }
             }
@@ -62620,6 +62605,12 @@
           },
           "traceId" : {
             "type" : "string"
+          },
+          "context" : {
+            "type" : "object",
+            "additionalProperties" : {
+              "type" : "object"
+            }
           }
         }
       },
@@ -68994,6 +68985,24 @@
         },
         "required" : [ "entityId", "entityType", "filename", "mimeType", "size" ]
       },
+      "ApiResponseUploadResponse" : {
+        "type" : "object",
+        "properties" : {
+          "success" : {
+            "type" : "boolean"
+          },
+          "data" : {
+            "$ref" : "#/components/schemas/UploadResponse"
+          },
+          "error" : {
+            "$ref" : "#/components/schemas/ApiErrorDetail"
+          },
+          "meta" : {
+            "$ref" : "#/components/schemas/ApiResponseMeta"
+          }
+        },
+        "required" : [ "success" ]
+      },
       "UploadResponse" : {
         "type" : "object",
         "properties" : {
@@ -71734,6 +71743,18 @@
           }
         }
       },
+      "LogoutRequest" : {
+        "type" : "object",
+        "description" : "Optional body of a logout; lets the session end even when the access token is gone",
+        "properties" : {
+          "refreshToken" : {
+            "type" : "string",
+            "description" : "Refresh token whose session family to revoke; may be expired",
+            "maxLength" : 4096,
+            "minLength" : 0
+          }
+        }
+      },
       "EmailVerificationConfirmRequest" : {
         "type" : "object",
         "properties" : {
@@ -72954,6 +72975,24 @@
           }
         }
       },
+      "ApiResponseJobTriggerResponse" : {
+        "type" : "object",
+        "properties" : {
+          "success" : {
+            "type" : "boolean"
+          },
+          "data" : {
+            "$ref" : "#/components/schemas/JobTriggerResponse"
+          },
+          "error" : {
+            "$ref" : "#/components/schemas/ApiErrorDetail"
+          },
+          "meta" : {
+            "$ref" : "#/components/schemas/ApiResponseMeta"
+          }
+        },
+        "required" : [ "success" ]
+      },
       "JobTriggerResponse" : {
         "type" : "object",
         "properties" : {
@@ -73656,6 +73695,24 @@
           }
         },
         "required" : [ "enabled", "id" ]
+      },
+      "ApiResponseAlertResponse" : {
+        "type" : "object",
+        "properties" : {
+          "success" : {
+            "type" : "boolean"
+          },
+          "data" : {
+            "$ref" : "#/components/schemas/AlertResponse"
+          },
+          "error" : {
+            "$ref" : "#/components/schemas/ApiErrorDetail"
+          },
+          "meta" : {
+            "$ref" : "#/components/schemas/ApiResponseMeta"
+          }
+        },
+        "required" : [ "success" ]
       },
       "ScimPatchOperation" : {
         "type" : "object",
@@ -79225,6 +79282,24 @@
         },
         "required" : [ "pageNumber", "pageSize", "totalElements" ]
       },
+      "ApiResponsePageFileMetadataResponse" : {
+        "type" : "object",
+        "properties" : {
+          "success" : {
+            "type" : "boolean"
+          },
+          "data" : {
+            "$ref" : "#/components/schemas/PageFileMetadataResponse"
+          },
+          "error" : {
+            "$ref" : "#/components/schemas/ApiErrorDetail"
+          },
+          "meta" : {
+            "$ref" : "#/components/schemas/ApiResponseMeta"
+          }
+        },
+        "required" : [ "success" ]
+      },
       "FileMetadataResponse" : {
         "type" : "object",
         "description" : "Metadata for an uploaded file",
@@ -81809,6 +81884,24 @@
         },
         "required" : [ "success" ]
       },
+      "ApiResponseGlobalStatisticsResponse" : {
+        "type" : "object",
+        "properties" : {
+          "success" : {
+            "type" : "boolean"
+          },
+          "data" : {
+            "$ref" : "#/components/schemas/GlobalStatisticsResponse"
+          },
+          "error" : {
+            "$ref" : "#/components/schemas/ApiErrorDetail"
+          },
+          "meta" : {
+            "$ref" : "#/components/schemas/ApiResponseMeta"
+          }
+        },
+        "required" : [ "success" ]
+      },
       "GlobalStatisticsResponse" : {
         "type" : "object",
         "properties" : {
@@ -81838,6 +81931,27 @@
           }
         },
         "required" : [ "deadLetterCount", "enabledJobs", "runningNow", "successRateToday", "totalExecutionsToday", "totalJobs" ]
+      },
+      "ApiResponseListJobDefinitionResponse" : {
+        "type" : "object",
+        "properties" : {
+          "success" : {
+            "type" : "boolean"
+          },
+          "data" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/JobDefinitionResponse"
+            }
+          },
+          "error" : {
+            "$ref" : "#/components/schemas/ApiErrorDetail"
+          },
+          "meta" : {
+            "$ref" : "#/components/schemas/ApiResponseMeta"
+          }
+        },
+        "required" : [ "success" ]
       },
       "JobDefinitionResponse" : {
         "type" : "object",
@@ -81942,6 +82056,42 @@
         },
         "required" : [ "alertConsecutiveFailures", "enabled", "id", "maxConcurrentExecutions", "maxRetries", "retryEnabled", "tenantScoped" ]
       },
+      "ApiResponseJobDefinitionResponse" : {
+        "type" : "object",
+        "properties" : {
+          "success" : {
+            "type" : "boolean"
+          },
+          "data" : {
+            "$ref" : "#/components/schemas/JobDefinitionResponse"
+          },
+          "error" : {
+            "$ref" : "#/components/schemas/ApiErrorDetail"
+          },
+          "meta" : {
+            "$ref" : "#/components/schemas/ApiResponseMeta"
+          }
+        },
+        "required" : [ "success" ]
+      },
+      "ApiResponseJobStatisticsResponse" : {
+        "type" : "object",
+        "properties" : {
+          "success" : {
+            "type" : "boolean"
+          },
+          "data" : {
+            "$ref" : "#/components/schemas/JobStatisticsResponse"
+          },
+          "error" : {
+            "$ref" : "#/components/schemas/ApiErrorDetail"
+          },
+          "meta" : {
+            "$ref" : "#/components/schemas/ApiResponseMeta"
+          }
+        },
+        "required" : [ "success" ]
+      },
       "JobStatisticsResponse" : {
         "type" : "object",
         "properties" : {
@@ -81986,6 +82136,46 @@
           }
         },
         "required" : [ "failureCount", "successCount", "successRate", "totalExecutions" ]
+      },
+      "ApiResponseListInstant" : {
+        "type" : "object",
+        "properties" : {
+          "success" : {
+            "type" : "boolean"
+          },
+          "data" : {
+            "type" : "array",
+            "items" : {
+              "type" : "string",
+              "format" : "date-time"
+            }
+          },
+          "error" : {
+            "$ref" : "#/components/schemas/ApiErrorDetail"
+          },
+          "meta" : {
+            "$ref" : "#/components/schemas/ApiResponseMeta"
+          }
+        },
+        "required" : [ "success" ]
+      },
+      "ApiResponsePageJobExecutionHistoryResponse" : {
+        "type" : "object",
+        "properties" : {
+          "success" : {
+            "type" : "boolean"
+          },
+          "data" : {
+            "$ref" : "#/components/schemas/PageJobExecutionHistoryResponse"
+          },
+          "error" : {
+            "$ref" : "#/components/schemas/ApiErrorDetail"
+          },
+          "meta" : {
+            "$ref" : "#/components/schemas/ApiResponseMeta"
+          }
+        },
+        "required" : [ "success" ]
       },
       "JobExecutionHistoryResponse" : {
         "type" : "object",
@@ -82083,6 +82273,24 @@
         },
         "required" : [ "pageNumber", "pageSize", "totalElements" ]
       },
+      "ApiResponseSchedulerHealthResponse" : {
+        "type" : "object",
+        "properties" : {
+          "success" : {
+            "type" : "boolean"
+          },
+          "data" : {
+            "$ref" : "#/components/schemas/SchedulerHealthResponse"
+          },
+          "error" : {
+            "$ref" : "#/components/schemas/ApiErrorDetail"
+          },
+          "meta" : {
+            "$ref" : "#/components/schemas/ApiResponseMeta"
+          }
+        },
+        "required" : [ "success" ]
+      },
       "SchedulerHealthResponse" : {
         "type" : "object",
         "properties" : {
@@ -82116,6 +82324,24 @@
           }
         },
         "required" : [ "activeThreads", "runningJobCount", "scheduledJobCount", "threadPoolSize" ]
+      },
+      "ApiResponsePageDeadLetterResponse" : {
+        "type" : "object",
+        "properties" : {
+          "success" : {
+            "type" : "boolean"
+          },
+          "data" : {
+            "$ref" : "#/components/schemas/PageDeadLetterResponse"
+          },
+          "error" : {
+            "$ref" : "#/components/schemas/ApiErrorDetail"
+          },
+          "meta" : {
+            "$ref" : "#/components/schemas/ApiResponseMeta"
+          }
+        },
+        "required" : [ "success" ]
       },
       "DeadLetterResponse" : {
         "type" : "object",
@@ -83210,6 +83436,27 @@
         },
         "required" : [ "totalRedemptions" ]
       },
+      "ApiResponseListRevenueMetricResponse" : {
+        "type" : "object",
+        "properties" : {
+          "success" : {
+            "type" : "boolean"
+          },
+          "data" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/RevenueMetricResponse"
+            }
+          },
+          "error" : {
+            "$ref" : "#/components/schemas/ApiErrorDetail"
+          },
+          "meta" : {
+            "$ref" : "#/components/schemas/ApiResponseMeta"
+          }
+        },
+        "required" : [ "success" ]
+      },
       "RevenueMetricResponse" : {
         "type" : "object",
         "description" : "Aggregated revenue metrics for a reporting period",
@@ -83270,6 +83517,48 @@
         },
         "required" : [ "id" ]
       },
+      "ApiResponseMapStringBigDecimal" : {
+        "type" : "object",
+        "properties" : {
+          "success" : {
+            "type" : "boolean"
+          },
+          "data" : {
+            "type" : "object",
+            "additionalProperties" : {
+              "type" : "number"
+            }
+          },
+          "error" : {
+            "$ref" : "#/components/schemas/ApiErrorDetail"
+          },
+          "meta" : {
+            "$ref" : "#/components/schemas/ApiResponseMeta"
+          }
+        },
+        "required" : [ "success" ]
+      },
+      "ApiResponseListPaymentMetricResponse" : {
+        "type" : "object",
+        "properties" : {
+          "success" : {
+            "type" : "boolean"
+          },
+          "data" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/PaymentMetricResponse"
+            }
+          },
+          "error" : {
+            "$ref" : "#/components/schemas/ApiErrorDetail"
+          },
+          "meta" : {
+            "$ref" : "#/components/schemas/ApiResponseMeta"
+          }
+        },
+        "required" : [ "success" ]
+      },
       "PaymentMetricResponse" : {
         "type" : "object",
         "description" : "Aggregated payment/charge metrics for a reporting date",
@@ -83319,6 +83608,27 @@
         },
         "required" : [ "id" ]
       },
+      "ApiResponseListRevenueCohortResponse" : {
+        "type" : "object",
+        "properties" : {
+          "success" : {
+            "type" : "boolean"
+          },
+          "data" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/RevenueCohortResponse"
+            }
+          },
+          "error" : {
+            "$ref" : "#/components/schemas/ApiErrorDetail"
+          },
+          "meta" : {
+            "$ref" : "#/components/schemas/ApiResponseMeta"
+          }
+        },
+        "required" : [ "success" ]
+      },
       "RevenueCohortResponse" : {
         "type" : "object",
         "description" : "Retention/revenue data for a monthly customer cohort",
@@ -83354,6 +83664,27 @@
         },
         "required" : [ "id" ]
       },
+      "ApiResponseListAtRiskSubscriptionResponse" : {
+        "type" : "object",
+        "properties" : {
+          "success" : {
+            "type" : "boolean"
+          },
+          "data" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/AtRiskSubscriptionResponse"
+            }
+          },
+          "error" : {
+            "$ref" : "#/components/schemas/ApiErrorDetail"
+          },
+          "meta" : {
+            "$ref" : "#/components/schemas/ApiResponseMeta"
+          }
+        },
+        "required" : [ "success" ]
+      },
       "AtRiskSubscriptionResponse" : {
         "type" : "object",
         "description" : "A subscription identified as at risk of churn",
@@ -83383,6 +83714,27 @@
           }
         },
         "required" : [ "publicId" ]
+      },
+      "ApiResponseListAlertResponse" : {
+        "type" : "object",
+        "properties" : {
+          "success" : {
+            "type" : "boolean"
+          },
+          "data" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/AlertResponse"
+            }
+          },
+          "error" : {
+            "$ref" : "#/components/schemas/ApiErrorDetail"
+          },
+          "meta" : {
+            "$ref" : "#/components/schemas/ApiResponseMeta"
+          }
+        },
+        "required" : [ "success" ]
       },
       "DeregisterDevicePushTokenRequest" : {
         "type" : "object",

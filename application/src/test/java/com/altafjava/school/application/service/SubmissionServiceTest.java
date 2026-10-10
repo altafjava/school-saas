@@ -4,6 +4,7 @@ import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
@@ -33,7 +34,7 @@ import com.altafjava.platform.core.security.AuthenticatedUser;
 import com.altafjava.platform.core.tenant.TenantContext;
 import com.altafjava.platform.core.tenant.TenantType;
 import com.altafjava.school.application.scheduler.support.StudentNotificationRecipientResolver;
-import com.altafjava.school.application.security.TeacherClassroomMembershipGuard;
+import com.altafjava.school.application.security.AcademicAccessGuard;
 import com.altafjava.school.domain.classroom.model.StudentClassroomLink;
 import com.altafjava.school.domain.classroom.repository.StudentClassroomLinkRepository;
 import com.altafjava.school.domain.lms.model.Assignment;
@@ -59,7 +60,7 @@ class SubmissionServiceTest {
 	@Mock
 	private StudentClassroomLinkRepository studentClassroomLinkRepository;
 	@Mock
-	private TeacherClassroomMembershipGuard teacherClassroomMembershipGuard;
+	private AcademicAccessGuard academicAccessGuard;
 	@Mock
 	private StudentNotificationRecipientResolver recipientResolver;
 	@Mock
@@ -70,7 +71,7 @@ class SubmissionServiceTest {
 	@BeforeEach
 	void setUp() {
 		submissionService = new SubmissionService(submissionRepository, assignmentRepository, studentRepository,
-				studentClassroomLinkRepository, teacherClassroomMembershipGuard, recipientResolver,
+				studentClassroomLinkRepository, academicAccessGuard, recipientResolver,
 				notificationService);
 		TenantContext.ForTesting.setCurrentTenant(1L, null, null, TenantType.SHARED);
 	}
@@ -199,6 +200,20 @@ class SubmissionServiceTest {
 		Page<Submission> result = submissionService.list(ASSIGNMENT_PUBLIC_ID.toString(), PageRequest.of(0, 20));
 
 		assertEquals(expected, result);
+		verify(academicAccessGuard).assertCanReadSubject(1L, 5L, 6L);
+	}
+
+	@Test
+	void list_teacherOfAnotherSubject_throwsAccessDenied() {
+		Assignment assignment = assignmentWithId(3L, 5L, LocalDate.now());
+		when(assignmentRepository.findByPublicIdAndTenantId(ASSIGNMENT_PUBLIC_ID, 1L))
+				.thenReturn(Optional.of(assignment));
+		doThrow(new AccessDeniedException("not scoped")).when(academicAccessGuard).assertCanReadSubject(1L, 5L, 6L);
+
+		assertThrows(AccessDeniedException.class,
+				() -> submissionService.list(ASSIGNMENT_PUBLIC_ID.toString(), PageRequest.of(0, 20)));
+
+		verify(submissionRepository, never()).findByAssignmentIdAndTenantId(any(), any(), any());
 	}
 
 	@Test
@@ -210,7 +225,7 @@ class SubmissionServiceTest {
 				.thenReturn(Optional.of(assignment));
 		when(submissionRepository.findByPublicIdAndTenantId(submissionPublicId, 1L))
 				.thenReturn(Optional.of(submission));
-		when(teacherClassroomMembershipGuard.assertTeachesClassroomAndResolveTeacherId(1L, 5L)).thenReturn(9L);
+		when(academicAccessGuard.requireTeacherOfSubject(1L, 5L, 6L)).thenReturn(9L);
 		when(submissionRepository.save(any(Submission.class))).thenAnswer(inv -> inv.getArgument(0));
 		Student student = studentWithId(20L);
 		when(studentRepository.findByIdAndTenantId(20L, 1L)).thenReturn(Optional.of(student));
@@ -233,7 +248,7 @@ class SubmissionServiceTest {
 				.thenReturn(Optional.of(assignment));
 		when(submissionRepository.findByPublicIdAndTenantId(submissionPublicId, 1L))
 				.thenReturn(Optional.of(submission));
-		when(teacherClassroomMembershipGuard.assertTeachesClassroomAndResolveTeacherId(1L, 5L))
+		when(academicAccessGuard.requireTeacherOfSubject(1L, 5L, 6L))
 				.thenThrow(new AccessDeniedException("not scoped"));
 
 		assertThrows(AccessDeniedException.class, () -> submissionService.grade(ASSIGNMENT_PUBLIC_ID.toString(),

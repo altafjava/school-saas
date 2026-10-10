@@ -33,6 +33,7 @@ import com.altafjava.school.domain.fee.model.FeeFrequency;
 import com.altafjava.school.domain.fee.model.FeeStructure;
 import com.altafjava.school.domain.rollup.model.OrganizationRollupReport;
 import com.altafjava.school.domain.student.model.Student;
+import com.altafjava.school.util.TestPrincipals;
 
 /**
  * Validates ROADMAP.md Phase 4's "multi-campus rollup is actually usable" outcome end to end at
@@ -79,6 +80,7 @@ class OrganizationRollupIntegrationTest extends SchoolIntegrationTestBase {
 
 	@BeforeEach
 	void createOrganizationWithTwoCampuses() {
+		TestPrincipals.authenticateAsTenantAdmin();
 		TenantContext.ForTesting.clear();
 		String suffix = UUID.randomUUID().toString().substring(0, 8);
 		campusA = onboardingService.registerTenant(new RegisterTenantCommand(
@@ -96,6 +98,7 @@ class OrganizationRollupIntegrationTest extends SchoolIntegrationTestBase {
 
 	@AfterEach
 	void clearContext() {
+		TestPrincipals.clear();
 		TenantContext.ForTesting.clear();
 	}
 

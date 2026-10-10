@@ -1,5 +1,6 @@
 package com.altafjava.school.domain.grade.repository;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -35,7 +36,24 @@ public interface GradeRepository extends JpaRepository<Grade, Long> {
 
 	boolean existsByStudentIdAndExamIdAndTenantId(Long studentId, Long examId, Long tenantId);
 
-	Page<Grade> findByExamIdInAndTenantId(List<Long> examIds, Long tenantId, Pageable pageable);
+	// A caller's scoped view: every grade of the exams they teach, plus published grades of their own students.
+	@Query(value = """
+			SELECT g FROM Grade g
+			WHERE g.tenantId = :tenantId
+			  AND (g.examId IN :examIds
+			       OR (g.studentId IN :studentIds
+			           AND EXISTS (SELECT 1 FROM Exam e WHERE e.id = g.examId AND e.tenantId = :tenantId
+			                       AND e.resultsPublishedAt IS NOT NULL)))
+			""", countQuery = """
+			SELECT COUNT(g) FROM Grade g
+			WHERE g.tenantId = :tenantId
+			  AND (g.examId IN :examIds
+			       OR (g.studentId IN :studentIds
+			           AND EXISTS (SELECT 1 FROM Exam e WHERE e.id = g.examId AND e.tenantId = :tenantId
+			                       AND e.resultsPublishedAt IS NOT NULL)))
+			""")
+	Page<Grade> findVisible(@Param("tenantId") Long tenantId, @Param("examIds") Collection<Long> examIds,
+			@Param("studentIds") Collection<Long> studentIds, Pageable pageable);
 
 	boolean existsByExamIdAndTenantId(Long examId, Long tenantId);
 

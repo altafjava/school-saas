@@ -11,6 +11,8 @@ import com.altafjava.platform.core.exception.ResourceNotFoundException;
 import com.altafjava.platform.core.sync.EntityChange;
 import com.altafjava.platform.core.sync.OfflineSyncEntityHandler;
 import com.altafjava.platform.core.tenant.TenantContext;
+import com.altafjava.school.application.security.AcademicScope;
+import com.altafjava.school.application.security.AcademicScopeResolver;
 import com.altafjava.school.application.service.AttendanceService;
 import com.altafjava.school.domain.attendance.model.Attendance;
 import com.altafjava.school.domain.attendance.model.AttendanceStatus;
@@ -45,6 +47,7 @@ public class AttendanceOfflineSyncHandler implements OfflineSyncEntityHandler {
 	private final StudentRepository studentRepository;
 	private final ClassroomRepository classroomRepository;
 	private final ObjectMapper objectMapper;
+	private final AcademicScopeResolver academicScopeResolver;
 
 	@Override
 	public UUID create(String payloadJson) {
@@ -76,15 +79,22 @@ public class AttendanceOfflineSyncHandler implements OfflineSyncEntityHandler {
 	@Override
 	public Optional<EntityChange> findChange(UUID entityId) {
 		Long tenantId = TenantContext.getCurrentTenantId();
-		return attendanceRepository.findByPublicIdAndTenantId(entityId, tenantId).map(this::toChange);
+		AcademicScope scope = academicScopeResolver.current(tenantId);
+		return attendanceRepository.findByPublicIdAndTenantId(entityId, tenantId)
+				.filter(attendance -> scope.canReadClassroom(attendance.getClassroomId())
+						|| scope.ownsStudent(attendance.getStudentId()))
+				.map(this::toChange);
 	}
 
 	@Override
 	public List<EntityChange> changesSince(Instant since) {
 		Long tenantId = TenantContext.getCurrentTenantId();
-		return attendanceRepository.findByTenantIdAndUpdatedAtAfter(tenantId, since).stream()
-				.map(this::toChange)
-				.toList();
+		AcademicScope scope = academicScopeResolver.current(tenantId);
+		List<Attendance> changed = scope.readsAllClassrooms()
+				? attendanceRepository.findByTenantIdAndUpdatedAtAfter(tenantId, since)
+				: attendanceRepository.findVisibleUpdatedAfter(tenantId, since, scope.teaching().classroomIds(),
+						scope.ownStudentIds());
+		return changed.stream().map(this::toChange).toList();
 	}
 
 	private EntityChange toChange(Attendance attendance) {

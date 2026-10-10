@@ -170,7 +170,7 @@ class LmsTenantIsolationIntegrationTest extends SchoolIntegrationTestBase {
 
 	// TEACHER/STUDENT are global roles (tenant_id = NULL) — see Role.java. teachers.user_id and
 	// students.user_id carry a real FK to users.id, so the linked account must actually exist,
-	// matching TeacherScopedDataAccessE2ETest's createTeacherUser() idiom.
+	// matching AcademicScopeE2ETest's teacherUser() idiom.
 	private Long createUserWithRole(String email, String roleName) {
 		var role = roleRepository.findAll().stream()
 				.filter(r -> r.getTenantId() == null && roleName.equals(r.getName()))

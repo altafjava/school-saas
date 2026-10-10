@@ -348,6 +348,18 @@
             <column
                     name="role_id"
                     valueComputed="(SELECT id FROM roles WHERE name = 'TENANT_ADMIN' AND tenant_id IS NULL)"/>
+            <column name="permission_code" value="ALL_CLASSROOMS_READ"/>
+        </insert>
+        <insert tableName="role_permissions">
+            <column
+                    name="role_id"
+                    valueComputed="(SELECT id FROM roles WHERE name = 'TENANT_ADMIN' AND tenant_id IS NULL)"/>
+            <column name="permission_code" value="ALL_CLASSROOMS_WRITE"/>
+        </insert>
+        <insert tableName="role_permissions">
+            <column
+                    name="role_id"
+                    valueComputed="(SELECT id FROM roles WHERE name = 'TENANT_ADMIN' AND tenant_id IS NULL)"/>
             <column name="permission_code" value="ALUMNI_MANAGE"/>
         </insert>
         <insert tableName="role_permissions">

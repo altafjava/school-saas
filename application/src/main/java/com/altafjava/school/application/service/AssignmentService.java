@@ -17,8 +17,7 @@ import com.altafjava.platform.core.tenant.TenantContext;
 import com.altafjava.platform.domain.notification.model.NotificationPriority;
 import com.altafjava.platform.domain.notification.model.NotificationType;
 import com.altafjava.school.application.scheduler.support.StudentNotificationRecipientResolver;
-import com.altafjava.school.application.security.ClassroomVisibilityGuard;
-import com.altafjava.school.application.security.TeacherClassroomMembershipGuard;
+import com.altafjava.school.application.security.AcademicAccessGuard;
 import com.altafjava.school.domain.classroom.model.Classroom;
 import com.altafjava.school.domain.classroom.model.StudentClassroomLink;
 import com.altafjava.school.domain.classroom.repository.ClassroomRepository;
@@ -41,23 +40,20 @@ public class AssignmentService {
 	private final SubjectRepository subjectRepository;
 	private final StudentClassroomLinkRepository studentClassroomLinkRepository;
 	private final StudentRepository studentRepository;
-	private final TeacherClassroomMembershipGuard teacherClassroomMembershipGuard;
-	private final ClassroomVisibilityGuard classroomVisibilityGuard;
+	private final AcademicAccessGuard academicAccessGuard;
 	private final StudentNotificationRecipientResolver recipientResolver;
 	private final NotificationService notificationService;
 
 	public AssignmentService(AssignmentRepository assignmentRepository, ClassroomRepository classroomRepository,
 			SubjectRepository subjectRepository, StudentClassroomLinkRepository studentClassroomLinkRepository,
-			StudentRepository studentRepository, TeacherClassroomMembershipGuard teacherClassroomMembershipGuard,
-			ClassroomVisibilityGuard classroomVisibilityGuard,
+			StudentRepository studentRepository, AcademicAccessGuard academicAccessGuard,
 			StudentNotificationRecipientResolver recipientResolver, NotificationService notificationService) {
 		this.assignmentRepository = assignmentRepository;
 		this.classroomRepository = classroomRepository;
 		this.subjectRepository = subjectRepository;
 		this.studentClassroomLinkRepository = studentClassroomLinkRepository;
 		this.studentRepository = studentRepository;
-		this.teacherClassroomMembershipGuard = teacherClassroomMembershipGuard;
-		this.classroomVisibilityGuard = classroomVisibilityGuard;
+		this.academicAccessGuard = academicAccessGuard;
 		this.recipientResolver = recipientResolver;
 		this.notificationService = notificationService;
 	}
@@ -72,8 +68,7 @@ public class AssignmentService {
 		Long subjectId = subjectRepository.findByPublicIdAndTenantId(UUID.fromString(subjectPublicId), tenantId)
 				.orElseThrow(() -> new ResourceNotFoundException("Subject not found: " + subjectPublicId))
 				.getId();
-		Long teacherId = teacherClassroomMembershipGuard.assertTeachesClassroomAndResolveTeacherId(tenantId,
-				classroom.getId());
+		Long teacherId = academicAccessGuard.requireTeacherOfSubject(tenantId, classroom.getId(), subjectId);
 		Assignment assignment = Assignment.create(classroom.getId(), subjectId, teacherId, title, description,
 				storageKey, dueDate, maxMarks);
 		Assignment saved = assignmentRepository.save(assignment);
@@ -87,7 +82,7 @@ public class AssignmentService {
 		Classroom classroom = classroomRepository
 				.findByPublicIdAndTenantId(UUID.fromString(classroomPublicId), tenantId)
 				.orElseThrow(() -> new ResourceNotFoundException("Classroom not found: " + classroomPublicId));
-		classroomVisibilityGuard.assertCanView(tenantId, classroomPublicId, classroom.getId());
+		academicAccessGuard.assertCanViewCoursework(tenantId, classroom.getId());
 		return assignmentRepository.findByClassroomIdAndTenantId(classroom.getId(), tenantId, pageable);
 	}
 
@@ -97,8 +92,7 @@ public class AssignmentService {
 		Assignment assignment = assignmentRepository
 				.findByPublicIdAndTenantId(UUID.fromString(assignmentPublicId), tenantId)
 				.orElseThrow(() -> new ResourceNotFoundException("Assignment not found: " + assignmentPublicId));
-		teacherClassroomMembershipGuard.assertTeachesClassroomAndResolveTeacherId(tenantId,
-				assignment.getClassroomId());
+		academicAccessGuard.assertCanWriteSubject(tenantId, assignment.getClassroomId(), assignment.getSubjectId());
 		assignment.reschedule(newDueDate);
 		return assignmentRepository.save(assignment);
 	}

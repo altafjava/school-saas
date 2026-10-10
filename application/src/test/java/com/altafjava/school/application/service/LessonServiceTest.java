@@ -21,8 +21,7 @@ import org.springframework.security.access.AccessDeniedException;
 import com.altafjava.platform.core.exception.ResourceNotFoundException;
 import com.altafjava.platform.core.tenant.TenantContext;
 import com.altafjava.platform.core.tenant.TenantType;
-import com.altafjava.school.application.security.ClassroomVisibilityGuard;
-import com.altafjava.school.application.security.TeacherClassroomMembershipGuard;
+import com.altafjava.school.application.security.AcademicAccessGuard;
 import com.altafjava.school.domain.classroom.model.Classroom;
 import com.altafjava.school.domain.classroom.repository.ClassroomRepository;
 import com.altafjava.school.domain.lms.model.Lesson;
@@ -43,16 +42,14 @@ class LessonServiceTest {
 	@Mock
 	private SubjectRepository subjectRepository;
 	@Mock
-	private TeacherClassroomMembershipGuard teacherClassroomMembershipGuard;
-	@Mock
-	private ClassroomVisibilityGuard classroomVisibilityGuard;
+	private AcademicAccessGuard academicAccessGuard;
 
 	private LessonService lessonService;
 
 	@BeforeEach
 	void setUp() {
 		lessonService = new LessonService(lessonRepository, classroomRepository, subjectRepository,
-				teacherClassroomMembershipGuard, classroomVisibilityGuard);
+				academicAccessGuard);
 		TenantContext.ForTesting.setCurrentTenant(1L, null, null, TenantType.SHARED);
 	}
 
@@ -89,7 +86,7 @@ class LessonServiceTest {
 				.thenReturn(Optional.of(classroomWithId(5L)));
 		when(subjectRepository.findByPublicIdAndTenantId(SUBJECT_PUBLIC_ID, 1L))
 				.thenReturn(Optional.of(subjectWithId(6L)));
-		when(teacherClassroomMembershipGuard.assertTeachesClassroomAndResolveTeacherId(1L, 5L))
+		when(academicAccessGuard.requireTeacherOfSubject(1L, 5L, 6L))
 				.thenThrow(new AccessDeniedException("not scoped"));
 
 		assertThrows(AccessDeniedException.class, () -> lessonService.post(CLASSROOM_PUBLIC_ID.toString(),
@@ -104,7 +101,7 @@ class LessonServiceTest {
 				.thenReturn(Optional.of(classroomWithId(5L)));
 		when(subjectRepository.findByPublicIdAndTenantId(SUBJECT_PUBLIC_ID, 1L))
 				.thenReturn(Optional.of(subjectWithId(6L)));
-		when(teacherClassroomMembershipGuard.assertTeachesClassroomAndResolveTeacherId(1L, 5L)).thenReturn(7L);
+		when(academicAccessGuard.requireTeacherOfSubject(1L, 5L, 6L)).thenReturn(7L);
 		when(lessonRepository.save(any(Lesson.class))).thenAnswer(inv -> inv.getArgument(0));
 
 		Lesson lesson = assertDoesNotThrow(() -> lessonService.post(CLASSROOM_PUBLIC_ID.toString(),
@@ -132,7 +129,7 @@ class LessonServiceTest {
 
 		Page<Lesson> result = lessonService.listByClassroom(CLASSROOM_PUBLIC_ID.toString(), PageRequest.of(0, 20));
 
-		verify(classroomVisibilityGuard).assertCanView(1L, CLASSROOM_PUBLIC_ID.toString(), 5L);
+		verify(academicAccessGuard).assertCanViewCoursework(1L, 5L);
 		assertEquals(expected, result);
 	}
 
@@ -140,8 +137,8 @@ class LessonServiceTest {
 	void listByClassroom_visibilityDenied_propagatesAccessDenied() {
 		when(classroomRepository.findByPublicIdAndTenantId(CLASSROOM_PUBLIC_ID, 1L))
 				.thenReturn(Optional.of(classroomWithId(5L)));
-		org.mockito.Mockito.doThrow(new AccessDeniedException("denied")).when(classroomVisibilityGuard)
-				.assertCanView(1L, CLASSROOM_PUBLIC_ID.toString(), 5L);
+		org.mockito.Mockito.doThrow(new AccessDeniedException("denied")).when(academicAccessGuard)
+				.assertCanViewCoursework(1L, 5L);
 
 		assertThrows(AccessDeniedException.class,
 				() -> lessonService.listByClassroom(CLASSROOM_PUBLIC_ID.toString(), PageRequest.of(0, 20)));

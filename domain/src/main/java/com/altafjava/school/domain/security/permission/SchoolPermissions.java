@@ -32,11 +32,21 @@ public final class SchoolPermissions {
 	private static final String CAT_TICKET = "Helpdesk";
 	private static final String CAT_CERTIFICATE = "Certificates";
 
+	/** Widens classroom-scoped reads from "the classrooms I teach" to every classroom. */
+	public static final String ALL_CLASSROOMS_READ = "ALL_CLASSROOMS_READ";
+	/** Widens classroom-scoped writes the same way; implies {@link #ALL_CLASSROOMS_READ}. */
+	public static final String ALL_CLASSROOMS_WRITE = "ALL_CLASSROOMS_WRITE";
+
 	public static final Set<PermissionDefinition> CATALOG = Set.of(
 			def("ACADEMIC_YEAR_READ", "View academic years", CAT_ACADEMIC),
 			def("ACADEMIC_YEAR_WRITE", "Create academic years", CAT_ACADEMIC),
 			def("ADMISSION_FEE_MANAGE", "Record or waive application fees and set the application fee", CAT_ADMISSIONS),
 			def("ADMISSION_MANAGE", "Manage admission applications and decisions", CAT_ADMISSIONS),
+			def(ALL_CLASSROOMS_READ, "View attendance, grades and coursework of every classroom, not only those taught",
+					CAT_ATTENDANCE),
+			def(ALL_CLASSROOMS_WRITE,
+					"Record attendance, grades and coursework for every classroom, not only those taught",
+					CAT_ATTENDANCE),
 			def("ALUMNI_MANAGE", "Manage alumni profiles", CAT_ADMISSIONS),
 			def("ASSET_MANAGE", "Manage school assets and their assignment", CAT_FACILITIES),
 			def("ASSIGNMENT_READ", "View assignments", CAT_ACADEMIC),

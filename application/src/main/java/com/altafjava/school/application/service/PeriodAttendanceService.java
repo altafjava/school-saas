@@ -9,6 +9,10 @@ import org.springframework.transaction.annotation.Transactional;
 import com.altafjava.platform.core.exception.BusinessException;
 import com.altafjava.platform.core.exception.ResourceNotFoundException;
 import com.altafjava.platform.core.tenant.TenantContext;
+import com.altafjava.school.application.security.AcademicAccessGuard;
+import com.altafjava.school.application.security.AcademicScope;
+import com.altafjava.school.application.security.AcademicScopeResolver;
+import com.altafjava.school.application.security.StudentDataAccessGuard;
 import com.altafjava.school.domain.attendance.model.AttendanceStatus;
 import com.altafjava.school.domain.attendance.model.PeriodAttendance;
 import com.altafjava.school.domain.attendance.repository.PeriodAttendanceRepository;
@@ -26,28 +30,46 @@ public class PeriodAttendanceService {
 	private final ClassroomRepository classroomRepository;
 	private final TimetableEntryRepository timetableEntryRepository;
 	private final StudentClassroomLinkRepository studentClassroomLinkRepository;
+	private final AcademicScopeResolver academicScopeResolver;
+	private final AcademicAccessGuard academicAccessGuard;
+	private final StudentDataAccessGuard studentDataAccessGuard;
 
 	public PeriodAttendanceService(PeriodAttendanceRepository periodAttendanceRepository,
 			StudentRepository studentRepository, ClassroomRepository classroomRepository,
 			TimetableEntryRepository timetableEntryRepository,
-			StudentClassroomLinkRepository studentClassroomLinkRepository) {
+			StudentClassroomLinkRepository studentClassroomLinkRepository,
+			AcademicScopeResolver academicScopeResolver, AcademicAccessGuard academicAccessGuard,
+			StudentDataAccessGuard studentDataAccessGuard) {
 		this.periodAttendanceRepository = periodAttendanceRepository;
 		this.studentRepository = studentRepository;
 		this.classroomRepository = classroomRepository;
 		this.timetableEntryRepository = timetableEntryRepository;
 		this.studentClassroomLinkRepository = studentClassroomLinkRepository;
+		this.academicScopeResolver = academicScopeResolver;
+		this.academicAccessGuard = academicAccessGuard;
+		this.studentDataAccessGuard = studentDataAccessGuard;
 	}
 
 	@Transactional(readOnly = true)
 	public Page<PeriodAttendance> listAttendance(Pageable pageable) {
-		return periodAttendanceRepository.findAllByTenantId(TenantContext.getCurrentTenantId(), pageable);
+		Long tenantId = TenantContext.getCurrentTenantId();
+		AcademicScope scope = academicScopeResolver.current(tenantId);
+		if (scope.readsAllClassrooms()) {
+			return periodAttendanceRepository.findAllByTenantId(tenantId, pageable);
+		}
+		return periodAttendanceRepository.findVisible(tenantId, scope.teaching().classroomIds(),
+				scope.ownStudentIds(), pageable);
 	}
 
 	@Transactional(readOnly = true)
 	public PeriodAttendance findByPublicId(String publicId) {
 		Long tenantId = TenantContext.getCurrentTenantId();
-		return periodAttendanceRepository.findByPublicIdAndTenantId(UUID.fromString(publicId), tenantId)
+		PeriodAttendance attendance = periodAttendanceRepository
+				.findByPublicIdAndTenantId(UUID.fromString(publicId), tenantId)
 				.orElseThrow(() -> new ResourceNotFoundException("Period attendance record not found: " + publicId));
+		academicAccessGuard.assertCanReadStudentRecord(tenantId, attendance.getClassroomId(),
+				attendance.getStudentId());
+		return attendance;
 	}
 
 	@Transactional(readOnly = true)
@@ -55,6 +77,7 @@ public class PeriodAttendanceService {
 		Long tenantId = TenantContext.getCurrentTenantId();
 		var student = studentRepository.findByPublicIdAndTenantId(UUID.fromString(studentPublicId), tenantId)
 				.orElseThrow(() -> new ResourceNotFoundException("Student not found: " + studentPublicId));
+		studentDataAccessGuard.assertCanView(tenantId, studentPublicId);
 		return periodAttendanceRepository.findByStudentIdAndTenantId(student.getId(), tenantId, pageable);
 	}
 
@@ -79,6 +102,7 @@ public class PeriodAttendanceService {
 			throw new ResourceNotFoundException(
 					"Student " + studentId + " is not enrolled in classroom " + classroomId);
 		}
+		academicAccessGuard.assertCanMarkPeriod(tenantId, timetableEntry, attendanceDate);
 		if (periodAttendanceRepository.existsByStudentIdAndTimetableEntryIdAndAttendanceDateAndTenantId(studentId,
 				timetableEntryId, attendanceDate, tenantId)) {
 			throw new IllegalArgumentException("Period attendance already marked for student " + studentId

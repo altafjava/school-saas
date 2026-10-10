@@ -10,9 +10,11 @@ import org.springframework.transaction.annotation.Transactional;
 import com.altafjava.platform.core.exception.BusinessException;
 import com.altafjava.platform.core.exception.ResourceNotFoundException;
 import com.altafjava.platform.core.tenant.TenantContext;
+import com.altafjava.school.application.security.AcademicAccessGuard;
+import com.altafjava.school.application.security.AcademicScope;
+import com.altafjava.school.application.security.AcademicScopeResolver;
 import com.altafjava.school.application.security.ExamResultVisibilityPolicy;
 import com.altafjava.school.application.security.StudentDataAccessGuard;
-import com.altafjava.school.application.security.TeacherClassroomScopeResolver;
 import com.altafjava.school.domain.curriculum.model.GradingScaleThreshold;
 import com.altafjava.school.domain.exam.model.Exam;
 import com.altafjava.school.domain.exam.model.ExamStatus;
@@ -34,14 +36,15 @@ public class GradeService {
 	private final ExamRepository examRepository;
 	private final GradingScaleService gradingScaleService;
 	private final StudentDataAccessGuard studentDataAccessGuard;
-	private final TeacherClassroomScopeResolver teacherClassroomScopeResolver;
+	private final AcademicScopeResolver academicScopeResolver;
+	private final AcademicAccessGuard academicAccessGuard;
 	private final ExamResultVisibilityPolicy examResultVisibilityPolicy;
 	private final GradeCalculator gradeCalculator = new GradeCalculator();
 
 	public GradeService(GradeRepository gradeRepository, GradeCorrectionRepository gradeCorrectionRepository,
 			StudentRepository studentRepository, ExamRepository examRepository,
 			GradingScaleService gradingScaleService, StudentDataAccessGuard studentDataAccessGuard,
-			TeacherClassroomScopeResolver teacherClassroomScopeResolver,
+			AcademicScopeResolver academicScopeResolver, AcademicAccessGuard academicAccessGuard,
 			ExamResultVisibilityPolicy examResultVisibilityPolicy) {
 		this.gradeRepository = gradeRepository;
 		this.gradeCorrectionRepository = gradeCorrectionRepository;
@@ -49,21 +52,26 @@ public class GradeService {
 		this.examRepository = examRepository;
 		this.gradingScaleService = gradingScaleService;
 		this.studentDataAccessGuard = studentDataAccessGuard;
-		this.teacherClassroomScopeResolver = teacherClassroomScopeResolver;
+		this.academicScopeResolver = academicScopeResolver;
+		this.academicAccessGuard = academicAccessGuard;
 		this.examResultVisibilityPolicy = examResultVisibilityPolicy;
 	}
 
-	// TENANT_ADMIN sees every grade; TEACHER sees only grades from exams in classrooms they
-	// teach (resolved via TeacherClassroomScopeResolver — see ROADMAP.md Phase 3).
+	// Narrowed to the caller's scope: every exam, the exams of subjects they teach, or their own
+	// students' published results.
 	@Transactional(readOnly = true)
 	public Page<Grade> listGrades(Pageable pageable) {
 		Long tenantId = TenantContext.getCurrentTenantId();
-		return teacherClassroomScopeResolver.resolveClassroomIdsIfTeacherScoped(tenantId)
-				.map(classroomIds -> {
-					List<Long> examIds = examRepository.findIdsByClassroomIdInAndTenantId(classroomIds, tenantId);
-					return gradeRepository.findByExamIdInAndTenantId(examIds, tenantId, pageable);
-				})
-				.orElseGet(() -> gradeRepository.findAllByTenantId(tenantId, pageable));
+		AcademicScope scope = academicScopeResolver.current(tenantId);
+		if (scope.readsAllClassrooms()) {
+			return gradeRepository.findAllByTenantId(tenantId, pageable);
+		}
+		List<Long> taughtExamIds = examRepository
+				.findAllByClassroomIdInAndTenantId(scope.teaching().classroomIds(), tenantId).stream()
+				.filter(exam -> scope.teaching().teachesSubject(exam.getClassroomId(), exam.getSubjectId()))
+				.map(Exam::getId)
+				.toList();
+		return gradeRepository.findVisible(tenantId, taughtExamIds, scope.ownStudentIds(), pageable);
 	}
 
 	@Transactional(readOnly = true)
@@ -119,6 +127,7 @@ public class GradeService {
 			throw new IllegalArgumentException(
 					"Grade already recorded for student " + studentId + " in exam " + examId);
 		}
+		academicAccessGuard.assertCanWriteSubject(tenantId, exam.getClassroomId(), exam.getSubjectId());
 		if (exam.getStatus() == ExamStatus.CANCELLED) {
 			throw new BusinessException("Grades cannot be recorded for a cancelled exam");
 		}
@@ -143,6 +152,7 @@ public class GradeService {
 		Grade grade = requireGrade(tenantId, publicId);
 		Exam exam = examRepository.findByIdAndTenantId(grade.getExamId(), tenantId)
 				.orElseThrow(() -> new ResourceNotFoundException("Exam not found: " + grade.getExamId()));
+		academicAccessGuard.assertCanWriteSubject(tenantId, exam.getClassroomId(), exam.getSubjectId());
 		List<GradingScaleThreshold> thresholds = gradingScaleService.resolveEffectiveThresholds(exam.getClassroomId());
 		String newGradeLetter = gradeCalculator.calculateLetterGrade(marks, exam.getMaxMarks(), thresholds);
 
@@ -157,6 +167,7 @@ public class GradeService {
 	public Page<GradeCorrection> listCorrections(String gradePublicId, Pageable pageable) {
 		Long tenantId = TenantContext.getCurrentTenantId();
 		Grade grade = requireGrade(tenantId, gradePublicId);
+		assertVisibleToCaller(tenantId, grade);
 		return gradeCorrectionRepository.findByGradeIdAndTenantId(tenantId, grade.getId(), pageable);
 	}
 }

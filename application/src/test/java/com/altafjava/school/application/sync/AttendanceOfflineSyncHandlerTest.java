@@ -4,11 +4,15 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -20,6 +24,9 @@ import com.altafjava.platform.core.exception.ResourceNotFoundException;
 import com.altafjava.platform.core.sync.EntityChange;
 import com.altafjava.platform.core.tenant.TenantContext;
 import com.altafjava.platform.core.tenant.TenantType;
+import com.altafjava.school.application.security.AcademicScope;
+import com.altafjava.school.application.security.AcademicScopeResolver;
+import com.altafjava.school.application.security.TeachingAssignments;
 import com.altafjava.school.application.service.AttendanceService;
 import com.altafjava.school.domain.attendance.model.Attendance;
 import com.altafjava.school.domain.attendance.model.AttendanceStatus;
@@ -34,6 +41,8 @@ import tools.jackson.databind.json.JsonMapper;
 class AttendanceOfflineSyncHandlerTest {
 
 	private static final Long TENANT_ID = 1L;
+	private static final AcademicScope ALL_CLASSROOMS = new AcademicScope(true, true, TeachingAssignments.NONE,
+			Set.of());
 
 	@Mock
 	private AttendanceService attendanceService;
@@ -43,13 +52,15 @@ class AttendanceOfflineSyncHandlerTest {
 	private StudentRepository studentRepository;
 	@Mock
 	private ClassroomRepository classroomRepository;
+	@Mock
+	private AcademicScopeResolver academicScopeResolver;
 
 	private AttendanceOfflineSyncHandler handler;
 
 	@BeforeEach
 	void setUp() {
 		handler = new AttendanceOfflineSyncHandler(attendanceService, attendanceRepository, studentRepository,
-				classroomRepository, JsonMapper.builder().build());
+				classroomRepository, JsonMapper.builder().build(), academicScopeResolver);
 		TenantContext.ForTesting.setCurrentTenant(TENANT_ID, null, null, TenantType.SHARED);
 	}
 
@@ -131,6 +142,7 @@ class AttendanceOfflineSyncHandlerTest {
 				"teacher-a");
 		attendance.setPublicId(entityId);
 		when(attendanceRepository.findByPublicIdAndTenantId(entityId, TENANT_ID)).thenReturn(Optional.of(attendance));
+		when(academicScopeResolver.current(TENANT_ID)).thenReturn(ALL_CLASSROOMS);
 
 		Optional<EntityChange> result = handler.findChange(entityId);
 
@@ -147,9 +159,35 @@ class AttendanceOfflineSyncHandlerTest {
 		a2.setPublicId(UUID.randomUUID());
 		Instant since = Instant.now().minusSeconds(60);
 		when(attendanceRepository.findByTenantIdAndUpdatedAtAfter(TENANT_ID, since)).thenReturn(List.of(a1, a2));
+		when(academicScopeResolver.current(TENANT_ID)).thenReturn(ALL_CLASSROOMS);
 
 		List<EntityChange> result = handler.changesSince(since);
 
 		assertEquals(2, result.size());
+	}
+
+	@Test
+	void findChange_recordOutsideCallersScope_isHidden() {
+		UUID entityId = UUID.randomUUID();
+		Attendance attendance = Attendance.create(10L, 20L, LocalDate.of(2026, 1, 15), AttendanceStatus.PRESENT,
+				"teacher-a");
+		when(attendanceRepository.findByPublicIdAndTenantId(entityId, TENANT_ID)).thenReturn(Optional.of(attendance));
+		when(academicScopeResolver.current(TENANT_ID)).thenReturn(AcademicScope.NONE);
+
+		assertTrue(handler.findChange(entityId).isEmpty());
+	}
+
+	@Test
+	void changesSince_asTeacher_pullsOnlyTaughtClassroomsAndOwnStudents() {
+		Instant since = Instant.now().minusSeconds(60);
+		TeachingAssignments teaching = new TeachingAssignments(70L, Set.of(20L), Map.of());
+		when(academicScopeResolver.current(TENANT_ID))
+				.thenReturn(new AcademicScope(false, false, teaching, Set.of()));
+		when(attendanceRepository.findVisibleUpdatedAfter(TENANT_ID, since, Set.of(20L), Set.of()))
+				.thenReturn(List.of());
+
+		assertTrue(handler.changesSince(since).isEmpty());
+
+		verify(attendanceRepository, never()).findByTenantIdAndUpdatedAtAfter(TENANT_ID, since);
 	}
 }

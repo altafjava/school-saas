@@ -8,12 +8,18 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 import org.springframework.context.annotation.Profile;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.context.SecurityContext;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.support.TransactionTemplate;
 import com.altafjava.platform.application.dto.RegisterTenantCommand;
 import com.altafjava.platform.application.service.TenantOnboardingService;
+import com.altafjava.platform.core.security.AuthenticatedUser;
 import com.altafjava.platform.core.security.PasswordEncoder;
+import com.altafjava.platform.core.security.Roles;
 import com.altafjava.platform.core.tenant.TenantContext;
 import com.altafjava.platform.core.tenant.TenantContextSnapshot;
 import com.altafjava.platform.domain.tenant.model.Tenant;
@@ -120,9 +126,42 @@ public class DemoDataSeeder {
 		Tenant tenant = onboardingService.registerTenant(
 				new RegisterTenantCommand("Demo School", SUBDOMAIN, PLAN_BASIC, ADMIN_EMAIL, PASSWORD, "INR"));
 		TenantContext.runAsTenant(new TenantContextSnapshot(tenant.getId(), tenant.getPublicId(),
-				tenant.getSubdomain(), tenant.getType(), null), this::seedTenant);
+				tenant.getSubdomain(), tenant.getType(), null),
+				() -> runAsTenantAdmin(tenant.getId(), this::seedTenant));
 		log.info("action=demo_seed_completed subdomain={} adminEmail={}", SUBDOMAIN, ADMIN_EMAIL);
 		return tenant;
+	}
+
+	// The services enforce the caller's classroom scope, so the seed needs a principal that holds it.
+	private void runAsTenantAdmin(Long tenantId, Runnable action) {
+		SecurityContext previous = SecurityContextHolder.getContext();
+		SecurityContext seeding = SecurityContextHolder.createEmptyContext();
+		seeding.setAuthentication(new UsernamePasswordAuthenticationToken(new SeedOperator(tenantId), null,
+				List.of(new SimpleGrantedAuthority("ROLE_" + Roles.TENANT_ADMIN))));
+		SecurityContextHolder.setContext(seeding);
+		try {
+			action.run();
+		} finally {
+			SecurityContextHolder.setContext(previous);
+		}
+	}
+
+	private record SeedOperator(Long tenantId) implements AuthenticatedUser {
+
+		@Override
+		public Long getId() {
+			return -1L;
+		}
+
+		@Override
+		public String getUsername() {
+			return "demo-seed";
+		}
+
+		@Override
+		public Long getTenantId() {
+			return tenantId;
+		}
 	}
 
 	private void seedTenant() {

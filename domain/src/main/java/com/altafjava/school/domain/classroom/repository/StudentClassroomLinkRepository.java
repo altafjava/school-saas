@@ -1,5 +1,6 @@
 package com.altafjava.school.domain.classroom.repository;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -40,6 +41,11 @@ public interface StudentClassroomLinkRepository extends JpaRepository<StudentCla
 	// excludes withdrawn links, so this is the live headcount for capacity enforcement.
 	@Query("SELECT COUNT(l) FROM StudentClassroomLink l WHERE l.tenantId = :tenantId AND l.classroomId = :classroomId")
 	long countByClassroomId(@Param("tenantId") Long tenantId, @Param("classroomId") Long classroomId);
+
+	@Query("SELECT COUNT(l) > 0 FROM StudentClassroomLink l WHERE l.tenantId = :tenantId "
+			+ "AND l.classroomId = :classroomId AND l.studentId IN :studentIds")
+	boolean existsByClassroomIdAndStudentIdIn(@Param("tenantId") Long tenantId,
+			@Param("classroomId") Long classroomId, @Param("studentIds") Collection<Long> studentIds);
 
 	@Query("SELECT l FROM StudentClassroomLink l WHERE l.tenantId = :tenantId AND l.studentId = :studentId")
 	List<StudentClassroomLink> findByStudentId(@Param("tenantId") Long tenantId, @Param("studentId") Long studentId);

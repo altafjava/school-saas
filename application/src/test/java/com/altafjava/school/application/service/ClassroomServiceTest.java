@@ -4,6 +4,7 @@ import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
@@ -20,11 +21,13 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.security.access.AccessDeniedException;
 import com.altafjava.platform.application.event.publisher.EventPublisher;
 import com.altafjava.platform.core.exception.BusinessException;
 import com.altafjava.platform.core.exception.ResourceNotFoundException;
 import com.altafjava.platform.core.tenant.TenantContext;
 import com.altafjava.platform.core.tenant.TenantType;
+import com.altafjava.school.application.security.AcademicAccessGuard;
 import com.altafjava.school.domain.academicyear.model.AcademicYear;
 import com.altafjava.school.domain.academicyear.repository.AcademicYearRepository;
 import com.altafjava.school.domain.classroom.model.Classroom;
@@ -56,13 +59,16 @@ class ClassroomServiceTest {
 	private CurriculumRepository curriculumRepository;
 	@Mock
 	private EventPublisher eventPublisher;
+	@Mock
+	private AcademicAccessGuard academicAccessGuard;
 
 	private ClassroomService classroomService;
 
 	@BeforeEach
 	void setUp() {
 		classroomService = new ClassroomService(classroomRepository, teacherRepository, academicYearRepository,
-				studentClassroomLinkRepository, studentRepository, curriculumRepository, eventPublisher);
+				studentClassroomLinkRepository, studentRepository, curriculumRepository, eventPublisher,
+				academicAccessGuard);
 		TenantContext.ForTesting.setCurrentTenant(1L, null, null, TenantType.SHARED);
 		AcademicYear academicYear = AcademicYear.create("2024-25", LocalDate.of(2024, 6, 1),
 				LocalDate.of(2025, 5, 31), true);
@@ -298,11 +304,25 @@ class ClassroomServiceTest {
 		Page<StudentClassroomLink> linkPage = new PageImpl<>(java.util.List.of(link));
 		when(studentClassroomLinkRepository.findByClassroomId(1L, 1L, PageRequest.of(0, 20)))
 				.thenReturn(linkPage);
-		when(studentRepository.findByIdAndTenantId(3L, 1L)).thenReturn(Optional.of(student));
+		when(studentRepository.findAllByIdInAndTenantId(java.util.List.of(3L), 1L))
+				.thenReturn(java.util.List.of(student));
 
 		Page<Student> roster = classroomService.listRoster(classroomPublicId.toString(), PageRequest.of(0, 20));
 
 		assertEquals(1, roster.getTotalElements());
 		assertEquals("Alice", roster.getContent().get(0).getFirstName());
+	}
+
+	@Test
+	void listRoster_callerOutsideClassroomScope_throwsAccessDenied() {
+		UUID classroomPublicId = UUID.randomUUID();
+		Classroom classroom = classroomWithPublicId(classroomPublicId, 1L);
+		when(classroomRepository.findByPublicIdAndTenantId(classroomPublicId, 1L)).thenReturn(Optional.of(classroom));
+		doThrow(new AccessDeniedException("not scoped")).when(academicAccessGuard).assertCanReadRoster(1L, 1L);
+
+		assertThrows(AccessDeniedException.class,
+				() -> classroomService.listRoster(classroomPublicId.toString(), PageRequest.of(0, 20)));
+
+		verify(studentClassroomLinkRepository, never()).findByClassroomId(any(), any(), any());
 	}
 }

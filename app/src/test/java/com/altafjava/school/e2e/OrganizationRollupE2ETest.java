@@ -38,6 +38,7 @@ import com.altafjava.school.domain.fee.model.FeeFrequency;
 import com.altafjava.school.domain.fee.model.FeeStructure;
 import com.altafjava.school.domain.student.model.Student;
 import com.altafjava.school.util.SchoolAuthenticationHelper;
+import com.altafjava.school.util.TestPrincipals;
 import io.restassured.RestAssured;
 import io.restassured.http.ContentType;
 
@@ -101,6 +102,7 @@ class OrganizationRollupE2ETest extends SchoolIntegrationTestBase {
 
 	@BeforeEach
 	void setup() {
+		TestPrincipals.authenticateAsTenantAdmin();
 		RestAssured.port = port;
 		RestAssured.basePath = "";
 		TenantContext.ForTesting.clear();
@@ -126,6 +128,7 @@ class OrganizationRollupE2ETest extends SchoolIntegrationTestBase {
 
 	@AfterEach
 	void clearContext() {
+		TestPrincipals.clear();
 		TenantContext.ForTesting.clear();
 	}
 

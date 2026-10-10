@@ -13,6 +13,7 @@ import com.altafjava.platform.core.audit.annotation.Audited;
 import com.altafjava.platform.core.exception.BusinessException;
 import com.altafjava.platform.core.exception.ResourceNotFoundException;
 import com.altafjava.platform.core.tenant.TenantContext;
+import com.altafjava.school.application.security.AcademicAccessGuard;
 import com.altafjava.school.domain.classroom.repository.ClassroomRepository;
 import com.altafjava.school.domain.exam.event.ExamResultsPublishedEvent;
 import com.altafjava.school.domain.exam.model.Exam;
@@ -36,11 +37,12 @@ public class ExamService {
 	private final ExamTypeDefinitionRepository examTypeDefinitionRepository;
 	private final GradeRepository gradeRepository;
 	private final EventPublisher eventPublisher;
+	private final AcademicAccessGuard academicAccessGuard;
 
 	public ExamService(ExamRepository examRepository, ClassroomRepository classroomRepository,
 			SubjectRepository subjectRepository, TermRepository termRepository,
 			ExamTypeDefinitionRepository examTypeDefinitionRepository, GradeRepository gradeRepository,
-			EventPublisher eventPublisher) {
+			EventPublisher eventPublisher, AcademicAccessGuard academicAccessGuard) {
 		this.examRepository = examRepository;
 		this.classroomRepository = classroomRepository;
 		this.subjectRepository = subjectRepository;
@@ -48,6 +50,7 @@ public class ExamService {
 		this.examTypeDefinitionRepository = examTypeDefinitionRepository;
 		this.gradeRepository = gradeRepository;
 		this.eventPublisher = eventPublisher;
+		this.academicAccessGuard = academicAccessGuard;
 	}
 
 	@Transactional(readOnly = true)
@@ -153,6 +156,8 @@ public class ExamService {
 	@Transactional
 	public Exam complete(String publicId) {
 		Exam exam = findByPublicId(publicId);
+		academicAccessGuard.assertCanWriteSubject(TenantContext.getCurrentTenantId(), exam.getClassroomId(),
+				exam.getSubjectId());
 		exam.complete();
 		return examRepository.save(exam);
 	}

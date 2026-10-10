@@ -26,4 +26,10 @@ public interface TimetableSubstitutionRepository extends JpaRepository<Timetable
 			+ "AND s.timetableEntryId = :entryId AND s.substitutionDate = :date AND s.cancelledAt IS NULL")
 	boolean existsActiveFor(@Param("tenantId") Long tenantId, @Param("entryId") Long entryId,
 			@Param("date") LocalDate date);
+
+	@Query("SELECT COUNT(s) > 0 FROM TimetableSubstitution s WHERE s.tenantId = :tenantId "
+			+ "AND s.timetableEntryId = :entryId AND s.substitutionDate = :date "
+			+ "AND s.substituteTeacherId = :teacherId AND s.cancelledAt IS NULL")
+	boolean existsActiveForSubstitute(@Param("tenantId") Long tenantId, @Param("entryId") Long entryId,
+			@Param("date") LocalDate date, @Param("teacherId") Long teacherId);
 }

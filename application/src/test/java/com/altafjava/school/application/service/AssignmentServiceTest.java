@@ -5,6 +5,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -30,8 +31,7 @@ import com.altafjava.platform.core.exception.ResourceNotFoundException;
 import com.altafjava.platform.core.tenant.TenantContext;
 import com.altafjava.platform.core.tenant.TenantType;
 import com.altafjava.school.application.scheduler.support.StudentNotificationRecipientResolver;
-import com.altafjava.school.application.security.ClassroomVisibilityGuard;
-import com.altafjava.school.application.security.TeacherClassroomMembershipGuard;
+import com.altafjava.school.application.security.AcademicAccessGuard;
 import com.altafjava.school.domain.classroom.model.Classroom;
 import com.altafjava.school.domain.classroom.model.StudentClassroomLink;
 import com.altafjava.school.domain.classroom.repository.ClassroomRepository;
@@ -60,9 +60,7 @@ class AssignmentServiceTest {
 	@Mock
 	private StudentRepository studentRepository;
 	@Mock
-	private TeacherClassroomMembershipGuard teacherClassroomMembershipGuard;
-	@Mock
-	private ClassroomVisibilityGuard classroomVisibilityGuard;
+	private AcademicAccessGuard academicAccessGuard;
 	@Mock
 	private StudentNotificationRecipientResolver recipientResolver;
 	@Mock
@@ -73,8 +71,8 @@ class AssignmentServiceTest {
 	@BeforeEach
 	void setUp() {
 		assignmentService = new AssignmentService(assignmentRepository, classroomRepository, subjectRepository,
-				studentClassroomLinkRepository, studentRepository, teacherClassroomMembershipGuard,
-				classroomVisibilityGuard, recipientResolver, notificationService);
+				studentClassroomLinkRepository, studentRepository, academicAccessGuard,
+				recipientResolver, notificationService);
 		TenantContext.ForTesting.setCurrentTenant(1L, null, null, TenantType.SHARED);
 	}
 
@@ -106,7 +104,7 @@ class AssignmentServiceTest {
 				.thenReturn(Optional.of(classroomWithId(5L)));
 		when(subjectRepository.findByPublicIdAndTenantId(SUBJECT_PUBLIC_ID, 1L))
 				.thenReturn(Optional.of(subjectWithId(6L)));
-		when(teacherClassroomMembershipGuard.assertTeachesClassroomAndResolveTeacherId(1L, 5L)).thenReturn(7L);
+		when(academicAccessGuard.requireTeacherOfSubject(1L, 5L, 6L)).thenReturn(7L);
 	}
 
 	@Test
@@ -126,7 +124,7 @@ class AssignmentServiceTest {
 				.thenReturn(Optional.of(classroomWithId(5L)));
 		when(subjectRepository.findByPublicIdAndTenantId(SUBJECT_PUBLIC_ID, 1L))
 				.thenReturn(Optional.of(subjectWithId(6L)));
-		when(teacherClassroomMembershipGuard.assertTeachesClassroomAndResolveTeacherId(1L, 5L))
+		when(academicAccessGuard.requireTeacherOfSubject(1L, 5L, 6L))
 				.thenThrow(new AccessDeniedException("not scoped"));
 
 		assertThrows(AccessDeniedException.class,
@@ -190,7 +188,7 @@ class AssignmentServiceTest {
 		Page<Assignment> result = assignmentService.listByClassroom(CLASSROOM_PUBLIC_ID.toString(),
 				PageRequest.of(0, 20));
 
-		verify(classroomVisibilityGuard).assertCanView(1L, CLASSROOM_PUBLIC_ID.toString(), 5L);
+		verify(academicAccessGuard).assertCanViewCoursework(1L, 5L);
 		assertEquals(expected, result);
 	}
 
@@ -200,13 +198,27 @@ class AssignmentServiceTest {
 		Assignment assignment = Assignment.create(5L, 6L, 7L, "Essay", "desc", null, LocalDate.now(), BigDecimal.TEN);
 		when(assignmentRepository.findByPublicIdAndTenantId(assignmentPublicId, 1L))
 				.thenReturn(Optional.of(assignment));
-		when(teacherClassroomMembershipGuard.assertTeachesClassroomAndResolveTeacherId(1L, 5L)).thenReturn(7L);
 		when(assignmentRepository.save(any(Assignment.class))).thenAnswer(inv -> inv.getArgument(0));
 		LocalDate newDueDate = LocalDate.now().plusDays(3);
 
 		Assignment result = assignmentService.reschedule(assignmentPublicId.toString(), newDueDate);
 
 		assertEquals(newDueDate, result.getDueDate());
+		verify(academicAccessGuard).assertCanWriteSubject(1L, 5L, 6L);
+	}
+
+	@Test
+	void reschedule_teacherOfAnotherSubject_throwsAccessDenied() {
+		UUID assignmentPublicId = UUID.randomUUID();
+		Assignment assignment = Assignment.create(5L, 6L, 7L, "Essay", "desc", null, LocalDate.now(), BigDecimal.TEN);
+		when(assignmentRepository.findByPublicIdAndTenantId(assignmentPublicId, 1L))
+				.thenReturn(Optional.of(assignment));
+		doThrow(new AccessDeniedException("not scoped")).when(academicAccessGuard).assertCanWriteSubject(1L, 5L, 6L);
+
+		assertThrows(AccessDeniedException.class,
+				() -> assignmentService.reschedule(assignmentPublicId.toString(), LocalDate.now().plusDays(3)));
+
+		verify(assignmentRepository, never()).save(any());
 	}
 
 	@Test
