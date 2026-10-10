@@ -3,22 +3,32 @@ package com.altafjava.school.application.service;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import java.time.LocalDate;
+import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
+import java.util.UUID;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.security.access.AccessDeniedException;
 import com.altafjava.platform.core.exception.ResourceNotFoundException;
 import com.altafjava.platform.core.tenant.TenantContext;
 import com.altafjava.platform.core.tenant.TenantType;
+import com.altafjava.school.application.security.AcademicAccessGuard;
+import com.altafjava.school.application.security.AcademicScope;
+import com.altafjava.school.application.security.AcademicScopeResolver;
 import com.altafjava.school.application.security.StudentDataAccessGuard;
-import com.altafjava.school.application.security.TeacherClassroomScopeResolver;
+import com.altafjava.school.application.security.TeachingAssignments;
 import com.altafjava.school.domain.attendance.model.Attendance;
 import com.altafjava.school.domain.attendance.model.AttendanceCorrection;
 import com.altafjava.school.domain.attendance.model.AttendanceStatus;
@@ -45,7 +55,9 @@ class AttendanceServiceTest {
 	@Mock
 	private StudentDataAccessGuard studentDataAccessGuard;
 	@Mock
-	private TeacherClassroomScopeResolver teacherClassroomScopeResolver;
+	private AcademicScopeResolver academicScopeResolver;
+	@Mock
+	private AcademicAccessGuard academicAccessGuard;
 	@Mock
 	private HolidayService holidayService;
 
@@ -55,7 +67,7 @@ class AttendanceServiceTest {
 	void setUp() {
 		attendanceService = new AttendanceService(attendanceRepository, attendanceCorrectionRepository,
 				studentRepository, classroomRepository, studentClassroomLinkRepository, studentDataAccessGuard,
-				teacherClassroomScopeResolver, holidayService);
+				academicScopeResolver, academicAccessGuard, holidayService);
 		TenantContext.ForTesting.setCurrentTenant(1L, null, null, TenantType.SHARED);
 	}
 
@@ -126,32 +138,82 @@ class AttendanceServiceTest {
 	}
 
 	@Test
-	void listAttendance_asTenantAdmin_returnsAllTenantAttendance() {
-		when(teacherClassroomScopeResolver.resolveClassroomIdsIfTeacherScoped(1L))
-				.thenReturn(java.util.Optional.empty());
-		var expected = org.springframework.data.domain.Page.<Attendance>empty();
-		when(attendanceRepository.findAllByTenantId(1L, org.springframework.data.domain.PageRequest.of(0, 20)))
-				.thenReturn(expected);
+	void listAttendance_withAllClassroomsScope_returnsAllTenantAttendance() {
+		when(academicScopeResolver.current(1L))
+				.thenReturn(new AcademicScope(true, false, TeachingAssignments.NONE, Set.of()));
+		PageRequest pageable = PageRequest.of(0, 20);
+		when(attendanceRepository.findAllByTenantId(1L, pageable)).thenReturn(Page.empty());
 
-		attendanceService.listAttendance(org.springframework.data.domain.PageRequest.of(0, 20));
+		attendanceService.listAttendance(pageable);
 
-		verify(attendanceRepository).findAllByTenantId(1L, org.springframework.data.domain.PageRequest.of(0, 20));
-		verify(attendanceRepository, never()).findByClassroomIdInAndTenantId(any(), any(), any());
+		verify(attendanceRepository).findAllByTenantId(1L, pageable);
+		verify(attendanceRepository, never()).findVisible(any(), any(), any(), any());
 	}
 
 	@Test
-	void listAttendance_asScopedTeacher_filtersByTheirClassroomIds() {
-		when(teacherClassroomScopeResolver.resolveClassroomIdsIfTeacherScoped(1L))
-				.thenReturn(java.util.Optional.of(java.util.List.of(10L, 11L)));
-		var expected = org.springframework.data.domain.Page.<Attendance>empty();
-		when(attendanceRepository.findByClassroomIdInAndTenantId(java.util.List.of(10L, 11L), 1L,
-				org.springframework.data.domain.PageRequest.of(0, 20))).thenReturn(expected);
+	void listAttendance_asTeacher_filtersByHomeroomAndTimetabledClassrooms() {
+		TeachingAssignments teaching = new TeachingAssignments(70L, Set.of(10L), Map.of(11L, Set.of(5L)));
+		when(academicScopeResolver.current(1L)).thenReturn(new AcademicScope(false, false, teaching, Set.of()));
+		PageRequest pageable = PageRequest.of(0, 20);
+		when(attendanceRepository.findVisible(1L, Set.of(10L, 11L), Set.of(), pageable)).thenReturn(Page.empty());
 
-		attendanceService.listAttendance(org.springframework.data.domain.PageRequest.of(0, 20));
+		attendanceService.listAttendance(pageable);
 
-		verify(attendanceRepository).findByClassroomIdInAndTenantId(java.util.List.of(10L, 11L), 1L,
-				org.springframework.data.domain.PageRequest.of(0, 20));
+		verify(attendanceRepository).findVisible(1L, Set.of(10L, 11L), Set.of(), pageable);
 		verify(attendanceRepository, never()).findAllByTenantId(any(), any());
+	}
+
+	@Test
+	void listAttendance_asParent_filtersByOwnStudents() {
+		when(academicScopeResolver.current(1L))
+				.thenReturn(new AcademicScope(false, false, TeachingAssignments.NONE, Set.of(30L)));
+		PageRequest pageable = PageRequest.of(0, 20);
+		when(attendanceRepository.findVisible(1L, Set.of(), Set.of(30L), pageable)).thenReturn(Page.empty());
+
+		attendanceService.listAttendance(pageable);
+
+		verify(attendanceRepository).findVisible(1L, Set.of(), Set.of(30L), pageable);
+	}
+
+	@Test
+	void findByPublicId_checksTheRecordIsWithinCallersScope() {
+		String publicId = "11111111-1111-1111-1111-111111111111";
+		Attendance attendance = Attendance.create(1L, 10L, LocalDate.now(), AttendanceStatus.ABSENT, "teacher");
+		when(attendanceRepository.findByPublicIdAndTenantId(UUID.fromString(publicId), 1L))
+				.thenReturn(Optional.of(attendance));
+		doThrow(new AccessDeniedException("not scoped")).when(academicAccessGuard).assertCanReadStudentRecord(1L, 10L,
+				1L);
+
+		assertThrows(AccessDeniedException.class, () -> attendanceService.findByPublicId(publicId));
+	}
+
+	@Test
+	void mark_forClassroomOutsideCallersScope_throwsAccessDenied() {
+		when(studentRepository.existsByIdAndTenantId(1L, 1L)).thenReturn(true);
+		when(classroomRepository.existsByIdAndTenantId(10L, 1L)).thenReturn(true);
+		when(studentClassroomLinkRepository.findByStudentIdAndClassroomId(1L, 1L, 10L))
+				.thenReturn(Optional.of(StudentClassroomLink.create(1L, 10L, 5L, LocalDate.now())));
+		doThrow(new AccessDeniedException("not scoped")).when(academicAccessGuard).assertCanWriteClassroom(1L, 10L);
+
+		assertThrows(AccessDeniedException.class,
+				() -> attendanceService.mark(1L, 10L, LocalDate.now(), AttendanceStatus.PRESENT, "teacher"));
+
+		verify(attendanceRepository, never()).save(any());
+	}
+
+	@Test
+	void updateStatus_forClassroomOutsideCallersScope_throwsAccessDenied() {
+		String publicId = "11111111-1111-1111-1111-111111111111";
+		Attendance attendance = Attendance.create(1L, 10L, LocalDate.now(), AttendanceStatus.ABSENT, "teacher");
+		when(attendanceRepository.findByPublicIdAndTenantId(UUID.fromString(publicId), 1L))
+				.thenReturn(Optional.of(attendance));
+		doThrow(new AccessDeniedException("not scoped")).when(academicAccessGuard).assertCanWriteClassroom(1L, 10L);
+
+		assertThrows(AccessDeniedException.class,
+				() -> attendanceService.updateStatus(publicId, AttendanceStatus.PRESENT));
+
+		verify(attendanceRepository, never()).save(any());
+		verify(attendanceCorrectionRepository, never()).save(any());
 	}
 
 	@Test

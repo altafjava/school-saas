@@ -150,8 +150,7 @@ class SchoolResourceAccessPolicyIntegrationTest extends SchoolIntegrationTestBas
 
 	@Test
 	void teacher_withNoLinkedUserAccount_cannotAccessTheirOwnClassroom() {
-		// Documents the fail-closed behavior a not-yet-linked TEACHER account gets — see
-		// TeacherClassroomScopeResolverTest for the equivalent unit-level coverage.
+		// A teacher record not yet linked to a login fails closed; unit coverage is TeachingAssignmentResolverTest.
 		Teacher teacher = teacherRepository.save(Teacher.create(
 				"EMP-" + UUID.randomUUID().toString().substring(0, 6),
 				"Mr", "Unlinked", "unlinked@test.edu", null));

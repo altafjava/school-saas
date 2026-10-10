@@ -2,7 +2,11 @@ package com.altafjava.school.application.service;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 import java.util.UUID;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Page;
@@ -15,6 +19,7 @@ import com.altafjava.platform.core.exception.BusinessException;
 import com.altafjava.platform.core.exception.ResourceNotFoundException;
 import com.altafjava.platform.core.search.LikePattern;
 import com.altafjava.platform.core.tenant.TenantContext;
+import com.altafjava.school.application.security.AcademicAccessGuard;
 import com.altafjava.school.domain.academicyear.model.AcademicYear;
 import com.altafjava.school.domain.academicyear.repository.AcademicYearRepository;
 import com.altafjava.school.domain.classroom.event.StudentEnrolledInClassroomEvent;
@@ -38,11 +43,13 @@ public class ClassroomService {
 	private final StudentRepository studentRepository;
 	private final CurriculumRepository curriculumRepository;
 	private final EventPublisher eventPublisher;
+	private final AcademicAccessGuard academicAccessGuard;
 
 	public ClassroomService(ClassroomRepository classroomRepository, TeacherRepository teacherRepository,
 			AcademicYearRepository academicYearRepository,
 			StudentClassroomLinkRepository studentClassroomLinkRepository, StudentRepository studentRepository,
-			CurriculumRepository curriculumRepository, EventPublisher eventPublisher) {
+			CurriculumRepository curriculumRepository, EventPublisher eventPublisher,
+			AcademicAccessGuard academicAccessGuard) {
 		this.classroomRepository = classroomRepository;
 		this.teacherRepository = teacherRepository;
 		this.academicYearRepository = academicYearRepository;
@@ -50,6 +57,7 @@ public class ClassroomService {
 		this.studentRepository = studentRepository;
 		this.curriculumRepository = curriculumRepository;
 		this.eventPublisher = eventPublisher;
+		this.academicAccessGuard = academicAccessGuard;
 	}
 
 	/** Free-text {@code q} (blank = no filter) over the entity's identifying fields. */
@@ -215,12 +223,13 @@ public class ClassroomService {
 	public Page<Student> listRoster(String classroomPublicId, Pageable pageable) {
 		Long tenantId = TenantContext.getCurrentTenantId();
 		Classroom classroom = findByPublicId(classroomPublicId);
+		academicAccessGuard.assertCanReadRoster(tenantId, classroom.getId());
 		Page<StudentClassroomLink> links = studentClassroomLinkRepository.findByClassroomId(tenantId,
 				classroom.getId(), pageable);
-		List<Student> students = links.getContent().stream()
-				.map(link -> studentRepository.findByIdAndTenantId(link.getStudentId(), tenantId)
-						.orElseThrow(() -> new ResourceNotFoundException("Student not found: " + link.getStudentId())))
-				.toList();
+		List<Long> studentIds = links.getContent().stream().map(StudentClassroomLink::getStudentId).toList();
+		Map<Long, Student> studentsById = studentRepository.findAllByIdInAndTenantId(studentIds, tenantId).stream()
+				.collect(Collectors.toMap(Student::getId, Function.identity()));
+		List<Student> students = studentIds.stream().map(studentsById::get).filter(Objects::nonNull).toList();
 		return new PageImpl<>(students, pageable, links.getTotalElements());
 	}
 }

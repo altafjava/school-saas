@@ -7,8 +7,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import com.altafjava.platform.core.exception.ResourceNotFoundException;
 import com.altafjava.platform.core.tenant.TenantContext;
-import com.altafjava.school.application.security.ClassroomVisibilityGuard;
-import com.altafjava.school.application.security.TeacherClassroomMembershipGuard;
+import com.altafjava.school.application.security.AcademicAccessGuard;
 import com.altafjava.school.domain.classroom.model.Classroom;
 import com.altafjava.school.domain.classroom.repository.ClassroomRepository;
 import com.altafjava.school.domain.lms.model.Lesson;
@@ -21,17 +20,14 @@ public class LessonService {
 	private final LessonRepository lessonRepository;
 	private final ClassroomRepository classroomRepository;
 	private final SubjectRepository subjectRepository;
-	private final TeacherClassroomMembershipGuard teacherClassroomMembershipGuard;
-	private final ClassroomVisibilityGuard classroomVisibilityGuard;
+	private final AcademicAccessGuard academicAccessGuard;
 
 	public LessonService(LessonRepository lessonRepository, ClassroomRepository classroomRepository,
-			SubjectRepository subjectRepository, TeacherClassroomMembershipGuard teacherClassroomMembershipGuard,
-			ClassroomVisibilityGuard classroomVisibilityGuard) {
+			SubjectRepository subjectRepository, AcademicAccessGuard academicAccessGuard) {
 		this.lessonRepository = lessonRepository;
 		this.classroomRepository = classroomRepository;
 		this.subjectRepository = subjectRepository;
-		this.teacherClassroomMembershipGuard = teacherClassroomMembershipGuard;
-		this.classroomVisibilityGuard = classroomVisibilityGuard;
+		this.academicAccessGuard = academicAccessGuard;
 	}
 
 	@Transactional
@@ -44,8 +40,7 @@ public class LessonService {
 		Long subjectId = subjectRepository.findByPublicIdAndTenantId(UUID.fromString(subjectPublicId), tenantId)
 				.orElseThrow(() -> new ResourceNotFoundException("Subject not found: " + subjectPublicId))
 				.getId();
-		Long teacherId = teacherClassroomMembershipGuard.assertTeachesClassroomAndResolveTeacherId(tenantId,
-				classroom.getId());
+		Long teacherId = academicAccessGuard.requireTeacherOfSubject(tenantId, classroom.getId(), subjectId);
 		Lesson lesson = Lesson.post(classroom.getId(), subjectId, teacherId, title, description, storageKey);
 		return lessonRepository.save(lesson);
 	}
@@ -56,7 +51,7 @@ public class LessonService {
 		Classroom classroom = classroomRepository
 				.findByPublicIdAndTenantId(UUID.fromString(classroomPublicId), tenantId)
 				.orElseThrow(() -> new ResourceNotFoundException("Classroom not found: " + classroomPublicId));
-		classroomVisibilityGuard.assertCanView(tenantId, classroomPublicId, classroom.getId());
+		academicAccessGuard.assertCanViewCoursework(tenantId, classroom.getId());
 		return lessonRepository.findByClassroomIdAndTenantId(classroom.getId(), tenantId, pageable);
 	}
 }

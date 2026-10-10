@@ -5,12 +5,15 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -18,13 +21,19 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.security.access.AccessDeniedException;
 import com.altafjava.platform.core.exception.BusinessException;
 import com.altafjava.platform.core.exception.ResourceNotFoundException;
 import com.altafjava.platform.core.tenant.TenantContext;
 import com.altafjava.platform.core.tenant.TenantType;
+import com.altafjava.school.application.security.AcademicAccessGuard;
+import com.altafjava.school.application.security.AcademicScope;
+import com.altafjava.school.application.security.AcademicScopeResolver;
 import com.altafjava.school.application.security.ExamResultVisibilityPolicy;
 import com.altafjava.school.application.security.StudentDataAccessGuard;
-import com.altafjava.school.application.security.TeacherClassroomScopeResolver;
+import com.altafjava.school.application.security.TeachingAssignments;
 import com.altafjava.school.domain.curriculum.model.GradingScaleThreshold;
 import com.altafjava.school.domain.exam.model.Exam;
 import com.altafjava.school.domain.exam.repository.ExamRepository;
@@ -51,7 +60,9 @@ class GradeServiceTest {
 	@Mock
 	private StudentDataAccessGuard studentDataAccessGuard;
 	@Mock
-	private TeacherClassroomScopeResolver teacherClassroomScopeResolver;
+	private AcademicScopeResolver academicScopeResolver;
+	@Mock
+	private AcademicAccessGuard academicAccessGuard;
 	@Mock
 	private ExamResultVisibilityPolicy examResultVisibilityPolicy;
 
@@ -60,7 +71,8 @@ class GradeServiceTest {
 	@BeforeEach
 	void setUp() {
 		gradeService = new GradeService(gradeRepository, gradeCorrectionRepository, studentRepository, examRepository,
-				gradingScaleService, studentDataAccessGuard, teacherClassroomScopeResolver, examResultVisibilityPolicy);
+				gradingScaleService, studentDataAccessGuard, academicScopeResolver, academicAccessGuard,
+				examResultVisibilityPolicy);
 		TenantContext.ForTesting.setCurrentTenant(1L, null, null, TenantType.SHARED);
 	}
 
@@ -123,33 +135,66 @@ class GradeServiceTest {
 	}
 
 	@Test
-	void listGrades_asTenantAdmin_returnsAllTenantGrades() {
-		when(teacherClassroomScopeResolver.resolveClassroomIdsIfTeacherScoped(1L)).thenReturn(Optional.empty());
-		org.springframework.data.domain.Page<Grade> expected = org.springframework.data.domain.Page.empty();
-		when(gradeRepository.findAllByTenantId(1L, org.springframework.data.domain.PageRequest.of(0, 20)))
-				.thenReturn(expected);
+	void listGrades_withAllClassroomsScope_returnsAllTenantGrades() {
+		when(academicScopeResolver.current(1L))
+				.thenReturn(new AcademicScope(true, false, TeachingAssignments.NONE, Set.of()));
+		PageRequest pageable = PageRequest.of(0, 20);
+		when(gradeRepository.findAllByTenantId(1L, pageable)).thenReturn(Page.empty());
 
-		gradeService.listGrades(org.springframework.data.domain.PageRequest.of(0, 20));
+		gradeService.listGrades(pageable);
 
-		verify(gradeRepository).findAllByTenantId(1L, org.springframework.data.domain.PageRequest.of(0, 20));
-		verify(examRepository, never()).findIdsByClassroomIdInAndTenantId(any(), any());
+		verify(gradeRepository).findAllByTenantId(1L, pageable);
+		verify(gradeRepository, never()).findVisible(any(), any(), any(), any());
 	}
 
 	@Test
-	void listGrades_asScopedTeacher_filtersByTheirClassroomsExamIds() {
-		when(teacherClassroomScopeResolver.resolveClassroomIdsIfTeacherScoped(1L))
-				.thenReturn(Optional.of(java.util.List.of(10L, 11L)));
-		when(examRepository.findIdsByClassroomIdInAndTenantId(java.util.List.of(10L, 11L), 1L))
-				.thenReturn(java.util.List.of(50L, 51L));
-		org.springframework.data.domain.Page<Grade> expected = org.springframework.data.domain.Page.empty();
-		when(gradeRepository.findByExamIdInAndTenantId(java.util.List.of(50L, 51L), 1L,
-				org.springframework.data.domain.PageRequest.of(0, 20))).thenReturn(expected);
+	void listGrades_asSubjectTeacher_listsOnlyExamsOfSubjectsTheyTeach() {
+		TeachingAssignments teaching = new TeachingAssignments(70L, Set.of(), Map.of(10L, Set.of(5L)));
+		when(academicScopeResolver.current(1L)).thenReturn(new AcademicScope(false, false, teaching, Set.of()));
+		Exam taught = examWithId(50L, 5L, 10L);
+		Exam otherSubject = examWithId(51L, 6L, 10L);
+		when(examRepository.findAllByClassroomIdInAndTenantId(Set.of(10L), 1L))
+				.thenReturn(List.of(taught, otherSubject));
+		PageRequest pageable = PageRequest.of(0, 20);
+		when(gradeRepository.findVisible(1L, List.of(50L), Set.of(), pageable)).thenReturn(Page.empty());
 
-		gradeService.listGrades(org.springframework.data.domain.PageRequest.of(0, 20));
+		gradeService.listGrades(pageable);
 
-		verify(gradeRepository).findByExamIdInAndTenantId(java.util.List.of(50L, 51L), 1L,
-				org.springframework.data.domain.PageRequest.of(0, 20));
+		verify(gradeRepository).findVisible(1L, List.of(50L), Set.of(), pageable);
 		verify(gradeRepository, never()).findAllByTenantId(any(), any());
+	}
+
+	@Test
+	void listGrades_asParent_listsOnlyOwnStudentsGrades() {
+		when(academicScopeResolver.current(1L))
+				.thenReturn(new AcademicScope(false, false, TeachingAssignments.NONE, Set.of(30L)));
+		when(examRepository.findAllByClassroomIdInAndTenantId(Set.of(), 1L)).thenReturn(List.of());
+		PageRequest pageable = PageRequest.of(0, 20);
+		when(gradeRepository.findVisible(1L, List.of(), Set.of(30L), pageable)).thenReturn(Page.empty());
+
+		gradeService.listGrades(pageable);
+
+		verify(gradeRepository).findVisible(1L, List.of(), Set.of(30L), pageable);
+	}
+
+	@Test
+	void record_outsideCallersTeachingScope_throwsAccessDenied() {
+		Exam exam = Exam.create("Midterm", 5L, 10L, null, BigDecimal.valueOf(100), null, 1L, Exam.FULL_WEIGHTAGE);
+		when(studentRepository.existsByIdAndTenantId(1L, 1L)).thenReturn(true);
+		when(examRepository.findByIdAndTenantId(2L, 1L)).thenReturn(Optional.of(exam));
+		doThrow(new AccessDeniedException("not scoped")).when(academicAccessGuard).assertCanWriteSubject(1L, 10L, 5L);
+
+		assertThrows(AccessDeniedException.class,
+				() -> gradeService.record(1L, 2L, BigDecimal.valueOf(85), "teacher"));
+
+		verify(gradeRepository, never()).save(any());
+	}
+
+	private Exam examWithId(Long id, Long subjectId, Long classroomId) {
+		Exam exam = Exam.create("Midterm", subjectId, classroomId, null, BigDecimal.valueOf(100), null, 1L,
+				Exam.FULL_WEIGHTAGE);
+		exam.setId(id);
+		return exam;
 	}
 
 	@Test

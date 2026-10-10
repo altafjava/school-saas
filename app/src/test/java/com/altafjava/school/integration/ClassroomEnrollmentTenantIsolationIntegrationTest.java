@@ -29,6 +29,7 @@ import com.altafjava.school.domain.attendance.model.AttendanceStatus;
 import com.altafjava.school.domain.classroom.model.Classroom;
 import com.altafjava.school.domain.classroom.model.StudentClassroomLink;
 import com.altafjava.school.domain.student.model.Student;
+import com.altafjava.school.util.TestPrincipals;
 
 /**
  * Verifies that classroom rosters (student-classroom enrollment) are isolated per tenant, and
@@ -59,6 +60,7 @@ class ClassroomEnrollmentTenantIsolationIntegrationTest extends SchoolIntegratio
 
 	@BeforeEach
 	void createTenants() {
+		TestPrincipals.authenticateAsTenantAdmin();
 		TenantContext.ForTesting.clear();
 		String suffix = UUID.randomUUID().toString().substring(0, 8);
 		tenantA = onboardingService.registerTenant(new RegisterTenantCommand(
@@ -75,6 +77,7 @@ class ClassroomEnrollmentTenantIsolationIntegrationTest extends SchoolIntegratio
 
 	@AfterEach
 	void clearContext() {
+		TestPrincipals.clear();
 		TenantContext.ForTesting.clear();
 	}
 

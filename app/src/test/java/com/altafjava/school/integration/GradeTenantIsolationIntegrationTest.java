@@ -34,6 +34,7 @@ import com.altafjava.school.domain.exam.repository.ExamTypeDefinitionRepository;
 import com.altafjava.school.domain.grade.model.Grade;
 import com.altafjava.school.domain.student.model.Student;
 import com.altafjava.school.domain.subject.model.Subject;
+import com.altafjava.school.util.TestPrincipals;
 
 /**
  * Verifies that grade records created under tenant A are not visible to tenant B.
@@ -70,6 +71,7 @@ class GradeTenantIsolationIntegrationTest extends SchoolIntegrationTestBase {
 
 	@BeforeEach
 	void createTenants() {
+		TestPrincipals.authenticateAsTenantAdmin();
 		TenantContext.ForTesting.clear();
 		String suffix = UUID.randomUUID().toString().substring(0, 8);
 		tenantA = onboardingService.registerTenant(new RegisterTenantCommand(
@@ -86,6 +88,7 @@ class GradeTenantIsolationIntegrationTest extends SchoolIntegrationTestBase {
 
 	@AfterEach
 	void clearContext() {
+		TestPrincipals.clear();
 		TenantContext.ForTesting.clear();
 	}
 

@@ -6,6 +6,7 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
@@ -20,11 +21,13 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.security.access.AccessDeniedException;
 import com.altafjava.platform.application.event.publisher.EventPublisher;
 import com.altafjava.platform.core.exception.BusinessException;
 import com.altafjava.platform.core.exception.ResourceNotFoundException;
 import com.altafjava.platform.core.tenant.TenantContext;
 import com.altafjava.platform.core.tenant.TenantType;
+import com.altafjava.school.application.security.AcademicAccessGuard;
 import com.altafjava.school.domain.classroom.repository.ClassroomRepository;
 import com.altafjava.school.domain.exam.event.ExamResultsPublishedEvent;
 import com.altafjava.school.domain.exam.model.Exam;
@@ -52,13 +55,15 @@ class ExamServiceTest {
 	private GradeRepository gradeRepository;
 	@Mock
 	private EventPublisher eventPublisher;
+	@Mock
+	private AcademicAccessGuard academicAccessGuard;
 
 	private ExamService examService;
 
 	@BeforeEach
 	void setUp() {
 		examService = new ExamService(examRepository, classroomRepository, subjectRepository, termRepository,
-				examTypeDefinitionRepository, gradeRepository, eventPublisher);
+				examTypeDefinitionRepository, gradeRepository, eventPublisher, academicAccessGuard);
 		TenantContext.ForTesting.setCurrentTenant(1L, null, null, TenantType.SHARED);
 	}
 
@@ -314,6 +319,19 @@ class ExamServiceTest {
 		Exam completed = examService.complete(publicId.toString());
 
 		assertEquals(ExamStatus.COMPLETED, completed.getStatus());
+	}
+
+	@Test
+	void complete_examOutsideCallersTeachingScope_throwsAccessDenied() {
+		UUID publicId = UUID.randomUUID();
+		Exam exam = examWithPublicId(publicId);
+		when(examRepository.findByPublicIdAndTenantId(publicId, 1L)).thenReturn(Optional.of(exam));
+		doThrow(new AccessDeniedException("not scoped")).when(academicAccessGuard).assertCanWriteSubject(1L,
+				exam.getClassroomId(), exam.getSubjectId());
+
+		assertThrows(AccessDeniedException.class, () -> examService.complete(publicId.toString()));
+
+		verify(examRepository, never()).save(any());
 	}
 
 	@Test

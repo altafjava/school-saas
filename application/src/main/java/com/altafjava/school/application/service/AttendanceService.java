@@ -9,8 +9,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import com.altafjava.platform.core.exception.ResourceNotFoundException;
 import com.altafjava.platform.core.tenant.TenantContext;
+import com.altafjava.school.application.security.AcademicAccessGuard;
+import com.altafjava.school.application.security.AcademicScope;
+import com.altafjava.school.application.security.AcademicScopeResolver;
 import com.altafjava.school.application.security.StudentDataAccessGuard;
-import com.altafjava.school.application.security.TeacherClassroomScopeResolver;
 import com.altafjava.school.domain.attendance.model.Attendance;
 import com.altafjava.school.domain.attendance.model.AttendanceCorrection;
 import com.altafjava.school.domain.attendance.model.AttendancePercentage;
@@ -32,7 +34,8 @@ public class AttendanceService {
 	private final ClassroomRepository classroomRepository;
 	private final StudentClassroomLinkRepository studentClassroomLinkRepository;
 	private final StudentDataAccessGuard studentDataAccessGuard;
-	private final TeacherClassroomScopeResolver teacherClassroomScopeResolver;
+	private final AcademicScopeResolver academicScopeResolver;
+	private final AcademicAccessGuard academicAccessGuard;
 	private final HolidayService holidayService;
 	private final AttendancePercentageCalculator attendancePercentageCalculator = new AttendancePercentageCalculator();
 
@@ -40,31 +43,41 @@ public class AttendanceService {
 			AttendanceCorrectionRepository attendanceCorrectionRepository, StudentRepository studentRepository,
 			ClassroomRepository classroomRepository, StudentClassroomLinkRepository studentClassroomLinkRepository,
 			StudentDataAccessGuard studentDataAccessGuard,
-			TeacherClassroomScopeResolver teacherClassroomScopeResolver, HolidayService holidayService) {
+			AcademicScopeResolver academicScopeResolver, AcademicAccessGuard academicAccessGuard,
+			HolidayService holidayService) {
 		this.attendanceRepository = attendanceRepository;
 		this.attendanceCorrectionRepository = attendanceCorrectionRepository;
 		this.studentRepository = studentRepository;
 		this.classroomRepository = classroomRepository;
 		this.studentClassroomLinkRepository = studentClassroomLinkRepository;
 		this.studentDataAccessGuard = studentDataAccessGuard;
-		this.teacherClassroomScopeResolver = teacherClassroomScopeResolver;
+		this.academicScopeResolver = academicScopeResolver;
+		this.academicAccessGuard = academicAccessGuard;
 		this.holidayService = holidayService;
 	}
 
-	// TENANT_ADMIN sees every attendance record; TEACHER sees only records for classrooms they
-	// teach (resolved via TeacherClassroomScopeResolver — see ROADMAP.md Phase 3).
+	// Narrowed to the caller's scope: every classroom, the classrooms they teach, or their own students.
 	@Transactional(readOnly = true)
 	public Page<Attendance> listAttendance(Pageable pageable) {
 		Long tenantId = TenantContext.getCurrentTenantId();
-		return teacherClassroomScopeResolver.resolveClassroomIdsIfTeacherScoped(tenantId)
-				.map(classroomIds -> attendanceRepository.findByClassroomIdInAndTenantId(classroomIds, tenantId,
-						pageable))
-				.orElseGet(() -> attendanceRepository.findAllByTenantId(tenantId, pageable));
+		AcademicScope scope = academicScopeResolver.current(tenantId);
+		if (scope.readsAllClassrooms()) {
+			return attendanceRepository.findAllByTenantId(tenantId, pageable);
+		}
+		return attendanceRepository.findVisible(tenantId, scope.teaching().classroomIds(), scope.ownStudentIds(),
+				pageable);
 	}
 
 	@Transactional(readOnly = true)
 	public Attendance findByPublicId(String publicId) {
 		Long tenantId = TenantContext.getCurrentTenantId();
+		Attendance attendance = requireAttendance(tenantId, publicId);
+		academicAccessGuard.assertCanReadStudentRecord(tenantId, attendance.getClassroomId(),
+				attendance.getStudentId());
+		return attendance;
+	}
+
+	private Attendance requireAttendance(Long tenantId, String publicId) {
 		return attendanceRepository.findByPublicIdAndTenantId(UUID.fromString(publicId), tenantId)
 				.orElseThrow(() -> new ResourceNotFoundException("Attendance record not found: " + publicId));
 	}
@@ -115,6 +128,7 @@ public class AttendanceService {
 			throw new ResourceNotFoundException(
 					"Student " + studentId + " is not enrolled in classroom " + classroomId);
 		}
+		academicAccessGuard.assertCanWriteClassroom(tenantId, classroomId);
 		if (attendanceRepository.existsByStudentIdAndClassroomIdAndAttendanceDateAndTenantId(
 				studentId, classroomId, attendanceDate, tenantId)) {
 			throw new IllegalArgumentException(
@@ -130,8 +144,8 @@ public class AttendanceService {
 	@Transactional
 	public Attendance updateStatus(String publicId, AttendanceStatus status) {
 		Long tenantId = TenantContext.getCurrentTenantId();
-		Attendance attendance = attendanceRepository.findByPublicIdAndTenantId(UUID.fromString(publicId), tenantId)
-				.orElseThrow(() -> new ResourceNotFoundException("Attendance record not found: " + publicId));
+		Attendance attendance = requireAttendance(tenantId, publicId);
+		academicAccessGuard.assertCanWriteClassroom(tenantId, attendance.getClassroomId());
 		AttendanceStatus oldStatus = attendance.getStatus();
 		if (oldStatus != status) {
 			attendanceCorrectionRepository.save(AttendanceCorrection.record(attendance.getId(), oldStatus, status));
@@ -150,8 +164,8 @@ public class AttendanceService {
 	@Transactional
 	public void delete(String publicId) {
 		Long tenantId = TenantContext.getCurrentTenantId();
-		Attendance attendance = attendanceRepository.findByPublicIdAndTenantId(UUID.fromString(publicId), tenantId)
-				.orElseThrow(() -> new ResourceNotFoundException("Attendance record not found: " + publicId));
+		Attendance attendance = requireAttendance(tenantId, publicId);
+		academicAccessGuard.assertCanWriteClassroom(tenantId, attendance.getClassroomId());
 		attendance.softDelete("attendance-deletion");
 		attendanceRepository.save(attendance);
 	}

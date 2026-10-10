@@ -38,6 +38,7 @@ import com.altafjava.school.domain.subject.model.Subject;
 import com.altafjava.school.domain.teacher.model.Teacher;
 import com.altafjava.school.domain.timetable.model.Period;
 import com.altafjava.school.domain.timetable.model.TimetableEntry;
+import com.altafjava.school.util.TestPrincipals;
 
 /**
  * Verifies that period-attendance records created under tenant A are not visible to tenant B, and
@@ -78,6 +79,7 @@ class PeriodAttendanceTenantIsolationIntegrationTest extends SchoolIntegrationTe
 
 	@BeforeEach
 	void createTenants() {
+		TestPrincipals.authenticateAsTenantAdmin();
 		TenantContext.ForTesting.clear();
 		String suffix = UUID.randomUUID().toString().substring(0, 8);
 		tenantA = onboardingService.registerTenant(new RegisterTenantCommand(
@@ -94,6 +96,7 @@ class PeriodAttendanceTenantIsolationIntegrationTest extends SchoolIntegrationTe
 
 	@AfterEach
 	void clearContext() {
+		TestPrincipals.clear();
 		TenantContext.ForTesting.clear();
 	}
 

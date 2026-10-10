@@ -20,7 +20,7 @@ import com.altafjava.platform.core.tenant.TenantContext;
 import com.altafjava.platform.domain.notification.model.NotificationPriority;
 import com.altafjava.platform.domain.notification.model.NotificationType;
 import com.altafjava.school.application.scheduler.support.StudentNotificationRecipientResolver;
-import com.altafjava.school.application.security.TeacherClassroomMembershipGuard;
+import com.altafjava.school.application.security.AcademicAccessGuard;
 import com.altafjava.school.domain.classroom.repository.StudentClassroomLinkRepository;
 import com.altafjava.school.domain.lms.model.Assignment;
 import com.altafjava.school.domain.lms.model.Submission;
@@ -36,19 +36,19 @@ public class SubmissionService {
 	private final AssignmentRepository assignmentRepository;
 	private final StudentRepository studentRepository;
 	private final StudentClassroomLinkRepository studentClassroomLinkRepository;
-	private final TeacherClassroomMembershipGuard teacherClassroomMembershipGuard;
+	private final AcademicAccessGuard academicAccessGuard;
 	private final StudentNotificationRecipientResolver recipientResolver;
 	private final NotificationService notificationService;
 
 	public SubmissionService(SubmissionRepository submissionRepository, AssignmentRepository assignmentRepository,
 			StudentRepository studentRepository, StudentClassroomLinkRepository studentClassroomLinkRepository,
-			TeacherClassroomMembershipGuard teacherClassroomMembershipGuard,
+			AcademicAccessGuard academicAccessGuard,
 			StudentNotificationRecipientResolver recipientResolver, NotificationService notificationService) {
 		this.submissionRepository = submissionRepository;
 		this.assignmentRepository = assignmentRepository;
 		this.studentRepository = studentRepository;
 		this.studentClassroomLinkRepository = studentClassroomLinkRepository;
-		this.teacherClassroomMembershipGuard = teacherClassroomMembershipGuard;
+		this.academicAccessGuard = academicAccessGuard;
 		this.recipientResolver = recipientResolver;
 		this.notificationService = notificationService;
 	}
@@ -84,6 +84,7 @@ public class SubmissionService {
 		Assignment assignment = assignmentRepository
 				.findByPublicIdAndTenantId(UUID.fromString(assignmentPublicId), tenantId)
 				.orElseThrow(() -> new ResourceNotFoundException("Assignment not found: " + assignmentPublicId));
+		academicAccessGuard.assertCanReadSubject(tenantId, assignment.getClassroomId(), assignment.getSubjectId());
 		return submissionRepository.findByAssignmentIdAndTenantId(assignment.getId(), tenantId, pageable);
 	}
 
@@ -100,8 +101,8 @@ public class SubmissionService {
 		if (!submission.getAssignmentId().equals(assignment.getId())) {
 			throw new ResourceNotFoundException("Submission not found: " + submissionPublicId);
 		}
-		Long gradingTeacherId = teacherClassroomMembershipGuard
-				.assertTeachesClassroomAndResolveTeacherId(tenantId, assignment.getClassroomId());
+		Long gradingTeacherId = academicAccessGuard.requireTeacherOfSubject(tenantId, assignment.getClassroomId(),
+				assignment.getSubjectId());
 		submission.grade(marks, feedback, gradingTeacherId);
 		Submission saved = submissionRepository.save(submission);
 		notifyStudent(tenantId, saved, assignment);

@@ -47,7 +47,23 @@ public interface AttendanceRepository extends JpaRepository<Attendance, Long> {
 
 	long countByTenantIdAndAttendanceDateBetween(Long tenantId, LocalDate from, LocalDate to);
 
-	Page<Attendance> findByClassroomIdInAndTenantId(List<Long> classroomIds, Long tenantId, Pageable pageable);
+	// A caller's scoped view: the classrooms they teach plus the students who are theirs.
+	@Query("""
+			SELECT a FROM Attendance a
+			WHERE a.tenantId = :tenantId
+			  AND (a.classroomId IN :classroomIds OR a.studentId IN :studentIds)
+			""")
+	Page<Attendance> findVisible(@Param("tenantId") Long tenantId,
+			@Param("classroomIds") Collection<Long> classroomIds, @Param("studentIds") Collection<Long> studentIds,
+			Pageable pageable);
+
+	@Query("""
+			SELECT a FROM Attendance a
+			WHERE a.tenantId = :tenantId AND a.updatedAt > :updatedAt
+			  AND (a.classroomId IN :classroomIds OR a.studentId IN :studentIds)
+			""")
+	List<Attendance> findVisibleUpdatedAfter(@Param("tenantId") Long tenantId, @Param("updatedAt") Instant updatedAt,
+			@Param("classroomIds") Collection<Long> classroomIds, @Param("studentIds") Collection<Long> studentIds);
 
 	long countByStudentIdAndTenantIdAndAttendanceDateBetween(Long studentId, Long tenantId, LocalDate from,
 			LocalDate to);

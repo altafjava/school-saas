@@ -80,6 +80,42 @@ class StudentBulkImportE2ETest extends SchoolIntegrationTestBase {
 	}
 
 	@Test
+	void bulkImport_withA2MbFile_isAccepted() {
+		String accessToken = login();
+		// A blank first name fails the row cheaply, so the 2 MB body exercises the multipart limit, not the importer.
+		String csv = "studentCode,firstName,lastName,email,dateOfBirth\nSTU-BIG,," + "x".repeat(2 * 1024 * 1024)
+				+ ",big@school.test,2010-01-15\n";
+
+		given()
+				.header("X-Tenant-ID", tenantId)
+				.header("Authorization", "Bearer " + accessToken)
+				.multiPart("file", "students.csv", csv.getBytes(StandardCharsets.UTF_8), "text/csv")
+				.header("Idempotency-Key", UUID.randomUUID().toString())
+				.when()
+				.post("/api/v1/students/bulk-import")
+				.then()
+				.statusCode(HttpStatus.OK.value())
+				.body("data.totalRows", equalTo(1));
+	}
+
+	@Test
+	void bulkImport_overTheUploadLimit_returns413PayloadTooLarge() {
+		String accessToken = login();
+		byte[] overTheLimit = new byte[10 * 1024 * 1024 + 1];
+
+		given()
+				.header("X-Tenant-ID", tenantId)
+				.header("Authorization", "Bearer " + accessToken)
+				.multiPart("file", "students.csv", overTheLimit, "text/csv")
+				.header("Idempotency-Key", UUID.randomUUID().toString())
+				.when()
+				.post("/api/v1/students/bulk-import")
+				.then()
+				.statusCode(HttpStatus.CONTENT_TOO_LARGE.value())
+				.body("error.code", equalTo("PAYLOAD_TOO_LARGE"));
+	}
+
+	@Test
 	void bulkImport_withoutJwt_returns401() {
 		given()
 				.header("X-Tenant-ID", tenantId)

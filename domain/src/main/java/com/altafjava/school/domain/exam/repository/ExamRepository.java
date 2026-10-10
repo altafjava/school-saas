@@ -2,6 +2,7 @@ package com.altafjava.school.domain.exam.repository;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -30,9 +31,7 @@ public interface ExamRepository extends JpaRepository<Exam, Long> {
 
 	List<Exam> findAllByIdInAndTenantId(List<Long> ids, Long tenantId);
 
-	@Query("SELECT e.id FROM Exam e WHERE e.tenantId = :tenantId AND e.classroomId IN :classroomIds")
-	List<Long> findIdsByClassroomIdInAndTenantId(@Param("classroomIds") List<Long> classroomIds,
-			@Param("tenantId") Long tenantId);
+	List<Exam> findAllByClassroomIdInAndTenantId(Collection<Long> classroomIds, Long tenantId);
 
 	long countByTenantIdAndScheduledAtBetween(Long tenantId, LocalDateTime from, LocalDateTime to);
 

@@ -76,6 +76,9 @@ dependencies {
     // Version is managed by the platform-bom imported in the root build.gradle.
     implementation 'com.altafjava.platform:spring-boot-starter'
 
+    // DemoDataSeeder runs its seed under a tenant-admin SecurityContext.
+    implementation libs.spring.boot.starter.security
+
     // Test infrastructure
     testImplementation libs.spring.boot.starter.test
     testImplementation libs.spring.security.test
