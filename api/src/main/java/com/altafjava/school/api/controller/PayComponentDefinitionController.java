@@ -76,6 +76,6 @@ public class PayComponentDefinitionController implements PayComponentDefinitionA
 			@Valid @RequestBody UpdatePayComponentDefinitionRequest request) {
 		return ApiResponse.success(
 				payComponentDefinitionMapper.toResponse(payComponentDefinitionService.update(publicId, request.name(),
-						request.active(), request.displayOrder())));
+						request.active(), request.displayOrder(), request.expectedVersion())));
 	}
 }

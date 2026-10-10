@@ -6,7 +6,7 @@ import org.mapstruct.ReportingPolicy;
 import com.altafjava.school.api.dto.response.FeeDiscountResponse;
 import com.altafjava.school.domain.fee.model.FeeDiscount;
 
-@Mapper(componentModel = "spring", uses = PublicIdMapping.class, unmappedTargetPolicy = ReportingPolicy.ERROR)
+@Mapper(componentModel = "spring", uses = SchoolPublicIdMapping.class, unmappedTargetPolicy = ReportingPolicy.ERROR)
 public interface FeeDiscountMapper {
 
 	@Mapping(target = "publicId", expression = "java(discount.getPublicId().toString())")

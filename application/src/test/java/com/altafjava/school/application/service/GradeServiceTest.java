@@ -24,6 +24,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.security.access.AccessDeniedException;
+import com.altafjava.platform.core.concurrency.ExpectedVersion;
 import com.altafjava.platform.core.exception.BusinessException;
 import com.altafjava.platform.core.exception.ResourceNotFoundException;
 import com.altafjava.platform.core.tenant.TenantContext;
@@ -237,7 +238,8 @@ class GradeServiceTest {
 		when(gradingScaleService.resolveEffectiveThresholds(10L)).thenReturn(thresholds);
 		when(gradeRepository.save(any(Grade.class))).thenAnswer(inv -> inv.getArgument(0));
 
-		Grade corrected = gradeService.correct("11111111-1111-1111-1111-111111111111", BigDecimal.valueOf(95));
+		Grade corrected = gradeService.correct("11111111-1111-1111-1111-111111111111", BigDecimal.valueOf(95),
+				ExpectedVersion.any());
 
 		assertEquals("A", corrected.getGradeLetter());
 		assertEquals(BigDecimal.valueOf(95), corrected.getMarks());

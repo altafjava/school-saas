@@ -10,6 +10,7 @@ import org.springframework.transaction.annotation.Transactional;
 import com.altafjava.platform.application.event.publisher.EventPublisher;
 import com.altafjava.platform.core.audit.AuditAction;
 import com.altafjava.platform.core.audit.annotation.Audited;
+import com.altafjava.platform.core.concurrency.ExpectedVersion;
 import com.altafjava.platform.core.exception.BusinessException;
 import com.altafjava.platform.core.exception.ResourceNotFoundException;
 import com.altafjava.platform.core.tenant.TenantContext;
@@ -95,15 +96,17 @@ public class ExamService {
 	}
 
 	@Transactional
-	public Exam reschedule(String publicId, LocalDateTime scheduledAt) {
+	public Exam reschedule(String publicId, LocalDateTime scheduledAt, ExpectedVersion expectedVersion) {
 		Exam exam = findByPublicId(publicId);
+		expectedVersion.verify(exam);
 		exam.reschedule(scheduledAt);
 		return examRepository.save(exam);
 	}
 
 	@Transactional
-	public Exam assignTerm(String publicId, String termPublicId) {
+	public Exam assignTerm(String publicId, String termPublicId, ExpectedVersion expectedVersion) {
 		Exam exam = findByPublicId(publicId);
+		expectedVersion.verify(exam);
 		Long tenantId = TenantContext.getCurrentTenantId();
 		exam.assignTerm(requireTermId(tenantId, termPublicId));
 		requireWithinTermWeightage(tenantId, exam);
@@ -111,8 +114,9 @@ public class ExamService {
 	}
 
 	@Transactional
-	public Exam reweight(String publicId, BigDecimal weightage) {
+	public Exam reweight(String publicId, BigDecimal weightage, ExpectedVersion expectedVersion) {
 		Exam exam = findByPublicId(publicId);
+		expectedVersion.verify(exam);
 		exam.reweight(weightage);
 		requireWithinTermWeightage(TenantContext.getCurrentTenantId(), exam);
 		return examRepository.save(exam);

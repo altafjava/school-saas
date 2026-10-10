@@ -103,7 +103,8 @@ public class CustomFieldDefinitionController implements CustomFieldDefinitionApi
 						request.label(), request.fieldType(), request.required(),
 						customFieldValidationRuleMapper.toDomain(request.validationRule()), request.displayOrder(),
 						request.displayGroup(), request.displayGroupOrder(),
-						customFieldVisibilityConditionMapper.toDomain(request.visibilityCondition()))));
+						customFieldVisibilityConditionMapper.toDomain(request.visibilityCondition()),
+						request.expectedVersion())));
 	}
 
 	@Override

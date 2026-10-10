@@ -5,6 +5,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import com.altafjava.platform.core.concurrency.ExpectedVersion;
 import com.altafjava.platform.core.exception.BusinessException;
 import com.altafjava.platform.core.exception.ResourceNotFoundException;
 import com.altafjava.platform.core.tenant.TenantContext;
@@ -42,8 +43,10 @@ public class VehicleService {
 	}
 
 	@Transactional
-	public Vehicle updateDetails(String publicId, int capacity, String driverName, String driverContact) {
+	public Vehicle updateDetails(String publicId, int capacity, String driverName, String driverContact,
+			ExpectedVersion expectedVersion) {
 		Vehicle vehicle = findByPublicId(publicId);
+		expectedVersion.verify(vehicle);
 		vehicle.updateDetails(capacity, driverName, driverContact);
 		return vehicleRepository.save(vehicle);
 	}

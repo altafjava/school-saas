@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.UUID;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import com.altafjava.platform.core.concurrency.ExpectedVersion;
 import com.altafjava.platform.core.exception.BusinessException;
 import com.altafjava.platform.core.exception.ResourceNotFoundException;
 import com.altafjava.platform.core.tenant.TenantContext;
@@ -49,8 +50,10 @@ public class PayComponentDefinitionService {
 	}
 
 	@Transactional
-	public PayComponentDefinition update(String publicId, String name, boolean active, int displayOrder) {
+	public PayComponentDefinition update(String publicId, String name, boolean active, int displayOrder,
+			ExpectedVersion expectedVersion) {
 		PayComponentDefinition definition = findByPublicId(publicId);
+		expectedVersion.verify(definition);
 		definition.update(name, active, displayOrder);
 		return payComponentDefinitionRepository.save(definition);
 	}

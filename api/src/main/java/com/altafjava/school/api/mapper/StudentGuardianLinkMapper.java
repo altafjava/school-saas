@@ -6,7 +6,7 @@ import org.mapstruct.ReportingPolicy;
 import com.altafjava.school.api.dto.response.StudentGuardianLinkResponse;
 import com.altafjava.school.domain.guardian.model.StudentGuardianLink;
 
-@Mapper(componentModel = "spring", uses = PublicIdMapping.class, unmappedTargetPolicy = ReportingPolicy.ERROR)
+@Mapper(componentModel = "spring", uses = SchoolPublicIdMapping.class, unmappedTargetPolicy = ReportingPolicy.ERROR)
 public interface StudentGuardianLinkMapper {
 
 	@Mapping(target = "publicId", expression = "java(link.getPublicId().toString())")

@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import com.altafjava.platform.api.dto.response.ApiResponse;
+import com.altafjava.platform.core.annotation.Command;
 import com.altafjava.school.api.controller.api.SalaryStructureApi;
 import com.altafjava.school.api.dto.request.CreateSalaryStructureRequest;
 import com.altafjava.school.api.dto.request.PayComponentAmountRequest;
@@ -76,6 +77,7 @@ public class SalaryStructureController implements SalaryStructureApi {
 	// place), mirroring SalaryStructureService's one-active-per-employee invariant.
 	@Override
 	@PatchMapping("/{publicId}/supersede")
+	@Command
 	@PreAuthorize("@permissionAuthorizationService.hasPermission('SALARY_STRUCTURE_MANAGE')")
 	public ApiResponse<SalaryStructureResponse> supersede(@PathVariable String publicId,
 			@Valid @RequestBody SupersedeSalaryStructureRequest request) {

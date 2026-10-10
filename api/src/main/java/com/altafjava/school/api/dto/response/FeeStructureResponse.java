@@ -4,6 +4,7 @@ import java.math.BigDecimal;
 
 public record FeeStructureResponse(
 		String publicId,
+		Long version,
 		String name,
 		BigDecimal amount,
 		String frequency,

@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import com.altafjava.platform.api.dto.response.ApiResponse;
+import com.altafjava.platform.core.annotation.Command;
 import com.altafjava.platform.core.security.AuthenticatedUser;
 import com.altafjava.school.api.controller.api.StudentDocumentApi;
 import com.altafjava.school.api.dto.request.RejectDocumentRequest;
@@ -73,6 +74,7 @@ public class StudentDocumentController implements StudentDocumentApi {
 
 	@Override
 	@PatchMapping("/{documentPublicId}/reject")
+	@Command
 	@PreAuthorize("@permissionAuthorizationService.hasPermission('STUDENT_DOCUMENT_MANAGE')")
 	public ApiResponse<StudentDocumentResponse> reject(@PathVariable String studentPublicId,
 			@PathVariable String documentPublicId, @Valid @RequestBody RejectDocumentRequest request,

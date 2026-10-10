@@ -9,6 +9,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import com.altafjava.platform.application.service.NumberSequenceService;
+import com.altafjava.platform.core.concurrency.ExpectedVersion;
 import com.altafjava.platform.core.exception.BusinessException;
 import com.altafjava.platform.core.exception.ResourceNotFoundException;
 import com.altafjava.platform.core.search.LikePattern;
@@ -136,15 +137,17 @@ public class StudentService {
 
 	@Transactional
 	public Student updateContactDetails(String publicId, String firstName, String lastName, String email,
-			LocalDate dateOfBirth) {
+			LocalDate dateOfBirth, ExpectedVersion expectedVersion) {
 		Student student = findByPublicId(publicId);
+		expectedVersion.verify(student);
 		student.updateContactDetails(firstName, lastName, email, dateOfBirth);
 		return studentRepository.save(student);
 	}
 
 	@Transactional
-	public Student updatePhone(String publicId, String phone) {
+	public Student updatePhone(String publicId, String phone, ExpectedVersion expectedVersion) {
 		Student student = findByPublicId(publicId);
+		expectedVersion.verify(student);
 		String defaultRegion = student.getAddress() != null ? student.getAddress().getCountryCode() : null;
 		if (!phoneNumberValidator.isValid(phone, defaultRegion)) {
 			throw new BusinessException("Invalid phone number: " + phone);
@@ -154,15 +157,17 @@ public class StudentService {
 	}
 
 	@Transactional
-	public Student updateAddress(String publicId, Address address) {
+	public Student updateAddress(String publicId, Address address, ExpectedVersion expectedVersion) {
 		Student student = findByPublicId(publicId);
+		expectedVersion.verify(student);
 		student.updateAddress(address);
 		return studentRepository.save(student);
 	}
 
 	@Transactional
-	public Student updatePhoto(String publicId, String filePublicId) {
+	public Student updatePhoto(String publicId, String filePublicId, ExpectedVersion expectedVersion) {
 		Student student = findByPublicId(publicId);
+		expectedVersion.verify(student);
 		student.updatePhoto(Optional.ofNullable(filePublicId).map(UUID::fromString).orElse(null));
 		return studentRepository.save(student);
 	}

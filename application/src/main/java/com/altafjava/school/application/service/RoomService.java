@@ -5,6 +5,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import com.altafjava.platform.core.concurrency.ExpectedVersion;
 import com.altafjava.platform.core.exception.ResourceNotFoundException;
 import com.altafjava.platform.core.tenant.TenantContext;
 import com.altafjava.school.domain.hostel.model.HostelBuilding;
@@ -51,8 +52,9 @@ public class RoomService {
 	}
 
 	@Transactional
-	public Room updateDetails(String publicId, String roomNumber, int capacity) {
+	public Room updateDetails(String publicId, String roomNumber, int capacity, ExpectedVersion expectedVersion) {
 		Room room = findByPublicId(publicId);
+		expectedVersion.verify(room);
 		room.updateDetails(roomNumber, capacity);
 		return roomRepository.save(room);
 	}

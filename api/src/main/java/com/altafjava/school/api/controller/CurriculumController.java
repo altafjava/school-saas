@@ -72,7 +72,8 @@ public class CurriculumController implements CurriculumApi {
 	public ApiResponse<CurriculumResponse> updateDetails(@PathVariable String publicId,
 			@Valid @RequestBody UpdateCurriculumRequest request) {
 		return ApiResponse.success(curriculumMapper.toResponse(
-				curriculumService.updateDetails(publicId, request.name(), request.code(), request.description())));
+				curriculumService.updateDetails(publicId, request.name(), request.code(), request.description(),
+						request.expectedVersion())));
 	}
 
 	@Override
@@ -81,7 +82,8 @@ public class CurriculumController implements CurriculumApi {
 	public ApiResponse<CurriculumResponse> assignGradingScale(@PathVariable String publicId,
 			@Valid @RequestBody AssignGradingScaleRequest request) {
 		return ApiResponse.success(curriculumMapper
-				.toResponse(curriculumService.assignGradingScale(publicId, request.gradingScalePublicId())));
+				.toResponse(curriculumService.assignGradingScale(publicId, request.gradingScalePublicId(),
+						request.expectedVersion())));
 	}
 
 	@Override

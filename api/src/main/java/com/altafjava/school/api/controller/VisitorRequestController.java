@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import com.altafjava.platform.api.dto.response.ApiResponse;
+import com.altafjava.platform.core.annotation.Command;
 import com.altafjava.platform.core.security.AuthenticatedUser;
 import com.altafjava.school.api.controller.api.VisitorRequestApi;
 import com.altafjava.school.api.dto.request.AttachVisitorPhotoRequest;
@@ -119,6 +120,7 @@ public class VisitorRequestController implements VisitorRequestApi {
 
 	@Override
 	@PatchMapping("/{publicId}/reject")
+	@Command
 	@PreAuthorize(HOST_OR_APPROVER)
 	public ApiResponse<VisitorRequestResponse> reject(@PathVariable String publicId,
 			@Valid @RequestBody RejectVisitorRequestRequest request, @AuthenticationPrincipal AuthenticatedUser user) {
@@ -137,6 +139,7 @@ public class VisitorRequestController implements VisitorRequestApi {
 
 	@Override
 	@PatchMapping("/{publicId}/photo")
+	@Command
 	@PreAuthorize(ANY_PARTICIPANT)
 	public ApiResponse<VisitorRequestResponse> attachPhoto(@PathVariable String publicId,
 			@Valid @RequestBody AttachVisitorPhotoRequest request, @AuthenticationPrincipal AuthenticatedUser user) {

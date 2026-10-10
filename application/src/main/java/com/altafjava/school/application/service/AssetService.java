@@ -7,6 +7,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import com.altafjava.platform.core.concurrency.ExpectedVersion;
 import com.altafjava.platform.core.exception.BusinessException;
 import com.altafjava.platform.core.exception.ResourceNotFoundException;
 import com.altafjava.platform.core.tenant.TenantContext;
@@ -45,8 +46,9 @@ public class AssetService {
 	}
 
 	@Transactional
-	public Asset updateLocation(String publicId, String location) {
+	public Asset updateLocation(String publicId, String location, ExpectedVersion expectedVersion) {
 		Asset asset = findByPublicId(publicId);
+		expectedVersion.verify(asset);
 		asset.updateLocation(location);
 		return assetRepository.save(asset);
 	}

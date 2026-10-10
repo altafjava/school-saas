@@ -22,6 +22,7 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import com.altafjava.platform.application.dto.RegisterTenantCommand;
 import com.altafjava.platform.application.service.TenantOnboardingService;
+import com.altafjava.platform.core.concurrency.ExpectedVersion;
 import com.altafjava.platform.core.exception.ResourceNotFoundException;
 import com.altafjava.platform.core.security.AuthenticatedUser;
 import com.altafjava.platform.core.security.PasswordEncoder;
@@ -232,7 +233,8 @@ class LmsTenantIsolationIntegrationTest extends SchoolIntegrationTestBase {
 
 		activateTenant(tenantB);
 		assertThrows(ResourceNotFoundException.class,
-				() -> assignmentService.reschedule(assignmentPublicId, LocalDate.now().plusDays(10)),
+				() -> assignmentService.reschedule(assignmentPublicId, LocalDate.now().plusDays(10),
+						ExpectedVersion.any()),
 				"Tenant B must receive ResourceNotFoundException for tenant A's assignment");
 	}
 

@@ -6,7 +6,7 @@ import org.mapstruct.ReportingPolicy;
 import com.altafjava.school.api.dto.response.LifecycleTransitionResponse;
 import com.altafjava.school.domain.lifecycle.model.LifecycleTransition;
 
-@Mapper(componentModel = "spring", uses = PublicIdMapping.class, unmappedTargetPolicy = ReportingPolicy.ERROR)
+@Mapper(componentModel = "spring", uses = SchoolPublicIdMapping.class, unmappedTargetPolicy = ReportingPolicy.ERROR)
 public interface LifecycleTransitionMapper {
 
 	@Mapping(target = "publicId", expression = "java(transition.getPublicId().toString())")

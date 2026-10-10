@@ -18,6 +18,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import com.altafjava.platform.api.dto.response.ApiResponse;
+import com.altafjava.platform.core.annotation.Command;
 import com.altafjava.platform.core.security.AuthenticatedUser;
 import com.altafjava.platform.domain.document.model.DocumentIssuance;
 import com.altafjava.school.api.controller.api.CertificateApi;
@@ -73,6 +74,7 @@ public class CertificateController implements CertificateApi {
 
 	@Override
 	@PatchMapping("/{certificatePublicId}/revoke")
+	@Command
 	@PreAuthorize("@permissionAuthorizationService.hasPermission('CERTIFICATE_MANAGE')")
 	public ApiResponse<IssuedDocumentResponse> revoke(@PathVariable String studentPublicId,
 			@PathVariable String certificatePublicId, @Valid @RequestBody RevokeDocumentRequest request) {

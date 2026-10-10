@@ -25,6 +25,7 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.security.access.AccessDeniedException;
 import com.altafjava.platform.application.event.publisher.EventPublisher;
+import com.altafjava.platform.core.concurrency.ExpectedVersion;
 import com.altafjava.platform.core.exception.BusinessException;
 import com.altafjava.platform.core.exception.ResourceNotFoundException;
 import com.altafjava.platform.core.tenant.TenantContext;
@@ -129,7 +130,7 @@ class ClassroomServiceTest {
 		when(classroomRepository.save(any(Classroom.class))).thenAnswer(inv -> inv.getArgument(0));
 
 		Classroom updated = classroomService.reassignTeacher(classroomPublicId.toString(),
-				publicId("teacher", 5).toString());
+				publicId("teacher", 5).toString(), ExpectedVersion.any());
 
 		assertEquals(5L, updated.getClassTeacherId());
 	}
@@ -143,7 +144,7 @@ class ClassroomServiceTest {
 
 		assertThrows(ResourceNotFoundException.class,
 				() -> classroomService.reassignTeacher(classroomPublicId.toString(),
-						publicId("teacher", 99).toString()));
+						publicId("teacher", 99).toString(), ExpectedVersion.any()));
 	}
 
 	@Test
@@ -160,7 +161,7 @@ class ClassroomServiceTest {
 		when(classroomRepository.save(any(Classroom.class))).thenAnswer(inv -> inv.getArgument(0));
 
 		Classroom updated = classroomService.assignCurriculum(classroomPublicId.toString(),
-				curriculumPublicId.toString());
+				curriculumPublicId.toString(), ExpectedVersion.any());
 
 		assertEquals(7L, updated.getCurriculumId());
 	}
@@ -173,7 +174,7 @@ class ClassroomServiceTest {
 		when(classroomRepository.save(any(Classroom.class))).thenAnswer(inv -> inv.getArgument(0));
 
 		Classroom updated = classroomService.moveToAcademicYear(classroomPublicId.toString(),
-				ACADEMIC_YEAR_PUBLIC_ID.toString());
+				ACADEMIC_YEAR_PUBLIC_ID.toString(), ExpectedVersion.any());
 
 		assertEquals(10L, updated.getAcademicYearId());
 	}

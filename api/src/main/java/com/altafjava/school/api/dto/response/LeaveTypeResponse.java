@@ -4,6 +4,7 @@ import java.math.BigDecimal;
 
 public record LeaveTypeResponse(
 		String publicId,
+		Long version,
 		String name,
 		BigDecimal defaultAnnualDays,
 		boolean active,

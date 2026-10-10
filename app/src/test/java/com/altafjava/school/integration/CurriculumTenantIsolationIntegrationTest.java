@@ -21,6 +21,7 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import com.altafjava.platform.application.dto.RegisterTenantCommand;
 import com.altafjava.platform.application.service.TenantOnboardingService;
+import com.altafjava.platform.core.concurrency.ExpectedVersion;
 import com.altafjava.platform.core.exception.ResourceNotFoundException;
 import com.altafjava.platform.core.security.AuthenticatedUser;
 import com.altafjava.platform.core.tenant.TenantContext;
@@ -187,7 +188,8 @@ class CurriculumTenantIsolationIntegrationTest extends SchoolIntegrationTestBase
 		activateTenant(tenantB);
 		authenticateAsTenantAdmin();
 		assertThrows(ResourceNotFoundException.class,
-				() -> curriculumService.assignGradingScale(curriculumPublicId, UUID.randomUUID().toString()),
+				() -> curriculumService.assignGradingScale(curriculumPublicId, UUID.randomUUID().toString(),
+						ExpectedVersion.any()),
 				"Tenant B must not be able to resolve tenant A's curriculum");
 	}
 
@@ -202,10 +204,12 @@ class CurriculumTenantIsolationIntegrationTest extends SchoolIntegrationTestBase
 		Curriculum curriculum = curriculumService.create(board.getPublicId().toString(), "IB Diploma-" + suffix,
 				"IBD-" + suffix, null);
 		GradingScale ibScale = gradingScaleService.create("IB Scale-" + suffix, ibStyleThresholds(), false);
-		curriculumService.assignGradingScale(curriculum.getPublicId().toString(), ibScale.getPublicId().toString());
+		curriculumService.assignGradingScale(curriculum.getPublicId().toString(), ibScale.getPublicId().toString(),
+				ExpectedVersion.any());
 		Classroom classroom = classroomService.create("CLS-" + suffix, "Grade 11", "A",
 				academicYear.getPublicId().toString(), null);
-		classroomService.assignCurriculum(classroom.getPublicId().toString(), curriculum.getPublicId().toString());
+		classroomService.assignCurriculum(classroom.getPublicId().toString(), curriculum.getPublicId().toString(),
+				ExpectedVersion.any());
 		Subject subject = subjectService.create("SUB-" + suffix, "Physics", null);
 		Student student = studentService.enroll("STU-" + suffix, "Nora", "Kim",
 				"nora-" + suffix + "@school.test", LocalDate.of(2010, 4, 4));
@@ -298,7 +302,7 @@ class CurriculumTenantIsolationIntegrationTest extends SchoolIntegrationTestBase
 		String publicId = created.getPublicId().toString();
 		boardService.findByPublicId(publicId);
 
-		boardService.updateDetails(publicId, "Renamed", created.getCode(), null);
+		boardService.updateDetails(publicId, "Renamed", created.getCode(), null, ExpectedVersion.any());
 		Board afterUpdate = boardService.findByPublicId(publicId);
 
 		assertEquals("Renamed", afterUpdate.getName());
@@ -320,18 +324,21 @@ class CurriculumTenantIsolationIntegrationTest extends SchoolIntegrationTestBase
 		GradingScale scaleTwo = gradingScaleService.create("Scale Two " + suffix, List.of(
 				new GradingScaleThresholdInput("P", new BigDecimal("50"), new BigDecimal("1.0")),
 				new GradingScaleThresholdInput("F", BigDecimal.ZERO, BigDecimal.ZERO)), false);
-		curriculumService.assignGradingScale(curriculum.getPublicId().toString(), scaleOne.getPublicId().toString());
+		curriculumService.assignGradingScale(curriculum.getPublicId().toString(), scaleOne.getPublicId().toString(),
+				ExpectedVersion.any());
 		AcademicYear academicYear = academicYearService.create("AY-" + suffix, LocalDate.of(2026, 4, 1),
 				LocalDate.of(2027, 3, 31), true);
 		Classroom classroom = classroomService.create("CLS-" + suffix, "Grade 5", "A",
 				academicYear.getPublicId().toString(), null);
-		classroomService.assignCurriculum(classroom.getPublicId().toString(), curriculum.getPublicId().toString());
+		classroomService.assignCurriculum(classroom.getPublicId().toString(), curriculum.getPublicId().toString(),
+				ExpectedVersion.any());
 
 		List<com.altafjava.school.domain.curriculum.model.GradingScaleThreshold> firstRead = gradingScaleService
 				.resolveEffectiveThresholds(classroom.getId());
 		assertEquals("A", firstRead.get(0).getLetter());
 
-		curriculumService.assignGradingScale(curriculum.getPublicId().toString(), scaleTwo.getPublicId().toString());
+		curriculumService.assignGradingScale(curriculum.getPublicId().toString(), scaleTwo.getPublicId().toString(),
+				ExpectedVersion.any());
 		List<com.altafjava.school.domain.curriculum.model.GradingScaleThreshold> afterReassignment = gradingScaleService
 				.resolveEffectiveThresholds(classroom.getId());
 

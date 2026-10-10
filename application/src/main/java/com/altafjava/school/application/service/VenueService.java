@@ -5,6 +5,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import com.altafjava.platform.core.concurrency.ExpectedVersion;
 import com.altafjava.platform.core.exception.BusinessException;
 import com.altafjava.platform.core.exception.ResourceNotFoundException;
 import com.altafjava.platform.core.tenant.TenantContext;
@@ -39,8 +40,10 @@ public class VenueService {
 	}
 
 	@Transactional
-	public Venue update(String publicId, String name, VenueType venueType, Integer capacity) {
+	public Venue update(String publicId, String name, VenueType venueType, Integer capacity,
+			ExpectedVersion expectedVersion) {
 		Venue venue = findByPublicId(publicId);
+		expectedVersion.verify(venue);
 		venue.updateDetails(name, venueType, capacity);
 		return venueRepository.save(venue);
 	}

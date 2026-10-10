@@ -17,6 +17,7 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.context.SecurityContextHolder;
 import com.altafjava.platform.application.dto.RegisterTenantCommand;
 import com.altafjava.platform.application.service.TenantOnboardingService;
+import com.altafjava.platform.core.concurrency.ExpectedVersion;
 import com.altafjava.platform.core.exception.ResourceNotFoundException;
 import com.altafjava.platform.core.security.AuthenticatedUser;
 import com.altafjava.platform.core.tenant.TenantContext;
@@ -86,7 +87,8 @@ class HealthTenantIsolationIntegrationTest extends SchoolIntegrationTestBase {
 		activateTenant(tenantA);
 		Student student = studentService.enroll("STU-" + UUID.randomUUID().toString().substring(0, 6), "Alice",
 				"Smith", "alice@health.test", LocalDate.of(2010, 1, 1));
-		healthRecordService.upsert(student.getPublicId().toString(), "O+", "Peanuts", "Asthma", "MMR");
+		healthRecordService.upsert(student.getPublicId().toString(), "O+", "Peanuts", "Asthma", "MMR",
+				ExpectedVersion.any());
 		String studentPublicId = student.getPublicId().toString();
 
 		activateTenant(tenantB);

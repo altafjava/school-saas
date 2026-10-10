@@ -74,7 +74,8 @@ public class RoomController implements RoomApi {
 	public ApiResponse<RoomResponse> updateDetails(@PathVariable String publicId,
 			@Valid @RequestBody UpdateRoomRequest request) {
 		return ApiResponse.success(
-				roomMapper.toResponse(roomService.updateDetails(publicId, request.roomNumber(), request.capacity())));
+				roomMapper.toResponse(roomService.updateDetails(publicId, request.roomNumber(), request.capacity(),
+						request.expectedVersion())));
 	}
 
 	@Override

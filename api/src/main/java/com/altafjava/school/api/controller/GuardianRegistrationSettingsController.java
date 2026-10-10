@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import com.altafjava.platform.api.dto.response.ApiResponse;
+import com.altafjava.platform.core.annotation.LastWriteWins;
 import com.altafjava.school.api.controller.api.GuardianRegistrationSettingsApi;
 import com.altafjava.school.api.dto.request.UpdateGuardianRegistrationSettingsRequest;
 import com.altafjava.school.api.dto.response.GuardianRegistrationSettingsResponse;
@@ -33,6 +34,7 @@ public class GuardianRegistrationSettingsController implements GuardianRegistrat
 
 	@Override
 	@PutMapping
+	@LastWriteWins("A single tenant setting, with no versioned record behind it")
 	@PreAuthorize("@permissionAuthorizationService.hasPermission('GUARDIAN_REGISTRATION_SETTINGS_MANAGE')")
 	public ApiResponse<GuardianRegistrationSettingsResponse> update(
 			@Valid @RequestBody UpdateGuardianRegistrationSettingsRequest request) {

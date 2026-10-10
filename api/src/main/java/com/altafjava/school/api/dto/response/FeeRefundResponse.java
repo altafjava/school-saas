@@ -5,6 +5,7 @@ import java.time.Instant;
 
 public record FeeRefundResponse(
 		String publicId,
+		Long version,
 		BigDecimal amount,
 		String reason,
 		String method,

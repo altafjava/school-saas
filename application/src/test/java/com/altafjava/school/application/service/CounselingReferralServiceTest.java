@@ -1,5 +1,6 @@
 package com.altafjava.school.application.service;
 
+import static com.altafjava.school.application.support.TestEntities.persisted;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -79,7 +80,7 @@ class CounselingReferralServiceTest {
 		authenticateAsUser(CURRENT_USER_ID);
 		when(studentRepository.findByPublicIdAndTenantId(STUDENT_PUBLIC_ID, 1L))
 				.thenReturn(Optional.of(studentWithId(10L)));
-		when(counselingReferralRepository.save(any(CounselingReferral.class))).thenAnswer(inv -> inv.getArgument(0));
+		when(counselingReferralRepository.save(any(CounselingReferral.class))).thenAnswer(persisted());
 
 		CounselingReferral referral = assertDoesNotThrow(() -> counselingReferralService
 				.refer(STUDENT_PUBLIC_ID.toString(), "Struggling academically"));
@@ -108,7 +109,7 @@ class CounselingReferralServiceTest {
 				.thenReturn(Optional.of(referral));
 		when(counselingSessionRepository.findByPublicIdAndTenantId(sessionPublicId, 1L))
 				.thenReturn(Optional.of(session));
-		when(counselingReferralRepository.save(any(CounselingReferral.class))).thenAnswer(inv -> inv.getArgument(0));
+		when(counselingReferralRepository.save(any(CounselingReferral.class))).thenAnswer(persisted());
 
 		CounselingReferral scheduled = counselingReferralService.scheduleWithSession(referralPublicId.toString(),
 				sessionPublicId.toString());
@@ -139,7 +140,7 @@ class CounselingReferralServiceTest {
 		CounselingReferral referral = CounselingReferral.refer(10L, CURRENT_USER_ID, "Struggling academically");
 		when(counselingReferralRepository.findByPublicIdAndTenantId(referralPublicId, 1L))
 				.thenReturn(Optional.of(referral));
-		when(counselingReferralRepository.save(any(CounselingReferral.class))).thenAnswer(inv -> inv.getArgument(0));
+		when(counselingReferralRepository.save(any(CounselingReferral.class))).thenAnswer(persisted());
 
 		CounselingReferral declined = counselingReferralService.decline(referralPublicId.toString());
 

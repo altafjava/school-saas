@@ -6,7 +6,7 @@ import org.mapstruct.ReportingPolicy;
 import com.altafjava.school.api.dto.response.EventRegistrationResponse;
 import com.altafjava.school.domain.event.model.EventRegistration;
 
-@Mapper(componentModel = "spring", uses = PublicIdMapping.class, unmappedTargetPolicy = ReportingPolicy.ERROR)
+@Mapper(componentModel = "spring", uses = SchoolPublicIdMapping.class, unmappedTargetPolicy = ReportingPolicy.ERROR)
 public interface EventRegistrationMapper {
 
 	@Mapping(target = "publicId", expression = "java(registration.getPublicId().toString())")

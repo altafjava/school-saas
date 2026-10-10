@@ -5,6 +5,7 @@ import java.time.Instant;
 
 public record FeeStructureRevisionResponse(
 		String publicId,
+		Long version,
 		BigDecimal oldAmount,
 		BigDecimal newAmount,
 		String revisedBy,

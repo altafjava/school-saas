@@ -22,6 +22,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
+import com.altafjava.platform.core.concurrency.ExpectedVersion;
 import com.altafjava.platform.core.exception.BusinessException;
 import com.altafjava.platform.core.sync.EntityChange;
 import com.altafjava.platform.core.tenant.TenantContext;
@@ -98,7 +99,8 @@ class AttendanceOfflineSyncHandlerTest {
 
 		handler.update(entityId, "{\"status\":\"ABSENT\"}");
 
-		org.mockito.Mockito.verify(attendanceService).updateStatus(entityId.toString(), AttendanceStatus.ABSENT);
+		org.mockito.Mockito.verify(attendanceService).updateStatus(entityId.toString(), AttendanceStatus.ABSENT,
+				ExpectedVersion.any());
 	}
 
 	@Test

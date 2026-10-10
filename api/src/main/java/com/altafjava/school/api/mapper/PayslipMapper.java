@@ -8,7 +8,7 @@ import com.altafjava.school.api.dto.response.PayslipResponse;
 import com.altafjava.school.domain.payroll.model.PayComponentAmount;
 import com.altafjava.school.domain.payroll.model.Payslip;
 
-@Mapper(componentModel = "spring", uses = PublicIdMapping.class, unmappedTargetPolicy = ReportingPolicy.ERROR)
+@Mapper(componentModel = "spring", uses = SchoolPublicIdMapping.class, unmappedTargetPolicy = ReportingPolicy.ERROR)
 public interface PayslipMapper {
 
 	@Mapping(target = "publicId", expression = "java(payslip.getPublicId().toString())")

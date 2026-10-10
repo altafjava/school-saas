@@ -78,7 +78,8 @@ public class AlumniProfileController implements AlumniProfileApi {
 	public ApiResponse<AlumniProfileResponse> updateContactInfo(@PathVariable String publicId,
 			@Valid @RequestBody UpdateAlumniContactInfoRequest request) {
 		return ApiResponse.success(alumniProfileMapper.toResponse(alumniProfileService.updateContactInfo(publicId,
-				request.currentOccupation(), request.contactEmail(), request.contactPhone())));
+				request.currentOccupation(), request.contactEmail(), request.contactPhone(),
+				request.expectedVersion())));
 	}
 
 	@Override

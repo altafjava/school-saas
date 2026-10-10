@@ -16,6 +16,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import com.altafjava.platform.core.concurrency.ExpectedVersion;
 import com.altafjava.platform.core.exception.BusinessException;
 import com.altafjava.platform.core.exception.ResourceNotFoundException;
 import com.altafjava.platform.core.tenant.TenantContext;
@@ -98,7 +99,8 @@ class SubjectServiceTest {
 				.thenReturn(Optional.of(curriculum));
 		when(subjectRepository.save(any(Subject.class))).thenAnswer(inv -> inv.getArgument(0));
 
-		Subject updated = subjectService.assignCurriculum(subjectPublicId.toString(), curriculumPublicId.toString());
+		Subject updated = subjectService.assignCurriculum(subjectPublicId.toString(), curriculumPublicId.toString(),
+				ExpectedVersion.any());
 
 		assertEquals(9L, updated.getCurriculumId());
 	}
@@ -112,7 +114,8 @@ class SubjectServiceTest {
 		when(curriculumRepository.findByPublicIdAndTenantId(curriculumPublicId, 1L)).thenReturn(Optional.empty());
 
 		assertThrows(ResourceNotFoundException.class,
-				() -> subjectService.assignCurriculum(subjectPublicId.toString(), curriculumPublicId.toString()));
+				() -> subjectService.assignCurriculum(subjectPublicId.toString(), curriculumPublicId.toString(),
+						ExpectedVersion.any()));
 
 		verify(subjectRepository, never()).save(any());
 	}

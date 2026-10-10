@@ -6,7 +6,7 @@ import org.mapstruct.ReportingPolicy;
 import com.altafjava.school.api.dto.response.GuardianAuthorizationChangeResponse;
 import com.altafjava.school.domain.guardian.model.GuardianAuthorizationChange;
 
-@Mapper(componentModel = "spring", uses = PublicIdMapping.class, unmappedTargetPolicy = ReportingPolicy.ERROR)
+@Mapper(componentModel = "spring", uses = SchoolPublicIdMapping.class, unmappedTargetPolicy = ReportingPolicy.ERROR)
 public interface GuardianAuthorizationChangeMapper {
 
 	@Mapping(target = "publicId", expression = "java(change.getPublicId().toString())")

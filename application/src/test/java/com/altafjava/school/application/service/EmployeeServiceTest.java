@@ -19,6 +19,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import com.altafjava.platform.application.service.NumberSequenceService;
+import com.altafjava.platform.core.concurrency.ExpectedVersion;
 import com.altafjava.platform.core.exception.BusinessException;
 import com.altafjava.platform.core.exception.ResourceNotFoundException;
 import com.altafjava.platform.core.tenant.TenantContext;
@@ -97,7 +98,8 @@ class EmployeeServiceTest {
 		clerk();
 
 		Employee updated = assertDoesNotThrow(
-				() -> service.updateContactDetails(PUBLIC_ID.toString(), "Clara", "Clerk", "clara@school.test"));
+				() -> service.updateContactDetails(PUBLIC_ID.toString(), "Clara", "Clerk", "clara@school.test",
+						ExpectedVersion.any()));
 
 		assertEquals("Clara", updated.getFirstName());
 		assertEquals("clara@school.test", updated.getEmail());
@@ -113,7 +115,7 @@ class EmployeeServiceTest {
 				.thenReturn(Optional.of(department));
 
 		Employee updated = service.updateHrDetails(PUBLIC_ID.toString(), departmentPublicId.toString(),
-				"Office Manager", "B.Com", EmploymentType.FULL_TIME);
+				"Office Manager", "B.Com", EmploymentType.FULL_TIME, ExpectedVersion.any());
 
 		assertEquals(42L, updated.getDepartmentId());
 		assertEquals("Office Manager", updated.getDesignation());
@@ -123,7 +125,8 @@ class EmployeeServiceTest {
 	void updateHrDetails_withoutDepartment_leavesItNull() {
 		clerk();
 
-		Employee updated = service.updateHrDetails(PUBLIC_ID.toString(), null, "Clerk", null, EmploymentType.PART_TIME);
+		Employee updated = service.updateHrDetails(PUBLIC_ID.toString(), null, "Clerk", null, EmploymentType.PART_TIME,
+				ExpectedVersion.any());
 
 		assertNull(updated.getDepartmentId());
 	}
@@ -132,8 +135,10 @@ class EmployeeServiceTest {
 	void updatePhone_validatesTheNumber() {
 		clerk();
 
-		assertEquals("+14155552671", service.updatePhone(PUBLIC_ID.toString(), "+14155552671").getPhone());
-		assertThrows(BusinessException.class, () -> service.updatePhone(PUBLIC_ID.toString(), "not-a-phone"));
+		assertEquals("+14155552671",
+				service.updatePhone(PUBLIC_ID.toString(), "+14155552671", ExpectedVersion.any()).getPhone());
+		assertThrows(BusinessException.class,
+				() -> service.updatePhone(PUBLIC_ID.toString(), "not-a-phone", ExpectedVersion.any()));
 	}
 
 	@Test
@@ -142,7 +147,8 @@ class EmployeeServiceTest {
 		Address address = Address.builder().line1("1 Rue de Rivoli").locality("Paris").postalCode("75001")
 				.countryCode("FR").build();
 
-		assertEquals("Paris", service.updateAddress(PUBLIC_ID.toString(), address).getAddress().getLocality());
+		assertEquals("Paris",
+				service.updateAddress(PUBLIC_ID.toString(), address, ExpectedVersion.any()).getAddress().getLocality());
 	}
 
 	@Test
@@ -175,8 +181,9 @@ class EmployeeServiceTest {
 		employee.exit(EmployeeStatus.RETIRED, LocalDate.now(), null);
 
 		assertThrows(BusinessException.class,
-				() -> service.updateContactDetails(PUBLIC_ID.toString(), "A", "B", "a@b.test"));
-		assertThrows(BusinessException.class, () -> service.updatePhone(PUBLIC_ID.toString(), "+14155552671"));
+				() -> service.updateContactDetails(PUBLIC_ID.toString(), "A", "B", "a@b.test", ExpectedVersion.any()));
+		assertThrows(BusinessException.class,
+				() -> service.updatePhone(PUBLIC_ID.toString(), "+14155552671", ExpectedVersion.any()));
 	}
 
 	@Test

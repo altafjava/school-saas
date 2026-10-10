@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import com.altafjava.platform.api.dto.response.ApiResponse;
+import com.altafjava.platform.core.annotation.Command;
 import com.altafjava.school.api.controller.api.SubmissionApi;
 import com.altafjava.school.api.dto.request.GradeSubmissionRequest;
 import com.altafjava.school.api.dto.request.SubmitAssignmentRequest;
@@ -62,6 +63,7 @@ public class SubmissionController implements SubmissionApi {
 
 	@Override
 	@PatchMapping("/{submissionPublicId}/grade")
+	@Command
 	@PreAuthorize("@permissionAuthorizationService.hasPermission('SUBMISSION_GRADE')")
 	public ApiResponse<SubmissionResponse> grade(@PathVariable String assignmentPublicId,
 			@PathVariable String submissionPublicId, @Valid @RequestBody GradeSubmissionRequest request) {

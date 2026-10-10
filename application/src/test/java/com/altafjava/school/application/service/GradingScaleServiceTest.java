@@ -18,6 +18,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import com.altafjava.platform.core.concurrency.ExpectedVersion;
 import com.altafjava.platform.core.exception.BusinessException;
 import com.altafjava.platform.core.tenant.TenantContext;
 import com.altafjava.platform.core.tenant.TenantType;
@@ -110,11 +111,12 @@ class GradingScaleServiceTest {
 		GradingScale scale = GradingScale.create("Scale", false);
 		scale.setId(9L);
 		GradingScaleThreshold existing = GradingScaleThreshold.create(9L, "OLD", BigDecimal.ZERO, BigDecimal.ZERO);
-		when(gradingScaleRepository.findByPublicIdAndTenantId(publicId, 1L)).thenReturn(Optional.of(scale));
+		when(gradingScaleRepository.findWithVersionIncrementByPublicIdAndTenantId(publicId, 1L))
+				.thenReturn(Optional.of(scale));
 		when(gradingScaleThresholdRepository.findAllByGradingScaleIdAndTenantId(9L, 1L))
 				.thenReturn(List.of(existing));
 
-		gradingScaleService.updateThresholds(publicId.toString(), validThresholds());
+		gradingScaleService.updateThresholds(publicId.toString(), validThresholds(), ExpectedVersion.any());
 
 		verify(gradingScaleThresholdRepository).delete(existing);
 		verify(gradingScaleThresholdRepository, times(2)).save(any(GradingScaleThreshold.class));

@@ -7,6 +7,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import com.altafjava.platform.core.concurrency.ExpectedVersion;
 import com.altafjava.platform.core.exception.BusinessException;
 import com.altafjava.platform.core.exception.ResourceNotFoundException;
 import com.altafjava.platform.core.tenant.TenantContext;
@@ -55,8 +56,10 @@ public class RouteService {
 	}
 
 	@Transactional
-	public Route updateDetails(String publicId, String name, String code, String description) {
+	public Route updateDetails(String publicId, String name, String code, String description,
+			ExpectedVersion expectedVersion) {
 		Route route = findByPublicId(publicId);
+		expectedVersion.verify(route);
 		route.updateDetails(name, code, description);
 		return routeRepository.save(route);
 	}

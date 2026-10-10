@@ -4,6 +4,7 @@ import java.time.LocalDate;
 
 public record TransportAssignmentResponse(
 		String publicId,
+		Long version,
 		String studentPublicId,
 		String routePublicId,
 		String vehiclePublicId,

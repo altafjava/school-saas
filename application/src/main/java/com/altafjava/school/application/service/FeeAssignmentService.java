@@ -7,6 +7,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import com.altafjava.platform.core.concurrency.ExpectedVersion;
 import com.altafjava.platform.core.exception.BusinessException;
 import com.altafjava.platform.core.exception.ResourceNotFoundException;
 import com.altafjava.platform.core.tenant.TenantContext;
@@ -92,8 +93,9 @@ public class FeeAssignmentService {
 
 	@Transactional
 	public FeeAssignment configureDueDate(String assignmentPublicId, LocalDate dueDate, Integer graceDays,
-			BigDecimal lateFeePercentage) {
+			BigDecimal lateFeePercentage, ExpectedVersion expectedVersion) {
 		FeeAssignment assignment = findByPublicId(assignmentPublicId);
+		expectedVersion.verify(assignment);
 		assignment.configureDueDate(dueDate, graceDays, lateFeePercentage);
 		return feeAssignmentRepository.save(assignment);
 	}

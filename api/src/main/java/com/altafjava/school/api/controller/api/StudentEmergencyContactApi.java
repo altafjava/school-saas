@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import com.altafjava.platform.api.dto.response.ApiResponse;
 import com.altafjava.platform.core.security.AuthenticatedUser;
 import com.altafjava.school.api.dto.request.EmergencyContactRequest;
+import com.altafjava.school.api.dto.request.UpdateEmergencyContactRequest;
 import com.altafjava.school.api.dto.response.EmergencyContactResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
@@ -27,7 +28,7 @@ public interface StudentEmergencyContactApi {
 
 	@Operation(summary = "Update")
 	ApiResponse<EmergencyContactResponse> update(@PathVariable String studentPublicId,
-			@PathVariable String contactPublicId, @Valid @RequestBody EmergencyContactRequest request);
+			@PathVariable String contactPublicId, @Valid @RequestBody UpdateEmergencyContactRequest request);
 
 	@Operation(summary = "Remove")
 	ApiResponse<Void> remove(@PathVariable String studentPublicId, @PathVariable String contactPublicId,

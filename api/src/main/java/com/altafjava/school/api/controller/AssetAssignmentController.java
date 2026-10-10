@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import com.altafjava.platform.api.dto.response.ApiResponse;
+import com.altafjava.platform.core.annotation.Command;
 import com.altafjava.school.api.controller.api.AssetAssignmentApi;
 import com.altafjava.school.api.dto.request.AssignAssetRequest;
 import com.altafjava.school.api.dto.request.ReturnAssetRequest;
@@ -62,6 +63,7 @@ public class AssetAssignmentController implements AssetAssignmentApi {
 
 	@Override
 	@PatchMapping("/{assignmentPublicId}/return")
+	@Command
 	@PreAuthorize("@permissionAuthorizationService.hasPermission('ASSET_MANAGE')")
 	public ApiResponse<AssetAssignmentResponse> markReturned(@PathVariable String assetPublicId,
 			@PathVariable String assignmentPublicId, @Valid @RequestBody ReturnAssetRequest request) {

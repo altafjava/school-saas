@@ -4,6 +4,7 @@ import java.time.Instant;
 
 public record HealthRecordCorrectionResponse(
 		String publicId,
+		Long version,
 		String oldBloodGroup,
 		String oldAllergies,
 		String oldConditions,

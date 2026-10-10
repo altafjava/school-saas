@@ -5,6 +5,7 @@ import java.time.Instant;
 
 public record FeeDiscountResponse(
 		String publicId,
+		Long version,
 		String feeStructurePublicId,
 		String discountType,
 		BigDecimal discountValue,

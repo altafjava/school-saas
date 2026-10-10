@@ -27,6 +27,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.security.access.AccessDeniedException;
 import com.altafjava.platform.application.dto.notification.SendNotificationCommand;
 import com.altafjava.platform.application.service.NotificationService;
+import com.altafjava.platform.core.concurrency.ExpectedVersion;
 import com.altafjava.platform.core.exception.ResourceNotFoundException;
 import com.altafjava.platform.core.tenant.TenantContext;
 import com.altafjava.platform.core.tenant.TenantType;
@@ -201,7 +202,8 @@ class AssignmentServiceTest {
 		when(assignmentRepository.save(any(Assignment.class))).thenAnswer(inv -> inv.getArgument(0));
 		LocalDate newDueDate = LocalDate.now().plusDays(3);
 
-		Assignment result = assignmentService.reschedule(assignmentPublicId.toString(), newDueDate);
+		Assignment result = assignmentService.reschedule(assignmentPublicId.toString(), newDueDate,
+				ExpectedVersion.any());
 
 		assertEquals(newDueDate, result.getDueDate());
 		verify(academicAccessGuard).assertCanWriteSubject(1L, 5L, 6L);
@@ -216,7 +218,8 @@ class AssignmentServiceTest {
 		doThrow(new AccessDeniedException("not scoped")).when(academicAccessGuard).assertCanWriteSubject(1L, 5L, 6L);
 
 		assertThrows(AccessDeniedException.class,
-				() -> assignmentService.reschedule(assignmentPublicId.toString(), LocalDate.now().plusDays(3)));
+				() -> assignmentService.reschedule(assignmentPublicId.toString(), LocalDate.now().plusDays(3),
+						ExpectedVersion.any()));
 
 		verify(assignmentRepository, never()).save(any());
 	}
@@ -227,6 +230,7 @@ class AssignmentServiceTest {
 		when(assignmentRepository.findByPublicIdAndTenantId(assignmentPublicId, 1L)).thenReturn(Optional.empty());
 
 		assertThrows(ResourceNotFoundException.class,
-				() -> assignmentService.reschedule(assignmentPublicId.toString(), LocalDate.now()));
+				() -> assignmentService.reschedule(assignmentPublicId.toString(), LocalDate.now(),
+						ExpectedVersion.any()));
 	}
 }

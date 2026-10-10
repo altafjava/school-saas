@@ -15,6 +15,7 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import com.altafjava.platform.application.service.ActivityLogService;
+import com.altafjava.platform.core.concurrency.ExpectedVersion;
 import com.altafjava.platform.core.exception.ResourceNotFoundException;
 import com.altafjava.platform.core.tenant.TenantContext;
 import com.altafjava.platform.core.tenant.TenantType;
@@ -66,7 +67,7 @@ class HealthRecordServiceTest {
 		when(healthRecordRepository.save(any(HealthRecord.class))).thenAnswer(inv -> inv.getArgument(0));
 
 		HealthRecord record = healthRecordService.upsert(STUDENT_PUBLIC_ID.toString(), "O+", "Peanuts", "Asthma",
-				"MMR");
+				"MMR", ExpectedVersion.any());
 
 		assertEquals(10L, record.getStudentId());
 		assertEquals("O+", record.getBloodGroup());
@@ -82,7 +83,7 @@ class HealthRecordServiceTest {
 		when(healthRecordRepository.save(any(HealthRecord.class))).thenAnswer(inv -> inv.getArgument(0));
 
 		HealthRecord updated = healthRecordService.upsert(STUDENT_PUBLIC_ID.toString(), "A-", "Pollen", "None",
-				"MMR, HepB");
+				"MMR, HepB", ExpectedVersion.any());
 
 		assertEquals("A-", updated.getBloodGroup());
 		assertEquals("Pollen", updated.getAllergies());
@@ -99,7 +100,8 @@ class HealthRecordServiceTest {
 		when(healthRecordCorrectionRepository.save(any(HealthRecordCorrection.class)))
 				.thenAnswer(inv -> inv.getArgument(0));
 
-		healthRecordService.upsert(STUDENT_PUBLIC_ID.toString(), "A-", "Pollen", "None", "MMR, HepB");
+		healthRecordService.upsert(STUDENT_PUBLIC_ID.toString(), "A-", "Pollen", "None", "MMR, HepB",
+				ExpectedVersion.any());
 
 		ArgumentCaptor<HealthRecordCorrection> captor = ArgumentCaptor.forClass(HealthRecordCorrection.class);
 		verify(healthRecordCorrectionRepository).save(captor.capture());
@@ -118,7 +120,7 @@ class HealthRecordServiceTest {
 		when(healthRecordRepository.findByStudentIdAndTenantId(10L, 1L)).thenReturn(Optional.empty());
 		when(healthRecordRepository.save(any(HealthRecord.class))).thenAnswer(inv -> inv.getArgument(0));
 
-		healthRecordService.upsert(STUDENT_PUBLIC_ID.toString(), "O+", "Peanuts", "Asthma", "MMR");
+		healthRecordService.upsert(STUDENT_PUBLIC_ID.toString(), "O+", "Peanuts", "Asthma", "MMR", ExpectedVersion.any());
 
 		org.mockito.Mockito.verifyNoInteractions(healthRecordCorrectionRepository);
 	}

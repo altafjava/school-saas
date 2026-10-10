@@ -7,6 +7,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import com.altafjava.platform.core.concurrency.ExpectedVersion;
 import com.altafjava.platform.core.exception.BusinessException;
 import com.altafjava.platform.core.exception.ResourceNotFoundException;
 import com.altafjava.platform.core.tenant.TenantContext;
@@ -49,8 +50,10 @@ public class BoardService {
 
 	@Transactional
 	@CacheEvict(cacheNames = CACHE_BOARD_LOOKUP, allEntries = true)
-	public Board updateDetails(String publicId, String name, String code, String description) {
+	public Board updateDetails(String publicId, String name, String code, String description,
+			ExpectedVersion expectedVersion) {
 		Board board = findByPublicId(publicId);
+		expectedVersion.verify(board);
 		board.updateDetails(name, code, description);
 		return boardRepository.save(board);
 	}

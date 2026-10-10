@@ -7,7 +7,7 @@ import org.mapstruct.ReportingPolicy;
 import com.altafjava.school.api.dto.response.TimetableEntryResponse;
 import com.altafjava.school.domain.timetable.model.TimetableEntry;
 
-@Mapper(componentModel = "spring", uses = PublicIdMapping.class, unmappedTargetPolicy = ReportingPolicy.ERROR)
+@Mapper(componentModel = "spring", uses = SchoolPublicIdMapping.class, unmappedTargetPolicy = ReportingPolicy.ERROR)
 public interface TimetableEntryMapper {
 
 	@Mapping(target = "publicId", expression = "java(entry.getPublicId().toString())")

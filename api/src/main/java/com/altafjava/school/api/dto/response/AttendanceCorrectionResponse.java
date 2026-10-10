@@ -4,6 +4,7 @@ import java.time.Instant;
 
 public record AttendanceCorrectionResponse(
 		String publicId,
+		Long version,
 		String oldStatus,
 		String newStatus,
 		String correctedBy,

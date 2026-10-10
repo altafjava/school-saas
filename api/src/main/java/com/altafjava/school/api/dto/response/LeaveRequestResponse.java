@@ -6,6 +6,7 @@ import java.time.LocalDateTime;
 
 public record LeaveRequestResponse(
 		String publicId,
+		Long version,
 		String employeePublicId,
 		String leaveTypePublicId,
 		LocalDate startDate,

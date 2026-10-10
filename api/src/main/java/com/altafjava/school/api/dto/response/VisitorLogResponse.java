@@ -4,6 +4,7 @@ import java.time.LocalDateTime;
 
 public record VisitorLogResponse(
 		String publicId,
+		Long version,
 		String visitorName,
 		String visitorPhone,
 		String purpose,

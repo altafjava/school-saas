@@ -76,7 +76,8 @@ public class RouteController implements RouteApi {
 	public ApiResponse<RouteResponse> updateDetails(@PathVariable String publicId,
 			@Valid @RequestBody UpdateRouteRequest request) {
 		return ApiResponse.success(routeMapper.toResponse(
-				routeService.updateDetails(publicId, request.name(), request.code(), request.description())));
+				routeService.updateDetails(publicId, request.name(), request.code(), request.description(),
+						request.expectedVersion())));
 	}
 
 	@Override

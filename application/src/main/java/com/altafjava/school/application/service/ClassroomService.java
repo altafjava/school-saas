@@ -15,6 +15,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import com.altafjava.platform.application.event.publisher.EventPublisher;
+import com.altafjava.platform.core.concurrency.ExpectedVersion;
 import com.altafjava.platform.core.exception.BusinessException;
 import com.altafjava.platform.core.exception.ResourceNotFoundException;
 import com.altafjava.platform.core.search.LikePattern;
@@ -101,8 +102,9 @@ public class ClassroomService {
 	}
 
 	@Transactional
-	public Classroom reassignTeacher(String publicId, String classTeacherPublicId) {
+	public Classroom reassignTeacher(String publicId, String classTeacherPublicId, ExpectedVersion expectedVersion) {
 		Classroom classroom = findByPublicId(publicId);
+		expectedVersion.verify(classroom);
 		Long tenantId = TenantContext.getCurrentTenantId();
 		classroom.reassignTeacher(
 				classTeacherPublicId == null ? null : requireActiveTeacherId(tenantId, classTeacherPublicId));
@@ -110,8 +112,9 @@ public class ClassroomService {
 	}
 
 	@Transactional
-	public Classroom moveToAcademicYear(String publicId, String academicYearPublicId) {
+	public Classroom moveToAcademicYear(String publicId, String academicYearPublicId, ExpectedVersion expectedVersion) {
 		Classroom classroom = findByPublicId(publicId);
+		expectedVersion.verify(classroom);
 		Long tenantId = TenantContext.getCurrentTenantId();
 		AcademicYear academicYear = academicYearRepository
 				.findByPublicIdAndTenantId(UUID.fromString(academicYearPublicId), tenantId)
@@ -121,8 +124,9 @@ public class ClassroomService {
 	}
 
 	@Transactional
-	public Classroom updateCapacity(String publicId, Integer capacity) {
+	public Classroom updateCapacity(String publicId, Integer capacity, ExpectedVersion expectedVersion) {
 		Classroom classroom = findByPublicId(publicId);
+		expectedVersion.verify(classroom);
 		classroom.updateCapacity(capacity);
 		return classroomRepository.save(classroom);
 	}
@@ -131,9 +135,10 @@ public class ClassroomService {
 	// GradingScaleService.CACHE_GRADING_SCALE_THRESHOLDS for why this can only evict wholesale.
 	@Transactional
 	@CacheEvict(cacheNames = GradingScaleService.CACHE_GRADING_SCALE_THRESHOLDS, allEntries = true)
-	public Classroom assignCurriculum(String publicId, String curriculumPublicId) {
+	public Classroom assignCurriculum(String publicId, String curriculumPublicId, ExpectedVersion expectedVersion) {
 		Long tenantId = TenantContext.getCurrentTenantId();
 		Classroom classroom = findByPublicId(publicId);
+		expectedVersion.verify(classroom);
 		var curriculum = curriculumRepository.findByPublicIdAndTenantId(UUID.fromString(curriculumPublicId), tenantId)
 				.orElseThrow(() -> new ResourceNotFoundException("Curriculum not found: " + curriculumPublicId));
 		classroom.assignCurriculum(curriculum.getId());

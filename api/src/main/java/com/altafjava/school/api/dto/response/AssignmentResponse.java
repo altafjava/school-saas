@@ -5,6 +5,7 @@ import java.time.LocalDate;
 
 public record AssignmentResponse(
 		String publicId,
+		Long version,
 		String classroomPublicId,
 		String subjectPublicId,
 		String teacherPublicId,

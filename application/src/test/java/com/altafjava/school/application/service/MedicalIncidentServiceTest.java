@@ -1,5 +1,6 @@
 package com.altafjava.school.application.service;
 
+import static com.altafjava.school.application.support.TestEntities.persisted;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -85,7 +86,7 @@ class MedicalIncidentServiceTest {
 		authenticateAsUser(CURRENT_USER_ID);
 		Student student = studentWithId(10L);
 		when(studentRepository.findByPublicIdAndTenantId(STUDENT_PUBLIC_ID, 1L)).thenReturn(Optional.of(student));
-		when(medicalIncidentRepository.save(any(MedicalIncident.class))).thenAnswer(inv -> inv.getArgument(0));
+		when(medicalIncidentRepository.save(any(MedicalIncident.class))).thenAnswer(persisted());
 		when(recipientResolver.resolve(1L, student)).thenReturn(Optional.of(99L));
 
 		MedicalIncident incident = assertDoesNotThrow(() -> medicalIncidentService.record(
@@ -101,7 +102,7 @@ class MedicalIncidentServiceTest {
 		authenticateAsUser(CURRENT_USER_ID);
 		Student student = studentWithId(10L);
 		when(studentRepository.findByPublicIdAndTenantId(STUDENT_PUBLIC_ID, 1L)).thenReturn(Optional.of(student));
-		when(medicalIncidentRepository.save(any(MedicalIncident.class))).thenAnswer(inv -> inv.getArgument(0));
+		when(medicalIncidentRepository.save(any(MedicalIncident.class))).thenAnswer(persisted());
 		when(recipientResolver.resolve(1L, student)).thenReturn(Optional.empty());
 
 		MedicalIncident incident = medicalIncidentService.record(STUDENT_PUBLIC_ID.toString(),

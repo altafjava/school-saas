@@ -6,6 +6,7 @@ import java.time.LocalDateTime;
 
 public record ExamResponse(
 		String publicId,
+		Long version,
 		String title,
 		String subjectPublicId,
 		String classroomPublicId,

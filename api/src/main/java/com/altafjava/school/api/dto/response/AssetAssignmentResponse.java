@@ -4,6 +4,7 @@ import java.time.LocalDate;
 
 public record AssetAssignmentResponse(
 		String publicId,
+		Long version,
 		String assetPublicId,
 		String assignedToType,
 		String assignedToPublicId,

@@ -6,6 +6,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import com.altafjava.platform.core.concurrency.ExpectedVersion;
 import com.altafjava.platform.core.exception.BusinessException;
 import com.altafjava.platform.core.exception.ResourceNotFoundException;
 import com.altafjava.platform.core.tenant.TenantContext;
@@ -70,9 +71,11 @@ public class CustomFieldDefinitionService {
 	@Transactional
 	public CustomFieldDefinition updateDetails(String publicId, String label, CustomFieldType fieldType,
 			boolean required, CustomFieldValidationRule validationRule, int displayOrder, String displayGroup,
-			int displayGroupOrder, CustomFieldVisibilityCondition visibilityCondition) {
+			int displayGroupOrder, CustomFieldVisibilityCondition visibilityCondition,
+			ExpectedVersion expectedVersion) {
 		requireOptionsForSelectTypes(fieldType, validationRule);
 		CustomFieldDefinition definition = findByPublicId(publicId);
+		expectedVersion.verify(definition);
 		definition.updateDetails(label, fieldType, required);
 		definition.updateValidationRule(validationRule);
 		definition.updateVisibilityCondition(visibilityCondition);

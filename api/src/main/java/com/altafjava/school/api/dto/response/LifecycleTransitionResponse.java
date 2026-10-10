@@ -5,6 +5,7 @@ import java.time.LocalDate;
 
 public record LifecycleTransitionResponse(
 		String publicId,
+		Long version,
 		String fromStage,
 		String toStage,
 		String reason,

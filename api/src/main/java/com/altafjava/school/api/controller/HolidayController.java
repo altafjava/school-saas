@@ -74,7 +74,8 @@ public class HolidayController implements HolidayApi {
 	public ApiResponse<HolidayResponse> updateDetails(@PathVariable String publicId,
 			@Valid @RequestBody UpdateHolidayRequest request) {
 		return ApiResponse.success(holidayMapper.toResponse(
-				holidayService.updateDetails(publicId, request.date(), request.name(), request.recurring())));
+				holidayService.updateDetails(publicId, request.date(), request.name(), request.recurring(),
+						request.expectedVersion())));
 	}
 
 	@Override

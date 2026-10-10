@@ -8,6 +8,7 @@ import java.util.UUID;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
+import com.altafjava.platform.core.concurrency.ExpectedVersion;
 import com.altafjava.platform.core.exception.BusinessException;
 import com.altafjava.platform.core.sync.EntityChange;
 import com.altafjava.platform.core.sync.OfflineSyncEntityHandler;
@@ -55,7 +56,7 @@ public class AttendanceOfflineSyncHandler implements OfflineSyncEntityHandler {
 	@Override
 	public void update(UUID entityId, String payloadJson) {
 		UpdatePayload payload = readValue(payloadJson, UpdatePayload.class);
-		attendanceService.updateStatus(entityId.toString(), payload.status());
+		attendanceService.updateStatus(entityId.toString(), payload.status(), ExpectedVersion.any());
 	}
 
 	@Override

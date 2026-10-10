@@ -10,7 +10,7 @@ import com.altafjava.school.application.reference.PublicIdResolver;
 import com.altafjava.school.domain.inventory.model.AssetAssignment;
 import com.altafjava.school.domain.inventory.model.AssignedToType;
 
-@Mapper(componentModel = "spring", uses = PublicIdMapping.class, unmappedTargetPolicy = ReportingPolicy.ERROR)
+@Mapper(componentModel = "spring", uses = SchoolPublicIdMapping.class, unmappedTargetPolicy = ReportingPolicy.ERROR)
 public abstract class AssetAssignmentMapper {
 
 	@Autowired

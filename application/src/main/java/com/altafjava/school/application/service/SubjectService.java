@@ -5,6 +5,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import com.altafjava.platform.core.concurrency.ExpectedVersion;
 import com.altafjava.platform.core.exception.BusinessException;
 import com.altafjava.platform.core.exception.ResourceNotFoundException;
 import com.altafjava.platform.core.search.LikePattern;
@@ -60,9 +61,10 @@ public class SubjectService {
 	}
 
 	@Transactional
-	public Subject assignCurriculum(String publicId, String curriculumPublicId) {
+	public Subject assignCurriculum(String publicId, String curriculumPublicId, ExpectedVersion expectedVersion) {
 		Long tenantId = TenantContext.getCurrentTenantId();
 		Subject subject = findByPublicId(publicId);
+		expectedVersion.verify(subject);
 		var curriculum = curriculumRepository.findByPublicIdAndTenantId(UUID.fromString(curriculumPublicId), tenantId)
 				.orElseThrow(() -> new ResourceNotFoundException("Curriculum not found: " + curriculumPublicId));
 		subject.assignCurriculum(curriculum.getId());

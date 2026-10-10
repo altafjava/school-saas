@@ -19,6 +19,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import com.altafjava.platform.core.concurrency.ExpectedVersion;
 import com.altafjava.platform.core.exception.BusinessException;
 import com.altafjava.platform.core.exception.ResourceNotFoundException;
 import com.altafjava.platform.core.tenant.TenantContext;
@@ -241,7 +242,8 @@ class TimetableServiceTest {
 				.thenReturn(List.of(entry));
 		when(timetableEntryRepository.save(any(TimetableEntry.class))).thenAnswer(inv -> inv.getArgument(0));
 
-		assertDoesNotThrow(() -> timetableService.assignVenue(entryPublicId.toString(), VENUE_PUBLIC_ID.toString()));
+		assertDoesNotThrow(() -> timetableService.assignVenue(entryPublicId.toString(), VENUE_PUBLIC_ID.toString(),
+				ExpectedVersion.any()));
 	}
 
 	@Test
@@ -255,6 +257,7 @@ class TimetableServiceTest {
 				.thenReturn(List.of(entry, slotHoldingVenue(51L, 7L)));
 
 		assertThrows(BusinessException.class,
-				() -> timetableService.assignVenue(entryPublicId.toString(), VENUE_PUBLIC_ID.toString()));
+				() -> timetableService.assignVenue(entryPublicId.toString(), VENUE_PUBLIC_ID.toString(),
+						ExpectedVersion.any()));
 	}
 }

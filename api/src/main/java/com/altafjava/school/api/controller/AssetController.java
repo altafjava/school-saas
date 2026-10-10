@@ -70,7 +70,8 @@ public class AssetController implements AssetApi {
 	@PreAuthorize("@permissionAuthorizationService.hasPermission('ASSET_MANAGE')")
 	public ApiResponse<AssetResponse> updateLocation(@PathVariable String publicId,
 			@Valid @RequestBody UpdateAssetLocationRequest request) {
-		return ApiResponse.success(assetMapper.toResponse(assetService.updateLocation(publicId, request.location())));
+		return ApiResponse.success(assetMapper
+				.toResponse(assetService.updateLocation(publicId, request.location(), request.expectedVersion())));
 	}
 
 	@Override

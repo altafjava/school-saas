@@ -82,7 +82,8 @@ public class GradeController implements GradeApi {
 	@PreAuthorize("@permissionAuthorizationService.hasPermission('STUDENT_GRADES_WRITE')")
 	public ApiResponse<GradeResponse> correct(@PathVariable String publicId,
 			@Valid @RequestBody CorrectGradeRequest request) {
-		return ApiResponse.success(gradeMapper.toResponse(gradeService.correct(publicId, request.marks())));
+		return ApiResponse.success(
+				gradeMapper.toResponse(gradeService.correct(publicId, request.marks(), request.expectedVersion())));
 	}
 
 	@Override

@@ -25,6 +25,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.access.AccessDeniedException;
 import com.altafjava.platform.application.event.publisher.EventPublisher;
+import com.altafjava.platform.core.concurrency.ExpectedVersion;
 import com.altafjava.platform.core.exception.BusinessException;
 import com.altafjava.platform.core.exception.ResourceNotFoundException;
 import com.altafjava.platform.core.tenant.TenantContext;
@@ -153,7 +154,7 @@ class ExamServiceTest {
 		when(examRepository.findByPublicIdAndTenantId(publicId, 1L)).thenReturn(Optional.of(exam));
 		when(examRepository.save(any(Exam.class))).thenAnswer(inv -> inv.getArgument(0));
 
-		Exam rescheduled = examService.reschedule(publicId.toString(), newTime);
+		Exam rescheduled = examService.reschedule(publicId.toString(), newTime, ExpectedVersion.any());
 
 		assertEquals(newTime, rescheduled.getScheduledAt());
 	}
@@ -169,7 +170,8 @@ class ExamServiceTest {
 				.thenReturn(BigDecimal.ZERO);
 		when(examRepository.save(any(Exam.class))).thenAnswer(inv -> inv.getArgument(0));
 
-		Exam updated = examService.assignTerm(publicId.toString(), publicId("term", 7).toString());
+		Exam updated = examService.assignTerm(publicId.toString(), publicId("term", 7).toString(),
+				ExpectedVersion.any());
 
 		assertEquals(7L, updated.getTermId());
 	}
@@ -185,7 +187,8 @@ class ExamServiceTest {
 				.thenReturn(new BigDecimal("40"));
 
 		assertThrows(BusinessException.class,
-				() -> examService.assignTerm(publicId.toString(), publicId("term", 7).toString()));
+				() -> examService.assignTerm(publicId.toString(), publicId("term", 7).toString(),
+						ExpectedVersion.any()));
 
 		verify(examRepository, never()).save(any());
 	}
@@ -265,7 +268,7 @@ class ExamServiceTest {
 				.thenReturn(new BigDecimal("50"));
 		when(examRepository.save(any(Exam.class))).thenAnswer(inv -> inv.getArgument(0));
 
-		Exam reweighted = examService.reweight(publicId.toString(), new BigDecimal("50"));
+		Exam reweighted = examService.reweight(publicId.toString(), new BigDecimal("50"), ExpectedVersion.any());
 
 		assertEquals(0, new BigDecimal("50").compareTo(reweighted.getWeightage()));
 	}
@@ -323,7 +326,8 @@ class ExamServiceTest {
 		when(termRepository.findByPublicIdAndTenantId(publicId("term", 99), 1L)).thenReturn(Optional.empty());
 
 		assertThrows(ResourceNotFoundException.class,
-				() -> examService.assignTerm(publicId.toString(), publicId("term", 99).toString()));
+				() -> examService.assignTerm(publicId.toString(), publicId("term", 99).toString(),
+						ExpectedVersion.any()));
 	}
 
 	@Test

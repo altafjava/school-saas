@@ -4,6 +4,7 @@ import java.time.LocalDate;
 
 public record DisciplineIncidentResponse(
 		String publicId,
+		Long version,
 		String studentPublicId,
 		String reportedByTeacherPublicId,
 		LocalDate incidentDate,

@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import com.altafjava.platform.api.dto.response.ApiResponse;
+import com.altafjava.platform.core.annotation.Command;
 import com.altafjava.school.api.controller.api.EmployeeApi;
 import com.altafjava.school.api.dto.request.AddressRequest;
 import com.altafjava.school.api.dto.request.CreateEmployeeRequest;
@@ -81,7 +82,7 @@ public class EmployeeController implements EmployeeApi {
 	public ApiResponse<EmployeeResponse> updateContactDetails(@PathVariable String publicId,
 			@Valid @RequestBody UpdateEmployeeContactDetailsRequest request) {
 		return ApiResponse.success(employeeMapper.toResponse(employeeService.updateContactDetails(publicId,
-				request.firstName(), request.lastName(), request.email())));
+				request.firstName(), request.lastName(), request.email(), request.expectedVersion())));
 	}
 
 	@Override
@@ -91,7 +92,7 @@ public class EmployeeController implements EmployeeApi {
 			@Valid @RequestBody UpdateEmployeeHrDetailsRequest request) {
 		return ApiResponse.success(employeeMapper.toResponse(employeeService.updateHrDetails(publicId,
 				request.departmentPublicId(), request.designation(), request.qualification(),
-				request.employmentType())));
+				request.employmentType(), request.expectedVersion())));
 	}
 
 	@Override
@@ -99,7 +100,8 @@ public class EmployeeController implements EmployeeApi {
 	@PreAuthorize("@permissionAuthorizationService.hasPermission('EMPLOYEE_MANAGE')")
 	public ApiResponse<EmployeeResponse> updatePhone(@PathVariable String publicId,
 			@Valid @RequestBody UpdatePhoneRequest request) {
-		return ApiResponse.success(employeeMapper.toResponse(employeeService.updatePhone(publicId, request.phone())));
+		return ApiResponse.success(employeeMapper
+				.toResponse(employeeService.updatePhone(publicId, request.phone(), request.expectedVersion())));
 	}
 
 	@Override
@@ -108,7 +110,8 @@ public class EmployeeController implements EmployeeApi {
 	public ApiResponse<EmployeeResponse> updateAddress(@PathVariable String publicId,
 			@Valid @RequestBody AddressRequest request) {
 		return ApiResponse.success(
-				employeeMapper.toResponse(employeeService.updateAddress(publicId, addressMapper.toDomain(request))));
+				employeeMapper.toResponse(employeeService.updateAddress(publicId, addressMapper.toDomain(request),
+						request.expectedVersion())));
 	}
 
 	@Override
@@ -117,7 +120,8 @@ public class EmployeeController implements EmployeeApi {
 	public ApiResponse<EmployeeResponse> updatePhoto(@PathVariable String publicId,
 			@Valid @RequestBody UpdatePhotoRequest request) {
 		return ApiResponse
-				.success(employeeMapper.toResponse(employeeService.updatePhoto(publicId, request.filePublicId())));
+				.success(employeeMapper.toResponse(
+						employeeService.updatePhoto(publicId, request.filePublicId(), request.expectedVersion())));
 	}
 
 	@Override
@@ -126,7 +130,8 @@ public class EmployeeController implements EmployeeApi {
 	public ApiResponse<EmployeeResponse> setProbationPeriod(@PathVariable String publicId,
 			@Valid @RequestBody SetEmployeeProbationRequest request) {
 		return ApiResponse.success(employeeMapper
-				.toResponse(employeeService.setProbationPeriod(publicId, request.probationEndDate())));
+				.toResponse(employeeService.setProbationPeriod(publicId, request.probationEndDate(),
+						request.expectedVersion())));
 	}
 
 	@Override
@@ -138,6 +143,7 @@ public class EmployeeController implements EmployeeApi {
 
 	@Override
 	@PatchMapping("/{publicId}/exit")
+	@Command
 	@PreAuthorize("@permissionAuthorizationService.hasPermission('EMPLOYEE_MANAGE')")
 	public ApiResponse<EmployeeResponse> exit(@PathVariable String publicId,
 			@Valid @RequestBody ExitEmployeeRequest request) {

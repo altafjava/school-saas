@@ -17,6 +17,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import com.altafjava.platform.api.dto.response.ApiResponse;
+import com.altafjava.platform.core.annotation.Command;
+import com.altafjava.platform.core.annotation.LastWriteWins;
 import com.altafjava.platform.core.security.AuthenticatedUser;
 import com.altafjava.school.api.controller.api.FeeAdjustmentApi;
 import com.altafjava.school.api.dto.request.GrantFeeDiscountRequest;
@@ -71,6 +73,7 @@ public class FeeAdjustmentController implements FeeAdjustmentApi {
 
 	@Override
 	@PatchMapping("/students/{studentPublicId}/fee-discounts/{discountPublicId}/revoke")
+	@Command
 	@PreAuthorize("@permissionAuthorizationService.hasPermission('FEE_DISCOUNT_MANAGE')")
 	public ApiResponse<FeeDiscountResponse> revokeDiscount(@PathVariable String studentPublicId,
 			@PathVariable String discountPublicId, @Valid @RequestBody RevokeFeeDiscountRequest request) {
@@ -89,6 +92,7 @@ public class FeeAdjustmentController implements FeeAdjustmentApi {
 
 	@Override
 	@PutMapping("/students/{studentPublicId}/fee-installment-plans/{feeStructurePublicId}")
+	@LastWriteWins("Replaces the whole installment plan, which is a set of rows and not one versioned record")
 	@PreAuthorize("@permissionAuthorizationService.hasPermission('FEE_INSTALLMENT_MANAGE')")
 	public ApiResponse<List<FeeInstallmentResponse>> setPlan(@PathVariable String studentPublicId,
 			@PathVariable String feeStructurePublicId, @Valid @RequestBody SetFeeInstallmentPlanRequest request) {

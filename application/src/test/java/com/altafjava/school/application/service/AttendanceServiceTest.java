@@ -21,6 +21,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.security.access.AccessDeniedException;
+import com.altafjava.platform.core.concurrency.ExpectedVersion;
 import com.altafjava.platform.core.exception.ResourceNotFoundException;
 import com.altafjava.platform.core.tenant.TenantContext;
 import com.altafjava.platform.core.tenant.TenantType;
@@ -215,7 +216,7 @@ class AttendanceServiceTest {
 		doThrow(new AccessDeniedException("not scoped")).when(academicAccessGuard).assertCanWriteClassroom(1L, 10L);
 
 		assertThrows(AccessDeniedException.class,
-				() -> attendanceService.updateStatus(publicId, AttendanceStatus.PRESENT));
+				() -> attendanceService.updateStatus(publicId, AttendanceStatus.PRESENT, ExpectedVersion.any()));
 
 		verify(attendanceRepository, never()).save(any());
 		verify(attendanceCorrectionRepository, never()).save(any());
@@ -303,7 +304,7 @@ class AttendanceServiceTest {
 				.thenReturn(Optional.of(attendance));
 		when(attendanceRepository.save(any(Attendance.class))).thenAnswer(inv -> inv.getArgument(0));
 
-		attendanceService.updateStatus(publicId, AttendanceStatus.PRESENT);
+		attendanceService.updateStatus(publicId, AttendanceStatus.PRESENT, ExpectedVersion.any());
 
 		org.mockito.ArgumentCaptor<AttendanceCorrection> captor = org.mockito.ArgumentCaptor
 				.forClass(AttendanceCorrection.class);
@@ -322,7 +323,7 @@ class AttendanceServiceTest {
 				.thenReturn(Optional.of(attendance));
 		when(attendanceRepository.save(any(Attendance.class))).thenAnswer(inv -> inv.getArgument(0));
 
-		attendanceService.updateStatus(publicId, AttendanceStatus.PRESENT);
+		attendanceService.updateStatus(publicId, AttendanceStatus.PRESENT, ExpectedVersion.any());
 
 		verify(attendanceCorrectionRepository, never()).save(any());
 	}

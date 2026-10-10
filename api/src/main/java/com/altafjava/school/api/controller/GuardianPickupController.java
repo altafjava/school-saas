@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import com.altafjava.platform.api.dto.response.ApiResponse;
+import com.altafjava.platform.core.annotation.Command;
 import com.altafjava.platform.core.security.AuthenticatedUser;
 import com.altafjava.school.api.controller.api.GuardianPickupApi;
 import com.altafjava.school.api.dto.request.RestrictCustodyRequest;
@@ -49,6 +50,7 @@ public class GuardianPickupController implements GuardianPickupApi {
 
 	@Override
 	@PatchMapping("/custody-restriction/apply")
+	@Command
 	@PreAuthorize("@permissionAuthorizationService.hasPermission('GUARDIAN_PICKUP_MANAGE')")
 	public ApiResponse<StudentGuardianLinkResponse> restrictCustody(@PathVariable String guardianPublicId,
 			@PathVariable String studentPublicId, @Valid @RequestBody RestrictCustodyRequest request,

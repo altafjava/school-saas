@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import com.altafjava.platform.api.dto.response.ApiResponse;
+import com.altafjava.platform.core.annotation.LastWriteWins;
 import com.altafjava.school.api.controller.api.CustomFieldValueApi;
 import com.altafjava.school.api.dto.request.SetCustomFieldValuesRequest;
 import com.altafjava.school.api.dto.response.CustomFieldValueResponse;
@@ -52,6 +53,7 @@ public class CustomFieldValueController implements CustomFieldValueApi {
 
 	@Override
 	@PutMapping
+	@LastWriteWins("Custom field values are stored as attributes, not on a versioned record")
 	@PreAuthorize("@permissionAuthorizationService.hasPermission('CUSTOM_FIELD_VALUE_WRITE')")
 	public ApiResponse<List<CustomFieldValueResponse>> set(@PathVariable CustomFieldEntityType entityType,
 			@PathVariable String publicId, @Valid @RequestBody SetCustomFieldValuesRequest request) {

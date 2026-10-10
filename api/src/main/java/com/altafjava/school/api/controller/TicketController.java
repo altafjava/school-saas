@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import com.altafjava.platform.api.dto.response.ApiResponse;
+import com.altafjava.platform.core.annotation.Command;
 import com.altafjava.school.api.controller.api.TicketApi;
 import com.altafjava.school.api.dto.request.AssignTicketRequest;
 import com.altafjava.school.api.dto.request.RaiseTicketRequest;
@@ -94,6 +95,7 @@ public class TicketController implements TicketApi {
 
 	@Override
 	@PatchMapping("/{publicId}/assign")
+	@Command
 	@PreAuthorize("@permissionAuthorizationService.hasPermission('TICKET_MANAGE')")
 	public ApiResponse<TicketResponse> assign(@PathVariable String publicId,
 			@Valid @RequestBody AssignTicketRequest request) {
@@ -103,6 +105,7 @@ public class TicketController implements TicketApi {
 
 	@Override
 	@PatchMapping("/{publicId}/resolve")
+	@Command
 	@PreAuthorize("@permissionAuthorizationService.hasPermission('TICKET_MANAGE')")
 	public ApiResponse<TicketResponse> resolve(@PathVariable String publicId,
 			@Valid @RequestBody ResolveTicketRequest request) {

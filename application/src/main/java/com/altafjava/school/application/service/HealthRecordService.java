@@ -8,6 +8,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import com.altafjava.platform.application.service.ActivityLogService;
+import com.altafjava.platform.core.concurrency.ExpectedVersion;
 import com.altafjava.platform.core.exception.ResourceNotFoundException;
 import com.altafjava.platform.core.tenant.TenantContext;
 import com.altafjava.school.domain.health.model.HealthRecord;
@@ -47,11 +48,12 @@ public class HealthRecordService {
 
 	@Transactional
 	public HealthRecord upsert(String studentPublicId, String bloodGroup, String allergies, String conditions,
-			String immunizations) {
+			String immunizations, ExpectedVersion expectedVersion) {
 		Long tenantId = TenantContext.getCurrentTenantId();
 		Student student = resolveStudent(studentPublicId, tenantId);
 		HealthRecord record = healthRecordRepository.findByStudentIdAndTenantId(student.getId(), tenantId)
 				.orElse(null);
+		expectedVersion.verify(record);
 		boolean isNew = record == null;
 		if (isNew) {
 			record = HealthRecord.create(student.getId(), bloodGroup, allergies, conditions, immunizations);

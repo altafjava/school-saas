@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import com.altafjava.platform.api.dto.response.ApiResponse;
+import com.altafjava.platform.core.annotation.Command;
 import com.altafjava.school.api.controller.api.TransportAssignmentApi;
 import com.altafjava.school.api.dto.request.AssignTransportRequest;
 import com.altafjava.school.api.dto.request.EndTransportAssignmentRequest;
@@ -63,6 +64,7 @@ public class TransportAssignmentController implements TransportAssignmentApi {
 
 	@Override
 	@PatchMapping("/{publicId}/end")
+	@Command
 	@PreAuthorize("@permissionAuthorizationService.hasPermission('TRANSPORT_ASSIGNMENT_WRITE')")
 	public ApiResponse<TransportAssignmentResponse> end(@PathVariable String publicId,
 			@Valid @RequestBody EndTransportAssignmentRequest request) {

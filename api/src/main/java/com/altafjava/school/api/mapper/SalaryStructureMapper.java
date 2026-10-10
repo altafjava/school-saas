@@ -8,7 +8,7 @@ import com.altafjava.school.api.dto.response.SalaryStructureResponse;
 import com.altafjava.school.domain.payroll.model.PayComponentAmount;
 import com.altafjava.school.domain.payroll.model.SalaryStructure;
 
-@Mapper(componentModel = "spring", uses = PublicIdMapping.class, unmappedTargetPolicy = ReportingPolicy.ERROR)
+@Mapper(componentModel = "spring", uses = SchoolPublicIdMapping.class, unmappedTargetPolicy = ReportingPolicy.ERROR)
 public interface SalaryStructureMapper {
 
 	@Mapping(target = "publicId", expression = "java(salaryStructure.getPublicId().toString())")

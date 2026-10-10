@@ -81,6 +81,7 @@ public class SubjectController implements SubjectApi {
 	public ApiResponse<SubjectResponse> assignCurriculum(@PathVariable String publicId,
 			@Valid @RequestBody AssignSubjectCurriculumRequest request) {
 		return ApiResponse.success(
-				subjectMapper.toResponse(subjectService.assignCurriculum(publicId, request.curriculumPublicId())));
+				subjectMapper.toResponse(subjectService.assignCurriculum(publicId, request.curriculumPublicId(),
+						request.expectedVersion())));
 	}
 }

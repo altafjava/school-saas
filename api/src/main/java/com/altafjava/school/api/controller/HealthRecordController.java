@@ -59,7 +59,8 @@ public class HealthRecordController implements HealthRecordApi {
 			@Valid @RequestBody UpsertHealthRecordRequest request) {
 		return ApiResponse
 				.success(healthRecordMapper.toResponse(healthRecordService.upsert(studentPublicId, request.bloodGroup(),
-						request.allergies(), request.conditions(), request.immunizations())));
+						request.allergies(), request.conditions(), request.immunizations(),
+						request.expectedVersion())));
 	}
 
 	@Override

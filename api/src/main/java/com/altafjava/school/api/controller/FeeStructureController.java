@@ -92,7 +92,8 @@ public class FeeStructureController implements FeeStructureApi {
 	public ApiResponse<FeeStructureResponse> reviseAmount(@PathVariable String publicId,
 			@Valid @RequestBody ReviseFeeAmountRequest request) {
 		return ApiResponse
-				.success(feeStructureMapper.toResponse(feeStructureService.reviseAmount(publicId, request.amount())));
+				.success(feeStructureMapper.toResponse(
+						feeStructureService.reviseAmount(publicId, request.amount(), request.expectedVersion())));
 	}
 
 	@Override
@@ -102,7 +103,7 @@ public class FeeStructureController implements FeeStructureApi {
 			@Valid @RequestBody ConfigureFeeLateFeePolicyRequest request) {
 		return ApiResponse.success(feeStructureMapper.toResponse(
 				feeStructureService.configureLateFeePolicy(publicId, request.graceDays(),
-						request.lateFeePercentage())));
+						request.lateFeePercentage(), request.expectedVersion())));
 	}
 
 	@Override
@@ -154,6 +155,7 @@ public class FeeStructureController implements FeeStructureApi {
 			@PathVariable String assignmentPublicId, @Valid @RequestBody ConfigureFeeAssignmentDueDateRequest request) {
 		return ApiResponse
 				.success(feeAssignmentMapper.toResponse(feeAssignmentService.configureDueDate(assignmentPublicId,
-						request.dueDate(), request.graceDays(), request.lateFeePercentage())));
+						request.dueDate(), request.graceDays(), request.lateFeePercentage(),
+						request.expectedVersion())));
 	}
 }

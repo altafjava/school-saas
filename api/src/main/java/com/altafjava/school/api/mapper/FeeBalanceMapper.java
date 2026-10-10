@@ -9,7 +9,7 @@ import com.altafjava.school.api.dto.response.InstallmentStatusResponse;
 import com.altafjava.school.domain.fee.model.FeeBalance;
 import com.altafjava.school.domain.fee.model.InstallmentStatus;
 
-@Mapper(componentModel = "spring", uses = PublicIdMapping.class, unmappedTargetPolicy = ReportingPolicy.ERROR)
+@Mapper(componentModel = "spring", uses = SchoolPublicIdMapping.class, unmappedTargetPolicy = ReportingPolicy.ERROR)
 public interface FeeBalanceMapper {
 
 	@Mapping(target = "feeStructurePublicId", source = "feeStructureId", qualifiedByName = "feeStructure")

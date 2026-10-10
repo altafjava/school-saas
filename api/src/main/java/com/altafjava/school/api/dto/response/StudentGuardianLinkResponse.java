@@ -4,6 +4,7 @@ import java.time.Instant;
 
 public record StudentGuardianLinkResponse(
 		String publicId,
+		Long version,
 		String studentPublicId,
 		String guardianPublicId,
 		String relationshipType,

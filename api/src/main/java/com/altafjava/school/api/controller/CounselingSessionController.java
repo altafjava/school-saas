@@ -92,6 +92,7 @@ public class CounselingSessionController implements CounselingSessionApi {
 	public ApiResponse<CounselingSessionResponse> updateNotes(@PathVariable String publicId,
 			@Valid @RequestBody UpdateCounselingSessionNotesRequest request) {
 		return ApiResponse.success(counselingSessionMapper.toResponse(
-				counselingSessionService.updateNotes(publicId, request.notes(), request.followUpRequired())));
+				counselingSessionService.updateNotes(publicId, request.notes(), request.followUpRequired(),
+						request.expectedVersion())));
 	}
 }

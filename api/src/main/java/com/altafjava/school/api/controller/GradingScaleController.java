@@ -75,7 +75,8 @@ public class GradingScaleController implements GradingScaleApi {
 		var thresholds = request.thresholds().stream()
 				.map(t -> new GradingScaleThresholdInput(t.letter(), t.minPercentage(), t.points()))
 				.toList();
-		return ApiResponse.success(toResponse(gradingScaleService.updateThresholds(publicId, thresholds)));
+		return ApiResponse.success(
+				toResponse(gradingScaleService.updateThresholds(publicId, thresholds, request.expectedVersion())));
 	}
 
 	@Override
@@ -102,7 +103,8 @@ public class GradingScaleController implements GradingScaleApi {
 		var thresholds = gradingScaleService.listThresholds(scale.getPublicId().toString()).stream()
 				.map(gradingScaleMapper::toThreshold)
 				.toList();
-		return new GradingScaleResponse(scale.getPublicId().toString(), scale.getName(), scale.isDefault(),
+		return new GradingScaleResponse(scale.getPublicId().toString(), scale.getVersion(), scale.getName(),
+				scale.isDefault(),
 				scale.isActive(), thresholds);
 	}
 }

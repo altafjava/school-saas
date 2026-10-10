@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import com.altafjava.platform.api.dto.response.ApiResponse;
+import com.altafjava.platform.core.annotation.Command;
 import com.altafjava.school.api.controller.api.CounselingReferralApi;
 import com.altafjava.school.api.dto.request.ReferForCounselingRequest;
 import com.altafjava.school.api.dto.request.ScheduleCounselingReferralRequest;
@@ -81,6 +82,7 @@ public class CounselingReferralController implements CounselingReferralApi {
 
 	@Override
 	@PatchMapping("/{publicId}/schedule")
+	@Command
 	@PreAuthorize("@permissionAuthorizationService.hasPermission('COUNSELING_MANAGE')")
 	public ApiResponse<CounselingReferralResponse> schedule(@PathVariable String publicId,
 			@Valid @RequestBody ScheduleCounselingReferralRequest request) {

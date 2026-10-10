@@ -5,6 +5,7 @@ import com.altafjava.school.domain.counseling.model.CounselingReferralStatus;
 
 public record CounselingReferralResponse(
 		String publicId,
+		Long version,
 		String studentPublicId,
 		String referredByUserPublicId,
 		String reason,

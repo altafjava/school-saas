@@ -4,6 +4,7 @@ import java.time.LocalDateTime;
 
 public record MedicalIncidentResponse(
 		String publicId,
+		Long version,
 		String studentPublicId,
 		LocalDateTime occurredAt,
 		String description,

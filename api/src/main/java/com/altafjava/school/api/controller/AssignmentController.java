@@ -71,6 +71,7 @@ public class AssignmentController implements AssignmentApi {
 	public ApiResponse<AssignmentResponse> reschedule(@PathVariable String publicId,
 			@Valid @RequestBody RescheduleAssignmentRequest request) {
 		return ApiResponse
-				.success(assignmentMapper.toResponse(assignmentService.reschedule(publicId, request.dueDate())));
+				.success(assignmentMapper.toResponse(
+						assignmentService.reschedule(publicId, request.dueDate(), request.expectedVersion())));
 	}
 }
