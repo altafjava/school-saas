@@ -17,6 +17,7 @@ import com.altafjava.platform.core.exception.ResourceNotFoundException;
 import com.altafjava.platform.core.search.LikePattern;
 import com.altafjava.platform.core.security.AuthenticatedUser;
 import com.altafjava.platform.core.tenant.TenantContext;
+import com.altafjava.school.application.reference.UserReferenceResolver;
 import com.altafjava.school.domain.common.model.Address;
 import com.altafjava.school.domain.common.service.PhoneNumberValidator;
 import com.altafjava.school.domain.guardian.event.GuardianLinkedEvent;
@@ -35,12 +36,14 @@ public class GuardianService {
 	private final StudentGuardianLinkRepository studentGuardianLinkRepository;
 	private final StudentRepository studentRepository;
 	private final EventPublisher eventPublisher;
+	private final UserReferenceResolver userReferenceResolver;
 	private final PhoneNumberValidator phoneNumberValidator = new PhoneNumberValidator();
 
 	public GuardianService(GuardianRepository guardianRepository,
 			StudentGuardianLinkRepository studentGuardianLinkRepository, StudentRepository studentRepository,
-			EventPublisher eventPublisher) {
+			EventPublisher eventPublisher, UserReferenceResolver userReferenceResolver) {
 		this.guardianRepository = guardianRepository;
+		this.userReferenceResolver = userReferenceResolver;
 		this.studentGuardianLinkRepository = studentGuardianLinkRepository;
 		this.studentRepository = studentRepository;
 		this.eventPublisher = eventPublisher;
@@ -65,10 +68,11 @@ public class GuardianService {
 	}
 
 	@Transactional
-	public Guardian create(String firstName, String lastName, String email, String phone, Long userId) {
+	public Guardian create(String firstName, String lastName, String email, String phone, String userPublicId) {
 		if (!phoneNumberValidator.isValid(phone, null)) {
 			throw new BusinessException("Invalid phone number: " + phone);
 		}
+		Long userId = userPublicId == null ? null : userReferenceResolver.requireUserId(userPublicId);
 		Guardian guardian = Guardian.create(firstName, lastName, email, phone, userId);
 		return guardianRepository.save(guardian);
 	}

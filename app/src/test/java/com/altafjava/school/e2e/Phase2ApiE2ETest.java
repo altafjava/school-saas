@@ -25,9 +25,12 @@ import com.altafjava.school.base.SchoolIntegrationTestBase;
 import com.altafjava.school.config.TestPaymentConfig;
 import com.altafjava.school.config.TestRedisConfig;
 import com.altafjava.school.config.TestStorageConfig;
+import com.altafjava.school.domain.fee.model.FeeStructure;
 import com.altafjava.school.domain.fee.repository.FeeStructureRepository;
+import com.altafjava.school.domain.student.model.Student;
 import com.altafjava.school.domain.student.repository.StudentRepository;
 import com.altafjava.school.util.SchoolAuthenticationHelper;
+import com.altafjava.school.util.TestPublicIds;
 import io.restassured.RestAssured;
 import io.restassured.http.ContentType;
 import io.restassured.specification.RequestSpecification;
@@ -44,6 +47,9 @@ class Phase2ApiE2ETest extends SchoolIntegrationTestBase {
 
 	@LocalServerPort
 	int port;
+
+	@Autowired
+	private TestPublicIds publicIds;
 
 	@Autowired
 	private TenantOnboardingService onboardingService;
@@ -239,8 +245,9 @@ class Phase2ApiE2ETest extends SchoolIntegrationTestBase {
 				.body("data[0].installments[0].amount", equalTo(200.0f));
 
 		String payment = asAdmin().header("Idempotency-Key", UUID.randomUUID().toString())
-				.body("{\"studentId\":" + studentId(student) + ",\"feeStructureId\":" + structureId(structure)
-						+ ",\"paidAmount\":800.00,\"paidAt\":\"2026-02-01T10:00:00\",\"receiptNumber\":\"RCPT-"
+				.body("{\"studentPublicId\":\"" + publicIds.of(Student.class, studentId(student))
+						+ "\",\"feeStructurePublicId\":\"" + publicIds.of(FeeStructure.class, structureId(structure))
+						+ "\",\"paidAmount\":800.00,\"paidAt\":\"2026-02-01T10:00:00\",\"receiptNumber\":\"RCPT-"
 						+ UUID.randomUUID().toString().substring(0, 8) + "\"}")
 				.post("/api/v1/fee-payments").then().statusCode(HttpStatus.CREATED.value()).extract()
 				.path("data.publicId");

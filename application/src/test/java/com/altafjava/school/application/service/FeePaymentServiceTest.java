@@ -1,5 +1,7 @@
 package com.altafjava.school.application.service;
 
+import static com.altafjava.school.application.support.TestEntities.publicId;
+import static com.altafjava.school.application.support.TestEntities.withId;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -10,6 +12,7 @@ import static org.mockito.Mockito.when;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.Optional;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -25,12 +28,14 @@ import com.altafjava.school.application.security.StudentDataAccessGuard;
 import com.altafjava.school.domain.classroom.repository.StudentClassroomLinkRepository;
 import com.altafjava.school.domain.fee.model.FeeAssignment;
 import com.altafjava.school.domain.fee.model.FeePayment;
+import com.altafjava.school.domain.fee.model.FeeStructure;
 import com.altafjava.school.domain.fee.repository.FeeAssignmentRepository;
 import com.altafjava.school.domain.fee.repository.FeeDiscountRepository;
 import com.altafjava.school.domain.fee.repository.FeeInstallmentRepository;
 import com.altafjava.school.domain.fee.repository.FeePaymentRepository;
 import com.altafjava.school.domain.fee.repository.FeeRefundRepository;
 import com.altafjava.school.domain.fee.repository.FeeStructureRepository;
+import com.altafjava.school.domain.student.model.Student;
 import com.altafjava.school.domain.student.repository.StudentRepository;
 
 @ExtendWith(MockitoExtension.class)
@@ -74,56 +79,56 @@ class FeePaymentServiceTest {
 
 	@Test
 	void record_withNonExistentStudent_throwsResourceNotFound() {
-		when(studentRepository.existsByIdAndTenantId(99L, 1L)).thenReturn(false);
+		when(studentRepository.findByPublicIdAndTenantId(publicId("student", 99), 1L)).thenReturn(Optional.empty());
 
 		assertThrows(ResourceNotFoundException.class,
-				() -> feePaymentService.record(99L, 1L, BigDecimal.valueOf(500), LocalDateTime.now(), "RCPT-001"));
+				() -> feePaymentService.record(publicId("student", 99).toString(), publicId("feeStructure", 1).toString(), BigDecimal.valueOf(500), LocalDateTime.now(), "RCPT-001"));
 
 		verify(feePaymentRepository, never()).save(any());
 	}
 
 	@Test
 	void record_withNonExistentFeeStructure_throwsResourceNotFound() {
-		when(studentRepository.existsByIdAndTenantId(1L, 1L)).thenReturn(true);
-		when(feeStructureRepository.existsByIdAndTenantId(99L, 1L)).thenReturn(false);
+		when(studentRepository.findByPublicIdAndTenantId(publicId("student", 1), 1L)).thenReturn(Optional.of(withId(Student.class, 1L)));
+		when(feeStructureRepository.findByPublicIdAndTenantId(publicId("feeStructure", 99), 1L)).thenReturn(Optional.empty());
 
 		assertThrows(ResourceNotFoundException.class,
-				() -> feePaymentService.record(1L, 99L, BigDecimal.valueOf(500), LocalDateTime.now(), "RCPT-001"));
+				() -> feePaymentService.record(publicId("student", 1).toString(), publicId("feeStructure", 99).toString(), BigDecimal.valueOf(500), LocalDateTime.now(), "RCPT-001"));
 
 		verify(feePaymentRepository, never()).save(any());
 	}
 
 	@Test
 	void record_duplicateReceiptNumber_throwsIllegalArgument() {
-		when(studentRepository.existsByIdAndTenantId(1L, 1L)).thenReturn(true);
-		when(feeStructureRepository.existsByIdAndTenantId(2L, 1L)).thenReturn(true);
+		when(studentRepository.findByPublicIdAndTenantId(publicId("student", 1), 1L)).thenReturn(Optional.of(withId(Student.class, 1L)));
+		when(feeStructureRepository.findByPublicIdAndTenantId(publicId("feeStructure", 2), 1L)).thenReturn(Optional.of(withId(FeeStructure.class, 2L)));
 		when(feePaymentRepository.existsByReceiptNumberAndTenantId("RCPT-001", 1L)).thenReturn(true);
 
 		assertThrows(IllegalArgumentException.class,
-				() -> feePaymentService.record(1L, 2L, BigDecimal.valueOf(500), LocalDateTime.now(), "RCPT-001"));
+				() -> feePaymentService.record(publicId("student", 1).toString(), publicId("feeStructure", 2).toString(), BigDecimal.valueOf(500), LocalDateTime.now(), "RCPT-001"));
 	}
 
 	@Test
 	void record_withValidReferences_succeeds() {
-		when(studentRepository.existsByIdAndTenantId(1L, 1L)).thenReturn(true);
-		when(feeStructureRepository.existsByIdAndTenantId(2L, 1L)).thenReturn(true);
+		when(studentRepository.findByPublicIdAndTenantId(publicId("student", 1), 1L)).thenReturn(Optional.of(withId(Student.class, 1L)));
+		when(feeStructureRepository.findByPublicIdAndTenantId(publicId("feeStructure", 2), 1L)).thenReturn(Optional.of(withId(FeeStructure.class, 2L)));
 		when(feePaymentRepository.existsByReceiptNumberAndTenantId("RCPT-001", 1L)).thenReturn(false);
 		when(feePaymentRepository.save(any(FeePayment.class))).thenAnswer(inv -> inv.getArgument(0));
 
-		assertDoesNotThrow(() -> feePaymentService.record(1L, 2L, BigDecimal.valueOf(500), LocalDateTime.now(),
+		assertDoesNotThrow(() -> feePaymentService.record(publicId("student", 1).toString(), publicId("feeStructure", 2).toString(), BigDecimal.valueOf(500), LocalDateTime.now(),
 				"RCPT-001"));
 	}
 
 	@Test
 	void record_withoutReceiptNumber_generatesOneFromTenantSequence() {
-		when(studentRepository.existsByIdAndTenantId(1L, 1L)).thenReturn(true);
-		when(feeStructureRepository.existsByIdAndTenantId(2L, 1L)).thenReturn(true);
+		when(studentRepository.findByPublicIdAndTenantId(publicId("student", 1), 1L)).thenReturn(Optional.of(withId(Student.class, 1L)));
+		when(feeStructureRepository.findByPublicIdAndTenantId(publicId("feeStructure", 2), 1L)).thenReturn(Optional.of(withId(FeeStructure.class, 2L)));
 		when(numberSequenceService.generateNext(1L, "FEE_RECEIPT", "RCPT-", 6, ResetPeriod.YEARLY))
 				.thenReturn("RCPT-2026-000001");
 		when(feePaymentRepository.existsByReceiptNumberAndTenantId("RCPT-2026-000001", 1L)).thenReturn(false);
 		when(feePaymentRepository.save(any(FeePayment.class))).thenAnswer(inv -> inv.getArgument(0));
 
-		FeePayment payment = feePaymentService.record(1L, 2L, BigDecimal.valueOf(500), LocalDateTime.now(), null);
+		FeePayment payment = feePaymentService.record(publicId("student", 1).toString(), publicId("feeStructure", 2).toString(), BigDecimal.valueOf(500), LocalDateTime.now(), null);
 
 		assertEquals("RCPT-2026-000001", payment.getReceiptNumber());
 	}

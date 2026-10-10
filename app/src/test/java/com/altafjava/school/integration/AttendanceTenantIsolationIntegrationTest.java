@@ -134,7 +134,7 @@ class AttendanceTenantIsolationIntegrationTest extends SchoolIntegrationTestBase
 		String studentCode = "STU-" + UUID.randomUUID().toString().substring(0, 6);
 		Student student = enrollStudentInClassroom(studentCode, "Alice", "Smith", "alice@a.edu", classroom,
 				academicYearPublicId);
-		attendanceService.mark(student.getId(), classroom.getId(), LocalDate.now(),
+		attendanceService.mark(student.getPublicId().toString(), classroom.getPublicId().toString(), LocalDate.now(),
 				AttendanceStatus.PRESENT, "teacher-a");
 
 		// When — tenant B lists attendance
@@ -156,7 +156,8 @@ class AttendanceTenantIsolationIntegrationTest extends SchoolIntegrationTestBase
 		var classroom = classroomService.create(classCode, "Grade 6", "B", academicYearPublicId, null);
 		Student student = enrollStudentInClassroom("STU-" + UUID.randomUUID().toString().substring(0, 6),
 				"Bob", "Jones", "bob@a.edu", classroom, academicYearPublicId);
-		Attendance attendance = attendanceService.mark(student.getId(), classroom.getId(),
+		Attendance attendance = attendanceService.mark(student.getPublicId().toString(),
+				classroom.getPublicId().toString(),
 				LocalDate.now().minusDays(1), AttendanceStatus.ABSENT, "teacher-a");
 		String publicId = attendance.getPublicId().toString();
 
@@ -178,9 +179,12 @@ class AttendanceTenantIsolationIntegrationTest extends SchoolIntegrationTestBase
 		LocalDate day1 = LocalDate.now().minusDays(2);
 		LocalDate day2 = LocalDate.now().minusDays(1);
 		LocalDate day3 = LocalDate.now();
-		attendanceService.mark(student.getId(), classroom.getId(), day1, AttendanceStatus.PRESENT, "teacher-a");
-		attendanceService.mark(student.getId(), classroom.getId(), day2, AttendanceStatus.ABSENT, "teacher-a");
-		attendanceService.mark(student.getId(), classroom.getId(), day3, AttendanceStatus.PRESENT, "teacher-a");
+		attendanceService.mark(student.getPublicId().toString(), classroom.getPublicId().toString(), day1,
+				AttendanceStatus.PRESENT, "teacher-a");
+		attendanceService.mark(student.getPublicId().toString(), classroom.getPublicId().toString(), day2,
+				AttendanceStatus.ABSENT, "teacher-a");
+		attendanceService.mark(student.getPublicId().toString(), classroom.getPublicId().toString(), day3,
+				AttendanceStatus.PRESENT, "teacher-a");
 
 		AttendancePercentage result = attendanceService.calculatePercentage(student.getPublicId().toString(), day1,
 				day3);

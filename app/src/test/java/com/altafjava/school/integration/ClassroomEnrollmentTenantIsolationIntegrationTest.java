@@ -148,7 +148,8 @@ class ClassroomEnrollmentTenantIsolationIntegrationTest extends SchoolIntegratio
 				LocalDate.of(2010, 7, 7));
 
 		assertThrows(ResourceNotFoundException.class,
-				() -> attendanceService.mark(student.getId(), classroom.getId(), LocalDate.now(),
+				() -> attendanceService.mark(student.getPublicId().toString(), classroom.getPublicId().toString(),
+						LocalDate.now(),
 						AttendanceStatus.PRESENT, "teacher-a"),
 				"A student not on the classroom roster must not be markable present");
 	}
@@ -163,7 +164,8 @@ class ClassroomEnrollmentTenantIsolationIntegrationTest extends SchoolIntegratio
 		StudentClassroomLink link = classroomService.enrollStudent(classroom.getPublicId().toString(),
 				student.getPublicId().toString(), academicYearPublicId);
 
-		var attendance = attendanceService.mark(student.getId(), classroom.getId(), LocalDate.now(),
+		var attendance = attendanceService.mark(student.getPublicId().toString(), classroom.getPublicId().toString(),
+				LocalDate.now(),
 				AttendanceStatus.PRESENT, "teacher-a");
 
 		assertEquals(student.getId(), attendance.getStudentId());

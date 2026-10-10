@@ -9,9 +9,10 @@ import com.altafjava.school.api.dto.response.InstallmentStatusResponse;
 import com.altafjava.school.domain.fee.model.FeeBalance;
 import com.altafjava.school.domain.fee.model.InstallmentStatus;
 
-@Mapper(componentModel = "spring", unmappedTargetPolicy = ReportingPolicy.ERROR)
+@Mapper(componentModel = "spring", uses = PublicIdMapping.class, unmappedTargetPolicy = ReportingPolicy.ERROR)
 public interface FeeBalanceMapper {
 
+	@Mapping(target = "feeStructurePublicId", source = "feeStructureId", qualifiedByName = "feeStructure")
 	FeeBalanceResponse toResponse(FeeBalance feeBalance);
 
 	List<FeeBalanceResponse> toResponseList(List<FeeBalance> feeBalances);

@@ -86,7 +86,7 @@ class TimetableTenantIsolationIntegrationTest extends SchoolIntegrationTestBase 
 		TenantContext.ForTesting.clear();
 	}
 
-	private record Fixture(Long periodId, Classroom classroom, Long subjectId, Long teacherId) {
+	private record Fixture(String periodId, Classroom classroom, String subjectId, String teacherId) {
 	}
 
 	private Fixture buildFixture(String prefix) {
@@ -100,14 +100,15 @@ class TimetableTenantIsolationIntegrationTest extends SchoolIntegrationTestBase 
 		Subject subject = subjectService.create(prefix + "-SUB-" + suffix, "Mathematics", null);
 		Teacher teacher = teacherService.hire(prefix + "-EMP-" + suffix, "Jane", "Doe", prefix + "-jane@test.edu",
 				LocalDate.of(2020, 1, 1));
-		return new Fixture(period.getId(), classroom, subject.getId(), teacher.getId());
+		return new Fixture(period.getPublicId().toString(), classroom, subject.getPublicId().toString(),
+				teacher.getPublicId().toString());
 	}
 
 	@Test
 	void timetableEntryCreatedUnderTenantA_isNotVisibleToTenantB() {
 		activateTenant(tenantA);
 		Fixture fixtureA = buildFixture("A");
-		timetableService.schedule(DayOfWeek.MONDAY, fixtureA.periodId(), fixtureA.classroom().getId(),
+		timetableService.schedule(DayOfWeek.MONDAY, fixtureA.periodId(), fixtureA.classroom().getPublicId().toString(),
 				fixtureA.subjectId(), fixtureA.teacherId(), null);
 
 		activateTenant(tenantB);
@@ -124,7 +125,7 @@ class TimetableTenantIsolationIntegrationTest extends SchoolIntegrationTestBase 
 		activateTenant(tenantA);
 		Fixture fixtureA = buildFixture("A2");
 		TimetableEntry entry = timetableService.schedule(DayOfWeek.TUESDAY, fixtureA.periodId(),
-				fixtureA.classroom().getId(), fixtureA.subjectId(), fixtureA.teacherId(), null);
+				fixtureA.classroom().getPublicId().toString(), fixtureA.subjectId(), fixtureA.teacherId(), null);
 		String publicId = entry.getPublicId().toString();
 
 		activateTenant(tenantB);
@@ -138,7 +139,7 @@ class TimetableTenantIsolationIntegrationTest extends SchoolIntegrationTestBase 
 		activateTenant(tenantA);
 		Fixture fixtureA = buildFixture("A3");
 		assertDoesNotThrow(() -> timetableService.schedule(DayOfWeek.WEDNESDAY, fixtureA.periodId(),
-				fixtureA.classroom().getId(), fixtureA.subjectId(), fixtureA.teacherId(), null));
+				fixtureA.classroom().getPublicId().toString(), fixtureA.subjectId(), fixtureA.teacherId(), null));
 
 		// Tenant B has its own, independently-numbered period/classroom/teacher IDs, so this is
 		// not literally "the same" row — but it proves conflict checks never leak across
@@ -146,6 +147,6 @@ class TimetableTenantIsolationIntegrationTest extends SchoolIntegrationTestBase 
 		activateTenant(tenantB);
 		Fixture fixtureB = buildFixture("B3");
 		assertDoesNotThrow(() -> timetableService.schedule(DayOfWeek.WEDNESDAY, fixtureB.periodId(),
-				fixtureB.classroom().getId(), fixtureB.subjectId(), fixtureB.teacherId(), null));
+				fixtureB.classroom().getPublicId().toString(), fixtureB.subjectId(), fixtureB.teacherId(), null));
 	}
 }

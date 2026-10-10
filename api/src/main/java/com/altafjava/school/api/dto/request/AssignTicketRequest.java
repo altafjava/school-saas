@@ -1,6 +1,6 @@
 package com.altafjava.school.api.dto.request;
 
-import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.NotBlank;
 
-public record AssignTicketRequest(@NotNull Long assignedToUserId) {
+public record AssignTicketRequest(@NotBlank String assignedToUserPublicId) {
 }

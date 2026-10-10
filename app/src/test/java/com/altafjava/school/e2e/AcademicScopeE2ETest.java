@@ -17,14 +17,20 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.web.server.LocalServerPort;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.HttpStatus;
+import com.altafjava.platform.domain.user.model.User;
 import com.altafjava.school.application.service.AcademicYearService;
 import com.altafjava.school.base.SchoolIntegrationTestBase;
 import com.altafjava.school.config.TestPaymentConfig;
 import com.altafjava.school.config.TestRedisConfig;
+import com.altafjava.school.domain.classroom.model.Classroom;
 import com.altafjava.school.domain.classroom.repository.ClassroomRepository;
+import com.altafjava.school.domain.exam.model.Exam;
+import com.altafjava.school.domain.exam.model.ExamTypeDefinition;
 import com.altafjava.school.domain.exam.repository.ExamRepository;
 import com.altafjava.school.domain.exam.repository.ExamTypeDefinitionRepository;
+import com.altafjava.school.domain.student.model.Student;
 import com.altafjava.school.domain.student.repository.StudentRepository;
+import com.altafjava.school.domain.subject.model.Subject;
 import com.altafjava.school.domain.subject.repository.SubjectRepository;
 import com.altafjava.school.domain.teacher.repository.TeacherRepository;
 import com.altafjava.school.domain.timetable.model.Period;
@@ -33,6 +39,7 @@ import com.altafjava.school.domain.timetable.repository.PeriodRepository;
 import com.altafjava.school.domain.timetable.repository.TimetableEntryRepository;
 import com.altafjava.school.util.SchoolE2eSupport;
 import com.altafjava.school.util.SchoolE2eSupport.School;
+import com.altafjava.school.util.TestPublicIds;
 import io.restassured.RestAssured;
 import io.restassured.response.Response;
 import io.restassured.specification.RequestSpecification;
@@ -50,6 +57,9 @@ class AcademicScopeE2ETest extends SchoolIntegrationTestBase {
 
 	@LocalServerPort
 	int port;
+
+	@Autowired
+	private TestPublicIds publicIds;
 
 	@Autowired
 	private SchoolE2eSupport support;
@@ -145,7 +155,8 @@ class AcademicScopeE2ETest extends SchoolIntegrationTestBase {
 		parentOfAUser = support.createUserWithRole(school.tenantId(), email("parent"), "PARENT");
 		String guardian = admin()
 				.body("{\"firstName\":\"Jane\",\"lastName\":\"Doe\",\"email\":\"" + email("guardian")
-						+ "\",\"phone\":\"+14155552671\",\"userId\":" + parentOfAUser + "}")
+						+ "\",\"phone\":\"+14155552671\",\"userPublicId\":\"" + publicIds.of(User.class, parentOfAUser)
+						+ "\"}")
 				.post("/api/v1/guardians").then().statusCode(HttpStatus.CREATED.value()).extract()
 				.path("data.publicId");
 		admin().body("{\"studentPublicId\":\"" + studentA + "\",\"relationshipType\":\"MOTHER\","
@@ -182,7 +193,7 @@ class AcademicScopeE2ETest extends SchoolIntegrationTestBase {
 			as(teacher, "TEACHER").get("/api/v1/attendance?size=100").then()
 					.statusCode(HttpStatus.OK.value())
 					.body("data.content.publicId", hasItem(attendanceOfA))
-					.body("data.content.classroomId", everyItem(equalTo(classroomAId.intValue())));
+					.body("data.content.classroomPublicId", everyItem(equalTo(classroomA)));
 		}
 		as(unassignedTeacherUser, "TEACHER").get("/api/v1/attendance?size=100").then()
 				.body("data.content", hasSize(0));
@@ -191,7 +202,7 @@ class AcademicScopeE2ETest extends SchoolIntegrationTestBase {
 			family.get("/api/v1/attendance?size=100").then()
 					.statusCode(HttpStatus.OK.value())
 					.body("data.content.publicId", hasItem(attendanceOfA))
-					.body("data.content.studentId", everyItem(equalTo(studentAId.intValue())));
+					.body("data.content.studentPublicId", everyItem(equalTo(studentA)));
 		}
 	}
 
@@ -247,13 +258,13 @@ class AcademicScopeE2ETest extends SchoolIntegrationTestBase {
 	void gradeList_isNarrowedToEachCallersScope() {
 		as(mathTeacherUser, "TEACHER").get("/api/v1/grades?size=100").then()
 				.statusCode(HttpStatus.OK.value())
-				.body("data.content.examId", hasItem(mathExamAId.intValue()))
-				.body("data.content.examId", not(hasItem(mathExamBId.intValue())))
-				.body("data.content.examId", not(hasItem(englishExamAId.intValue())));
+				.body("data.content.examPublicId", hasItem(publicIds.of(Exam.class, mathExamAId)))
+				.body("data.content.examPublicId", not(hasItem(publicIds.of(Exam.class, mathExamBId))))
+				.body("data.content.examPublicId", not(hasItem(publicIds.of(Exam.class, englishExamAId))));
 		as(unassignedTeacherUser, "TEACHER").get("/api/v1/grades?size=100").then()
 				.body("data.content", hasSize(0));
 		as(auditorUser, AUDITOR_ROLE).get("/api/v1/grades?size=100").then()
-				.body("data.content.studentId.unique()", hasSize(2));
+				.body("data.content.studentPublicId.unique()", hasSize(2));
 	}
 
 	@Test
@@ -268,9 +279,9 @@ class AcademicScopeE2ETest extends SchoolIntegrationTestBase {
 
 		as(parentOfAUser, "PARENT").get("/api/v1/grades?size=100").then()
 				.body("data.content", hasSize(visibleBefore + 1))
-				.body("data.content.studentId", everyItem(equalTo(studentAId.intValue())));
+				.body("data.content.studentPublicId", everyItem(equalTo(studentA)));
 		as(studentAUser, "STUDENT").get("/api/v1/grades?size=100").then()
-				.body("data.content.studentId", everyItem(equalTo(studentAId.intValue())));
+				.body("data.content.studentPublicId", everyItem(equalTo(studentA)));
 	}
 
 	// ---- roster and coursework ----
@@ -376,23 +387,26 @@ class AcademicScopeE2ETest extends SchoolIntegrationTestBase {
 		Long examTypeId = support.inTenant(school.tenantId(), () -> examTypeDefinitionRepository
 				.findByCodeAndTenantId("MIDTERM", school.tenantId()).orElseThrow().getId());
 		return admin()
-				.body("{\"title\":\"" + title + "\",\"subjectId\":" + subjectId + ",\"classroomId\":" + classroomId
-						+ ",\"scheduledAt\":\"2026-03-01T09:00:00\",\"maxMarks\":100,\"examTypeId\":" + examTypeId
-						+ ",\"weightage\":10}")
+				.body("{\"title\":\"" + title + "\",\"subjectPublicId\":\"" + publicIds.of(Subject.class, subjectId)
+						+ "\",\"classroomPublicId\":\"" + publicIds.of(Classroom.class, classroomId)
+						+ "\",\"scheduledAt\":\"2026-03-01T09:00:00\",\"maxMarks\":100,\"examTypePublicId\":\""
+						+ publicIds.of(ExamTypeDefinition.class, examTypeId)
+						+ "\",\"weightage\":10}")
 				.post("/api/v1/exams").then().statusCode(HttpStatus.CREATED.value()).extract()
 				.path("data.publicId");
 	}
 
 	private Response recordGrade(RequestSpecification caller, Long studentId, Long examId) {
-		return caller.body("{\"studentId\":" + studentId + ",\"examId\":" + examId + ",\"marks\":85,"
-				+ "\"gradedBy\":\"tester\"}").post("/api/v1/grades");
+		return caller.body("{\"studentPublicId\":\"" + publicIds.of(Student.class, studentId) + "\",\"examPublicId\":\""
+				+ publicIds.of(Exam.class, examId) + "\",\"marks\":85}").post("/api/v1/grades");
 	}
 
 	private Response markAttendance(RequestSpecification caller, Long studentId,
 			Long classroomId, String date) {
 		return caller.header("Idempotency-Key", UUID.randomUUID().toString())
-				.body("{\"studentId\":" + studentId + ",\"classroomId\":" + classroomId + ",\"attendanceDate\":\""
-						+ date + "\",\"status\":\"PRESENT\",\"markedBy\":\"tester\"}")
+				.body("{\"studentPublicId\":\"" + publicIds.of(Student.class, studentId) + "\",\"classroomPublicId\":\""
+						+ publicIds.of(Classroom.class, classroomId) + "\",\"attendanceDate\":\""
+						+ date + "\",\"status\":\"PRESENT\"}")
 				.post("/api/v1/attendance");
 	}
 

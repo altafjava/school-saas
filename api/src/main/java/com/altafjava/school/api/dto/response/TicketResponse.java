@@ -5,11 +5,11 @@ import com.altafjava.school.domain.helpdesk.model.TicketStatus;
 
 public record TicketResponse(
 		String publicId,
-		Long raisedByUserId,
+		String raisedByUserPublicId,
 		TicketCategory category,
 		String subject,
 		String description,
 		TicketStatus status,
-		Long assignedToUserId,
+		String assignedToUserPublicId,
 		String resolution) {
 }

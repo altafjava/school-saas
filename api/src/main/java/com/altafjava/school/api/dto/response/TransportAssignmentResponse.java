@@ -4,10 +4,10 @@ import java.time.LocalDate;
 
 public record TransportAssignmentResponse(
 		String publicId,
-		Long studentId,
-		Long routeId,
-		Long vehicleId,
-		Long routeStopId,
+		String studentPublicId,
+		String routePublicId,
+		String vehiclePublicId,
+		String routeStopPublicId,
 		LocalDate effectiveFrom,
 		LocalDate effectiveTo) {
 }

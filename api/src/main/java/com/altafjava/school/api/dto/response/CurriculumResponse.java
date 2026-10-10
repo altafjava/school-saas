@@ -2,10 +2,10 @@ package com.altafjava.school.api.dto.response;
 
 public record CurriculumResponse(
 		String publicId,
-		Long boardId,
+		String boardPublicId,
 		String name,
 		String code,
 		String description,
-		Long gradingScaleId,
+		String gradingScalePublicId,
 		boolean active) {
 }

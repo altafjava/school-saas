@@ -19,9 +19,12 @@ import com.altafjava.school.application.service.AcademicYearService;
 import com.altafjava.school.base.SchoolIntegrationTestBase;
 import com.altafjava.school.config.TestPaymentConfig;
 import com.altafjava.school.config.TestRedisConfig;
+import com.altafjava.school.domain.classroom.model.Classroom;
 import com.altafjava.school.domain.classroom.repository.ClassroomRepository;
+import com.altafjava.school.domain.student.model.Student;
 import com.altafjava.school.domain.student.repository.StudentRepository;
 import com.altafjava.school.util.SchoolAuthenticationHelper;
+import com.altafjava.school.util.TestPublicIds;
 import io.restassured.RestAssured;
 import io.restassured.http.ContentType;
 
@@ -35,6 +38,9 @@ class AttendancePercentageE2ETest extends SchoolIntegrationTestBase {
 
 	@LocalServerPort
 	int port;
+
+	@Autowired
+	private TestPublicIds publicIds;
 
 	@Autowired
 	private TenantOnboardingService onboardingService;
@@ -126,8 +132,9 @@ class AttendancePercentageE2ETest extends SchoolIntegrationTestBase {
 				.header("X-Tenant-ID", tenantId)
 				.header("Authorization", "Bearer " + accessToken)
 				.contentType(ContentType.JSON)
-				.body("{\"studentId\":" + studentId + ",\"classroomId\":" + classroomId + ",\"attendanceDate\":\""
-						+ date + "\",\"status\":\"" + status + "\",\"markedBy\":\"admin\"}")
+				.body("{\"studentPublicId\":\"" + publicIds.of(Student.class, studentId) + "\",\"classroomPublicId\":\""
+						+ publicIds.of(Classroom.class, classroomId) + "\",\"attendanceDate\":\""
+						+ date + "\",\"status\":\"" + status + "\"}")
 				.header("Idempotency-Key", java.util.UUID.randomUUID().toString())
 				.when()
 				.post("/api/v1/attendance")

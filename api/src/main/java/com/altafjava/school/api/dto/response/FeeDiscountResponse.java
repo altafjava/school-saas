@@ -5,14 +5,14 @@ import java.time.Instant;
 
 public record FeeDiscountResponse(
 		String publicId,
-		Long feeStructureId,
+		String feeStructurePublicId,
 		String discountType,
 		BigDecimal discountValue,
 		String category,
 		String reason,
 		boolean active,
 		Instant grantedAt,
-		Long grantedByUserId,
+		String grantedByUserPublicId,
 		Instant revokedAt,
 		String revocationReason) {
 }

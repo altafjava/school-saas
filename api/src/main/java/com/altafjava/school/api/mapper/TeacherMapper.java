@@ -6,11 +6,13 @@ import org.mapstruct.ReportingPolicy;
 import com.altafjava.school.api.dto.response.TeacherResponse;
 import com.altafjava.school.domain.teacher.model.Teacher;
 
-@Mapper(componentModel = "spring", unmappedTargetPolicy = ReportingPolicy.ERROR, uses = AddressMapper.class)
+@Mapper(componentModel = "spring", unmappedTargetPolicy = ReportingPolicy.ERROR, uses = { AddressMapper.class,
+		PublicIdMapping.class })
 public interface TeacherMapper {
 
 	@Mapping(target = "publicId", expression = "java(teacher.getPublicId().toString())")
 	@Mapping(target = "status", expression = "java(teacher.getStatus().name())")
 	@Mapping(target = "photoFilePublicId", expression = "java(teacher.getPhotoFilePublicId() != null ? teacher.getPhotoFilePublicId().toString() : null)")
+	@Mapping(target = "departmentPublicId", source = "departmentId", qualifiedByName = "department")
 	TeacherResponse toResponse(Teacher teacher);
 }

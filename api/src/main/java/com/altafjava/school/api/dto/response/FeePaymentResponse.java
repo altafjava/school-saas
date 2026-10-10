@@ -5,8 +5,8 @@ import java.time.LocalDateTime;
 
 public record FeePaymentResponse(
 		String publicId,
-		Long studentId,
-		Long feeStructureId,
+		String studentPublicId,
+		String feeStructurePublicId,
 		BigDecimal paidAmount,
 		LocalDateTime paidAt,
 		String receiptNumber) {

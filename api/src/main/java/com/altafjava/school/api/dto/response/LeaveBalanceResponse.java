@@ -4,9 +4,9 @@ import java.math.BigDecimal;
 
 public record LeaveBalanceResponse(
 		String publicId,
-		Long employeeId,
-		Long leaveTypeId,
-		Long academicYearId,
+		String employeePublicId,
+		String leaveTypePublicId,
+		String academicYearPublicId,
 		BigDecimal allocatedDays,
 		BigDecimal usedDays,
 		BigDecimal remainingDays) {

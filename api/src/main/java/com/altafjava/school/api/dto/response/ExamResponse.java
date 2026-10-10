@@ -7,13 +7,13 @@ import java.time.LocalDateTime;
 public record ExamResponse(
 		String publicId,
 		String title,
-		Long subjectId,
-		Long classroomId,
+		String subjectPublicId,
+		String classroomPublicId,
 		LocalDateTime scheduledAt,
 		BigDecimal maxMarks,
-		Long termId,
+		String termPublicId,
 		String status,
-		Long examTypeId,
+		String examTypePublicId,
 		BigDecimal weightage,
 		boolean resultsPublished,
 		Instant resultsPublishedAt) {

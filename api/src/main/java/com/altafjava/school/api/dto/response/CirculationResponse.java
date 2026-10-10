@@ -5,8 +5,8 @@ import java.time.LocalDate;
 
 public record CirculationResponse(
 		String publicId,
-		Long bookCopyId,
-		Long studentId,
+		String bookCopyPublicId,
+		String studentPublicId,
 		LocalDate checkedOutAt,
 		LocalDate dueDate,
 		LocalDate returnedAt,

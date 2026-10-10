@@ -6,7 +6,7 @@ import java.util.List;
 
 public record SalaryStructureResponse(
 		String publicId,
-		Long employeeId,
+		String employeePublicId,
 		List<PayComponentAmountResponse> components,
 		BigDecimal grossPay,
 		LocalDate effectiveFrom,

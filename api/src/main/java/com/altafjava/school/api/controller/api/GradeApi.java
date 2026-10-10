@@ -1,10 +1,12 @@
 package com.altafjava.school.api.controller.api;
 
 import jakarta.validation.Valid;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
 import com.altafjava.platform.api.dto.response.ApiResponse;
+import com.altafjava.platform.core.security.AuthenticatedUser;
 import com.altafjava.school.api.dto.request.CorrectGradeRequest;
 import com.altafjava.school.api.dto.request.RecordGradeRequest;
 import com.altafjava.school.api.dto.response.GradeCorrectionResponse;
@@ -27,7 +29,8 @@ public interface GradeApi {
 	public ApiResponse<GradeResponse> get(@PathVariable String publicId);
 
 	@Operation(summary = "Record")
-	public ApiResponse<GradeResponse> record(@Valid @RequestBody RecordGradeRequest request);
+	public ApiResponse<GradeResponse> record(@Valid @RequestBody RecordGradeRequest request,
+			@AuthenticationPrincipal AuthenticatedUser user);
 
 	@Operation(summary = "Correct")
 	public ApiResponse<GradeResponse> correct(@PathVariable String publicId,

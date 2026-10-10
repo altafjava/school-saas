@@ -23,6 +23,7 @@ import com.altafjava.platform.core.exception.ResourceNotFoundException;
 import com.altafjava.platform.core.security.AuthenticatedUser;
 import com.altafjava.platform.core.tenant.TenantContext;
 import com.altafjava.platform.core.tenant.TenantType;
+import com.altafjava.school.application.reference.UserReferenceResolver;
 import com.altafjava.school.domain.helpdesk.model.Ticket;
 import com.altafjava.school.domain.helpdesk.model.TicketCategory;
 import com.altafjava.school.domain.helpdesk.repository.TicketRepository;
@@ -35,11 +36,14 @@ class TicketServiceTest {
 	@Mock
 	private TicketRepository ticketRepository;
 
+	@Mock
+	private UserReferenceResolver userReferenceResolver;
+
 	private TicketService ticketService;
 
 	@BeforeEach
 	void setUp() {
-		ticketService = new TicketService(ticketRepository);
+		ticketService = new TicketService(ticketRepository, userReferenceResolver);
 		TenantContext.ForTesting.setCurrentTenant(1L, null, null, TenantType.SHARED);
 	}
 
@@ -88,7 +92,10 @@ class TicketServiceTest {
 		when(ticketRepository.findByPublicIdAndTenantId(publicId, 1L)).thenReturn(Optional.of(ticket));
 		when(ticketRepository.save(any(Ticket.class))).thenAnswer(inv -> inv.getArgument(0));
 
-		Ticket assigned = ticketService.assign(publicId.toString(), 99L);
+		String assigneePublicId = UUID.randomUUID().toString();
+		when(userReferenceResolver.requireUserId(assigneePublicId)).thenReturn(99L);
+
+		Ticket assigned = ticketService.assign(publicId.toString(), assigneePublicId);
 
 		assertEquals(99L, assigned.getAssignedToUserId());
 	}

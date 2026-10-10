@@ -19,9 +19,12 @@ import com.altafjava.platform.domain.tenant.model.Tenant;
 import com.altafjava.school.base.SchoolIntegrationTestBase;
 import com.altafjava.school.config.TestPaymentConfig;
 import com.altafjava.school.config.TestRedisConfig;
+import com.altafjava.school.domain.fee.model.FeeStructure;
 import com.altafjava.school.domain.fee.repository.FeeStructureRepository;
+import com.altafjava.school.domain.student.model.Student;
 import com.altafjava.school.domain.student.repository.StudentRepository;
 import com.altafjava.school.util.SchoolAuthenticationHelper;
+import com.altafjava.school.util.TestPublicIds;
 import io.restassured.RestAssured;
 import io.restassured.http.ContentType;
 
@@ -36,6 +39,9 @@ class FeePaymentCrudE2ETest extends SchoolIntegrationTestBase {
 
 	@LocalServerPort
 	int port;
+
+	@Autowired
+	private TestPublicIds publicIds;
 
 	@Autowired
 	private TenantOnboardingService onboardingService;
@@ -117,8 +123,9 @@ class FeePaymentCrudE2ETest extends SchoolIntegrationTestBase {
 				.header("Authorization", "Bearer " + accessToken)
 				.header("Idempotency-Key", UUID.randomUUID().toString())
 				.contentType(ContentType.JSON)
-				.body("{\"studentId\":" + studentId + ",\"feeStructureId\":" + feeStructureId
-						+ ",\"paidAmount\":500.00,\"paidAt\":\"2026-02-01T10:00:00\","
+				.body("{\"studentPublicId\":\"" + publicIds.of(Student.class, studentId)
+						+ "\",\"feeStructurePublicId\":\"" + publicIds.of(FeeStructure.class, feeStructureId)
+						+ "\",\"paidAmount\":500.00,\"paidAt\":\"2026-02-01T10:00:00\","
 						+ "\"receiptNumber\":\"RCPT-FP1\"}")
 				.when()
 				.post("/api/v1/fee-payments")
@@ -151,8 +158,9 @@ class FeePaymentCrudE2ETest extends SchoolIntegrationTestBase {
 				.header("Authorization", "Bearer " + teacherToken)
 				.header("Idempotency-Key", UUID.randomUUID().toString())
 				.contentType(ContentType.JSON)
-				.body("{\"studentId\":" + studentId + ",\"feeStructureId\":" + feeStructureId
-						+ ",\"paidAmount\":500.00,\"paidAt\":\"2026-02-01T10:00:00\","
+				.body("{\"studentPublicId\":\"" + publicIds.of(Student.class, studentId)
+						+ "\",\"feeStructurePublicId\":\"" + publicIds.of(FeeStructure.class, feeStructureId)
+						+ "\",\"paidAmount\":500.00,\"paidAt\":\"2026-02-01T10:00:00\","
 						+ "\"receiptNumber\":\"RCPT-FP2\"}")
 				.when()
 				.post("/api/v1/fee-payments")
@@ -170,8 +178,9 @@ class FeePaymentCrudE2ETest extends SchoolIntegrationTestBase {
 				.header("Authorization", "Bearer " + accessToken)
 				.header("Idempotency-Key", UUID.randomUUID().toString())
 				.contentType(ContentType.JSON)
-				.body("{\"studentId\":" + studentId + ",\"feeStructureId\":" + feeStructureId
-						+ ",\"paidAmount\":500.00,\"paidAt\":\"2026-02-01T10:00:00\","
+				.body("{\"studentPublicId\":\"" + publicIds.of(Student.class, studentId)
+						+ "\",\"feeStructurePublicId\":\"" + publicIds.of(FeeStructure.class, feeStructureId)
+						+ "\",\"paidAmount\":500.00,\"paidAt\":\"2026-02-01T10:00:00\","
 						+ "\"receiptNumber\":\"RCPT-FP3\"}")
 				.when()
 				.post("/api/v1/fee-payments")

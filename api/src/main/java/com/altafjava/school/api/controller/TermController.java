@@ -62,6 +62,6 @@ public class TermController implements TermApi {
 				request.name(),
 				request.startDate(),
 				request.endDate(),
-				request.academicYearId())));
+				request.academicYearPublicId())));
 	}
 }

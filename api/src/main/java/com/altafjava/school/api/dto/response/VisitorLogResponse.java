@@ -7,7 +7,7 @@ public record VisitorLogResponse(
 		String visitorName,
 		String visitorPhone,
 		String purpose,
-		Long hostEmployeeId,
+		String hostEmployeePublicId,
 		String photoFilePublicId,
 		boolean badgeIssued,
 		LocalDateTime checkInAt,

@@ -101,7 +101,8 @@ class FeeAdjustmentsIntegrationTest extends SchoolIntegrationTestBase {
 	}
 
 	private FeePayment pay(String amount) {
-		return feePaymentService.record(student.getId(), structure.getId(), new BigDecimal(amount),
+		return feePaymentService.record(student.getPublicId().toString(), structure.getPublicId().toString(),
+				new BigDecimal(amount),
 				LocalDateTime.now(), "RCPT-" + UUID.randomUUID().toString().substring(0, 8));
 	}
 

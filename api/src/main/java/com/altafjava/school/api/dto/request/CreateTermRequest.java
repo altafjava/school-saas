@@ -9,5 +9,5 @@ public record CreateTermRequest(
 		@NotBlank @Size(max = 50) String name,
 		@NotNull LocalDate startDate,
 		@NotNull LocalDate endDate,
-		@NotNull Long academicYearId) {
+		@NotBlank String academicYearPublicId) {
 }

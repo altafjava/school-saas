@@ -47,6 +47,9 @@ import com.altafjava.school.domain.student.repository.StudentRepository;
 @ExtendWith(MockitoExtension.class)
 class GradeServiceTest {
 
+	private static final UUID STUDENT_PUBLIC_ID = UUID.randomUUID();
+	private static final UUID EXAM_PUBLIC_ID = UUID.randomUUID();
+
 	@Mock
 	private GradeRepository gradeRepository;
 	@Mock
@@ -83,21 +86,21 @@ class GradeServiceTest {
 
 	@Test
 	void record_withNonExistentStudent_throwsResourceNotFound() {
-		when(studentRepository.existsByIdAndTenantId(99L, 1L)).thenReturn(false);
+		when(studentRepository.findByPublicIdAndTenantId(STUDENT_PUBLIC_ID, 1L)).thenReturn(Optional.empty());
 
 		assertThrows(ResourceNotFoundException.class,
-				() -> gradeService.record(99L, 1L, BigDecimal.valueOf(85), "teacher"));
+				() -> gradeService.record(STUDENT_PUBLIC_ID.toString(), EXAM_PUBLIC_ID.toString(), BigDecimal.valueOf(85), "teacher"));
 
 		verify(gradeRepository, never()).save(any());
 	}
 
 	@Test
 	void record_withNonExistentExam_throwsResourceNotFound() {
-		when(studentRepository.existsByIdAndTenantId(1L, 1L)).thenReturn(true);
-		when(examRepository.findByIdAndTenantId(99L, 1L)).thenReturn(Optional.empty());
+		when(studentRepository.findByPublicIdAndTenantId(STUDENT_PUBLIC_ID, 1L)).thenReturn(Optional.of(studentWithId(1L)));
+		when(examRepository.findByPublicIdAndTenantId(EXAM_PUBLIC_ID, 1L)).thenReturn(Optional.empty());
 
 		assertThrows(ResourceNotFoundException.class,
-				() -> gradeService.record(1L, 99L, BigDecimal.valueOf(85), "teacher"));
+				() -> gradeService.record(STUDENT_PUBLIC_ID.toString(), EXAM_PUBLIC_ID.toString(), BigDecimal.valueOf(85), "teacher"));
 
 		verify(gradeRepository, never()).save(any());
 	}
@@ -106,12 +109,15 @@ class GradeServiceTest {
 	void record_duplicateForSameStudentExam_throwsIllegalArgument() {
 		Exam exam = Exam.create("Midterm", 5L, 10L, null, BigDecimal.valueOf(100), null,
 				1L, Exam.FULL_WEIGHTAGE);
-		when(studentRepository.existsByIdAndTenantId(1L, 1L)).thenReturn(true);
-		when(examRepository.findByIdAndTenantId(2L, 1L)).thenReturn(Optional.of(exam));
+		when(studentRepository.findByPublicIdAndTenantId(STUDENT_PUBLIC_ID, 1L))
+				.thenReturn(Optional.of(studentWithId(1L)));
+		exam.setId(2L);
+		when(examRepository.findByPublicIdAndTenantId(EXAM_PUBLIC_ID, 1L)).thenReturn(Optional.of(exam));
 		when(gradeRepository.existsByStudentIdAndExamIdAndTenantId(1L, 2L, 1L)).thenReturn(true);
 
 		assertThrows(IllegalArgumentException.class,
-				() -> gradeService.record(1L, 2L, BigDecimal.valueOf(85), "teacher"));
+				() -> gradeService.record(STUDENT_PUBLIC_ID.toString(), EXAM_PUBLIC_ID.toString(),
+						BigDecimal.valueOf(85), "teacher"));
 	}
 
 	@Test
@@ -121,14 +127,17 @@ class GradeServiceTest {
 		List<GradingScaleThreshold> thresholds = List.of(
 				GradingScaleThreshold.create(1L, "A", new BigDecimal("90"), new BigDecimal("4.0")),
 				GradingScaleThreshold.create(1L, "F", BigDecimal.ZERO, BigDecimal.ZERO));
-		when(studentRepository.existsByIdAndTenantId(1L, 1L)).thenReturn(true);
-		when(examRepository.findByIdAndTenantId(2L, 1L)).thenReturn(Optional.of(exam));
+		when(studentRepository.findByPublicIdAndTenantId(STUDENT_PUBLIC_ID, 1L))
+				.thenReturn(Optional.of(studentWithId(1L)));
+		exam.setId(2L);
+		when(examRepository.findByPublicIdAndTenantId(EXAM_PUBLIC_ID, 1L)).thenReturn(Optional.of(exam));
 		when(gradeRepository.existsByStudentIdAndExamIdAndTenantId(1L, 2L, 1L)).thenReturn(false);
 		when(gradingScaleService.resolveEffectiveThresholds(10L)).thenReturn(thresholds);
 		when(gradeRepository.save(any(Grade.class))).thenAnswer(inv -> inv.getArgument(0));
 
 		Grade grade = assertDoesNotThrow(
-				() -> gradeService.record(1L, 2L, BigDecimal.valueOf(92), "teacher"));
+				() -> gradeService.record(STUDENT_PUBLIC_ID.toString(), EXAM_PUBLIC_ID.toString(),
+						BigDecimal.valueOf(92), "teacher"));
 
 		assertEquals("A", grade.getGradeLetter());
 		assertEquals(5L, grade.getSubjectId());
@@ -180,12 +189,15 @@ class GradeServiceTest {
 	@Test
 	void record_outsideCallersTeachingScope_throwsAccessDenied() {
 		Exam exam = Exam.create("Midterm", 5L, 10L, null, BigDecimal.valueOf(100), null, 1L, Exam.FULL_WEIGHTAGE);
-		when(studentRepository.existsByIdAndTenantId(1L, 1L)).thenReturn(true);
-		when(examRepository.findByIdAndTenantId(2L, 1L)).thenReturn(Optional.of(exam));
+		when(studentRepository.findByPublicIdAndTenantId(STUDENT_PUBLIC_ID, 1L))
+				.thenReturn(Optional.of(studentWithId(1L)));
+		exam.setId(2L);
+		when(examRepository.findByPublicIdAndTenantId(EXAM_PUBLIC_ID, 1L)).thenReturn(Optional.of(exam));
 		doThrow(new AccessDeniedException("not scoped")).when(academicAccessGuard).assertCanWriteSubject(1L, 10L, 5L);
 
 		assertThrows(AccessDeniedException.class,
-				() -> gradeService.record(1L, 2L, BigDecimal.valueOf(85), "teacher"));
+				() -> gradeService.record(STUDENT_PUBLIC_ID.toString(), EXAM_PUBLIC_ID.toString(),
+						BigDecimal.valueOf(85), "teacher"));
 
 		verify(gradeRepository, never()).save(any());
 	}
@@ -321,11 +333,20 @@ class GradeServiceTest {
 	void record_forCancelledExam_throwsBusinessException() {
 		Exam exam = Exam.create("Midterm", 5L, 10L, null, BigDecimal.valueOf(100), null, 1L, Exam.FULL_WEIGHTAGE);
 		exam.cancel();
-		when(studentRepository.existsByIdAndTenantId(1L, 1L)).thenReturn(true);
-		when(examRepository.findByIdAndTenantId(2L, 1L)).thenReturn(Optional.of(exam));
+		when(studentRepository.findByPublicIdAndTenantId(STUDENT_PUBLIC_ID, 1L))
+				.thenReturn(Optional.of(studentWithId(1L)));
+		exam.setId(2L);
+		when(examRepository.findByPublicIdAndTenantId(EXAM_PUBLIC_ID, 1L)).thenReturn(Optional.of(exam));
 
-		assertThrows(BusinessException.class, () -> gradeService.record(1L, 2L, BigDecimal.valueOf(85), "teacher"));
+		assertThrows(BusinessException.class, () -> gradeService.record(STUDENT_PUBLIC_ID.toString(),
+				EXAM_PUBLIC_ID.toString(), BigDecimal.valueOf(85), "teacher"));
 
 		verify(gradeRepository, never()).save(any());
+	}
+
+	private Student studentWithId(Long id) {
+		Student student = Student.create("STU-1", "Alice", "Smith", "alice@school.test", null);
+		student.setId(id);
+		return student;
 	}
 }

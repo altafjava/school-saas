@@ -2,6 +2,6 @@ package com.altafjava.school.api.dto.response;
 
 import java.time.Instant;
 
-public record ReportCardResponse(String publicId, Long termId, Instant generatedAt, String teacherRemarks,
+public record ReportCardResponse(String publicId, String termPublicId, Instant generatedAt, String teacherRemarks,
 		String principalRemarks) {
 }

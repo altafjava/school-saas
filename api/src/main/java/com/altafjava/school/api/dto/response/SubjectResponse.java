@@ -6,5 +6,5 @@ public record SubjectResponse(
 		String name,
 		String description,
 		boolean active,
-		Long curriculumId) {
+		String curriculumPublicId) {
 }

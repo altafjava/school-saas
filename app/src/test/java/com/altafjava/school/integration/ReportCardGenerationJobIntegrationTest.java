@@ -93,7 +93,7 @@ class ReportCardGenerationJobIntegrationTest extends SchoolIntegrationTestBase {
 		AcademicYear academicYear = academicYearService.create("AY-" + suffix, LocalDate.now().minusMonths(6),
 				LocalDate.now().plusMonths(6), true);
 		currentTerm = termService.create("Term 1", LocalDate.now().minusDays(30), LocalDate.now().plusDays(30),
-				academicYear.getId());
+				academicYear.getPublicId().toString());
 		// TermRepository.findCurrentByTenantId now reads the explicit is_current flag rather than
 		// computing it from date ranges — TermService.create() deliberately does not auto-mark a
 		// newly created term current (that's TermRolloverJob's job), so this test marks it directly.

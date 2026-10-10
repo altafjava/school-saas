@@ -114,25 +114,26 @@ public class AttendanceService {
 	}
 
 	@Transactional
-	public Attendance mark(Long studentId, Long classroomId, LocalDate attendanceDate,
+	public Attendance mark(String studentPublicId, String classroomPublicId, LocalDate attendanceDate,
 			AttendanceStatus status, String markedBy) {
 		Long tenantId = TenantContext.getCurrentTenantId();
-		if (!studentRepository.existsByIdAndTenantId(studentId, tenantId)) {
-			throw new ResourceNotFoundException("Student not found: " + studentId);
-		}
-		if (!classroomRepository.existsByIdAndTenantId(classroomId, tenantId)) {
-			throw new ResourceNotFoundException("Classroom not found: " + classroomId);
-		}
+		Long studentId = studentRepository.findByPublicIdAndTenantId(UUID.fromString(studentPublicId), tenantId)
+				.orElseThrow(() -> new ResourceNotFoundException("Student not found: " + studentPublicId))
+				.getId();
+		Long classroomId = classroomRepository
+				.findByPublicIdAndTenantId(UUID.fromString(classroomPublicId), tenantId)
+				.orElseThrow(() -> new ResourceNotFoundException("Classroom not found: " + classroomPublicId))
+				.getId();
 		if (studentClassroomLinkRepository.findByStudentIdAndClassroomId(tenantId, studentId, classroomId)
 				.isEmpty()) {
 			throw new ResourceNotFoundException(
-					"Student " + studentId + " is not enrolled in classroom " + classroomId);
+					"Student " + studentPublicId + " is not enrolled in classroom " + classroomPublicId);
 		}
 		academicAccessGuard.assertCanWriteClassroom(tenantId, classroomId);
 		if (attendanceRepository.existsByStudentIdAndClassroomIdAndAttendanceDateAndTenantId(
 				studentId, classroomId, attendanceDate, tenantId)) {
 			throw new IllegalArgumentException(
-					"Attendance already marked for student " + studentId + " on " + attendanceDate);
+					"Attendance already marked for student " + studentPublicId + " on " + attendanceDate);
 		}
 		Attendance attendance = Attendance.create(studentId, classroomId, attendanceDate, status, markedBy);
 		return attendanceRepository.save(attendance);

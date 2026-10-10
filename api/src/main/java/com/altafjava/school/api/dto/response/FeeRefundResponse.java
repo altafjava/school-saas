@@ -13,5 +13,5 @@ public record FeeRefundResponse(
 		String gatewayRefundReference,
 		String failureReason,
 		Instant refundedAt,
-		Long refundedByUserId) {
+		String refundedByUserPublicId) {
 }

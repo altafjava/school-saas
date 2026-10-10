@@ -3,6 +3,7 @@ package com.altafjava.school.api.controller;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -13,6 +14,7 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import com.altafjava.platform.api.dto.response.ApiResponse;
 import com.altafjava.platform.core.idempotency.RequireIdempotencyKey;
+import com.altafjava.platform.core.security.AuthenticatedUser;
 import com.altafjava.school.api.controller.api.PeriodAttendanceApi;
 import com.altafjava.school.api.dto.request.MarkPeriodAttendanceRequest;
 import com.altafjava.school.api.dto.response.PeriodAttendanceResponse;
@@ -59,13 +61,13 @@ public class PeriodAttendanceController implements PeriodAttendanceApi {
 	@ResponseStatus(HttpStatus.CREATED)
 	@PreAuthorize("@permissionAuthorizationService.hasPermission('PERIOD_ATTENDANCE_MANAGE')")
 	@RequireIdempotencyKey
-	public ApiResponse<PeriodAttendanceResponse> mark(@Valid @RequestBody MarkPeriodAttendanceRequest request) {
+	public ApiResponse<PeriodAttendanceResponse> mark(@Valid @RequestBody MarkPeriodAttendanceRequest request,
+			@AuthenticationPrincipal AuthenticatedUser user) {
 		return ApiResponse.success(periodAttendanceMapper.toResponse(periodAttendanceService.mark(
-				request.studentId(),
-				request.classroomId(),
-				request.timetableEntryId(),
+				request.studentPublicId(),
+				request.timetableEntryPublicId(),
 				request.attendanceDate(),
 				request.status(),
-				request.markedBy())));
+				user.getUsername())));
 	}
 }

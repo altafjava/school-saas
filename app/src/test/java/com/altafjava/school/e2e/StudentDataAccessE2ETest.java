@@ -23,9 +23,12 @@ import com.altafjava.school.base.SchoolIntegrationTestBase;
 import com.altafjava.school.config.TestPaymentConfig;
 import com.altafjava.school.config.TestRedisConfig;
 import com.altafjava.school.domain.exam.repository.ExamRepository;
+import com.altafjava.school.domain.fee.model.FeeStructure;
 import com.altafjava.school.domain.fee.repository.FeeStructureRepository;
+import com.altafjava.school.domain.student.model.Student;
 import com.altafjava.school.domain.student.repository.StudentRepository;
 import com.altafjava.school.util.SchoolAuthenticationHelper;
+import com.altafjava.school.util.TestPublicIds;
 import io.restassured.RestAssured;
 import io.restassured.http.ContentType;
 
@@ -36,6 +39,9 @@ class StudentDataAccessE2ETest extends SchoolIntegrationTestBase {
 
 	@LocalServerPort
 	int port;
+
+	@Autowired
+	private TestPublicIds publicIds;
 
 	@Autowired
 	private TenantOnboardingService onboardingService;
@@ -211,8 +217,9 @@ class StudentDataAccessE2ETest extends SchoolIntegrationTestBase {
 				.header("Authorization", "Bearer " + adminToken)
 				.header("Idempotency-Key", UUID.randomUUID().toString())
 				.contentType(ContentType.JSON)
-				.body("{\"studentId\":" + studentAId + ",\"feeStructureId\":" + feeStructureId
-						+ ",\"paidAmount\":400.00,\"paidAt\":\"2026-02-01T10:00:00\","
+				.body("{\"studentPublicId\":\"" + publicIds.of(Student.class, studentAId)
+						+ "\",\"feeStructurePublicId\":\"" + publicIds.of(FeeStructure.class, feeStructureId)
+						+ "\",\"paidAmount\":400.00,\"paidAt\":\"2026-02-01T10:00:00\","
 						+ "\"receiptNumber\":\"RCPT-BAL-1\"}")
 				.when()
 				.post("/api/v1/fee-payments")
@@ -226,7 +233,8 @@ class StudentDataAccessE2ETest extends SchoolIntegrationTestBase {
 				.get("/api/v1/students/" + studentAPublicId + "/fee-balance")
 				.then()
 				.statusCode(HttpStatus.OK.value())
-				.body("data.find { it.feeStructureId == " + feeStructureId + " }.outstandingBalance",
+				.body("data.find { it.feeStructurePublicId == '" + publicIds.of(FeeStructure.class, feeStructureId)
+						+ "' }.outstandingBalance",
 						org.hamcrest.Matchers
 								.comparesEqualTo(600.00f));
 	}
@@ -252,7 +260,7 @@ class StudentDataAccessE2ETest extends SchoolIntegrationTestBase {
 				.contentType(ContentType.JSON)
 				.body("{\"firstName\":\"Jane\",\"lastName\":\"Doe\",\"email\":\"jane-"
 						+ UUID.randomUUID().toString().substring(0, 8) + "@school.test\",\"phone\":\"+14155552671\","
-						+ "\"userId\":" + userId + "}")
+						+ "\"userPublicId\":\"" + publicIds.of(User.class, userId) + "\"}")
 				.when()
 				.post("/api/v1/guardians")
 				.then()

@@ -86,9 +86,9 @@ class ExamTenantIsolationIntegrationTest extends SchoolIntegrationTestBase {
 	}
 
 	// SchoolTenantProvisioningListener seeds UNIT_TEST/MIDTERM/FINAL/QUIZ for every new tenant.
-	private Long examTypeIdFor(String code) {
+	private String examTypeIdFor(String code) {
 		return examTypeDefinitionRepository.findByCodeAndTenantId(code, TenantContext.getCurrentTenantId())
-				.orElseThrow().getId();
+				.orElseThrow().getPublicId().toString();
 	}
 
 	@Test
@@ -98,7 +98,8 @@ class ExamTenantIsolationIntegrationTest extends SchoolIntegrationTestBase {
 		Classroom classroom = classroomService.create(
 				"CLS-" + UUID.randomUUID().toString().substring(0, 6), "Grade 5", "A", academicYearPublicId, null);
 		Subject subject = subjectService.create("MATH-" + UUID.randomUUID().toString().substring(0, 6), "Math", null);
-		examService.schedule("Midterm", subject.getId(), classroom.getId(), LocalDateTime.now().plusDays(7),
+		examService.schedule("Midterm", subject.getPublicId().toString(), classroom.getPublicId().toString(),
+				LocalDateTime.now().plusDays(7),
 				BigDecimal.valueOf(100), null, examTypeIdFor("MIDTERM"), Exam.FULL_WEIGHTAGE);
 
 		activateTenant(tenantB);
@@ -117,7 +118,7 @@ class ExamTenantIsolationIntegrationTest extends SchoolIntegrationTestBase {
 				"CLS-" + UUID.randomUUID().toString().substring(0, 6), "Grade 6", "B", academicYearPublicId, null);
 		Subject subject = subjectService.create("SCI-" + UUID.randomUUID().toString().substring(0, 6), "Science",
 				null);
-		Exam exam = examService.schedule("Final", subject.getId(), classroom.getId(),
+		Exam exam = examService.schedule("Final", subject.getPublicId().toString(), classroom.getPublicId().toString(),
 				LocalDateTime.now().plusDays(14), BigDecimal.valueOf(100), null,
 				examTypeIdFor("FINAL"), Exam.FULL_WEIGHTAGE);
 		String publicId = exam.getPublicId().toString();

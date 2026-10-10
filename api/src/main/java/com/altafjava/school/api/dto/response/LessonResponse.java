@@ -4,9 +4,9 @@ import java.time.LocalDateTime;
 
 public record LessonResponse(
 		String publicId,
-		Long classroomId,
-		Long subjectId,
-		Long teacherId,
+		String classroomPublicId,
+		String subjectPublicId,
+		String teacherPublicId,
 		String title,
 		String description,
 		String storageKey,

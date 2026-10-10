@@ -19,10 +19,14 @@ import com.altafjava.school.application.service.AcademicYearService;
 import com.altafjava.school.base.SchoolIntegrationTestBase;
 import com.altafjava.school.config.TestPaymentConfig;
 import com.altafjava.school.config.TestRedisConfig;
+import com.altafjava.school.domain.classroom.model.Classroom;
 import com.altafjava.school.domain.classroom.repository.ClassroomRepository;
+import com.altafjava.school.domain.exam.model.ExamTypeDefinition;
 import com.altafjava.school.domain.exam.repository.ExamTypeDefinitionRepository;
+import com.altafjava.school.domain.subject.model.Subject;
 import com.altafjava.school.domain.subject.repository.SubjectRepository;
 import com.altafjava.school.util.SchoolAuthenticationHelper;
+import com.altafjava.school.util.TestPublicIds;
 import io.restassured.RestAssured;
 import io.restassured.http.ContentType;
 
@@ -43,6 +47,9 @@ class ExamCrudE2ETest extends SchoolIntegrationTestBase {
 
 	@LocalServerPort
 	int port;
+
+	@Autowired
+	private TestPublicIds publicIds;
 
 	@Autowired
 	private TenantOnboardingService onboardingService;
@@ -156,9 +163,10 @@ class ExamCrudE2ETest extends SchoolIntegrationTestBase {
 				.header("X-Tenant-ID", tenantId)
 				.header("Authorization", "Bearer " + accessToken)
 				.contentType(ContentType.JSON)
-				.body("{\"title\":\"Midterm\",\"subjectId\":" + subjectId + ",\"classroomId\":" + classroomId
-						+ ",\"scheduledAt\":\"2026-03-01T09:00:00\",\"maxMarks\":100,\"examTypeId\":"
-						+ examTypeIdFor("MIDTERM") + "}")
+				.body("{\"title\":\"Midterm\",\"subjectPublicId\":\"" + publicIds.of(Subject.class, subjectId)
+						+ "\",\"classroomPublicId\":\"" + publicIds.of(Classroom.class, classroomId)
+						+ "\",\"scheduledAt\":\"2026-03-01T09:00:00\",\"maxMarks\":100,\"examTypePublicId\":\""
+						+ publicIds.of(ExamTypeDefinition.class, examTypeIdFor("MIDTERM")) + "\"}")
 				.when()
 				.post("/api/v1/exams")
 				.then()
@@ -189,9 +197,10 @@ class ExamCrudE2ETest extends SchoolIntegrationTestBase {
 				.header("X-Tenant-ID", tenantId)
 				.header("Authorization", "Bearer " + studentToken)
 				.contentType(ContentType.JSON)
-				.body("{\"title\":\"Final\",\"subjectId\":" + subjectId + ",\"classroomId\":" + classroomId
-						+ ",\"scheduledAt\":\"2026-05-01T09:00:00\",\"maxMarks\":100,\"examTypeId\":"
-						+ examTypeIdFor("FINAL") + "}")
+				.body("{\"title\":\"Final\",\"subjectPublicId\":\"" + publicIds.of(Subject.class, subjectId)
+						+ "\",\"classroomPublicId\":\"" + publicIds.of(Classroom.class, classroomId)
+						+ "\",\"scheduledAt\":\"2026-05-01T09:00:00\",\"maxMarks\":100,\"examTypePublicId\":\""
+						+ publicIds.of(ExamTypeDefinition.class, examTypeIdFor("FINAL")) + "\"}")
 				.when()
 				.post("/api/v1/exams")
 				.then()
@@ -207,9 +216,10 @@ class ExamCrudE2ETest extends SchoolIntegrationTestBase {
 				.header("X-Tenant-ID", tenantId)
 				.header("Authorization", "Bearer " + accessToken)
 				.contentType(ContentType.JSON)
-				.body("{\"title\":\"Quiz\",\"subjectId\":" + subjectId + ",\"classroomId\":" + classroomId
-						+ ",\"scheduledAt\":\"2026-04-01T09:00:00\",\"maxMarks\":50,\"examTypeId\":"
-						+ examTypeIdFor("QUIZ") + "}")
+				.body("{\"title\":\"Quiz\",\"subjectPublicId\":\"" + publicIds.of(Subject.class, subjectId)
+						+ "\",\"classroomPublicId\":\"" + publicIds.of(Classroom.class, classroomId)
+						+ "\",\"scheduledAt\":\"2026-04-01T09:00:00\",\"maxMarks\":50,\"examTypePublicId\":\""
+						+ publicIds.of(ExamTypeDefinition.class, examTypeIdFor("QUIZ")) + "\"}")
 				.when()
 				.post("/api/v1/exams")
 				.then()
@@ -241,9 +251,10 @@ class ExamCrudE2ETest extends SchoolIntegrationTestBase {
 				.header("X-Tenant-ID", tenantId)
 				.header("Authorization", "Bearer " + accessToken)
 				.contentType(ContentType.JSON)
-				.body("{\"title\":\"Unit Test\",\"subjectId\":" + subjectId + ",\"classroomId\":" + classroomId
-						+ ",\"scheduledAt\":\"2026-03-05T09:00:00\",\"maxMarks\":50,\"examTypeId\":"
-						+ examTypeIdFor("UNIT_TEST") + "}")
+				.body("{\"title\":\"Unit Test\",\"subjectPublicId\":\"" + publicIds.of(Subject.class, subjectId)
+						+ "\",\"classroomPublicId\":\"" + publicIds.of(Classroom.class, classroomId)
+						+ "\",\"scheduledAt\":\"2026-03-05T09:00:00\",\"maxMarks\":50,\"examTypePublicId\":\""
+						+ publicIds.of(ExamTypeDefinition.class, examTypeIdFor("UNIT_TEST")) + "\"}")
 				.when()
 				.post("/api/v1/exams")
 				.then()
@@ -280,9 +291,10 @@ class ExamCrudE2ETest extends SchoolIntegrationTestBase {
 				.header("X-Tenant-ID", tenantId)
 				.header("Authorization", "Bearer " + accessToken)
 				.contentType(ContentType.JSON)
-				.body("{\"title\":\"Quiz\",\"subjectId\":" + subjectId + ",\"classroomId\":" + classroomId
-						+ ",\"scheduledAt\":\"2026-03-06T09:00:00\",\"maxMarks\":50,\"examTypeId\":"
-						+ examTypeIdFor("QUIZ") + "}")
+				.body("{\"title\":\"Quiz\",\"subjectPublicId\":\"" + publicIds.of(Subject.class, subjectId)
+						+ "\",\"classroomPublicId\":\"" + publicIds.of(Classroom.class, classroomId)
+						+ "\",\"scheduledAt\":\"2026-03-06T09:00:00\",\"maxMarks\":50,\"examTypePublicId\":\""
+						+ publicIds.of(ExamTypeDefinition.class, examTypeIdFor("QUIZ")) + "\"}")
 				.when()
 				.post("/api/v1/exams")
 				.then()

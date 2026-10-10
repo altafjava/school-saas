@@ -11,6 +11,7 @@ import java.time.LocalDate;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.UUID;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -20,7 +21,6 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.security.access.AccessDeniedException;
-import com.altafjava.platform.core.exception.BusinessException;
 import com.altafjava.platform.core.exception.ResourceNotFoundException;
 import com.altafjava.platform.core.tenant.TenantContext;
 import com.altafjava.platform.core.tenant.TenantType;
@@ -33,8 +33,8 @@ import com.altafjava.school.domain.attendance.model.AttendanceStatus;
 import com.altafjava.school.domain.attendance.model.PeriodAttendance;
 import com.altafjava.school.domain.attendance.repository.PeriodAttendanceRepository;
 import com.altafjava.school.domain.classroom.model.StudentClassroomLink;
-import com.altafjava.school.domain.classroom.repository.ClassroomRepository;
 import com.altafjava.school.domain.classroom.repository.StudentClassroomLinkRepository;
+import com.altafjava.school.domain.student.model.Student;
 import com.altafjava.school.domain.student.repository.StudentRepository;
 import com.altafjava.school.domain.timetable.model.TimetableEntry;
 import com.altafjava.school.domain.timetable.repository.TimetableEntryRepository;
@@ -42,12 +42,13 @@ import com.altafjava.school.domain.timetable.repository.TimetableEntryRepository
 @ExtendWith(MockitoExtension.class)
 class PeriodAttendanceServiceTest {
 
+	private static final UUID STUDENT_PUBLIC_ID = UUID.randomUUID();
+	private static final UUID ENTRY_PUBLIC_ID = UUID.randomUUID();
+
 	@Mock
 	private PeriodAttendanceRepository periodAttendanceRepository;
 	@Mock
 	private StudentRepository studentRepository;
-	@Mock
-	private ClassroomRepository classroomRepository;
 	@Mock
 	private TimetableEntryRepository timetableEntryRepository;
 	@Mock
@@ -64,7 +65,7 @@ class PeriodAttendanceServiceTest {
 	@BeforeEach
 	void setUp() {
 		periodAttendanceService = new PeriodAttendanceService(periodAttendanceRepository, studentRepository,
-				classroomRepository, timetableEntryRepository, studentClassroomLinkRepository, academicScopeResolver,
+				timetableEntryRepository, studentClassroomLinkRepository, academicScopeResolver,
 				academicAccessGuard, studentDataAccessGuard);
 		TenantContext.ForTesting.setCurrentTenant(1L, null, null, TenantType.SHARED);
 	}
@@ -82,22 +83,10 @@ class PeriodAttendanceServiceTest {
 
 	@Test
 	void mark_withNonExistentStudent_throwsResourceNotFound() {
-		when(studentRepository.existsByIdAndTenantId(99L, 1L)).thenReturn(false);
+		when(studentRepository.findByPublicIdAndTenantId(STUDENT_PUBLIC_ID, 1L)).thenReturn(Optional.empty());
 
 		assertThrows(ResourceNotFoundException.class,
-				() -> periodAttendanceService.mark(99L, 10L, 100L, LocalDate.now(), AttendanceStatus.PRESENT,
-						"teacher"));
-
-		verify(periodAttendanceRepository, never()).save(any());
-	}
-
-	@Test
-	void mark_withNonExistentClassroom_throwsResourceNotFound() {
-		when(studentRepository.existsByIdAndTenantId(1L, 1L)).thenReturn(true);
-		when(classroomRepository.existsByIdAndTenantId(99L, 1L)).thenReturn(false);
-
-		assertThrows(ResourceNotFoundException.class,
-				() -> periodAttendanceService.mark(1L, 99L, 100L, LocalDate.now(), AttendanceStatus.PRESENT,
+				() -> periodAttendanceService.mark(STUDENT_PUBLIC_ID.toString(), ENTRY_PUBLIC_ID.toString(), LocalDate.now(), AttendanceStatus.PRESENT,
 						"teacher"));
 
 		verify(periodAttendanceRepository, never()).save(any());
@@ -105,26 +94,11 @@ class PeriodAttendanceServiceTest {
 
 	@Test
 	void mark_withNonExistentTimetableEntry_throwsResourceNotFound() {
-		when(studentRepository.existsByIdAndTenantId(1L, 1L)).thenReturn(true);
-		when(classroomRepository.existsByIdAndTenantId(10L, 1L)).thenReturn(true);
-		when(timetableEntryRepository.findByIdAndTenantId(100L, 1L)).thenReturn(Optional.empty());
+		when(studentRepository.findByPublicIdAndTenantId(STUDENT_PUBLIC_ID, 1L)).thenReturn(Optional.of(studentWithId(1L)));
+		when(timetableEntryRepository.findByPublicIdAndTenantId(ENTRY_PUBLIC_ID, 1L)).thenReturn(Optional.empty());
 
 		assertThrows(ResourceNotFoundException.class,
-				() -> periodAttendanceService.mark(1L, 10L, 100L, LocalDate.now(), AttendanceStatus.PRESENT,
-						"teacher"));
-
-		verify(periodAttendanceRepository, never()).save(any());
-	}
-
-	@Test
-	void mark_timetableEntryBelongsToDifferentClassroom_throwsBusinessException() {
-		when(studentRepository.existsByIdAndTenantId(1L, 1L)).thenReturn(true);
-		when(classroomRepository.existsByIdAndTenantId(10L, 1L)).thenReturn(true);
-		when(timetableEntryRepository.findByIdAndTenantId(100L, 1L))
-				.thenReturn(Optional.of(timetableEntryForClassroom(999L)));
-
-		assertThrows(BusinessException.class,
-				() -> periodAttendanceService.mark(1L, 10L, 100L, LocalDate.now(), AttendanceStatus.PRESENT,
+				() -> periodAttendanceService.mark(STUDENT_PUBLIC_ID.toString(), ENTRY_PUBLIC_ID.toString(), LocalDate.now(), AttendanceStatus.PRESENT,
 						"teacher"));
 
 		verify(periodAttendanceRepository, never()).save(any());
@@ -132,14 +106,13 @@ class PeriodAttendanceServiceTest {
 
 	@Test
 	void mark_studentNotEnrolledInClassroom_throwsResourceNotFound() {
-		when(studentRepository.existsByIdAndTenantId(1L, 1L)).thenReturn(true);
-		when(classroomRepository.existsByIdAndTenantId(10L, 1L)).thenReturn(true);
-		when(timetableEntryRepository.findByIdAndTenantId(100L, 1L))
+		when(studentRepository.findByPublicIdAndTenantId(STUDENT_PUBLIC_ID, 1L)).thenReturn(Optional.of(studentWithId(1L)));
+		when(timetableEntryRepository.findByPublicIdAndTenantId(ENTRY_PUBLIC_ID, 1L))
 				.thenReturn(Optional.of(timetableEntryForClassroom(10L)));
 		when(studentClassroomLinkRepository.findByStudentIdAndClassroomId(1L, 1L, 10L)).thenReturn(Optional.empty());
 
 		assertThrows(ResourceNotFoundException.class,
-				() -> periodAttendanceService.mark(1L, 10L, 100L, LocalDate.now(), AttendanceStatus.PRESENT,
+				() -> periodAttendanceService.mark(STUDENT_PUBLIC_ID.toString(), ENTRY_PUBLIC_ID.toString(), LocalDate.now(), AttendanceStatus.PRESENT,
 						"teacher"));
 
 		verify(periodAttendanceRepository, never()).save(any());
@@ -147,9 +120,8 @@ class PeriodAttendanceServiceTest {
 
 	@Test
 	void mark_duplicateForSameStudentTimetableEntryDate_throwsIllegalArgument() {
-		when(studentRepository.existsByIdAndTenantId(1L, 1L)).thenReturn(true);
-		when(classroomRepository.existsByIdAndTenantId(10L, 1L)).thenReturn(true);
-		when(timetableEntryRepository.findByIdAndTenantId(100L, 1L))
+		when(studentRepository.findByPublicIdAndTenantId(STUDENT_PUBLIC_ID, 1L)).thenReturn(Optional.of(studentWithId(1L)));
+		when(timetableEntryRepository.findByPublicIdAndTenantId(ENTRY_PUBLIC_ID, 1L))
 				.thenReturn(Optional.of(timetableEntryForClassroom(10L)));
 		when(studentClassroomLinkRepository.findByStudentIdAndClassroomId(1L, 1L, 10L))
 				.thenReturn(Optional.of(StudentClassroomLink.create(1L, 10L, 5L, LocalDate.now())));
@@ -158,16 +130,15 @@ class PeriodAttendanceServiceTest {
 				date, 1L)).thenReturn(true);
 
 		assertThrows(IllegalArgumentException.class,
-				() -> periodAttendanceService.mark(1L, 10L, 100L, date, AttendanceStatus.PRESENT, "teacher"));
+				() -> periodAttendanceService.mark(STUDENT_PUBLIC_ID.toString(), ENTRY_PUBLIC_ID.toString(), date, AttendanceStatus.PRESENT, "teacher"));
 
 		verify(periodAttendanceRepository, never()).save(any());
 	}
 
 	@Test
 	void mark_withValidReferences_succeeds() {
-		when(studentRepository.existsByIdAndTenantId(1L, 1L)).thenReturn(true);
-		when(classroomRepository.existsByIdAndTenantId(10L, 1L)).thenReturn(true);
-		when(timetableEntryRepository.findByIdAndTenantId(100L, 1L))
+		when(studentRepository.findByPublicIdAndTenantId(STUDENT_PUBLIC_ID, 1L)).thenReturn(Optional.of(studentWithId(1L)));
+		when(timetableEntryRepository.findByPublicIdAndTenantId(ENTRY_PUBLIC_ID, 1L))
 				.thenReturn(Optional.of(timetableEntryForClassroom(10L)));
 		when(studentClassroomLinkRepository.findByStudentIdAndClassroomId(1L, 1L, 10L))
 				.thenReturn(Optional.of(StudentClassroomLink.create(1L, 10L, 5L, LocalDate.now())));
@@ -175,7 +146,7 @@ class PeriodAttendanceServiceTest {
 				any(), any(), any())).thenReturn(false);
 		when(periodAttendanceRepository.save(any(PeriodAttendance.class))).thenAnswer(inv -> inv.getArgument(0));
 
-		assertDoesNotThrow(() -> periodAttendanceService.mark(1L, 10L, 100L, LocalDate.now(),
+		assertDoesNotThrow(() -> periodAttendanceService.mark(STUDENT_PUBLIC_ID.toString(), ENTRY_PUBLIC_ID.toString(), LocalDate.now(),
 				AttendanceStatus.PRESENT, "teacher"));
 	}
 
@@ -183,15 +154,16 @@ class PeriodAttendanceServiceTest {
 	void mark_byTeacherWhoDoesNotTeachThePeriod_throwsAccessDenied() {
 		TimetableEntry entry = timetableEntryForClassroom(10L);
 		LocalDate date = LocalDate.now();
-		when(studentRepository.existsByIdAndTenantId(1L, 1L)).thenReturn(true);
-		when(classroomRepository.existsByIdAndTenantId(10L, 1L)).thenReturn(true);
-		when(timetableEntryRepository.findByIdAndTenantId(100L, 1L)).thenReturn(Optional.of(entry));
+		when(studentRepository.findByPublicIdAndTenantId(STUDENT_PUBLIC_ID, 1L))
+				.thenReturn(Optional.of(studentWithId(1L)));
+		when(timetableEntryRepository.findByPublicIdAndTenantId(ENTRY_PUBLIC_ID, 1L)).thenReturn(Optional.of(entry));
 		when(studentClassroomLinkRepository.findByStudentIdAndClassroomId(1L, 1L, 10L))
 				.thenReturn(Optional.of(StudentClassroomLink.create(1L, 10L, 5L, LocalDate.now())));
 		doThrow(new AccessDeniedException("not scoped")).when(academicAccessGuard).assertCanMarkPeriod(1L, entry, date);
 
 		assertThrows(AccessDeniedException.class,
-				() -> periodAttendanceService.mark(1L, 10L, 100L, date, AttendanceStatus.PRESENT, "teacher"));
+				() -> periodAttendanceService.mark(STUDENT_PUBLIC_ID.toString(), ENTRY_PUBLIC_ID.toString(), date,
+						AttendanceStatus.PRESENT, "teacher"));
 
 		verify(periodAttendanceRepository, never()).save(any());
 	}
@@ -219,5 +191,11 @@ class PeriodAttendanceServiceTest {
 
 		verify(periodAttendanceRepository).findVisible(1L, Set.of(10L), Set.of(), pageable);
 		verify(periodAttendanceRepository, never()).findAllByTenantId(any(), any());
+	}
+
+	private Student studentWithId(Long id) {
+		Student student = Student.create("STU-1", "Alice", "Smith", "alice@school.test", null);
+		student.setId(id);
+		return student;
 	}
 }

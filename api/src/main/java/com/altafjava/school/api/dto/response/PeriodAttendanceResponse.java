@@ -4,9 +4,9 @@ import java.time.LocalDate;
 
 public record PeriodAttendanceResponse(
 		String publicId,
-		Long studentId,
-		Long classroomId,
-		Long timetableEntryId,
+		String studentPublicId,
+		String classroomPublicId,
+		String timetableEntryPublicId,
 		LocalDate attendanceDate,
 		String status,
 		String markedBy) {

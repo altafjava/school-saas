@@ -19,8 +19,10 @@ import com.altafjava.school.base.SchoolIntegrationTestBase;
 import com.altafjava.school.config.TestPaymentConfig;
 import com.altafjava.school.config.TestRedisConfig;
 import com.altafjava.school.config.TestStorageConfig;
+import com.altafjava.school.domain.academicyear.model.AcademicYear;
 import com.altafjava.school.domain.academicyear.repository.AcademicYearRepository;
 import com.altafjava.school.util.SchoolAuthenticationHelper;
+import com.altafjava.school.util.TestPublicIds;
 import io.restassured.RestAssured;
 import io.restassured.http.ContentType;
 
@@ -39,6 +41,9 @@ class ReportCardE2ETest extends SchoolIntegrationTestBase {
 
 	@LocalServerPort
 	int port;
+
+	@Autowired
+	private TestPublicIds publicIds;
 
 	@Autowired
 	private TenantOnboardingService onboardingService;
@@ -106,7 +111,7 @@ class ReportCardE2ETest extends SchoolIntegrationTestBase {
 				.header("Authorization", "Bearer " + accessToken)
 				.contentType(ContentType.JSON)
 				.body("{\"name\":\"Term-" + suffix + "\",\"startDate\":\"2026-01-01\",\"endDate\":\"2026-06-30\","
-						+ "\"academicYearId\":" + academicYearId + "}")
+						+ "\"academicYearPublicId\":\"" + publicIds.of(AcademicYear.class, academicYearId) + "\"}")
 				.when()
 				.post("/api/v1/terms")
 				.then()

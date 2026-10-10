@@ -5,11 +5,11 @@ import java.time.LocalDate;
 
 public record BookReservationResponse(
 		String publicId,
-		Long bookId,
-		Long studentId,
+		String bookPublicId,
+		String studentPublicId,
 		String status,
 		Instant reservedAt,
-		Long heldCopyId,
+		String heldCopyPublicId,
 		LocalDate holdExpiresOn,
 		Instant closedAt) {
 }

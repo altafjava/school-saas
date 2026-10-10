@@ -58,11 +58,11 @@ public class TicketController implements TicketApi {
 	public ApiResponse<com.altafjava.platform.core.model.Page<TicketResponse>> search(
 			@RequestParam(required = false) TicketStatus status,
 			@RequestParam(required = false) TicketCategory category,
-			@RequestParam(required = false) Long assignedToUserId,
+			@RequestParam(required = false) String assignedToUserPublicId,
 			@RequestParam(defaultValue = "0") int page,
 			@RequestParam(defaultValue = "20") int size) {
 		return ApiResponse.success(PlatformPageMapper.toPlatformPage(
-				ticketService.search(status, category, assignedToUserId, pageableResolver.resolve(page, size))
+				ticketService.search(status, category, assignedToUserPublicId, pageableResolver.resolve(page, size))
 						.map(ticketMapper::toResponse)));
 	}
 
@@ -97,7 +97,8 @@ public class TicketController implements TicketApi {
 	@PreAuthorize("@permissionAuthorizationService.hasPermission('TICKET_MANAGE')")
 	public ApiResponse<TicketResponse> assign(@PathVariable String publicId,
 			@Valid @RequestBody AssignTicketRequest request) {
-		return ApiResponse.success(ticketMapper.toResponse(ticketService.assign(publicId, request.assignedToUserId())));
+		return ApiResponse
+				.success(ticketMapper.toResponse(ticketService.assign(publicId, request.assignedToUserPublicId())));
 	}
 
 	@Override

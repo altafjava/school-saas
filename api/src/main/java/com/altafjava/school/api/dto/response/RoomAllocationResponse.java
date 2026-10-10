@@ -4,8 +4,8 @@ import java.time.LocalDate;
 
 public record RoomAllocationResponse(
 		String publicId,
-		Long studentId,
-		Long roomId,
+		String studentPublicId,
+		String roomPublicId,
 		LocalDate allocatedFrom,
 		LocalDate allocatedUntil,
 		boolean active) {

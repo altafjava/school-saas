@@ -154,9 +154,11 @@ class OrganizationRollupE2ETest extends SchoolIntegrationTestBase {
 					LocalDate.of(2012, 1, 1));
 			classroomService.enrollStudent(classroom.getPublicId().toString(), student.getPublicId().toString(),
 					academicYear.getPublicId().toString());
-			attendanceService.mark(student.getId(), classroom.getId(), LocalDate.of(2026, 2, 10),
+			attendanceService.mark(student.getPublicId().toString(), classroom.getPublicId().toString(),
+					LocalDate.of(2026, 2, 10),
 					AttendanceStatus.PRESENT, "teacher");
-			feePaymentService.record(student.getId(), feeStructure.getId(), paidPerStudent,
+			feePaymentService.record(student.getPublicId().toString(), feeStructure.getPublicId().toString(),
+					paidPerStudent,
 					LocalDateTime.of(2026, 2, 12, 9, 0), "RCPT-" + UUID.randomUUID().toString().substring(0, 10));
 		}
 		TenantContext.ForTesting.clear();

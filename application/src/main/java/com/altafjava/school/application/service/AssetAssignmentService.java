@@ -8,6 +8,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import com.altafjava.platform.core.exception.ResourceNotFoundException;
 import com.altafjava.platform.core.tenant.TenantContext;
+import com.altafjava.school.domain.classroom.repository.ClassroomRepository;
+import com.altafjava.school.domain.employee.repository.EmployeeRepository;
 import com.altafjava.school.domain.inventory.model.Asset;
 import com.altafjava.school.domain.inventory.model.AssetAssignment;
 import com.altafjava.school.domain.inventory.model.AssignedToType;
@@ -19,11 +21,16 @@ public class AssetAssignmentService {
 
 	private final AssetAssignmentRepository assetAssignmentRepository;
 	private final AssetRepository assetRepository;
+	private final EmployeeRepository employeeRepository;
+	private final ClassroomRepository classroomRepository;
 
 	public AssetAssignmentService(AssetAssignmentRepository assetAssignmentRepository,
-			AssetRepository assetRepository) {
+			AssetRepository assetRepository, EmployeeRepository employeeRepository,
+			ClassroomRepository classroomRepository) {
 		this.assetAssignmentRepository = assetAssignmentRepository;
 		this.assetRepository = assetRepository;
+		this.employeeRepository = employeeRepository;
+		this.classroomRepository = classroomRepository;
 	}
 
 	@Transactional(readOnly = true)
@@ -35,15 +42,28 @@ public class AssetAssignmentService {
 	}
 
 	@Transactional
-	public AssetAssignment assign(String assetPublicId, AssignedToType assignedToType, Long assignedToId,
+	public AssetAssignment assign(String assetPublicId, AssignedToType assignedToType, String assignedToPublicId,
 			LocalDate assignedAt) {
 		Long tenantId = TenantContext.getCurrentTenantId();
 		Asset asset = assetRepository.findByPublicIdAndTenantId(UUID.fromString(assetPublicId), tenantId)
 				.orElseThrow(() -> new ResourceNotFoundException("Asset not found: " + assetPublicId));
+		Long assignedToId = requireHolderId(tenantId, assignedToType, assignedToPublicId);
 		asset.markInUse();
 		assetRepository.save(asset);
 		AssetAssignment assignment = AssetAssignment.create(asset.getId(), assignedToType, assignedToId, assignedAt);
 		return assetAssignmentRepository.save(assignment);
+	}
+
+	private Long requireHolderId(Long tenantId, AssignedToType assignedToType, String holderPublicId) {
+		UUID holder = UUID.fromString(holderPublicId);
+		if (assignedToType == AssignedToType.STAFF) {
+			return employeeRepository.findByPublicIdAndTenantId(holder, tenantId)
+					.orElseThrow(() -> new ResourceNotFoundException("Employee not found: " + holderPublicId))
+					.getId();
+		}
+		return classroomRepository.findByPublicIdAndTenantId(holder, tenantId)
+				.orElseThrow(() -> new ResourceNotFoundException("Classroom not found: " + holderPublicId))
+				.getId();
 	}
 
 	@Transactional

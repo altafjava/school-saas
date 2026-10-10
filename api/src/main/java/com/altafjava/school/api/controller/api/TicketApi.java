@@ -24,7 +24,7 @@ public interface TicketApi {
 	public ApiResponse<com.altafjava.platform.core.model.Page<TicketResponse>> search(
 			@RequestParam(required = false) TicketStatus status,
 			@RequestParam(required = false) TicketCategory category,
-			@RequestParam(required = false) Long assignedToUserId,
+			@RequestParam(required = false) String assignedToUserPublicId,
 			@RequestParam(defaultValue = "0") int page,
 			@RequestParam(defaultValue = "20") int size);
 

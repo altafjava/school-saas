@@ -26,8 +26,8 @@ class ScheduleExamRequestValidationTest {
 	}
 
 	private ScheduleExamRequest valid() {
-		return new ScheduleExamRequest("Midterm Exam", 5L, 10L,
-				LocalDateTime.of(2025, 10, 15, 9, 0), new BigDecimal("100.0"), null, 1L, null);
+		return new ScheduleExamRequest("Midterm Exam", "id-5", "id-10",
+				LocalDateTime.of(2025, 10, 15, 9, 0), new BigDecimal("100.0"), null, "id-1", null);
 	}
 
 	@Test
@@ -37,64 +37,64 @@ class ScheduleExamRequestValidationTest {
 
 	@Test
 	void title_blank_failsValidation() {
-		var req = new ScheduleExamRequest("", 5L, 10L,
-				LocalDateTime.of(2025, 10, 15, 9, 0), new BigDecimal("100.0"), null, 1L, null);
+		var req = new ScheduleExamRequest("", "id-5", "id-10",
+				LocalDateTime.of(2025, 10, 15, 9, 0), new BigDecimal("100.0"), null, "id-1", null);
 		assertFalse(violationsFor(req).isEmpty());
 	}
 
 	@Test
 	void title_tooLong_failsValidation() {
-		var req = new ScheduleExamRequest("T".repeat(201), 5L, 10L,
-				LocalDateTime.of(2025, 10, 15, 9, 0), new BigDecimal("100.0"), null, 1L, null);
+		var req = new ScheduleExamRequest("T".repeat(201), "id-5", "id-10",
+				LocalDateTime.of(2025, 10, 15, 9, 0), new BigDecimal("100.0"), null, "id-1", null);
 		assertFalse(violationsFor(req).isEmpty());
 	}
 
 	@Test
 	void subjectId_null_failsValidation() {
-		var req = new ScheduleExamRequest("Midterm Exam", null, 10L,
-				LocalDateTime.of(2025, 10, 15, 9, 0), new BigDecimal("100.0"), null, 1L, null);
+		var req = new ScheduleExamRequest("Midterm Exam", null, "id-10",
+				LocalDateTime.of(2025, 10, 15, 9, 0), new BigDecimal("100.0"), null, "id-1", null);
 		assertFalse(violationsFor(req).isEmpty());
 	}
 
 	@Test
 	void classroomId_null_failsValidation() {
-		var req = new ScheduleExamRequest("Midterm Exam", 5L, null,
-				LocalDateTime.of(2025, 10, 15, 9, 0), new BigDecimal("100.0"), null, 1L, null);
+		var req = new ScheduleExamRequest("Midterm Exam", "id-5", null,
+				LocalDateTime.of(2025, 10, 15, 9, 0), new BigDecimal("100.0"), null, "id-1", null);
 		assertFalse(violationsFor(req).isEmpty());
 	}
 
 	@Test
 	void scheduledAt_null_failsValidation() {
-		var req = new ScheduleExamRequest("Midterm Exam", 5L, 10L, null, new BigDecimal("100.0"), null,
-				1L, null);
+		var req = new ScheduleExamRequest("Midterm Exam", "id-5", "id-10", null, new BigDecimal("100.0"), null,
+				"id-1", null);
 		assertFalse(violationsFor(req).isEmpty());
 	}
 
 	@Test
 	void maxMarks_null_failsValidation() {
-		var req = new ScheduleExamRequest("Midterm Exam", 5L, 10L,
-				LocalDateTime.of(2025, 10, 15, 9, 0), null, null, 1L, null);
+		var req = new ScheduleExamRequest("Midterm Exam", "id-5", "id-10",
+				LocalDateTime.of(2025, 10, 15, 9, 0), null, null, "id-1", null);
 		assertFalse(violationsFor(req).isEmpty());
 	}
 
 	@Test
 	void maxMarks_belowMin_failsDecimalMinValidation() {
 		// @DecimalMin("1.0") — zero should fail
-		var req = new ScheduleExamRequest("Midterm Exam", 5L, 10L,
-				LocalDateTime.of(2025, 10, 15, 9, 0), BigDecimal.ZERO, null, 1L, null);
+		var req = new ScheduleExamRequest("Midterm Exam", "id-5", "id-10",
+				LocalDateTime.of(2025, 10, 15, 9, 0), BigDecimal.ZERO, null, "id-1", null);
 		assertFalse(violationsFor(req).isEmpty());
 	}
 
 	@Test
 	void maxMarks_atMinimum_passesValidation() {
-		var req = new ScheduleExamRequest("Midterm Exam", 5L, 10L,
-				LocalDateTime.of(2025, 10, 15, 9, 0), new BigDecimal("1.0"), null, 1L, null);
+		var req = new ScheduleExamRequest("Midterm Exam", "id-5", "id-10",
+				LocalDateTime.of(2025, 10, 15, 9, 0), new BigDecimal("1.0"), null, "id-1", null);
 		assertTrue(violationsFor(req).isEmpty());
 	}
 
 	@Test
 	void examType_null_failsValidation() {
-		var req = new ScheduleExamRequest("Midterm Exam", 5L, 10L,
+		var req = new ScheduleExamRequest("Midterm Exam", "id-5", "id-10",
 				LocalDateTime.of(2025, 10, 15, 9, 0), new BigDecimal("100.0"), null, null, null);
 		assertFalse(violationsFor(req).isEmpty());
 	}

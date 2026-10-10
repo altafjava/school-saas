@@ -34,13 +34,18 @@ import com.altafjava.school.domain.attendance.model.AttendanceCorrection;
 import com.altafjava.school.domain.attendance.model.AttendanceStatus;
 import com.altafjava.school.domain.attendance.repository.AttendanceCorrectionRepository;
 import com.altafjava.school.domain.attendance.repository.AttendanceRepository;
+import com.altafjava.school.domain.classroom.model.Classroom;
 import com.altafjava.school.domain.classroom.model.StudentClassroomLink;
 import com.altafjava.school.domain.classroom.repository.ClassroomRepository;
 import com.altafjava.school.domain.classroom.repository.StudentClassroomLinkRepository;
+import com.altafjava.school.domain.student.model.Student;
 import com.altafjava.school.domain.student.repository.StudentRepository;
 
 @ExtendWith(MockitoExtension.class)
 class AttendanceServiceTest {
+
+	private static final UUID STUDENT_PUBLIC_ID = UUID.randomUUID();
+	private static final UUID CLASSROOM_PUBLIC_ID = UUID.randomUUID();
 
 	@Mock
 	private AttendanceRepository attendanceRepository;
@@ -78,41 +83,41 @@ class AttendanceServiceTest {
 
 	@Test
 	void mark_withNonExistentStudent_throwsResourceNotFound() {
-		when(studentRepository.existsByIdAndTenantId(99L, 1L)).thenReturn(false);
+		when(studentRepository.findByPublicIdAndTenantId(STUDENT_PUBLIC_ID, 1L)).thenReturn(Optional.empty());
 
 		assertThrows(ResourceNotFoundException.class,
-				() -> attendanceService.mark(99L, 10L, LocalDate.now(), AttendanceStatus.PRESENT, "teacher"));
+				() -> attendanceService.mark(STUDENT_PUBLIC_ID.toString(), CLASSROOM_PUBLIC_ID.toString(), LocalDate.now(), AttendanceStatus.PRESENT, "teacher"));
 
 		verify(attendanceRepository, never()).save(any());
 	}
 
 	@Test
 	void mark_withNonExistentClassroom_throwsResourceNotFound() {
-		when(studentRepository.existsByIdAndTenantId(1L, 1L)).thenReturn(true);
-		when(classroomRepository.existsByIdAndTenantId(99L, 1L)).thenReturn(false);
+		when(studentRepository.findByPublicIdAndTenantId(STUDENT_PUBLIC_ID, 1L)).thenReturn(Optional.of(studentWithId(1L)));
+		when(classroomRepository.findByPublicIdAndTenantId(CLASSROOM_PUBLIC_ID, 1L)).thenReturn(Optional.empty());
 
 		assertThrows(ResourceNotFoundException.class,
-				() -> attendanceService.mark(1L, 99L, LocalDate.now(), AttendanceStatus.PRESENT, "teacher"));
+				() -> attendanceService.mark(STUDENT_PUBLIC_ID.toString(), CLASSROOM_PUBLIC_ID.toString(), LocalDate.now(), AttendanceStatus.PRESENT, "teacher"));
 
 		verify(attendanceRepository, never()).save(any());
 	}
 
 	@Test
 	void mark_studentNotEnrolledInClassroom_throwsResourceNotFound() {
-		when(studentRepository.existsByIdAndTenantId(1L, 1L)).thenReturn(true);
-		when(classroomRepository.existsByIdAndTenantId(10L, 1L)).thenReturn(true);
+		when(studentRepository.findByPublicIdAndTenantId(STUDENT_PUBLIC_ID, 1L)).thenReturn(Optional.of(studentWithId(1L)));
+		when(classroomRepository.findByPublicIdAndTenantId(CLASSROOM_PUBLIC_ID, 1L)).thenReturn(Optional.of(classroomWithId(10L)));
 		when(studentClassroomLinkRepository.findByStudentIdAndClassroomId(1L, 1L, 10L)).thenReturn(Optional.empty());
 
 		assertThrows(ResourceNotFoundException.class,
-				() -> attendanceService.mark(1L, 10L, LocalDate.now(), AttendanceStatus.PRESENT, "teacher"));
+				() -> attendanceService.mark(STUDENT_PUBLIC_ID.toString(), CLASSROOM_PUBLIC_ID.toString(), LocalDate.now(), AttendanceStatus.PRESENT, "teacher"));
 
 		verify(attendanceRepository, never()).save(any());
 	}
 
 	@Test
 	void mark_duplicateForSameStudentClassroomDate_throwsIllegalArgument() {
-		when(studentRepository.existsByIdAndTenantId(1L, 1L)).thenReturn(true);
-		when(classroomRepository.existsByIdAndTenantId(10L, 1L)).thenReturn(true);
+		when(studentRepository.findByPublicIdAndTenantId(STUDENT_PUBLIC_ID, 1L)).thenReturn(Optional.of(studentWithId(1L)));
+		when(classroomRepository.findByPublicIdAndTenantId(CLASSROOM_PUBLIC_ID, 1L)).thenReturn(Optional.of(classroomWithId(10L)));
 		when(studentClassroomLinkRepository.findByStudentIdAndClassroomId(1L, 1L, 10L))
 				.thenReturn(Optional.of(StudentClassroomLink.create(1L, 10L, 5L, LocalDate.now())));
 		LocalDate date = LocalDate.now();
@@ -120,20 +125,20 @@ class AttendanceServiceTest {
 				.thenReturn(true);
 
 		assertThrows(IllegalArgumentException.class,
-				() -> attendanceService.mark(1L, 10L, date, AttendanceStatus.PRESENT, "teacher"));
+				() -> attendanceService.mark(STUDENT_PUBLIC_ID.toString(), CLASSROOM_PUBLIC_ID.toString(), date, AttendanceStatus.PRESENT, "teacher"));
 	}
 
 	@Test
 	void mark_withValidReferences_succeeds() {
-		when(studentRepository.existsByIdAndTenantId(1L, 1L)).thenReturn(true);
-		when(classroomRepository.existsByIdAndTenantId(10L, 1L)).thenReturn(true);
+		when(studentRepository.findByPublicIdAndTenantId(STUDENT_PUBLIC_ID, 1L)).thenReturn(Optional.of(studentWithId(1L)));
+		when(classroomRepository.findByPublicIdAndTenantId(CLASSROOM_PUBLIC_ID, 1L)).thenReturn(Optional.of(classroomWithId(10L)));
 		when(studentClassroomLinkRepository.findByStudentIdAndClassroomId(1L, 1L, 10L))
 				.thenReturn(Optional.of(StudentClassroomLink.create(1L, 10L, 5L, LocalDate.now())));
 		when(attendanceRepository.existsByStudentIdAndClassroomIdAndAttendanceDateAndTenantId(
 				any(), any(), any(), any())).thenReturn(false);
 		when(attendanceRepository.save(any(Attendance.class))).thenAnswer(inv -> inv.getArgument(0));
 
-		assertDoesNotThrow(() -> attendanceService.mark(1L, 10L, LocalDate.now(), AttendanceStatus.PRESENT,
+		assertDoesNotThrow(() -> attendanceService.mark(STUDENT_PUBLIC_ID.toString(), CLASSROOM_PUBLIC_ID.toString(), LocalDate.now(), AttendanceStatus.PRESENT,
 				"teacher"));
 	}
 
@@ -189,14 +194,14 @@ class AttendanceServiceTest {
 
 	@Test
 	void mark_forClassroomOutsideCallersScope_throwsAccessDenied() {
-		when(studentRepository.existsByIdAndTenantId(1L, 1L)).thenReturn(true);
-		when(classroomRepository.existsByIdAndTenantId(10L, 1L)).thenReturn(true);
+		when(studentRepository.findByPublicIdAndTenantId(STUDENT_PUBLIC_ID, 1L)).thenReturn(Optional.of(studentWithId(1L)));
+		when(classroomRepository.findByPublicIdAndTenantId(CLASSROOM_PUBLIC_ID, 1L)).thenReturn(Optional.of(classroomWithId(10L)));
 		when(studentClassroomLinkRepository.findByStudentIdAndClassroomId(1L, 1L, 10L))
 				.thenReturn(Optional.of(StudentClassroomLink.create(1L, 10L, 5L, LocalDate.now())));
 		doThrow(new AccessDeniedException("not scoped")).when(academicAccessGuard).assertCanWriteClassroom(1L, 10L);
 
 		assertThrows(AccessDeniedException.class,
-				() -> attendanceService.mark(1L, 10L, LocalDate.now(), AttendanceStatus.PRESENT, "teacher"));
+				() -> attendanceService.mark(STUDENT_PUBLIC_ID.toString(), CLASSROOM_PUBLIC_ID.toString(), LocalDate.now(), AttendanceStatus.PRESENT, "teacher"));
 
 		verify(attendanceRepository, never()).save(any());
 	}
@@ -320,5 +325,17 @@ class AttendanceServiceTest {
 		attendanceService.updateStatus(publicId, AttendanceStatus.PRESENT);
 
 		verify(attendanceCorrectionRepository, never()).save(any());
+	}
+
+	private Student studentWithId(Long id) {
+		Student student = Student.create("STU-1", "Alice", "Smith", "alice@school.test", null);
+		student.setId(id);
+		return student;
+	}
+
+	private Classroom classroomWithId(Long id) {
+		Classroom classroom = Classroom.create("CLS-1", "Grade 5", "A", 1L, "2025-26", null);
+		classroom.setId(id);
+		return classroom;
 	}
 }

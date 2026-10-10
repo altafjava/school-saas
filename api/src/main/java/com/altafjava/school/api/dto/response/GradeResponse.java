@@ -4,9 +4,9 @@ import java.math.BigDecimal;
 
 public record GradeResponse(
 		String publicId,
-		Long studentId,
-		Long subjectId,
-		Long examId,
+		String studentPublicId,
+		String subjectPublicId,
+		String examPublicId,
 		BigDecimal marks,
 		String gradeLetter,
 		String gradedBy) {

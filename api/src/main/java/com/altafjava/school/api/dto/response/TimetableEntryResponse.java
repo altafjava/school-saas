@@ -3,9 +3,9 @@ package com.altafjava.school.api.dto.response;
 public record TimetableEntryResponse(
 		String publicId,
 		String dayOfWeek,
-		Long periodId,
-		Long classroomId,
-		Long subjectId,
-		Long teacherId,
-		Long venueId) {
+		String periodPublicId,
+		String classroomPublicId,
+		String subjectPublicId,
+		String teacherPublicId,
+		String venuePublicId) {
 }

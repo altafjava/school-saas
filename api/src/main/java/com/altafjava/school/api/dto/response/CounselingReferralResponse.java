@@ -5,10 +5,10 @@ import com.altafjava.school.domain.counseling.model.CounselingReferralStatus;
 
 public record CounselingReferralResponse(
 		String publicId,
-		Long studentId,
-		Long referredByUserId,
+		String studentPublicId,
+		String referredByUserPublicId,
 		String reason,
 		LocalDateTime referredAt,
 		CounselingReferralStatus status,
-		Long counselingSessionId) {
+		String counselingSessionPublicId) {
 }

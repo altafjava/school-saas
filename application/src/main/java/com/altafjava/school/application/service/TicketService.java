@@ -11,6 +11,7 @@ import org.springframework.transaction.annotation.Transactional;
 import com.altafjava.platform.core.exception.ResourceNotFoundException;
 import com.altafjava.platform.core.security.AuthenticatedUser;
 import com.altafjava.platform.core.tenant.TenantContext;
+import com.altafjava.school.application.reference.UserReferenceResolver;
 import com.altafjava.school.domain.helpdesk.model.Ticket;
 import com.altafjava.school.domain.helpdesk.model.TicketCategory;
 import com.altafjava.school.domain.helpdesk.model.TicketStatus;
@@ -20,14 +21,18 @@ import com.altafjava.school.domain.helpdesk.repository.TicketRepository;
 public class TicketService {
 
 	private final TicketRepository ticketRepository;
+	private final UserReferenceResolver userReferenceResolver;
 
-	public TicketService(TicketRepository ticketRepository) {
+	public TicketService(TicketRepository ticketRepository, UserReferenceResolver userReferenceResolver) {
 		this.ticketRepository = ticketRepository;
+		this.userReferenceResolver = userReferenceResolver;
 	}
 
 	@Transactional(readOnly = true)
-	public Page<Ticket> search(TicketStatus status, TicketCategory category, Long assignedToUserId,
+	public Page<Ticket> search(TicketStatus status, TicketCategory category, String assignedToUserPublicId,
 			Pageable pageable) {
+		Long assignedToUserId = assignedToUserPublicId == null ? null
+				: userReferenceResolver.requireUserId(assignedToUserPublicId);
 		return ticketRepository.search(TenantContext.getCurrentTenantId(), status, category, assignedToUserId,
 				pageable);
 	}
@@ -50,9 +55,9 @@ public class TicketService {
 	}
 
 	@Transactional
-	public Ticket assign(String publicId, Long assignedToUserId) {
+	public Ticket assign(String publicId, String assignedToUserPublicId) {
 		Ticket ticket = findByPublicId(publicId);
-		ticket.assign(assignedToUserId);
+		ticket.assign(userReferenceResolver.requireUserId(assignedToUserPublicId));
 		return ticketRepository.save(ticket);
 	}
 

@@ -8,12 +8,12 @@ public record VisitorRequestResponse(
 		String visitorName,
 		String visitorPhone,
 		String purpose,
-		Long hostEmployeeId,
+		String hostEmployeePublicId,
 		LocalDate visitDate,
 		String source,
 		String status,
 		String photoFilePublicId,
-		Long decidedByUserId,
+		String decidedByUserPublicId,
 		Instant decidedAt,
 		String decisionReason) {
 }

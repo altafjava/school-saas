@@ -8,5 +8,5 @@ public record CreateClassroomRequest(
 		@NotBlank @Size(max = 20) String grade,
 		@NotBlank @Size(max = 10) String section,
 		@NotBlank String academicYearPublicId,
-		Long classTeacherId) {
+		String classTeacherPublicId) {
 }

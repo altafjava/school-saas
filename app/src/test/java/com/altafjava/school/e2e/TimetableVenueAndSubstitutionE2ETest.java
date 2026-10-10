@@ -22,9 +22,14 @@ import com.altafjava.school.application.service.TeacherService;
 import com.altafjava.school.base.SchoolIntegrationTestBase;
 import com.altafjava.school.config.TestPaymentConfig;
 import com.altafjava.school.config.TestRedisConfig;
+import com.altafjava.school.domain.classroom.model.Classroom;
+import com.altafjava.school.domain.employee.model.Employee;
+import com.altafjava.school.domain.subject.model.Subject;
 import com.altafjava.school.domain.teacher.model.Teacher;
+import com.altafjava.school.domain.timetable.model.Period;
 import com.altafjava.school.util.SchoolE2eSupport;
 import com.altafjava.school.util.SchoolE2eSupport.School;
+import com.altafjava.school.util.TestPublicIds;
 import io.restassured.RestAssured;
 
 @Import({ TestRedisConfig.class, TestPaymentConfig.class })
@@ -33,6 +38,9 @@ class TimetableVenueAndSubstitutionE2ETest extends SchoolIntegrationTestBase {
 
 	@LocalServerPort
 	int port;
+
+	@Autowired
+	private TestPublicIds publicIds;
 
 	@Autowired
 	private SchoolE2eSupport support;
@@ -85,8 +93,10 @@ class TimetableVenueAndSubstitutionE2ETest extends SchoolIntegrationTestBase {
 	private String scheduleSlot(Long classroomId, Long teacherId, Long forPeriodId, String venuePublicId) {
 		String venue = venuePublicId == null ? "" : ",\"venuePublicId\":\"" + venuePublicId + "\"";
 		return support.request(school)
-				.body("{\"dayOfWeek\":\"MONDAY\",\"periodId\":" + forPeriodId + ",\"classroomId\":" + classroomId
-						+ ",\"subjectId\":" + subjectId + ",\"teacherId\":" + teacherId + venue + "}")
+				.body("{\"dayOfWeek\":\"MONDAY\",\"periodPublicId\":\"" + publicIds.of(Period.class, forPeriodId)
+						+ "\",\"classroomPublicId\":\"" + publicIds.of(Classroom.class, classroomId)
+						+ "\",\"subjectPublicId\":\"" + publicIds.of(Subject.class, subjectId)
+						+ "\",\"teacherPublicId\":\"" + publicIds.of(Employee.class, teacherId) + "\"" + venue + "}")
 				.post("/api/v1/timetable-entries")
 				.then().statusCode(HttpStatus.CREATED.value())
 				.extract().path("data.publicId");
@@ -120,9 +130,11 @@ class TimetableVenueAndSubstitutionE2ETest extends SchoolIntegrationTestBase {
 		String firstSlot = scheduleSlot(classAId, freeTeacher.getId(), otherPeriodId, venuePublicId);
 
 		support.request(school)
-				.body("{\"dayOfWeek\":\"MONDAY\",\"periodId\":" + otherPeriodId + ",\"classroomId\":" + classBId
-						+ ",\"subjectId\":" + subjectId + ",\"teacherId\":" + busyTeacher.getId()
-						+ ",\"venuePublicId\":\"" + venuePublicId + "\"}")
+				.body("{\"dayOfWeek\":\"MONDAY\",\"periodPublicId\":\"" + publicIds.of(Period.class, otherPeriodId)
+						+ "\",\"classroomPublicId\":\"" + publicIds.of(Classroom.class, classBId)
+						+ "\",\"subjectPublicId\":\"" + publicIds.of(Subject.class, subjectId)
+						+ "\",\"teacherPublicId\":\"" + publicIds.of(Employee.class, busyTeacher.getId())
+						+ "\",\"venuePublicId\":\"" + venuePublicId + "\"}")
 				.post("/api/v1/timetable-entries")
 				.then().statusCode(HttpStatus.BAD_REQUEST.value());
 

@@ -66,25 +66,32 @@ public class ExamService {
 	}
 
 	@Transactional
-	public Exam schedule(String title, Long subjectId, Long classroomId,
-			LocalDateTime scheduledAt, BigDecimal maxMarks, Long termId, Long examTypeId, BigDecimal weightage) {
+	public Exam schedule(String title, String subjectPublicId, String classroomPublicId,
+			LocalDateTime scheduledAt, BigDecimal maxMarks, String termPublicId, String examTypePublicId,
+			BigDecimal weightage) {
 		Long tenantId = TenantContext.getCurrentTenantId();
-		if (!classroomRepository.existsByIdAndTenantId(classroomId, tenantId)) {
-			throw new ResourceNotFoundException("Classroom not found: " + classroomId);
-		}
-		if (!subjectRepository.existsByIdAndTenantId(subjectId, tenantId)) {
-			throw new ResourceNotFoundException("Subject not found: " + subjectId);
-		}
-		if (termId != null && !termRepository.existsByIdAndTenantId(termId, tenantId)) {
-			throw new ResourceNotFoundException("Term not found: " + termId);
-		}
-		if (!examTypeDefinitionRepository.existsByIdAndTenantId(examTypeId, tenantId)) {
-			throw new ResourceNotFoundException("Exam type not found: " + examTypeId);
-		}
+		Long classroomId = classroomRepository
+				.findByPublicIdAndTenantId(UUID.fromString(classroomPublicId), tenantId)
+				.orElseThrow(() -> new ResourceNotFoundException("Classroom not found: " + classroomPublicId))
+				.getId();
+		Long subjectId = subjectRepository.findByPublicIdAndTenantId(UUID.fromString(subjectPublicId), tenantId)
+				.orElseThrow(() -> new ResourceNotFoundException("Subject not found: " + subjectPublicId))
+				.getId();
+		Long termId = termPublicId == null ? null : requireTermId(tenantId, termPublicId);
+		Long examTypeId = examTypeDefinitionRepository
+				.findByPublicIdAndTenantId(UUID.fromString(examTypePublicId), tenantId)
+				.orElseThrow(() -> new ResourceNotFoundException("Exam type not found: " + examTypePublicId))
+				.getId();
 		Exam exam = Exam.create(title, subjectId, classroomId, scheduledAt, maxMarks, termId, examTypeId,
 				weightage == null ? Exam.FULL_WEIGHTAGE : weightage);
 		requireWithinTermWeightage(tenantId, exam);
 		return examRepository.save(exam);
+	}
+
+	private Long requireTermId(Long tenantId, String termPublicId) {
+		return termRepository.findByPublicIdAndTenantId(UUID.fromString(termPublicId), tenantId)
+				.orElseThrow(() -> new ResourceNotFoundException("Term not found: " + termPublicId))
+				.getId();
 	}
 
 	@Transactional
@@ -95,13 +102,10 @@ public class ExamService {
 	}
 
 	@Transactional
-	public Exam assignTerm(String publicId, Long termId) {
+	public Exam assignTerm(String publicId, String termPublicId) {
 		Exam exam = findByPublicId(publicId);
 		Long tenantId = TenantContext.getCurrentTenantId();
-		if (!termRepository.existsByIdAndTenantId(termId, tenantId)) {
-			throw new ResourceNotFoundException("Term not found: " + termId);
-		}
-		exam.assignTerm(termId);
+		exam.assignTerm(requireTermId(tenantId, termPublicId));
 		requireWithinTermWeightage(tenantId, exam);
 		return examRepository.save(exam);
 	}

@@ -80,29 +80,32 @@ public class ClassroomService {
 
 	@Transactional
 	public Classroom create(String classCode, String grade, String section,
-			String academicYearPublicId, Long classTeacherId) {
+			String academicYearPublicId, String classTeacherPublicId) {
 		Long tenantId = TenantContext.getCurrentTenantId();
 		AcademicYear academicYear = academicYearRepository
 				.findByPublicIdAndTenantId(UUID.fromString(academicYearPublicId), tenantId)
 				.orElseThrow(() -> new ResourceNotFoundException("Academic year not found: " + academicYearPublicId));
-		if (classTeacherId != null
-				&& !teacherRepository.existsByIdAndTenantIdAndStatus(classTeacherId, tenantId, EmployeeStatus.ACTIVE)) {
-			throw new ResourceNotFoundException("Teacher not found: " + classTeacherId);
-		}
+		Long classTeacherId = classTeacherPublicId == null ? null
+				: requireActiveTeacherId(tenantId, classTeacherPublicId);
 		Classroom classroom = Classroom.create(classCode, grade, section, academicYear.getId(),
 				academicYear.getName(), classTeacherId);
 		return classroomRepository.save(classroom);
 	}
 
+	// A teacher who has left cannot be given a class.
+	private Long requireActiveTeacherId(Long tenantId, String teacherPublicId) {
+		return teacherRepository.findByPublicIdAndTenantId(UUID.fromString(teacherPublicId), tenantId)
+				.filter(teacher -> teacher.getStatus() == EmployeeStatus.ACTIVE)
+				.orElseThrow(() -> new ResourceNotFoundException("Teacher not found: " + teacherPublicId))
+				.getId();
+	}
+
 	@Transactional
-	public Classroom reassignTeacher(String publicId, Long classTeacherId) {
+	public Classroom reassignTeacher(String publicId, String classTeacherPublicId) {
 		Classroom classroom = findByPublicId(publicId);
 		Long tenantId = TenantContext.getCurrentTenantId();
-		if (classTeacherId != null
-				&& !teacherRepository.existsByIdAndTenantIdAndStatus(classTeacherId, tenantId, EmployeeStatus.ACTIVE)) {
-			throw new ResourceNotFoundException("Teacher not found: " + classTeacherId);
-		}
-		classroom.reassignTeacher(classTeacherId);
+		classroom.reassignTeacher(
+				classTeacherPublicId == null ? null : requireActiveTeacherId(tenantId, classTeacherPublicId));
 		return classroomRepository.save(classroom);
 	}
 

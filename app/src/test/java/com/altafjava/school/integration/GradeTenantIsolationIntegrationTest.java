@@ -99,9 +99,9 @@ class GradeTenantIsolationIntegrationTest extends SchoolIntegrationTestBase {
 	}
 
 	// SchoolTenantProvisioningListener seeds UNIT_TEST/MIDTERM/FINAL/QUIZ for every new tenant.
-	private Long examTypeIdFor(String code) {
+	private String examTypeIdFor(String code) {
 		return examTypeDefinitionRepository.findByCodeAndTenantId(code, TenantContext.getCurrentTenantId())
-				.orElseThrow().getId();
+				.orElseThrow().getPublicId().toString();
 	}
 
 	@Test
@@ -111,12 +111,14 @@ class GradeTenantIsolationIntegrationTest extends SchoolIntegrationTestBase {
 		Classroom classroom = classroomService.create(
 				"CLS-" + UUID.randomUUID().toString().substring(0, 6), "Grade 5", "A", academicYearPublicId, null);
 		Subject subject = subjectService.create("MATH-" + UUID.randomUUID().toString().substring(0, 6), "Math", null);
-		Exam exam = examService.schedule("Midterm", subject.getId(), classroom.getId(),
+		Exam exam = examService.schedule("Midterm", subject.getPublicId().toString(),
+				classroom.getPublicId().toString(),
 				LocalDateTime.now().plusDays(7), BigDecimal.valueOf(100), null,
 				examTypeIdFor("MIDTERM"), Exam.FULL_WEIGHTAGE);
 		Student student = studentService.enroll("STU-" + UUID.randomUUID().toString().substring(0, 6),
 				"Alice", "Smith", "alice@a.edu", LocalDate.of(2010, 1, 1));
-		gradeService.record(student.getId(), exam.getId(), BigDecimal.valueOf(85), "teacher-a");
+		gradeService.record(student.getPublicId().toString(), exam.getPublicId().toString(), BigDecimal.valueOf(85),
+				"teacher-a");
 
 		activateTenant(tenantB);
 		Page<Grade> tenantBGrades = gradeService.listGrades(PageRequest.of(0, 100));
@@ -134,12 +136,12 @@ class GradeTenantIsolationIntegrationTest extends SchoolIntegrationTestBase {
 				"CLS-" + UUID.randomUUID().toString().substring(0, 6), "Grade 6", "B", academicYearPublicId, null);
 		Subject subject = subjectService.create("SCI-" + UUID.randomUUID().toString().substring(0, 6), "Science",
 				null);
-		Exam exam = examService.schedule("Final", subject.getId(), classroom.getId(),
+		Exam exam = examService.schedule("Final", subject.getPublicId().toString(), classroom.getPublicId().toString(),
 				LocalDateTime.now().plusDays(14), BigDecimal.valueOf(100), null,
 				examTypeIdFor("FINAL"), Exam.FULL_WEIGHTAGE);
 		Student student = studentService.enroll("STU-" + UUID.randomUUID().toString().substring(0, 6),
 				"Bob", "Jones", "bob@a.edu", LocalDate.of(2011, 3, 20));
-		Grade grade = gradeService.record(student.getId(), exam.getId(),
+		Grade grade = gradeService.record(student.getPublicId().toString(), exam.getPublicId().toString(),
 				BigDecimal.valueOf(90), "teacher-a");
 		String publicId = grade.getPublicId().toString();
 

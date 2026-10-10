@@ -1,9 +1,9 @@
 package com.altafjava.school.application.sync;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -14,16 +14,20 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.context.SecurityContextHolder;
 import com.altafjava.platform.core.exception.BusinessException;
-import com.altafjava.platform.core.exception.ResourceNotFoundException;
 import com.altafjava.platform.core.sync.EntityChange;
 import com.altafjava.platform.core.tenant.TenantContext;
 import com.altafjava.platform.core.tenant.TenantType;
+import com.altafjava.school.application.reference.EntityRef;
+import com.altafjava.school.application.reference.PublicIdResolver;
 import com.altafjava.school.application.security.AcademicScope;
 import com.altafjava.school.application.security.AcademicScopeResolver;
 import com.altafjava.school.application.security.TeachingAssignments;
@@ -31,10 +35,6 @@ import com.altafjava.school.application.service.AttendanceService;
 import com.altafjava.school.domain.attendance.model.Attendance;
 import com.altafjava.school.domain.attendance.model.AttendanceStatus;
 import com.altafjava.school.domain.attendance.repository.AttendanceRepository;
-import com.altafjava.school.domain.classroom.model.Classroom;
-import com.altafjava.school.domain.classroom.repository.ClassroomRepository;
-import com.altafjava.school.domain.student.model.Student;
-import com.altafjava.school.domain.student.repository.StudentRepository;
 import tools.jackson.databind.json.JsonMapper;
 
 @ExtendWith(MockitoExtension.class)
@@ -49,67 +49,42 @@ class AttendanceOfflineSyncHandlerTest {
 	@Mock
 	private AttendanceRepository attendanceRepository;
 	@Mock
-	private StudentRepository studentRepository;
-	@Mock
-	private ClassroomRepository classroomRepository;
-	@Mock
 	private AcademicScopeResolver academicScopeResolver;
+	@Mock
+	private PublicIdResolver publicIdResolver;
 
 	private AttendanceOfflineSyncHandler handler;
 
 	@BeforeEach
 	void setUp() {
-		handler = new AttendanceOfflineSyncHandler(attendanceService, attendanceRepository, studentRepository,
-				classroomRepository, JsonMapper.builder().build(), academicScopeResolver);
+		handler = new AttendanceOfflineSyncHandler(attendanceService, attendanceRepository,
+				JsonMapper.builder().build(), academicScopeResolver, publicIdResolver);
 		TenantContext.ForTesting.setCurrentTenant(TENANT_ID, null, null, TenantType.SHARED);
 	}
 
-	private Student studentWithId(long id, UUID publicId) {
-		Student student = Student.create("STU-" + id, "Alice", "Smith", "alice@school.test", null);
-		student.setId(id);
-		student.setPublicId(publicId);
-		return student;
-	}
-
-	private Classroom classroomWithId(long id, UUID publicId) {
-		Classroom classroom = Classroom.create("CLS-1", "Grade 5", "A", 1L, "2025-26", null);
-		classroom.setId(id);
-		classroom.setPublicId(publicId);
-		return classroom;
+	@AfterEach
+	void clearPrincipal() {
+		SecurityContextHolder.clearContext();
 	}
 
 	@Test
-	void create_resolvesPublicIdsAndDelegatesToAttendanceServiceMark() {
-		UUID studentPublicId = UUID.randomUUID();
-		UUID classroomPublicId = UUID.randomUUID();
-		when(studentRepository.findByPublicIdAndTenantId(studentPublicId, TENANT_ID))
-				.thenReturn(Optional.of(studentWithId(10L, studentPublicId)));
-		when(classroomRepository.findByPublicIdAndTenantId(classroomPublicId, TENANT_ID))
-				.thenReturn(Optional.of(classroomWithId(20L, classroomPublicId)));
+	void create_marksAsTheSignedInUser_ignoringAnyMarkerTheDeviceSends() {
+		SecurityContextHolder.getContext()
+				.setAuthentication(new UsernamePasswordAuthenticationToken("teacher-a", null, List.of()));
+		String studentPublicId = UUID.randomUUID().toString();
+		String classroomPublicId = UUID.randomUUID().toString();
 		Attendance created = Attendance.create(10L, 20L, LocalDate.of(2026, 1, 15), AttendanceStatus.PRESENT,
 				"teacher-a");
 		UUID attendancePublicId = UUID.randomUUID();
 		created.setPublicId(attendancePublicId);
-		when(attendanceService.mark(eq(10L), eq(20L), eq(LocalDate.of(2026, 1, 15)), eq(AttendanceStatus.PRESENT),
-				eq("teacher-a"))).thenReturn(created);
+		when(attendanceService.mark(studentPublicId, classroomPublicId, LocalDate.of(2026, 1, 15),
+				AttendanceStatus.PRESENT, "teacher-a")).thenReturn(created);
 
 		String payload = "{\"studentPublicId\":\"" + studentPublicId + "\",\"classroomPublicId\":\""
 				+ classroomPublicId + "\",\"attendanceDate\":\"2026-01-15\",\"status\":\"PRESENT\","
-				+ "\"markedBy\":\"teacher-a\"}";
+				+ "\"markedBy\":\"someone-else\"}";
 
-		UUID result = handler.create(payload);
-
-		assertEquals(attendancePublicId, result);
-	}
-
-	@Test
-	void create_withUnknownStudent_throwsResourceNotFound() {
-		UUID studentPublicId = UUID.randomUUID();
-		when(studentRepository.findByPublicIdAndTenantId(studentPublicId, TENANT_ID)).thenReturn(Optional.empty());
-		String payload = "{\"studentPublicId\":\"" + studentPublicId + "\",\"classroomPublicId\":\""
-				+ UUID.randomUUID() + "\",\"attendanceDate\":\"2026-01-15\",\"status\":\"PRESENT\"}";
-
-		assertThrows(ResourceNotFoundException.class, () -> handler.create(payload));
+		assertEquals(attendancePublicId, handler.create(payload));
 	}
 
 	@Test
@@ -136,19 +111,21 @@ class AttendanceOfflineSyncHandlerTest {
 	}
 
 	@Test
-	void findChange_returnsCurrentStateWithInternalIdsInPayload() {
+	void findChange_returnsCurrentStateWithPublicIdsOnlyInPayload() {
 		UUID entityId = UUID.randomUUID();
 		Attendance attendance = Attendance.create(10L, 20L, LocalDate.of(2026, 1, 15), AttendanceStatus.PRESENT,
 				"teacher-a");
 		attendance.setPublicId(entityId);
 		when(attendanceRepository.findByPublicIdAndTenantId(entityId, TENANT_ID)).thenReturn(Optional.of(attendance));
 		when(academicScopeResolver.current(TENANT_ID)).thenReturn(ALL_CLASSROOMS);
+		when(publicIdResolver.resolve(EntityRef.STUDENT, 10L)).thenReturn("student-public-id");
 
 		Optional<EntityChange> result = handler.findChange(entityId);
 
 		assertTrue(result.isPresent());
 		assertEquals(entityId, result.get().entityId());
-		assertTrue(result.get().payloadJson().contains("\"studentId\":10"));
+		assertTrue(result.get().payloadJson().contains("\"studentPublicId\":\"student-public-id\""));
+		assertFalse(result.get().payloadJson().contains("\"studentId\""));
 	}
 
 	@Test

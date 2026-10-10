@@ -7,7 +7,7 @@ import com.altafjava.school.api.dto.response.AvailableTeacherResponse;
 import com.altafjava.school.api.dto.response.SubstitutionResponse;
 import com.altafjava.school.domain.teacher.model.Teacher;
 
-@Mapper(componentModel = "spring", unmappedTargetPolicy = ReportingPolicy.ERROR)
+@Mapper(componentModel = "spring", uses = PublicIdMapping.class, unmappedTargetPolicy = ReportingPolicy.ERROR)
 public interface SubstitutionMapper {
 
 	@Mapping(target = "publicId", expression = "java(details.substitution().getPublicId().toString())")
@@ -15,9 +15,9 @@ public interface SubstitutionMapper {
 	@Mapping(target = "active", expression = "java(details.substitution().isActive())")
 	@Mapping(target = "timetableEntryPublicId", expression = "java(details.entry().getPublicId().toString())")
 	@Mapping(target = "dayOfWeek", expression = "java(details.entry().getDayOfWeek().name())")
-	@Mapping(target = "periodId", source = "entry.periodId")
-	@Mapping(target = "classroomId", source = "entry.classroomId")
-	@Mapping(target = "subjectId", source = "entry.subjectId")
+	@Mapping(target = "periodPublicId", source = "entry.periodId", qualifiedByName = "period")
+	@Mapping(target = "classroomPublicId", source = "entry.classroomId", qualifiedByName = "classroom")
+	@Mapping(target = "subjectPublicId", source = "entry.subjectId", qualifiedByName = "subject")
 	@Mapping(target = "regularTeacherPublicId", expression = "java(details.regularTeacher().getPublicId().toString())")
 	@Mapping(target = "regularTeacherName", expression = "java(details.regularTeacher().getFirstName() + \" \" + details.regularTeacher().getLastName())")
 	@Mapping(target = "substituteTeacherPublicId", expression = "java(details.substituteTeacher().getPublicId().toString())")

@@ -36,14 +36,14 @@ public class TermService {
 	}
 
 	@Transactional
-	public Term create(String name, LocalDate startDate, LocalDate endDate, Long academicYearId) {
+	public Term create(String name, LocalDate startDate, LocalDate endDate, String academicYearPublicId) {
 		Long tenantId = TenantContext.getCurrentTenantId();
-		if (!academicYearRepository.existsByIdAndTenantId(academicYearId, tenantId)) {
-			throw new ResourceNotFoundException("AcademicYear not found: " + academicYearId);
-		}
+		Long academicYearId = academicYearRepository
+				.findByPublicIdAndTenantId(UUID.fromString(academicYearPublicId), tenantId)
+				.orElseThrow(() -> new ResourceNotFoundException("AcademicYear not found: " + academicYearPublicId))
+				.getId();
 		if (termRepository.existsByNameAndAcademicYearIdAndTenantId(name, academicYearId, tenantId)) {
-			throw new IllegalArgumentException(
-					"Term already exists: " + name + " for academic year " + academicYearId);
+			throw new IllegalArgumentException("Term already exists: " + name + " for this academic year");
 		}
 		Term term = Term.create(name, startDate, endDate, academicYearId);
 		if (!startDate.isAfter(LocalDate.now()) && !endDate.isBefore(LocalDate.now())) {

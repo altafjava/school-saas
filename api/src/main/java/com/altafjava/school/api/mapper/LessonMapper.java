@@ -6,9 +6,12 @@ import org.mapstruct.ReportingPolicy;
 import com.altafjava.school.api.dto.response.LessonResponse;
 import com.altafjava.school.domain.lms.model.Lesson;
 
-@Mapper(componentModel = "spring", unmappedTargetPolicy = ReportingPolicy.ERROR)
+@Mapper(componentModel = "spring", uses = PublicIdMapping.class, unmappedTargetPolicy = ReportingPolicy.ERROR)
 public interface LessonMapper {
 
 	@Mapping(target = "publicId", expression = "java(lesson.getPublicId().toString())")
+	@Mapping(target = "classroomPublicId", source = "classroomId", qualifiedByName = "classroom")
+	@Mapping(target = "subjectPublicId", source = "subjectId", qualifiedByName = "subject")
+	@Mapping(target = "teacherPublicId", source = "teacherId", qualifiedByName = "employee")
 	LessonResponse toResponse(Lesson lesson);
 }

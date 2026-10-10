@@ -63,10 +63,10 @@ public class TimetableController implements TimetableApi {
 	public ApiResponse<TimetableEntryResponse> schedule(@Valid @RequestBody CreateTimetableEntryRequest request) {
 		return ApiResponse.success(timetableEntryMapper.toResponse(timetableService.schedule(
 				request.dayOfWeek(),
-				request.periodId(),
-				request.classroomId(),
-				request.subjectId(),
-				request.teacherId(),
+				request.periodPublicId(),
+				request.classroomPublicId(),
+				request.subjectPublicId(),
+				request.teacherPublicId(),
 				request.venuePublicId())));
 	}
 

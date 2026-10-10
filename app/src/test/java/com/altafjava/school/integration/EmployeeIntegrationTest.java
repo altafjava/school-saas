@@ -164,10 +164,11 @@ class EmployeeIntegrationTest extends SchoolIntegrationTestBase {
 				.getPublicId().toString();
 
 		assertThrows(ResourceNotFoundException.class,
-				() -> classroomService.create("CLS-D", "Grade 1", "A", year, driver.getId()),
+				() -> classroomService.create("CLS-D", "Grade 1", "A", year, driver.getPublicId().toString()),
 				"a driver is not a teacher");
 		assertEquals(teacher.getId(),
-				classroomService.create("CLS-T", "Grade 1", "B", year, teacher.getId()).getClassTeacherId());
+				classroomService.create("CLS-T", "Grade 1", "B", year, teacher.getPublicId().toString())
+						.getClassTeacherId());
 	}
 
 	@Test
@@ -175,7 +176,7 @@ class EmployeeIntegrationTest extends SchoolIntegrationTestBase {
 		Teacher teacher = hireTeacher();
 		String year = academicYearService.create("2027-28", LocalDate.of(2027, 6, 1), LocalDate.of(2028, 3, 31), true)
 				.getPublicId().toString();
-		classroomService.create("CLS-X", "Grade 2", "A", year, teacher.getId());
+		classroomService.create("CLS-X", "Grade 2", "A", year, teacher.getPublicId().toString());
 
 		assertThrows(BusinessException.class, () -> employeeService.exit(teacher.getPublicId().toString(),
 				EmployeeStatus.RESIGNED, LocalDate.now(), "Leaving"));

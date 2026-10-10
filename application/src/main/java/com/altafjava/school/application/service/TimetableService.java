@@ -63,31 +63,31 @@ public class TimetableService {
 	}
 
 	@Transactional
-	public TimetableEntry schedule(DayOfWeek dayOfWeek, Long periodId, Long classroomId, Long subjectId,
-			Long teacherId, String venuePublicId) {
+	public TimetableEntry schedule(DayOfWeek dayOfWeek, String periodPublicId, String classroomPublicId,
+			String subjectPublicId, String teacherPublicId, String venuePublicId) {
 		Long tenantId = TenantContext.getCurrentTenantId();
-		if (!periodRepository.existsByIdAndTenantId(periodId, tenantId)) {
-			throw new ResourceNotFoundException("Period not found: " + periodId);
-		}
-		if (!classroomRepository.existsByIdAndTenantId(classroomId, tenantId)) {
-			throw new ResourceNotFoundException("Classroom not found: " + classroomId);
-		}
-		if (!subjectRepository.existsByIdAndTenantId(subjectId, tenantId)) {
-			throw new ResourceNotFoundException("Subject not found: " + subjectId);
-		}
-		if (!teacherRepository.existsByIdAndTenantIdAndStatus(teacherId, tenantId, EmployeeStatus.ACTIVE)) {
-			throw new ResourceNotFoundException("Teacher not found: " + teacherId);
-		}
+		Long periodId = periodRepository.findByPublicIdAndTenantId(UUID.fromString(periodPublicId), tenantId)
+				.orElseThrow(() -> new ResourceNotFoundException("Period not found: " + periodPublicId))
+				.getId();
+		Long classroomId = classroomRepository
+				.findByPublicIdAndTenantId(UUID.fromString(classroomPublicId), tenantId)
+				.orElseThrow(() -> new ResourceNotFoundException("Classroom not found: " + classroomPublicId))
+				.getId();
+		Long subjectId = subjectRepository.findByPublicIdAndTenantId(UUID.fromString(subjectPublicId), tenantId)
+				.orElseThrow(() -> new ResourceNotFoundException("Subject not found: " + subjectPublicId))
+				.getId();
+		Long teacherId = teacherRepository.findByPublicIdAndTenantId(UUID.fromString(teacherPublicId), tenantId)
+				.filter(teacher -> teacher.getStatus() == EmployeeStatus.ACTIVE)
+				.orElseThrow(() -> new ResourceNotFoundException("Teacher not found: " + teacherPublicId))
+				.getId();
 		if (timetableEntryRepository.existsByTenantIdAndDayOfWeekAndPeriodIdAndClassroomId(tenantId, dayOfWeek,
 				periodId, classroomId)) {
-			throw new BusinessException(
-					"Classroom " + classroomId + " already has a timetable entry for " + dayOfWeek + " period "
-							+ periodId);
+			throw new BusinessException("The classroom already has a timetable entry for " + dayOfWeek
+					+ " in this period");
 		}
 		if (timetableEntryRepository.existsByTenantIdAndDayOfWeekAndPeriodIdAndTeacherId(tenantId, dayOfWeek,
 				periodId, teacherId)) {
-			throw new BusinessException(
-					"Teacher " + teacherId + " is already scheduled for " + dayOfWeek + " period " + periodId);
+			throw new BusinessException("The teacher is already scheduled for " + dayOfWeek + " in this period");
 		}
 		Long venueId = venuePublicId == null ? null : requireFreeVenue(tenantId, venuePublicId, dayOfWeek, periodId);
 		TimetableEntry entry = TimetableEntry.create(dayOfWeek, periodId, classroomId, subjectId, teacherId, venueId);

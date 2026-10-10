@@ -214,7 +214,8 @@ class CurriculumTenantIsolationIntegrationTest extends SchoolIntegrationTestBase
 				BigDecimal.valueOf(100), null, examTypeIdFor("FINAL"), Exam.FULL_WEIGHTAGE);
 		exam = examRepository.save(exam);
 
-		Grade grade = gradeService.record(student.getId(), exam.getId(), BigDecimal.valueOf(95), "teacher");
+		Grade grade = gradeService.record(student.getPublicId().toString(), exam.getPublicId().toString(),
+				BigDecimal.valueOf(95), "teacher");
 
 		assertEquals("7", grade.getGradeLetter(),
 				"A classroom assigned to a curriculum with its own scale must grade against that scale");
@@ -244,7 +245,8 @@ class CurriculumTenantIsolationIntegrationTest extends SchoolIntegrationTestBase
 				BigDecimal.valueOf(100), null, examTypeIdFor("FINAL"), Exam.FULL_WEIGHTAGE);
 		exam = examRepository.save(exam);
 
-		Grade grade = gradeService.record(student.getId(), exam.getId(), BigDecimal.valueOf(95), "teacher");
+		Grade grade = gradeService.record(student.getPublicId().toString(), exam.getPublicId().toString(),
+				BigDecimal.valueOf(95), "teacher");
 
 		assertEquals("A", grade.getGradeLetter(),
 				"A classroom with no curriculum assigned must fall back to the tenant's default scale");
@@ -274,8 +276,10 @@ class CurriculumTenantIsolationIntegrationTest extends SchoolIntegrationTestBase
 		Exam examB = examRepository.save(Exam.create("Test 2", subject.getId(), classroom.getId(),
 				LocalDateTime.of(2026, 5, 2, 9, 0), BigDecimal.valueOf(100), null,
 				examTypeIdFor("UNIT_TEST"), Exam.FULL_WEIGHTAGE));
-		gradeService.record(student.getId(), examA.getId(), BigDecimal.valueOf(95), "teacher");
-		gradeService.record(student.getId(), examB.getId(), BigDecimal.valueOf(85), "teacher");
+		gradeService.record(student.getPublicId().toString(), examA.getPublicId().toString(), BigDecimal.valueOf(95),
+				"teacher");
+		gradeService.record(student.getPublicId().toString(), examB.getPublicId().toString(), BigDecimal.valueOf(85),
+				"teacher");
 
 		GpaResult result = studentGpaService.calculateCumulativeGpa(student.getPublicId().toString());
 

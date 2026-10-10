@@ -20,11 +20,16 @@ import com.altafjava.school.application.service.AcademicYearService;
 import com.altafjava.school.base.SchoolIntegrationTestBase;
 import com.altafjava.school.config.TestPaymentConfig;
 import com.altafjava.school.config.TestRedisConfig;
+import com.altafjava.school.domain.classroom.model.Classroom;
 import com.altafjava.school.domain.classroom.repository.ClassroomRepository;
+import com.altafjava.school.domain.employee.model.Employee;
+import com.altafjava.school.domain.subject.model.Subject;
 import com.altafjava.school.domain.subject.repository.SubjectRepository;
 import com.altafjava.school.domain.teacher.repository.TeacherRepository;
+import com.altafjava.school.domain.timetable.model.Period;
 import com.altafjava.school.domain.timetable.repository.PeriodRepository;
 import com.altafjava.school.util.SchoolAuthenticationHelper;
+import com.altafjava.school.util.TestPublicIds;
 import io.restassured.RestAssured;
 import io.restassured.http.ContentType;
 
@@ -43,6 +48,9 @@ class TimetableCrudE2ETest extends SchoolIntegrationTestBase {
 
 	@LocalServerPort
 	int port;
+
+	@Autowired
+	private TestPublicIds publicIds;
 
 	@Autowired
 	private TenantOnboardingService onboardingService;
@@ -160,9 +168,11 @@ class TimetableCrudE2ETest extends SchoolIntegrationTestBase {
 	}
 
 	private String requestBody(Fixture fixture, String dayOfWeek) {
-		return "{\"dayOfWeek\":\"" + dayOfWeek + "\",\"periodId\":" + fixture.periodId() + ",\"classroomId\":"
-				+ fixture.classroomId() + ",\"subjectId\":" + fixture.subjectId() + ",\"teacherId\":"
-				+ fixture.teacherId() + "}";
+		return "{\"dayOfWeek\":\"" + dayOfWeek + "\",\"periodPublicId\":\""
+				+ publicIds.of(Period.class, fixture.periodId()) + "\",\"classroomPublicId\":\""
+				+ publicIds.of(Classroom.class, fixture.classroomId()) + "\",\"subjectPublicId\":\""
+				+ publicIds.of(Subject.class, fixture.subjectId()) + "\",\"teacherPublicId\":\""
+				+ publicIds.of(Employee.class, fixture.teacherId()) + "\"}";
 	}
 
 	@Test

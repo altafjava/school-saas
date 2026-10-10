@@ -116,16 +116,16 @@ public class GradeService {
 	}
 
 	@Transactional
-	public Grade record(Long studentId, Long examId, BigDecimal marks, String gradedBy) {
+	public Grade record(String studentPublicId, String examPublicId, BigDecimal marks, String gradedBy) {
 		Long tenantId = TenantContext.getCurrentTenantId();
-		if (!studentRepository.existsByIdAndTenantId(studentId, tenantId)) {
-			throw new ResourceNotFoundException("Student not found: " + studentId);
-		}
-		Exam exam = examRepository.findByIdAndTenantId(examId, tenantId)
-				.orElseThrow(() -> new ResourceNotFoundException("Exam not found: " + examId));
-		if (gradeRepository.existsByStudentIdAndExamIdAndTenantId(studentId, examId, tenantId)) {
+		Long studentId = studentRepository.findByPublicIdAndTenantId(UUID.fromString(studentPublicId), tenantId)
+				.orElseThrow(() -> new ResourceNotFoundException("Student not found: " + studentPublicId))
+				.getId();
+		Exam exam = examRepository.findByPublicIdAndTenantId(UUID.fromString(examPublicId), tenantId)
+				.orElseThrow(() -> new ResourceNotFoundException("Exam not found: " + examPublicId));
+		if (gradeRepository.existsByStudentIdAndExamIdAndTenantId(studentId, exam.getId(), tenantId)) {
 			throw new IllegalArgumentException(
-					"Grade already recorded for student " + studentId + " in exam " + examId);
+					"Grade already recorded for student " + studentPublicId + " in exam " + examPublicId);
 		}
 		academicAccessGuard.assertCanWriteSubject(tenantId, exam.getClassroomId(), exam.getSubjectId());
 		if (exam.getStatus() == ExamStatus.CANCELLED) {
@@ -133,9 +133,8 @@ public class GradeService {
 		}
 		List<GradingScaleThreshold> thresholds = gradingScaleService.resolveEffectiveThresholds(exam.getClassroomId());
 		String gradeLetter = gradeCalculator.calculateLetterGrade(marks, exam.getMaxMarks(), thresholds);
-		// subjectId is derived from the exam, not client-supplied — a grade's subject must always
-		// match its exam's subject, so there is no legitimate case where they could differ.
-		Grade grade = Grade.create(studentId, exam.getSubjectId(), examId, marks, gradeLetter, gradedBy);
+		// The subject always comes from the exam, so a grade can never disagree with its exam.
+		Grade grade = Grade.create(studentId, exam.getSubjectId(), exam.getId(), marks, gradeLetter, gradedBy);
 		return gradeRepository.save(grade);
 	}
 

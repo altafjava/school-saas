@@ -57,7 +57,7 @@ public class AssetAssignmentController implements AssetAssignmentApi {
 	public ApiResponse<AssetAssignmentResponse> assign(@PathVariable String assetPublicId,
 			@Valid @RequestBody AssignAssetRequest request) {
 		return ApiResponse.success(assetAssignmentMapper.toResponse(assetAssignmentService.assign(assetPublicId,
-				request.assignedToType(), request.assignedToId(), request.assignedAt())));
+				request.assignedToType(), request.assignedToPublicId(), request.assignedAt())));
 	}
 
 	@Override

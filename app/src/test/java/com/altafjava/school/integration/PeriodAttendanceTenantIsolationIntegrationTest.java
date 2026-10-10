@@ -15,7 +15,6 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import com.altafjava.platform.application.dto.RegisterTenantCommand;
 import com.altafjava.platform.application.service.TenantOnboardingService;
-import com.altafjava.platform.core.exception.BusinessException;
 import com.altafjava.platform.core.exception.ResourceNotFoundException;
 import com.altafjava.platform.core.tenant.TenantContext;
 import com.altafjava.platform.domain.tenant.model.Tenant;
@@ -118,8 +117,9 @@ class PeriodAttendanceTenantIsolationIntegrationTest extends SchoolIntegrationTe
 		Subject subject = subjectService.create("SUB-" + suffix, "Subject " + suffix, null);
 		Teacher teacher = teacherService.hire("EMP-" + suffix, "Jane", "Doe", "jane-" + suffix + "@school.test",
 				LocalDate.of(2020, 1, 1));
-		return timetableService.schedule(DayOfWeek.MONDAY, period.getId(), classroom.getId(), subject.getId(),
-				teacher.getId(), null);
+		return timetableService.schedule(DayOfWeek.MONDAY, period.getPublicId().toString(),
+				classroom.getPublicId().toString(), subject.getPublicId().toString(),
+				teacher.getPublicId().toString(), null);
 	}
 
 	@Test
@@ -130,7 +130,7 @@ class PeriodAttendanceTenantIsolationIntegrationTest extends SchoolIntegrationTe
 		Classroom classroom = classroomService.create("CLS-" + suffix, "Grade 5", "A", academicYearPublicId, null);
 		Student student = enrollStudentInClassroom("STU-" + suffix, classroom, academicYearPublicId);
 		TimetableEntry entry = createTimetableEntry(suffix, classroom);
-		periodAttendanceService.mark(student.getId(), classroom.getId(), entry.getId(), LocalDate.now(),
+		periodAttendanceService.mark(student.getPublicId().toString(), entry.getPublicId().toString(), LocalDate.now(),
 				AttendanceStatus.PRESENT, "teacher-a");
 
 		activateTenant(tenantB);
@@ -149,7 +149,8 @@ class PeriodAttendanceTenantIsolationIntegrationTest extends SchoolIntegrationTe
 		Classroom classroom = classroomService.create("CLS-" + suffix, "Grade 6", "B", academicYearPublicId, null);
 		Student student = enrollStudentInClassroom("STU-" + suffix, classroom, academicYearPublicId);
 		TimetableEntry entry = createTimetableEntry(suffix, classroom);
-		PeriodAttendance attendance = periodAttendanceService.mark(student.getId(), classroom.getId(), entry.getId(),
+		PeriodAttendance attendance = periodAttendanceService.mark(student.getPublicId().toString(),
+				entry.getPublicId().toString(),
 				LocalDate.now(), AttendanceStatus.ABSENT, "teacher-a");
 		String publicId = attendance.getPublicId().toString();
 
@@ -170,13 +171,14 @@ class PeriodAttendanceTenantIsolationIntegrationTest extends SchoolIntegrationTe
 		TimetableEntry entry = createTimetableEntry(suffix, classroom);
 
 		assertThrows(ResourceNotFoundException.class,
-				() -> periodAttendanceService.mark(unenrolledStudent.getId(), classroom.getId(), entry.getId(),
+				() -> periodAttendanceService.mark(unenrolledStudent.getPublicId().toString(),
+						entry.getPublicId().toString(),
 						LocalDate.now(), AttendanceStatus.PRESENT, "teacher-a"),
 				"A student not on the classroom roster must not be markable for period attendance");
 	}
 
 	@Test
-	void mark_timetableEntryFromDifferentClassroom_isRejected() {
+	void mark_studentNotEnrolledInTheTimetableEntrysClassroom_isRejected() {
 		activateTenant(tenantA);
 		String academicYearPublicId = createAcademicYear("2024-25");
 		String suffix = UUID.randomUUID().toString().substring(0, 6);
@@ -187,9 +189,10 @@ class PeriodAttendanceTenantIsolationIntegrationTest extends SchoolIntegrationTe
 		Student student = enrollStudentInClassroom("STU-" + suffix, classroomA, academicYearPublicId);
 		TimetableEntry entryForClassroomB = createTimetableEntry(suffix, classroomB);
 
-		assertThrows(BusinessException.class,
-				() -> periodAttendanceService.mark(student.getId(), classroomA.getId(), entryForClassroomB.getId(),
-						LocalDate.now(), AttendanceStatus.PRESENT, "teacher-a"),
-				"A timetable entry belonging to a different classroom must be rejected");
+		assertThrows(ResourceNotFoundException.class,
+				() -> periodAttendanceService.mark(student.getPublicId().toString(),
+						entryForClassroomB.getPublicId().toString(), LocalDate.now(), AttendanceStatus.PRESENT,
+						"teacher-a"),
+				"A period can only be marked for students enrolled in that period's classroom");
 	}
 }

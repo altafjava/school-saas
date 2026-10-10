@@ -3,6 +3,7 @@ package com.altafjava.school.api.controller;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
@@ -15,6 +16,7 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import com.altafjava.platform.api.dto.response.ApiResponse;
 import com.altafjava.platform.core.idempotency.RequireIdempotencyKey;
+import com.altafjava.platform.core.security.AuthenticatedUser;
 import com.altafjava.school.api.controller.api.AttendanceApi;
 import com.altafjava.school.api.dto.request.MarkAttendanceRequest;
 import com.altafjava.school.api.dto.request.UpdateAttendanceStatusRequest;
@@ -69,13 +71,14 @@ public class AttendanceController implements AttendanceApi {
 	@ResponseStatus(HttpStatus.CREATED)
 	@PreAuthorize("@permissionAuthorizationService.hasPermission('STUDENT_ATTENDANCE_WRITE')")
 	@RequireIdempotencyKey
-	public ApiResponse<AttendanceResponse> mark(@Valid @RequestBody MarkAttendanceRequest request) {
+	public ApiResponse<AttendanceResponse> mark(@Valid @RequestBody MarkAttendanceRequest request,
+			@AuthenticationPrincipal AuthenticatedUser user) {
 		return ApiResponse.success(attendanceMapper.toResponse(attendanceService.mark(
-				request.studentId(),
-				request.classroomId(),
+				request.studentPublicId(),
+				request.classroomPublicId(),
 				request.attendanceDate(),
 				request.status(),
-				request.markedBy())));
+				user.getUsername())));
 	}
 
 	@Override

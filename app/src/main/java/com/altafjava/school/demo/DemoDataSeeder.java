@@ -171,9 +171,9 @@ public class DemoDataSeeder {
 		AcademicYear year = academicYearService.create(startYear + "-" + (startYear + 1 - 2000),
 				LocalDate.of(startYear, 4, 1), LocalDate.of(startYear + 1, 3, 31), true);
 		Term term1 = termService.create("Term 1", LocalDate.of(startYear, 4, 1), LocalDate.of(startYear, 9, 30),
-				year.getId());
+				year.getPublicId().toString());
 		termService.create("Term 2", LocalDate.of(startYear, 10, 1), LocalDate.of(startYear + 1, 3, 31),
-				year.getId());
+				year.getPublicId().toString());
 
 		for (String[] dept : new String[][] { { "Academics", "ACAD" }, { "Administration", "ADMIN" },
 				{ "Operations", "OPS" } }) {
@@ -199,7 +199,7 @@ public class DemoDataSeeder {
 		for (int grade = 1; grade <= 3; grade++) {
 			for (String section : new String[] { "A", "B" }) {
 				classrooms.add(classroomService.create("G" + grade + section, "Grade " + grade, section,
-						year.getPublicId().toString(), teachers.get(teacherIndex++).getId()));
+						year.getPublicId().toString(), teachers.get(teacherIndex++).getPublicId().toString()));
 			}
 		}
 
@@ -263,11 +263,14 @@ public class DemoDataSeeder {
 			Classroom classroom = classrooms.get(c);
 			for (int s = 0; s < 2; s++) {
 				Subject subject = subjects.get((c + s) % subjects.size());
-				Exam exam = examService.schedule(subject.getName() + " unit test", subject.getId(), classroom.getId(),
-						when, new BigDecimal("50"), term.getId(), type.getId(), new BigDecimal("20"));
+				Exam exam = examService.schedule(subject.getName() + " unit test", subject.getPublicId().toString(),
+						classroom.getPublicId().toString(),
+						when, new BigDecimal("50"), term.getPublicId().toString(), type.getPublicId().toString(),
+						new BigDecimal("20"));
 				for (int n = 0; n < STUDENTS_PER_CLASS; n++) {
 					Student student = students.get(c * STUDENTS_PER_CLASS + n);
-					gradeService.record(student.getId(), exam.getId(), BigDecimal.valueOf(20 + random.nextInt(31)),
+					gradeService.record(student.getPublicId().toString(), exam.getPublicId().toString(),
+							BigDecimal.valueOf(20 + random.nextInt(31)),
 							"demo-seed");
 				}
 				examService.complete(exam.getPublicId().toString());
@@ -290,7 +293,8 @@ public class DemoDataSeeder {
 					int roll = random.nextInt(20);
 					AttendanceStatus status = roll == 0 ? AttendanceStatus.ABSENT
 							: roll == 1 ? AttendanceStatus.LATE : AttendanceStatus.PRESENT;
-					attendanceService.mark(student.getId(), classrooms.get(c).getId(), day, status, "demo-seed");
+					attendanceService.mark(student.getPublicId().toString(), classrooms.get(c).getPublicId().toString(),
+							day, status, "demo-seed");
 				}
 			}
 		}

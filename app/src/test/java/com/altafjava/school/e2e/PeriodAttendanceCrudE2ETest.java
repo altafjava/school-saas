@@ -20,13 +20,20 @@ import com.altafjava.school.application.service.AcademicYearService;
 import com.altafjava.school.base.SchoolIntegrationTestBase;
 import com.altafjava.school.config.TestPaymentConfig;
 import com.altafjava.school.config.TestRedisConfig;
+import com.altafjava.school.domain.classroom.model.Classroom;
 import com.altafjava.school.domain.classroom.repository.ClassroomRepository;
+import com.altafjava.school.domain.employee.model.Employee;
+import com.altafjava.school.domain.student.model.Student;
 import com.altafjava.school.domain.student.repository.StudentRepository;
+import com.altafjava.school.domain.subject.model.Subject;
 import com.altafjava.school.domain.subject.repository.SubjectRepository;
 import com.altafjava.school.domain.teacher.repository.TeacherRepository;
+import com.altafjava.school.domain.timetable.model.Period;
+import com.altafjava.school.domain.timetable.model.TimetableEntry;
 import com.altafjava.school.domain.timetable.repository.PeriodRepository;
 import com.altafjava.school.domain.timetable.repository.TimetableEntryRepository;
 import com.altafjava.school.util.SchoolAuthenticationHelper;
+import com.altafjava.school.util.TestPublicIds;
 import io.restassured.RestAssured;
 import io.restassured.http.ContentType;
 
@@ -41,6 +48,9 @@ class PeriodAttendanceCrudE2ETest extends SchoolIntegrationTestBase {
 
 	@LocalServerPort
 	int port;
+
+	@Autowired
+	private TestPublicIds publicIds;
 
 	@Autowired
 	private TenantOnboardingService onboardingService;
@@ -238,8 +248,10 @@ class PeriodAttendanceCrudE2ETest extends SchoolIntegrationTestBase {
 				.header("X-Tenant-ID", tenantId)
 				.header("Authorization", "Bearer " + accessToken)
 				.contentType(ContentType.JSON)
-				.body("{\"dayOfWeek\":\"MONDAY\",\"periodId\":" + periodId + ",\"classroomId\":" + classroomId
-						+ ",\"subjectId\":" + subjectId + ",\"teacherId\":" + teacherId + "}")
+				.body("{\"dayOfWeek\":\"MONDAY\",\"periodPublicId\":\"" + publicIds.of(Period.class, periodId)
+						+ "\",\"classroomPublicId\":\"" + publicIds.of(Classroom.class, classroomId)
+						+ "\",\"subjectPublicId\":\"" + publicIds.of(Subject.class, subjectId)
+						+ "\",\"teacherPublicId\":\"" + publicIds.of(Employee.class, teacherId) + "\"}")
 				.when()
 				.post("/api/v1/timetable-entries")
 				.then()
@@ -277,9 +289,10 @@ class PeriodAttendanceCrudE2ETest extends SchoolIntegrationTestBase {
 				.header("X-Tenant-ID", tenantId)
 				.header("Authorization", "Bearer " + accessToken)
 				.contentType(ContentType.JSON)
-				.body("{\"studentId\":" + studentId + ",\"classroomId\":" + classroomId + ",\"timetableEntryId\":"
-						+ timetableEntryId + ",\"attendanceDate\":\"2026-02-02\",\"status\":\"PRESENT\","
-						+ "\"markedBy\":\"admin\"}")
+				.body("{\"studentPublicId\":\"" + publicIds.of(Student.class, studentId)
+						+ "\",\"timetableEntryPublicId\":\""
+						+ publicIds.of(TimetableEntry.class, timetableEntryId)
+						+ "\",\"attendanceDate\":\"2026-02-02\",\"status\":\"PRESENT\"}")
 				.header("Idempotency-Key", java.util.UUID.randomUUID().toString())
 				.when()
 				.post("/api/v1/period-attendance")
@@ -313,9 +326,10 @@ class PeriodAttendanceCrudE2ETest extends SchoolIntegrationTestBase {
 				.header("X-Tenant-ID", tenantId)
 				.header("Authorization", "Bearer " + studentToken)
 				.contentType(ContentType.JSON)
-				.body("{\"studentId\":" + studentId + ",\"classroomId\":" + classroomId + ",\"timetableEntryId\":"
-						+ timetableEntryId + ",\"attendanceDate\":\"2026-02-03\",\"status\":\"PRESENT\","
-						+ "\"markedBy\":\"self\"}")
+				.body("{\"studentPublicId\":\"" + publicIds.of(Student.class, studentId)
+						+ "\",\"timetableEntryPublicId\":\""
+						+ publicIds.of(TimetableEntry.class, timetableEntryId)
+						+ "\",\"attendanceDate\":\"2026-02-03\",\"status\":\"PRESENT\"}")
 				.header("Idempotency-Key", java.util.UUID.randomUUID().toString())
 				.when()
 				.post("/api/v1/period-attendance")
@@ -334,9 +348,10 @@ class PeriodAttendanceCrudE2ETest extends SchoolIntegrationTestBase {
 				.header("X-Tenant-ID", tenantId)
 				.header("Authorization", "Bearer " + accessToken)
 				.contentType(ContentType.JSON)
-				.body("{\"studentId\":" + studentId + ",\"classroomId\":" + classroomId + ",\"timetableEntryId\":"
-						+ timetableEntryId + ",\"attendanceDate\":\"2026-02-04\",\"status\":\"ABSENT\","
-						+ "\"markedBy\":\"admin\"}")
+				.body("{\"studentPublicId\":\"" + publicIds.of(Student.class, studentId)
+						+ "\",\"timetableEntryPublicId\":\""
+						+ publicIds.of(TimetableEntry.class, timetableEntryId)
+						+ "\",\"attendanceDate\":\"2026-02-04\",\"status\":\"ABSENT\"}")
 				.header("Idempotency-Key", java.util.UUID.randomUUID().toString())
 				.when()
 				.post("/api/v1/period-attendance")
