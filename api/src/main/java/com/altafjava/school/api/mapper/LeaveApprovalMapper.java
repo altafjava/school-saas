@@ -6,7 +6,7 @@ import org.mapstruct.ReportingPolicy;
 import com.altafjava.school.api.dto.response.LeaveApprovalResponse;
 import com.altafjava.school.domain.leave.model.LeaveApproval;
 
-@Mapper(componentModel = "spring", uses = PublicIdMapping.class, unmappedTargetPolicy = ReportingPolicy.ERROR)
+@Mapper(componentModel = "spring", uses = SchoolPublicIdMapping.class, unmappedTargetPolicy = ReportingPolicy.ERROR)
 public interface LeaveApprovalMapper {
 
 	@Mapping(target = "publicId", expression = "java(approval.getPublicId().toString())")

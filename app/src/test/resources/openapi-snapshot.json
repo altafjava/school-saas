@@ -1106,8 +1106,8 @@
           "in" : "path",
           "required" : true,
           "schema" : {
-            "type" : "integer",
-            "format" : "int64"
+            "type" : "string",
+            "format" : "uuid"
           }
         } ],
         "requestBody" : {
@@ -1200,7 +1200,7 @@
               "schema" : {
                 "type" : "array",
                 "items" : {
-                  "$ref" : "#/components/schemas/UpdateUserRequestDto"
+                  "$ref" : "#/components/schemas/UpdateUserBatchItemRequest"
                 }
               }
             }
@@ -1350,8 +1350,8 @@
               "schema" : {
                 "type" : "array",
                 "items" : {
-                  "type" : "integer",
-                  "format" : "int64"
+                  "type" : "string",
+                  "format" : "uuid"
                 }
               }
             }
@@ -5426,8 +5426,8 @@
           "in" : "path",
           "required" : true,
           "schema" : {
-            "type" : "integer",
-            "format" : "int64"
+            "type" : "string",
+            "format" : "uuid"
           }
         } ],
         "requestBody" : {
@@ -5511,8 +5511,8 @@
           "in" : "path",
           "required" : true,
           "schema" : {
-            "type" : "integer",
-            "format" : "int64"
+            "type" : "string",
+            "format" : "uuid"
           }
         } ],
         "responses" : {
@@ -6811,7 +6811,8 @@
           "in" : "path",
           "required" : true,
           "schema" : {
-            "type" : "string"
+            "type" : "string",
+            "format" : "uuid"
           }
         } ],
         "responses" : {
@@ -7359,8 +7360,8 @@
           "in" : "path",
           "required" : true,
           "schema" : {
-            "type" : "integer",
-            "format" : "int64"
+            "type" : "string",
+            "format" : "uuid"
           }
         } ],
         "responses" : {
@@ -28336,8 +28337,8 @@
           "in" : "query",
           "required" : false,
           "schema" : {
-            "type" : "integer",
-            "format" : "int64"
+            "type" : "string",
+            "format" : "uuid"
           }
         } ],
         "requestBody" : {
@@ -29754,8 +29755,8 @@
           "in" : "path",
           "required" : true,
           "schema" : {
-            "type" : "integer",
-            "format" : "int64"
+            "type" : "string",
+            "format" : "uuid"
           }
         }, {
           "name" : "entityType",
@@ -30007,8 +30008,8 @@
           "in" : "path",
           "required" : true,
           "schema" : {
-            "type" : "integer",
-            "format" : "int64"
+            "type" : "string",
+            "format" : "uuid"
           }
         } ],
         "responses" : {
@@ -31840,8 +31841,8 @@
           "in" : "path",
           "required" : true,
           "schema" : {
-            "type" : "integer",
-            "format" : "int64"
+            "type" : "string",
+            "format" : "uuid"
           }
         } ],
         "responses" : {
@@ -31911,8 +31912,8 @@
           "in" : "path",
           "required" : true,
           "schema" : {
-            "type" : "integer",
-            "format" : "int64"
+            "type" : "string",
+            "format" : "uuid"
           }
         } ],
         "responses" : {
@@ -31975,8 +31976,8 @@
           "in" : "path",
           "required" : true,
           "schema" : {
-            "type" : "integer",
-            "format" : "int64"
+            "type" : "string",
+            "format" : "uuid"
           }
         } ],
         "requestBody" : {
@@ -32068,8 +32069,8 @@
           "in" : "path",
           "required" : true,
           "schema" : {
-            "type" : "integer",
-            "format" : "int64"
+            "type" : "string",
+            "format" : "uuid"
           }
         } ],
         "responses" : {
@@ -43975,8 +43976,8 @@
           "in" : "path",
           "required" : true,
           "schema" : {
-            "type" : "integer",
-            "format" : "int64"
+            "type" : "string",
+            "format" : "uuid"
           }
         } ],
         "responses" : {
@@ -57489,8 +57490,8 @@
           "in" : "path",
           "required" : true,
           "schema" : {
-            "type" : "integer",
-            "format" : "int64"
+            "type" : "string",
+            "format" : "uuid"
           }
         } ],
         "responses" : {
@@ -59519,8 +59520,8 @@
           "in" : "query",
           "required" : false,
           "schema" : {
-            "type" : "integer",
-            "format" : "int64"
+            "type" : "string",
+            "format" : "uuid"
           }
         }, {
           "name" : "resolved",
@@ -61196,8 +61197,8 @@
           "in" : "path",
           "required" : true,
           "schema" : {
-            "type" : "integer",
-            "format" : "int64"
+            "type" : "string",
+            "format" : "uuid"
           }
         } ],
         "responses" : {
@@ -61907,8 +61908,8 @@
           "in" : "query",
           "required" : true,
           "schema" : {
-            "type" : "integer",
-            "format" : "int64"
+            "type" : "string",
+            "format" : "uuid"
           }
         } ],
         "responses" : {
@@ -62052,8 +62053,8 @@
           "in" : "path",
           "required" : true,
           "schema" : {
-            "type" : "integer",
-            "format" : "int64"
+            "type" : "string",
+            "format" : "uuid"
           }
         } ],
         "responses" : {
@@ -62708,21 +62709,27 @@
           }
         }
       },
-      "UpdateUserRequestDto" : {
+      "UpdateUserBatchItemRequest" : {
         "type" : "object",
+        "description" : "One user's changes in a batch update; a null field is left unchanged",
         "properties" : {
           "id" : {
-            "type" : "integer",
-            "format" : "int64"
+            "type" : "string",
+            "format" : "uuid",
+            "description" : "Public id of the user to update"
           },
           "firstName" : {
-            "type" : "string"
+            "type" : "string",
+            "maxLength" : 100,
+            "minLength" : 0
           },
           "lastName" : {
-            "type" : "string"
+            "type" : "string",
+            "maxLength" : 100,
+            "minLength" : 0
           }
         },
-        "required" : [ "id" ]
+        "required" : [ "id", "id" ]
       },
       "ApiResponseListUserResponse" : {
         "type" : "object",
@@ -62794,10 +62801,6 @@
       "SsoConfigurationResponse" : {
         "type" : "object",
         "properties" : {
-          "tenantId" : {
-            "type" : "integer",
-            "format" : "int64"
-          },
           "ssoEnabled" : {
             "type" : "boolean"
           },
@@ -63548,10 +63551,9 @@
             "type" : "string",
             "description" : "Public UUID of the membership record"
           },
-          "userId" : {
-            "type" : "integer",
-            "format" : "int64",
-            "description" : "Internal ID of the user"
+          "userPublicId" : {
+            "type" : "string",
+            "description" : "Public id of the user"
           },
           "role" : {
             "type" : "string",
@@ -64266,8 +64268,7 @@
         "type" : "object",
         "properties" : {
           "id" : {
-            "type" : "integer",
-            "format" : "int64"
+            "type" : "string"
           },
           "countryCode" : {
             "type" : "string"
@@ -64832,11 +64833,11 @@
       "BulkRoleRequest" : {
         "type" : "object",
         "properties" : {
-          "userIds" : {
+          "userPublicIds" : {
             "type" : "array",
             "items" : {
-              "type" : "integer",
-              "format" : "int64"
+              "type" : "string",
+              "format" : "uuid"
             },
             "minItems" : 1
           },
@@ -64845,7 +64846,7 @@
             "minLength" : 1
           }
         },
-        "required" : [ "role", "userIds" ]
+        "required" : [ "role", "userPublicIds" ]
       },
       "BulkInviteRequest" : {
         "type" : "object",
@@ -64893,16 +64894,16 @@
       "BulkDeactivateRequest" : {
         "type" : "object",
         "properties" : {
-          "userIds" : {
+          "userPublicIds" : {
             "type" : "array",
             "items" : {
-              "type" : "integer",
-              "format" : "int64"
+              "type" : "string",
+              "format" : "uuid"
             },
             "minItems" : 1
           }
         },
-        "required" : [ "userIds" ]
+        "required" : [ "userPublicIds" ]
       },
       "ApiResponseUserBulkImportResponse" : {
         "type" : "object",
@@ -65367,11 +65368,10 @@
             "minLength" : 3,
             "pattern" : "^[a-z0-9-]+$"
           },
-          "planId" : {
-            "type" : "integer",
-            "format" : "int64",
-            "description" : "ID of the subscription plan",
-            "example" : 1
+          "planPublicId" : {
+            "type" : "string",
+            "format" : "uuid",
+            "description" : "Public id of the subscription plan"
           },
           "adminEmail" : {
             "type" : "string",
@@ -65395,7 +65395,7 @@
             "minLength" : 3
           }
         },
-        "required" : [ "adminEmail", "adminPassword", "name", "planId", "subdomain" ]
+        "required" : [ "adminEmail", "adminPassword", "name", "planPublicId", "subdomain" ]
       },
       "ApiResponseTenantResponse" : {
         "type" : "object",
@@ -66331,11 +66331,10 @@
         "type" : "object",
         "description" : "Request to purchase an add-on",
         "properties" : {
-          "addonId" : {
-            "type" : "integer",
-            "format" : "int64",
-            "description" : "ID of the add-on to purchase",
-            "example" : 1001
+          "addonPublicId" : {
+            "type" : "string",
+            "format" : "uuid",
+            "description" : "Public id of the add-on to purchase"
           },
           "quantity" : {
             "type" : "integer",
@@ -66345,7 +66344,7 @@
             "minimum" : 1
           }
         },
-        "required" : [ "addonId", "quantity" ]
+        "required" : [ "addonPublicId", "quantity" ]
       },
       "ApiResponseSubscriptionAddOnResponse" : {
         "type" : "object",
@@ -67318,10 +67317,6 @@
       "DsarRequestDto" : {
         "type" : "object",
         "properties" : {
-          "userId" : {
-            "type" : "integer",
-            "format" : "int64"
-          },
           "requestType" : {
             "type" : "string",
             "enum" : [ "EXPORT", "ERASURE", "RECTIFICATION", "RESTRICTION", "PORTABILITY" ]
@@ -67388,22 +67383,12 @@
       "ConsentRequest" : {
         "type" : "object",
         "properties" : {
-          "userId" : {
-            "type" : "integer",
-            "format" : "int64"
-          },
           "consentType" : {
             "type" : "string",
             "enum" : [ "COOKIE", "MARKETING", "DATA_PROCESSING", "TERMS_OF_SERVICE", "PRIVACY_POLICY" ]
           },
           "granted" : {
             "type" : "boolean"
-          },
-          "ipAddress" : {
-            "type" : "string"
-          },
-          "userAgent" : {
-            "type" : "string"
           },
           "policyVersion" : {
             "type" : "string"
@@ -67837,11 +67822,10 @@
         "type" : "object",
         "description" : "Request to add a tenant user as a member of an organization",
         "properties" : {
-          "userId" : {
-            "type" : "integer",
-            "format" : "int64",
-            "description" : "Internal ID of the user to add",
-            "example" : 42
+          "userPublicId" : {
+            "type" : "string",
+            "format" : "uuid",
+            "description" : "Public id of the user to add"
           },
           "role" : {
             "type" : "string",
@@ -67850,16 +67834,16 @@
             "example" : "ORG_ADMIN"
           }
         },
-        "required" : [ "role", "userId" ]
+        "required" : [ "role", "userPublicId" ]
       },
       "SendNotificationRequest" : {
         "type" : "object",
         "description" : "Request to send a notification",
         "properties" : {
-          "userId" : {
-            "type" : "integer",
-            "format" : "int64",
-            "description" : "Target user ID"
+          "userPublicId" : {
+            "type" : "string",
+            "format" : "uuid",
+            "description" : "Public id of the target user"
           },
           "type" : {
             "type" : "string",
@@ -67907,7 +67891,7 @@
             "description" : "Additional metadata (JSON string)"
           }
         },
-        "required" : [ "message", "title", "type", "userId" ]
+        "required" : [ "message", "title", "type", "userPublicId" ]
       },
       "ApiResponseNotificationResponse" : {
         "type" : "object",
@@ -68899,10 +68883,6 @@
       "InitiateUploadRequest" : {
         "type" : "object",
         "properties" : {
-          "userId" : {
-            "type" : "integer",
-            "format" : "int64"
-          },
           "entityType" : {
             "type" : "string",
             "minLength" : 1
@@ -73256,9 +73236,9 @@
             "type" : "string",
             "minLength" : 1
           },
-          "planId" : {
-            "type" : "integer",
-            "format" : "int64"
+          "planPublicId" : {
+            "type" : "string",
+            "format" : "uuid"
           }
         },
         "required" : [ "code" ]
@@ -73566,8 +73546,7 @@
         "description" : "Configured operational alert",
         "properties" : {
           "id" : {
-            "type" : "integer",
-            "format" : "int64",
+            "type" : "string",
             "description" : "Alert identifier"
           },
           "alertType" : {
@@ -73793,8 +73772,7 @@
           },
           "planId" : {
             "type" : "string",
-            "description" : "ID of the new subscription plan",
-            "example" : "PLAN-PRO"
+            "description" : "Public id of the new subscription plan"
           },
           "metadata" : {
             "type" : "object",
@@ -73921,10 +73899,6 @@
       "TenantSettingsResponse" : {
         "type" : "object",
         "properties" : {
-          "tenantId" : {
-            "type" : "integer",
-            "format" : "int64"
-          },
           "timezone" : {
             "type" : "string"
           },
@@ -74053,10 +74027,6 @@
       "TenantSecuritySettingsResponse" : {
         "type" : "object",
         "properties" : {
-          "tenantId" : {
-            "type" : "integer",
-            "format" : "int64"
-          },
           "enforceMfa" : {
             "type" : "boolean"
           },
@@ -77786,13 +77756,11 @@
         "description" : "A price point for a subscription plan in a given currency",
         "properties" : {
           "id" : {
-            "type" : "integer",
-            "format" : "int64",
+            "type" : "string",
             "description" : "Price identifier"
           },
-          "planId" : {
-            "type" : "integer",
-            "format" : "int64",
+          "planPublicId" : {
+            "type" : "string",
             "description" : "Plan this price belongs to"
           },
           "currencyCode" : {
@@ -81281,9 +81249,8 @@
             "type" : "string",
             "description" : "Code identifying the operation requiring approval"
           },
-          "submittedByUserId" : {
-            "type" : "integer",
-            "format" : "int64",
+          "submittedByUserPublicId" : {
+            "type" : "string",
             "description" : "ID of the user who submitted the request"
           },
           "entityType" : {
@@ -81522,9 +81489,8 @@
       "AdminUsageMetricResponse" : {
         "type" : "object",
         "properties" : {
-          "tenantId" : {
-            "type" : "integer",
-            "format" : "int64"
+          "tenantPublicId" : {
+            "type" : "string"
           },
           "metricType" : {
             "type" : "string"
@@ -81617,8 +81583,7 @@
         "description" : "An active super-admin impersonation session",
         "properties" : {
           "id" : {
-            "type" : "integer",
-            "format" : "int64",
+            "type" : "string",
             "description" : "Session identifier"
           },
           "adminId" : {
@@ -81626,9 +81591,8 @@
             "format" : "uuid",
             "description" : "Public ID of the admin performing the impersonation"
           },
-          "tenantId" : {
-            "type" : "integer",
-            "format" : "int64",
+          "tenantPublicId" : {
+            "type" : "string",
             "description" : "Tenant the impersonated user belongs to"
           },
           "targetUserId" : {
@@ -81692,9 +81656,8 @@
       "TenantHealthScore" : {
         "type" : "object",
         "properties" : {
-          "tenantId" : {
-            "type" : "integer",
-            "format" : "int64"
+          "tenantPublicId" : {
+            "type" : "string"
           },
           "tenantStatus" : {
             "type" : "string",
@@ -82614,13 +82577,11 @@
         "description" : "A queued or in-progress tenant schema migration",
         "properties" : {
           "id" : {
-            "type" : "integer",
-            "format" : "int64",
+            "type" : "string",
             "description" : "Queue entry identifier"
           },
-          "tenantId" : {
-            "type" : "integer",
-            "format" : "int64",
+          "tenantPublicId" : {
+            "type" : "string",
             "description" : "Tenant this migration applies to"
           },
           "schemaVersion" : {
@@ -82751,13 +82712,11 @@
         "description" : "A completed tenant schema migration record",
         "properties" : {
           "id" : {
-            "type" : "integer",
-            "format" : "int64",
+            "type" : "string",
             "description" : "History entry identifier"
           },
-          "tenantId" : {
-            "type" : "integer",
-            "format" : "int64",
+          "tenantPublicId" : {
+            "type" : "string",
             "description" : "Tenant this migration applied to"
           },
           "fromVersion" : {
@@ -83347,8 +83306,7 @@
         "description" : "Aggregated revenue metrics for a reporting period",
         "properties" : {
           "id" : {
-            "type" : "integer",
-            "format" : "int64",
+            "type" : "string",
             "description" : "Metric identifier"
           },
           "date" : {
@@ -83449,8 +83407,7 @@
         "description" : "Aggregated payment/charge metrics for a reporting date",
         "properties" : {
           "id" : {
-            "type" : "integer",
-            "format" : "int64",
+            "type" : "string",
             "description" : "Metric identifier"
           },
           "date" : {
@@ -83519,8 +83476,7 @@
         "description" : "Retention/revenue data for a monthly customer cohort",
         "properties" : {
           "id" : {
-            "type" : "integer",
-            "format" : "int64",
+            "type" : "string",
             "description" : "Cohort identifier"
           },
           "cohortMonth" : {

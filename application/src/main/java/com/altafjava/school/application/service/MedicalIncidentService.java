@@ -80,7 +80,7 @@ public class MedicalIncidentService {
 		MedicalIncident saved = medicalIncidentRepository.save(incident);
 		notifyGuardian(tenantId, student, saved);
 		// description/treatmentGiven are deliberately excluded from the audit trail — medical PII.
-		activityLogService.log(tenantId, "CREATE", "MedicalIncident", String.valueOf(saved.getId()),
+		activityLogService.log(tenantId, "CREATE", "MedicalIncident", saved.getPublicId().toString(),
 				String.valueOf(recordedByUserId), null, null, "Medical incident recorded", null, null);
 		return saved;
 	}

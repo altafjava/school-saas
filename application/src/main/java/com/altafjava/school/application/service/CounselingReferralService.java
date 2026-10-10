@@ -64,7 +64,7 @@ public class CounselingReferralService {
 		CounselingReferral referral = CounselingReferral.refer(student.getId(), resolveCurrentUserId(), reason);
 		CounselingReferral saved = counselingReferralRepository.save(referral);
 		// reason is deliberately excluded from the audit trail — confidential referral content.
-		logAction(tenantId, "CREATE", String.valueOf(saved.getId()), "Counseling referral created");
+		logAction(tenantId, "CREATE", saved.getPublicId().toString(), "Counseling referral created");
 		return saved;
 	}
 

@@ -7,7 +7,7 @@ import com.altafjava.school.api.dto.response.AvailableTeacherResponse;
 import com.altafjava.school.api.dto.response.SubstitutionResponse;
 import com.altafjava.school.domain.teacher.model.Teacher;
 
-@Mapper(componentModel = "spring", uses = PublicIdMapping.class, unmappedTargetPolicy = ReportingPolicy.ERROR)
+@Mapper(componentModel = "spring", uses = SchoolPublicIdMapping.class, unmappedTargetPolicy = ReportingPolicy.ERROR)
 public interface SubstitutionMapper {
 
 	@Mapping(target = "publicId", expression = "java(details.substitution().getPublicId().toString())")

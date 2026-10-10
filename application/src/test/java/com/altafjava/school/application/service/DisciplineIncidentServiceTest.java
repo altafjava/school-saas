@@ -1,5 +1,6 @@
 package com.altafjava.school.application.service;
 
+import static com.altafjava.school.application.support.TestEntities.persisted;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -88,7 +89,7 @@ class DisciplineIncidentServiceTest {
 		when(studentRepository.findByPublicIdAndTenantId(any(), eq(1L)))
 				.thenReturn(Optional.of(student));
 		when(teacherRepository.findByUserIdAndTenantId(CURRENT_USER_ID, 1L)).thenReturn(Optional.of(teacher));
-		when(disciplineIncidentRepository.save(any(DisciplineIncident.class))).thenAnswer(inv -> inv.getArgument(0));
+		when(disciplineIncidentRepository.save(any(DisciplineIncident.class))).thenAnswer(persisted());
 		when(recipientResolver.resolve(1L, student)).thenReturn(Optional.of(99L));
 
 		DisciplineIncident incident = assertDoesNotThrow(() -> disciplineIncidentService.record(
@@ -106,7 +107,7 @@ class DisciplineIncidentServiceTest {
 		DisciplineIncident incident = DisciplineIncident.report(10L, 20L, LocalDate.of(2026, 5, 1),
 				IncidentSeverity.MINOR, "Late to class");
 		when(disciplineIncidentRepository.findByPublicIdAndTenantId(publicId, 1L)).thenReturn(Optional.of(incident));
-		when(disciplineIncidentRepository.save(any(DisciplineIncident.class))).thenAnswer(inv -> inv.getArgument(0));
+		when(disciplineIncidentRepository.save(any(DisciplineIncident.class))).thenAnswer(persisted());
 
 		DisciplineIncident updated = disciplineIncidentService.recordAction(publicId.toString(), "Verbal warning");
 

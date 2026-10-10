@@ -4,7 +4,9 @@ import static org.mockito.Mockito.RETURNS_DEFAULTS;
 import static org.mockito.Mockito.mock;
 import java.nio.charset.StandardCharsets;
 import java.util.UUID;
+import org.mockito.stubbing.Answer;
 import com.altafjava.platform.core.model.BaseEntity;
+import com.altafjava.platform.core.model.ExposedEntity;
 import com.altafjava.school.domain.employee.model.EmployeeStatus;
 import com.altafjava.school.domain.teacher.model.Teacher;
 
@@ -31,5 +33,16 @@ public final class TestEntities {
 			case "getStatus" -> EmployeeStatus.ACTIVE;
 			default -> RETURNS_DEFAULTS.answer(invocation);
 		});
+	}
+
+	/** A repository save: returns its argument with the public id a real persist would assign. */
+	public static <T extends ExposedEntity> Answer<T> persisted() {
+		return invocation -> {
+			T entity = invocation.getArgument(0);
+			if (entity.getPublicId() == null) {
+				entity.setPublicId(UUID.randomUUID());
+			}
+			return entity;
+		};
 	}
 }

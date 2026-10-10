@@ -12,7 +12,7 @@ import lombok.RequiredArgsConstructor;
  */
 @Component
 @RequiredArgsConstructor
-public class PublicIdMapping {
+public class SchoolPublicIdMapping {
 
 	private final PublicIdResolver publicIdResolver;
 

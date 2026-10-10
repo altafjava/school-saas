@@ -6,7 +6,7 @@ import org.mapstruct.ReportingPolicy;
 import com.altafjava.school.api.dto.response.TicketResponse;
 import com.altafjava.school.domain.helpdesk.model.Ticket;
 
-@Mapper(componentModel = "spring", uses = PublicIdMapping.class, unmappedTargetPolicy = ReportingPolicy.ERROR)
+@Mapper(componentModel = "spring", uses = SchoolPublicIdMapping.class, unmappedTargetPolicy = ReportingPolicy.ERROR)
 public interface TicketMapper {
 
 	@Mapping(target = "publicId", expression = "java(ticket.getPublicId().toString())")

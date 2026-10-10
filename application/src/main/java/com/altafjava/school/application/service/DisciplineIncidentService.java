@@ -80,7 +80,7 @@ public class DisciplineIncidentService {
 		notifyGuardian(tenantId, student, saved);
 		// severity is a classification, not the incident's free-text (Pii) description/actionTaken
 		// — safe to record; the content itself is deliberately excluded from the audit trail.
-		logAction(tenantId, "CREATE", String.valueOf(saved.getId()),
+		logAction(tenantId, "CREATE", saved.getPublicId().toString(),
 				"Discipline incident recorded, severity=" + severity);
 		return saved;
 	}

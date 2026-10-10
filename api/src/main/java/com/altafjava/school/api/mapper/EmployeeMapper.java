@@ -7,7 +7,7 @@ import com.altafjava.school.api.dto.response.EmployeeResponse;
 import com.altafjava.school.domain.employee.model.Employee;
 
 @Mapper(componentModel = "spring", unmappedTargetPolicy = ReportingPolicy.ERROR, uses = { AddressMapper.class,
-		PublicIdMapping.class })
+		SchoolPublicIdMapping.class })
 public interface EmployeeMapper {
 
 	@Mapping(target = "publicId", expression = "java(employee.getPublicId().toString())")

@@ -1,5 +1,6 @@
 package com.altafjava.school.application.service;
 
+import static com.altafjava.school.application.support.TestEntities.persisted;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -71,7 +72,7 @@ class CounselingSessionServiceTest {
 				.thenReturn(Optional.of(studentWithId(10L)));
 		when(teacherRepository.findByPublicIdAndTenantId(TEACHER_PUBLIC_ID, 1L))
 				.thenReturn(Optional.of(teacherWithId(20L)));
-		when(counselingSessionRepository.save(any(CounselingSession.class))).thenAnswer(inv -> inv.getArgument(0));
+		when(counselingSessionRepository.save(any(CounselingSession.class))).thenAnswer(persisted());
 
 		CounselingSession session = assertDoesNotThrow(() -> counselingSessionService.schedule(
 				STUDENT_PUBLIC_ID.toString(), TEACHER_PUBLIC_ID.toString(), LocalDate.of(2026, 5, 1),
@@ -94,7 +95,7 @@ class CounselingSessionServiceTest {
 		UUID publicId = UUID.randomUUID();
 		CounselingSession session = CounselingSession.schedule(10L, 20L, LocalDate.of(2026, 5, 1), "Initial", true);
 		when(counselingSessionRepository.findByPublicIdAndTenantId(publicId, 1L)).thenReturn(Optional.of(session));
-		when(counselingSessionRepository.save(any(CounselingSession.class))).thenAnswer(inv -> inv.getArgument(0));
+		when(counselingSessionRepository.save(any(CounselingSession.class))).thenAnswer(persisted());
 
 		CounselingSession updated = counselingSessionService.updateNotes(publicId.toString(), "Resolved", false);
 

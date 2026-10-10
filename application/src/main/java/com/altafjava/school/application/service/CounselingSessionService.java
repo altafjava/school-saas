@@ -64,7 +64,7 @@ public class CounselingSessionService {
 		CounselingSession session = CounselingSession.schedule(student.getId(), counselor.getId(), sessionDate,
 				notes, followUpRequired);
 		CounselingSession saved = counselingSessionRepository.save(session);
-		logAction(tenantId, "CREATE", String.valueOf(saved.getId()), "Counseling session scheduled");
+		logAction(tenantId, "CREATE", saved.getPublicId().toString(), "Counseling session scheduled");
 		return saved;
 	}
 
