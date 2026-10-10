@@ -6,9 +6,12 @@ import org.mapstruct.ReportingPolicy;
 import com.altafjava.school.api.dto.response.CounselingReferralResponse;
 import com.altafjava.school.domain.counseling.model.CounselingReferral;
 
-@Mapper(componentModel = "spring", unmappedTargetPolicy = ReportingPolicy.ERROR)
+@Mapper(componentModel = "spring", uses = PublicIdMapping.class, unmappedTargetPolicy = ReportingPolicy.ERROR)
 public interface CounselingReferralMapper {
 
 	@Mapping(target = "publicId", expression = "java(referral.getPublicId().toString())")
+	@Mapping(target = "studentPublicId", source = "studentId", qualifiedByName = "student")
+	@Mapping(target = "referredByUserPublicId", source = "referredByUserId", qualifiedByName = "user")
+	@Mapping(target = "counselingSessionPublicId", source = "counselingSessionId", qualifiedByName = "counselingSession")
 	CounselingReferralResponse toResponse(CounselingReferral referral);
 }

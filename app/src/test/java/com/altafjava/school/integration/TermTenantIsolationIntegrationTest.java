@@ -68,7 +68,8 @@ class TermTenantIsolationIntegrationTest extends SchoolIntegrationTestBase {
 		activateTenant(tenantA);
 		AcademicYear year = academicYearService.create("2025-26",
 				LocalDate.of(2025, 6, 1), LocalDate.of(2026, 5, 31), false);
-		termService.create("Term 1", LocalDate.of(2025, 6, 1), LocalDate.of(2025, 9, 30), year.getId());
+		termService.create("Term 1", LocalDate.of(2025, 6, 1), LocalDate.of(2025, 9, 30),
+				year.getPublicId().toString());
 
 		activateTenant(tenantB);
 		Page<Term> tenantBTerms = termService.listTerms(PageRequest.of(0, 100));
@@ -83,7 +84,8 @@ class TermTenantIsolationIntegrationTest extends SchoolIntegrationTestBase {
 		activateTenant(tenantA);
 		AcademicYear year = academicYearService.create("2025-26",
 				LocalDate.of(2025, 6, 1), LocalDate.of(2026, 5, 31), false);
-		Term term = termService.create("Term 1", LocalDate.of(2025, 6, 1), LocalDate.of(2025, 9, 30), year.getId());
+		Term term = termService.create("Term 1", LocalDate.of(2025, 6, 1), LocalDate.of(2025, 9, 30),
+				year.getPublicId().toString());
 		String publicId = term.getPublicId().toString();
 
 		activateTenant(tenantB);
@@ -101,7 +103,7 @@ class TermTenantIsolationIntegrationTest extends SchoolIntegrationTestBase {
 		activateTenant(tenantB);
 		assertThrows(ResourceNotFoundException.class,
 				() -> termService.create("Term 1", LocalDate.of(2025, 6, 1), LocalDate.of(2025, 9, 30),
-						yearA.getId()),
+						yearA.getPublicId().toString()),
 				"Tenant B must not be able to create a term against tenant A's academic year");
 	}
 }

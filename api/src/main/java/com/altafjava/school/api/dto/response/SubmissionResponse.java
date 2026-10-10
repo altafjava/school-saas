@@ -5,8 +5,8 @@ import java.time.LocalDateTime;
 
 public record SubmissionResponse(
 		String publicId,
-		Long assignmentId,
-		Long studentId,
+		String assignmentPublicId,
+		String studentPublicId,
 		LocalDateTime submittedAt,
 		String storageKey,
 		String textContent,

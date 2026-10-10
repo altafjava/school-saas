@@ -118,19 +118,26 @@ class TicketCrudE2ETest extends SchoolIntegrationTestBase {
 				.statusCode(HttpStatus.CREATED.value())
 				.extract().path("data.publicId");
 
+		String assigneePublicId = given()
+				.header("X-Tenant-ID", tenantId)
+				.header("Authorization", "Bearer " + accessToken)
+				.when()
+				.get("/api/v1/me")
+				.then()
+				.statusCode(HttpStatus.OK.value())
+				.extract().path("data.user.id");
+
 		given()
 				.header("X-Tenant-ID", tenantId)
 				.header("Authorization", "Bearer " + accessToken)
 				.contentType(ContentType.JSON)
-				.body("""
-						{"assignedToUserId":99}
-						""")
+				.body("{\"assignedToUserPublicId\":\"" + assigneePublicId + "\"}")
 				.when()
 				.patch("/api/v1/tickets/" + ticketPublicId + "/assign")
 				.then()
 				.statusCode(HttpStatus.OK.value())
 				.body("data.status", equalTo("IN_PROGRESS"))
-				.body("data.assignedToUserId", equalTo(99));
+				.body("data.assignedToUserPublicId", equalTo(assigneePublicId));
 
 		given()
 				.header("X-Tenant-ID", tenantId)

@@ -6,9 +6,10 @@ import org.mapstruct.ReportingPolicy;
 import com.altafjava.school.api.dto.response.HealthRecordResponse;
 import com.altafjava.school.domain.health.model.HealthRecord;
 
-@Mapper(componentModel = "spring", unmappedTargetPolicy = ReportingPolicy.ERROR)
+@Mapper(componentModel = "spring", uses = PublicIdMapping.class, unmappedTargetPolicy = ReportingPolicy.ERROR)
 public interface HealthRecordMapper {
 
 	@Mapping(target = "publicId", expression = "java(healthRecord.getPublicId().toString())")
+	@Mapping(target = "studentPublicId", source = "studentId", qualifiedByName = "student")
 	HealthRecordResponse toResponse(HealthRecord healthRecord);
 }

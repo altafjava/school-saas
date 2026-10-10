@@ -10,5 +10,5 @@ public record LifecycleTransitionResponse(
 		String reason,
 		LocalDate effectiveOn,
 		Instant recordedAt,
-		Long recordedByUserId) {
+		String recordedByUserPublicId) {
 }

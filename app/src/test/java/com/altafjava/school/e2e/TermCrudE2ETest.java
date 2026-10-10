@@ -19,8 +19,10 @@ import com.altafjava.platform.domain.tenant.model.Tenant;
 import com.altafjava.school.base.SchoolIntegrationTestBase;
 import com.altafjava.school.config.TestPaymentConfig;
 import com.altafjava.school.config.TestRedisConfig;
+import com.altafjava.school.domain.academicyear.model.AcademicYear;
 import com.altafjava.school.domain.academicyear.repository.AcademicYearRepository;
 import com.altafjava.school.util.SchoolAuthenticationHelper;
+import com.altafjava.school.util.TestPublicIds;
 import io.restassured.RestAssured;
 import io.restassured.http.ContentType;
 
@@ -35,6 +37,9 @@ class TermCrudE2ETest extends SchoolIntegrationTestBase {
 
 	@LocalServerPort
 	int port;
+
+	@Autowired
+	private TestPublicIds publicIds;
 
 	@Autowired
 	private TenantOnboardingService onboardingService;
@@ -93,7 +98,7 @@ class TermCrudE2ETest extends SchoolIntegrationTestBase {
 				.header("Authorization", "Bearer " + accessToken)
 				.contentType(ContentType.JSON)
 				.body("{\"name\":\"Term 1\",\"startDate\":\"2030-06-01\",\"endDate\":\"2030-09-30\","
-						+ "\"academicYearId\":" + academicYearId + "}")
+						+ "\"academicYearPublicId\":\"" + publicIds.of(AcademicYear.class, academicYearId) + "\"}")
 				.when()
 				.post("/api/v1/terms")
 				.then()
@@ -124,7 +129,7 @@ class TermCrudE2ETest extends SchoolIntegrationTestBase {
 				.header("Authorization", "Bearer " + teacherToken)
 				.contentType(ContentType.JSON)
 				.body("{\"name\":\"Term 2\",\"startDate\":\"2030-10-01\",\"endDate\":\"2031-01-31\","
-						+ "\"academicYearId\":" + academicYearId + "}")
+						+ "\"academicYearPublicId\":\"" + publicIds.of(AcademicYear.class, academicYearId) + "\"}")
 				.when()
 				.post("/api/v1/terms")
 				.then()
@@ -140,7 +145,7 @@ class TermCrudE2ETest extends SchoolIntegrationTestBase {
 				.header("Authorization", "Bearer " + accessToken)
 				.contentType(ContentType.JSON)
 				.body("{\"name\":\"Term 3\",\"startDate\":\"2031-02-01\",\"endDate\":\"2031-05-31\","
-						+ "\"academicYearId\":" + academicYearId + "}")
+						+ "\"academicYearPublicId\":\"" + publicIds.of(AcademicYear.class, academicYearId) + "\"}")
 				.when()
 				.post("/api/v1/terms")
 				.then()

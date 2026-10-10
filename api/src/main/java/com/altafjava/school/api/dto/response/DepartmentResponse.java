@@ -5,6 +5,6 @@ public record DepartmentResponse(
 		String name,
 		String code,
 		String description,
-		Long headEmployeeId,
+		String headEmployeePublicId,
 		boolean active) {
 }

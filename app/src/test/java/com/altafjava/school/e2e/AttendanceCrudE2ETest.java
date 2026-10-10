@@ -20,9 +20,12 @@ import com.altafjava.school.application.service.AcademicYearService;
 import com.altafjava.school.base.SchoolIntegrationTestBase;
 import com.altafjava.school.config.TestPaymentConfig;
 import com.altafjava.school.config.TestRedisConfig;
+import com.altafjava.school.domain.classroom.model.Classroom;
 import com.altafjava.school.domain.classroom.repository.ClassroomRepository;
+import com.altafjava.school.domain.student.model.Student;
 import com.altafjava.school.domain.student.repository.StudentRepository;
 import com.altafjava.school.util.SchoolAuthenticationHelper;
+import com.altafjava.school.util.TestPublicIds;
 import io.restassured.RestAssured;
 import io.restassured.http.ContentType;
 
@@ -37,6 +40,9 @@ class AttendanceCrudE2ETest extends SchoolIntegrationTestBase {
 
 	@LocalServerPort
 	int port;
+
+	@Autowired
+	private TestPublicIds publicIds;
 
 	@Autowired
 	private TenantOnboardingService onboardingService;
@@ -160,8 +166,9 @@ class AttendanceCrudE2ETest extends SchoolIntegrationTestBase {
 				.header("X-Tenant-ID", tenantId)
 				.header("Authorization", "Bearer " + accessToken)
 				.contentType(ContentType.JSON)
-				.body("{\"studentId\":" + studentId + ",\"classroomId\":" + classroomId
-						+ ",\"attendanceDate\":\"2026-02-01\",\"status\":\"PRESENT\",\"markedBy\":\"admin\"}")
+				.body("{\"studentPublicId\":\"" + publicIds.of(Student.class, studentId) + "\",\"classroomPublicId\":\""
+						+ publicIds.of(Classroom.class, classroomId)
+						+ "\",\"attendanceDate\":\"2026-02-01\",\"status\":\"PRESENT\"}")
 				.header("Idempotency-Key", java.util.UUID.randomUUID().toString())
 				.when()
 				.post("/api/v1/attendance")
@@ -182,8 +189,9 @@ class AttendanceCrudE2ETest extends SchoolIntegrationTestBase {
 				.header("X-Tenant-ID", tenantId)
 				.header("Authorization", "Bearer " + accessToken)
 				.contentType(ContentType.JSON)
-				.body("{\"studentId\":" + studentId + ",\"classroomId\":" + classroomId
-						+ ",\"attendanceDate\":\"2026-02-01\",\"status\":\"NOT_A_REAL_STATUS\",\"markedBy\":\"admin\"}")
+				.body("{\"studentPublicId\":\"" + publicIds.of(Student.class, studentId) + "\",\"classroomPublicId\":\""
+						+ publicIds.of(Classroom.class, classroomId)
+						+ "\",\"attendanceDate\":\"2026-02-01\",\"status\":\"NOT_A_REAL_STATUS\"}")
 				.header("Idempotency-Key", java.util.UUID.randomUUID().toString())
 				.when()
 				.post("/api/v1/attendance")
@@ -214,8 +222,9 @@ class AttendanceCrudE2ETest extends SchoolIntegrationTestBase {
 				.header("X-Tenant-ID", tenantId)
 				.header("Authorization", "Bearer " + studentToken)
 				.contentType(ContentType.JSON)
-				.body("{\"studentId\":" + studentId + ",\"classroomId\":" + classroomId
-						+ ",\"attendanceDate\":\"2026-02-02\",\"status\":\"PRESENT\",\"markedBy\":\"self\"}")
+				.body("{\"studentPublicId\":\"" + publicIds.of(Student.class, studentId) + "\",\"classroomPublicId\":\""
+						+ publicIds.of(Classroom.class, classroomId)
+						+ "\",\"attendanceDate\":\"2026-02-02\",\"status\":\"PRESENT\"}")
 				.header("Idempotency-Key", java.util.UUID.randomUUID().toString())
 				.when()
 				.post("/api/v1/attendance")
@@ -233,8 +242,9 @@ class AttendanceCrudE2ETest extends SchoolIntegrationTestBase {
 				.header("X-Tenant-ID", tenantId)
 				.header("Authorization", "Bearer " + accessToken)
 				.contentType(ContentType.JSON)
-				.body("{\"studentId\":" + studentId + ",\"classroomId\":" + classroomId
-						+ ",\"attendanceDate\":\"2026-02-03\",\"status\":\"ABSENT\",\"markedBy\":\"admin\"}")
+				.body("{\"studentPublicId\":\"" + publicIds.of(Student.class, studentId) + "\",\"classroomPublicId\":\""
+						+ publicIds.of(Classroom.class, classroomId)
+						+ "\",\"attendanceDate\":\"2026-02-03\",\"status\":\"ABSENT\"}")
 				.header("Idempotency-Key", java.util.UUID.randomUUID().toString())
 				.when()
 				.post("/api/v1/attendance")

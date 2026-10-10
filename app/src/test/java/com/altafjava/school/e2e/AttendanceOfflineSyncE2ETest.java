@@ -26,6 +26,7 @@ import com.altafjava.school.config.TestRedisConfig;
 import com.altafjava.school.domain.classroom.model.Classroom;
 import com.altafjava.school.domain.student.model.Student;
 import com.altafjava.school.util.SchoolAuthenticationHelper;
+import com.altafjava.school.util.TestPublicIds;
 import io.restassured.RestAssured;
 import io.restassured.http.ContentType;
 
@@ -41,6 +42,9 @@ class AttendanceOfflineSyncE2ETest extends SchoolIntegrationTestBase {
 
 	@LocalServerPort
 	int port;
+
+	@Autowired
+	private TestPublicIds publicIds;
 
 	@Autowired
 	private TenantOnboardingService onboardingService;
@@ -120,8 +124,7 @@ class AttendanceOfflineSyncE2ETest extends SchoolIntegrationTestBase {
 	void offlineMarkedAttendance_syncsAndIsVisibleThroughTheNormalAttendanceReadPath() {
 		String accessToken = login();
 		String payload = "{\"studentPublicId\":\"" + studentPublicId + "\",\"classroomPublicId\":\""
-				+ classroomPublicId + "\",\"attendanceDate\":\"2026-01-15\",\"status\":\"PRESENT\","
-				+ "\"markedBy\":\"teacher-offline\"}";
+				+ classroomPublicId + "\",\"attendanceDate\":\"2026-01-15\",\"status\":\"PRESENT\"}";
 
 		String entry = """
 				{
@@ -159,7 +162,7 @@ class AttendanceOfflineSyncE2ETest extends SchoolIntegrationTestBase {
 				.then()
 				.statusCode(HttpStatus.OK.value())
 				.body("data.status", equalTo("PRESENT"))
-				.body("data.markedBy", equalTo("teacher-offline"));
+				.body("data.markedBy", equalTo(adminEmail));
 	}
 
 	@Test
@@ -176,8 +179,7 @@ class AttendanceOfflineSyncE2ETest extends SchoolIntegrationTestBase {
 		}
 
 		String payload = "{\"studentPublicId\":\"" + unenrolledStudentPublicId + "\",\"classroomPublicId\":\""
-				+ classroomPublicId + "\",\"attendanceDate\":\"2026-01-15\",\"status\":\"PRESENT\","
-				+ "\"markedBy\":\"teacher-offline\"}";
+				+ classroomPublicId + "\",\"attendanceDate\":\"2026-01-15\",\"status\":\"PRESENT\"}";
 		String entry = """
 				{
 				  "operationType": "CREATE",

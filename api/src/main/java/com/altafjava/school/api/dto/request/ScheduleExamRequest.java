@@ -10,11 +10,11 @@ import jakarta.validation.constraints.Size;
 
 public record ScheduleExamRequest(
 		@NotBlank @Size(max = 200) String title,
-		@NotNull Long subjectId,
-		@NotNull Long classroomId,
+		@NotBlank String subjectPublicId,
+		@NotBlank String classroomPublicId,
 		@NotNull LocalDateTime scheduledAt,
 		@NotNull @DecimalMin("1.0") BigDecimal maxMarks,
-		Long termId,
-		@NotNull Long examTypeId,
+		String termPublicId,
+		@NotBlank String examTypePublicId,
 		@DecimalMin("0.01") @DecimalMax("100") BigDecimal weightage) {
 }

@@ -5,38 +5,29 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 import com.altafjava.platform.core.exception.BusinessException;
-import com.altafjava.platform.core.exception.ResourceNotFoundException;
 import com.altafjava.platform.core.sync.EntityChange;
 import com.altafjava.platform.core.sync.OfflineSyncEntityHandler;
 import com.altafjava.platform.core.tenant.TenantContext;
+import com.altafjava.school.application.reference.EntityRef;
+import com.altafjava.school.application.reference.PublicIdResolver;
 import com.altafjava.school.application.security.AcademicScope;
 import com.altafjava.school.application.security.AcademicScopeResolver;
 import com.altafjava.school.application.service.AttendanceService;
 import com.altafjava.school.domain.attendance.model.Attendance;
 import com.altafjava.school.domain.attendance.model.AttendanceStatus;
 import com.altafjava.school.domain.attendance.repository.AttendanceRepository;
-import com.altafjava.school.domain.classroom.model.Classroom;
-import com.altafjava.school.domain.classroom.repository.ClassroomRepository;
-import com.altafjava.school.domain.student.model.Student;
-import com.altafjava.school.domain.student.repository.StudentRepository;
 import lombok.RequiredArgsConstructor;
 import tools.jackson.core.JacksonException;
 import tools.jackson.databind.ObjectMapper;
 
 /**
- * The first real, registered {@link OfflineSyncEntityHandler} — attendance is the offline-critical
- * case (a teacher marking attendance in a classroom with poor connectivity), and {@link
- * AttendanceService#mark} already enforces roster membership, so a synced write runs through the
- * exact same business rules an online request would, not a bypass. Every write delegates to
- * {@link AttendanceService} rather than touching {@link AttendanceRepository} directly.
- *
- * <p>
- * {@code create}'s payload references the student/classroom by their public ids (all a client can
- * know); {@code changesSince}/{@code findChange}'s output payload uses internal ids instead, to
- * avoid an extra publicId lookup per row on a bulk delta pull — a real, documented asymmetry, not
- * an oversight.
+ * Offline sync for attendance, the case where a teacher marks a class with poor connectivity.
+ * Every write goes through {@link AttendanceService}, so a synced write obeys the same rules as an
+ * online one, and every payload names students and classrooms by public id only.
  */
 @Component
 @RequiredArgsConstructor
@@ -44,25 +35,21 @@ public class AttendanceOfflineSyncHandler implements OfflineSyncEntityHandler {
 
 	private final AttendanceService attendanceService;
 	private final AttendanceRepository attendanceRepository;
-	private final StudentRepository studentRepository;
-	private final ClassroomRepository classroomRepository;
 	private final ObjectMapper objectMapper;
 	private final AcademicScopeResolver academicScopeResolver;
+	private final PublicIdResolver publicIdResolver;
 
 	@Override
 	public UUID create(String payloadJson) {
 		CreatePayload payload = readValue(payloadJson, CreatePayload.class);
-		Long tenantId = TenantContext.getCurrentTenantId();
-		Student student = studentRepository
-				.findByPublicIdAndTenantId(UUID.fromString(payload.studentPublicId()), tenantId)
-				.orElseThrow(() -> new ResourceNotFoundException("Student not found: " + payload.studentPublicId()));
-		Classroom classroom = classroomRepository
-				.findByPublicIdAndTenantId(UUID.fromString(payload.classroomPublicId()), tenantId)
-				.orElseThrow(
-						() -> new ResourceNotFoundException("Classroom not found: " + payload.classroomPublicId()));
-		Attendance attendance = attendanceService.mark(student.getId(), classroom.getId(), payload.attendanceDate(),
-				payload.status(), payload.markedBy());
-		return attendance.getPublicId();
+		return attendanceService.mark(payload.studentPublicId(), payload.classroomPublicId(),
+				payload.attendanceDate(), payload.status(), currentUsername()).getPublicId();
+	}
+
+	// The marker is the signed-in user, never a name the device sends.
+	private String currentUsername() {
+		Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+		return authentication == null ? null : authentication.getName();
 	}
 
 	@Override
@@ -98,7 +85,9 @@ public class AttendanceOfflineSyncHandler implements OfflineSyncEntityHandler {
 	}
 
 	private EntityChange toChange(Attendance attendance) {
-		OutputPayload payload = new OutputPayload(attendance.getStudentId(), attendance.getClassroomId(),
+		OutputPayload payload = new OutputPayload(
+				publicIdResolver.resolve(EntityRef.STUDENT, attendance.getStudentId()),
+				publicIdResolver.resolve(EntityRef.CLASSROOM, attendance.getClassroomId()),
 				attendance.getAttendanceDate(), attendance.getStatus(), attendance.getMarkedBy());
 		return EntityChange.withoutVectorClock(attendance.getPublicId(), attendance.getUpdatedAt(),
 				attendance.isDeleted(), writeValue(payload));
@@ -117,13 +106,13 @@ public class AttendanceOfflineSyncHandler implements OfflineSyncEntityHandler {
 	}
 
 	private record CreatePayload(String studentPublicId, String classroomPublicId, LocalDate attendanceDate,
-			AttendanceStatus status, String markedBy) {
+			AttendanceStatus status) {
 	}
 
 	private record UpdatePayload(AttendanceStatus status) {
 	}
 
-	private record OutputPayload(Long studentId, Long classroomId, LocalDate attendanceDate, AttendanceStatus status,
-			String markedBy) {
+	private record OutputPayload(String studentPublicId, String classroomPublicId, LocalDate attendanceDate,
+			AttendanceStatus status, String markedBy) {
 	}
 }

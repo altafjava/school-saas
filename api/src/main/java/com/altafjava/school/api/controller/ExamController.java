@@ -68,12 +68,12 @@ public class ExamController implements ExamApi {
 	public ApiResponse<ExamResponse> schedule(@Valid @RequestBody ScheduleExamRequest request) {
 		return ApiResponse.success(examMapper.toResponse(examService.schedule(
 				request.title(),
-				request.subjectId(),
-				request.classroomId(),
+				request.subjectPublicId(),
+				request.classroomPublicId(),
 				request.scheduledAt(),
 				request.maxMarks(),
-				request.termId(),
-				request.examTypeId(),
+				request.termPublicId(),
+				request.examTypePublicId(),
 				request.weightage())));
 	}
 
@@ -90,7 +90,7 @@ public class ExamController implements ExamApi {
 	@PreAuthorize("@permissionAuthorizationService.hasPermission('EXAM_WRITE')")
 	public ApiResponse<ExamResponse> assignTerm(@PathVariable String publicId,
 			@Valid @RequestBody AssignExamTermRequest request) {
-		return ApiResponse.success(examMapper.toResponse(examService.assignTerm(publicId, request.termId())));
+		return ApiResponse.success(examMapper.toResponse(examService.assignTerm(publicId, request.termPublicId())));
 	}
 
 	@Override

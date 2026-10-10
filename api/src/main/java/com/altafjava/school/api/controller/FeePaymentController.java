@@ -64,8 +64,8 @@ public class FeePaymentController implements FeePaymentApi {
 	@RequireIdempotencyKey
 	public ApiResponse<FeePaymentResponse> record(@Valid @RequestBody RecordFeePaymentRequest request) {
 		return ApiResponse.success(feePaymentMapper.toResponse(feePaymentService.record(
-				request.studentId(),
-				request.feeStructureId(),
+				request.studentPublicId(),
+				request.feeStructurePublicId(),
 				request.paidAmount(),
 				request.paidAt(),
 				request.receiptNumber())));

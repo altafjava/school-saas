@@ -5,10 +5,10 @@ import java.time.LocalDate;
 
 public record FeeAssignmentResponse(
 		String publicId,
-		Long feeStructureId,
+		String feeStructurePublicId,
 		String scope,
-		Long studentId,
-		Long classroomId,
+		String studentPublicId,
+		String classroomPublicId,
 		LocalDate dueDate,
 		Integer graceDays,
 		BigDecimal lateFeePercentage) {

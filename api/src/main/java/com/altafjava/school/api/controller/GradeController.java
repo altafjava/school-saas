@@ -3,6 +3,7 @@ package com.altafjava.school.api.controller;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -13,6 +14,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import com.altafjava.platform.api.dto.response.ApiResponse;
+import com.altafjava.platform.core.security.AuthenticatedUser;
 import com.altafjava.school.api.controller.api.GradeApi;
 import com.altafjava.school.api.dto.request.CorrectGradeRequest;
 import com.altafjava.school.api.dto.request.RecordGradeRequest;
@@ -66,12 +68,13 @@ public class GradeController implements GradeApi {
 	@PostMapping
 	@ResponseStatus(HttpStatus.CREATED)
 	@PreAuthorize("@permissionAuthorizationService.hasPermission('STUDENT_GRADES_WRITE')")
-	public ApiResponse<GradeResponse> record(@Valid @RequestBody RecordGradeRequest request) {
+	public ApiResponse<GradeResponse> record(@Valid @RequestBody RecordGradeRequest request,
+			@AuthenticationPrincipal AuthenticatedUser user) {
 		return ApiResponse.success(gradeMapper.toResponse(gradeService.record(
-				request.studentId(),
-				request.examId(),
+				request.studentPublicId(),
+				request.examPublicId(),
 				request.marks(),
-				request.gradedBy())));
+				user.getUsername())));
 	}
 
 	@Override

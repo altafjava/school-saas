@@ -4,7 +4,7 @@ import java.time.LocalTime;
 
 public record RouteStopResponse(
 		String publicId,
-		Long routeId,
+		String routePublicId,
 		String stopName,
 		int sequenceOrder,
 		LocalTime pickupTime,

@@ -22,6 +22,7 @@ import com.altafjava.platform.core.exception.BusinessException;
 import com.altafjava.platform.core.exception.ResourceNotFoundException;
 import com.altafjava.platform.core.tenant.TenantContext;
 import com.altafjava.platform.core.tenant.TenantType;
+import com.altafjava.school.application.reference.UserReferenceResolver;
 import com.altafjava.school.domain.common.model.Address;
 import com.altafjava.school.domain.guardian.model.Guardian;
 import com.altafjava.school.domain.guardian.model.RelationshipType;
@@ -46,18 +47,32 @@ class GuardianServiceTest {
 	@Mock
 	private EventPublisher eventPublisher;
 
+	@Mock
+	private UserReferenceResolver userReferenceResolver;
+
 	private GuardianService guardianService;
 
 	@BeforeEach
 	void setUp() {
 		guardianService = new GuardianService(guardianRepository, studentGuardianLinkRepository, studentRepository,
-				eventPublisher);
+				eventPublisher, userReferenceResolver);
 		TenantContext.ForTesting.setCurrentTenant(1L, null, null, TenantType.SHARED);
 	}
 
 	@AfterEach
 	void clearContext() {
 		TenantContext.ForTesting.clear();
+	}
+
+	@Test
+	void create_linksTheGuardianToTheUserNamedByPublicId() {
+		String userPublicId = UUID.randomUUID().toString();
+		when(userReferenceResolver.requireUserId(userPublicId)).thenReturn(42L);
+		when(guardianRepository.save(any(Guardian.class))).thenAnswer(inv -> inv.getArgument(0));
+
+		Guardian guardian = guardianService.create("Jane", "Doe", "jane@school.test", "+14155552671", userPublicId);
+
+		assertEquals(42L, guardian.getUserId());
 	}
 
 	@Test

@@ -11,16 +11,23 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.web.server.LocalServerPort;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.HttpStatus;
+import com.altafjava.platform.domain.user.model.User;
 import com.altafjava.school.base.SchoolIntegrationTestBase;
 import com.altafjava.school.config.TestPaymentConfig;
 import com.altafjava.school.config.TestRedisConfig;
+import com.altafjava.school.domain.classroom.model.Classroom;
 import com.altafjava.school.domain.classroom.repository.ClassroomRepository;
+import com.altafjava.school.domain.exam.model.Exam;
+import com.altafjava.school.domain.exam.model.ExamTypeDefinition;
 import com.altafjava.school.domain.exam.repository.ExamRepository;
 import com.altafjava.school.domain.exam.repository.ExamTypeDefinitionRepository;
+import com.altafjava.school.domain.student.model.Student;
 import com.altafjava.school.domain.student.repository.StudentRepository;
+import com.altafjava.school.domain.subject.model.Subject;
 import com.altafjava.school.domain.subject.repository.SubjectRepository;
 import com.altafjava.school.util.SchoolE2eSupport;
 import com.altafjava.school.util.SchoolE2eSupport.School;
+import com.altafjava.school.util.TestPublicIds;
 import io.restassured.RestAssured;
 
 // Grades stay invisible to a student's family until the school publishes the exam's results.
@@ -30,6 +37,9 @@ class ExamResultPublicationE2ETest extends SchoolIntegrationTestBase {
 
 	@LocalServerPort
 	int port;
+
+	@Autowired
+	private TestPublicIds publicIds;
 
 	@Autowired
 	private SchoolE2eSupport support;
@@ -71,9 +81,11 @@ class ExamResultPublicationE2ETest extends SchoolIntegrationTestBase {
 				.findByCodeAndTenantId("MIDTERM", school.tenantId()).orElseThrow().getId());
 
 		examPublicId = support.request(school)
-				.body("{\"title\":\"Midterm\",\"subjectId\":" + subjectId + ",\"classroomId\":" + classroomId
-						+ ",\"scheduledAt\":\"2026-03-01T09:00:00\",\"maxMarks\":100,\"examTypeId\":" + examTypeId
-						+ ",\"weightage\":40}")
+				.body("{\"title\":\"Midterm\",\"subjectPublicId\":\"" + publicIds.of(Subject.class, subjectId)
+						+ "\",\"classroomPublicId\":\"" + publicIds.of(Classroom.class, classroomId)
+						+ "\",\"scheduledAt\":\"2026-03-01T09:00:00\",\"maxMarks\":100,\"examTypePublicId\":\""
+						+ publicIds.of(ExamTypeDefinition.class, examTypeId)
+						+ "\",\"weightage\":40}")
 				.post("/api/v1/exams")
 				.then().statusCode(HttpStatus.CREATED.value())
 				.body("data.weightage", equalTo(40))
@@ -83,7 +95,8 @@ class ExamResultPublicationE2ETest extends SchoolIntegrationTestBase {
 				.findByPublicIdAndTenantId(UUID.fromString(examPublicId), school.tenantId()).orElseThrow().getId());
 
 		gradePublicId = support.request(school)
-				.body("{\"studentId\":" + studentId + ",\"examId\":" + examId + ",\"marks\":85,\"gradedBy\":\"admin\"}")
+				.body("{\"studentPublicId\":\"" + publicIds.of(Student.class, studentId) + "\",\"examPublicId\":\""
+						+ publicIds.of(Exam.class, examId) + "\",\"marks\":85}")
 				.post("/api/v1/grades")
 				.then().statusCode(HttpStatus.CREATED.value())
 				.extract().path("data.publicId");
@@ -92,7 +105,8 @@ class ExamResultPublicationE2ETest extends SchoolIntegrationTestBase {
 				"PARENT");
 		String guardianPublicId = support.request(school)
 				.body("{\"firstName\":\"Jane\",\"lastName\":\"Doe\",\"email\":\"jane-" + UUID.randomUUID()
-						+ "@school.test\",\"phone\":\"+14155552671\",\"userId\":" + parentUserId + "}")
+						+ "@school.test\",\"phone\":\"+14155552671\",\"userPublicId\":\""
+						+ publicIds.of(User.class, parentUserId) + "\"}")
 				.post("/api/v1/guardians")
 				.then().statusCode(HttpStatus.CREATED.value())
 				.extract().path("data.publicId");

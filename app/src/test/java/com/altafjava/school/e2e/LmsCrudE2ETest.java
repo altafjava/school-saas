@@ -25,9 +25,11 @@ import com.altafjava.platform.domain.user.repository.UserRepository;
 import com.altafjava.school.base.SchoolIntegrationTestBase;
 import com.altafjava.school.config.TestPaymentConfig;
 import com.altafjava.school.config.TestRedisConfig;
+import com.altafjava.school.domain.employee.model.Employee;
 import com.altafjava.school.domain.student.repository.StudentRepository;
 import com.altafjava.school.domain.teacher.repository.TeacherRepository;
 import com.altafjava.school.util.SchoolAuthenticationHelper;
+import com.altafjava.school.util.TestPublicIds;
 import io.restassured.RestAssured;
 import io.restassured.http.ContentType;
 
@@ -41,6 +43,9 @@ class LmsCrudE2ETest extends SchoolIntegrationTestBase {
 
 	@LocalServerPort
 	int port;
+
+	@Autowired
+	private TestPublicIds publicIds;
 
 	@Autowired
 	private TenantOnboardingService onboardingService;
@@ -402,7 +407,7 @@ class LmsCrudE2ETest extends SchoolIntegrationTestBase {
 				.contentType(ContentType.JSON)
 				.body("{\"classCode\":\"" + classCode + "\",\"grade\":\"Grade 5\",\"section\":\"A\","
 						+ "\"academicYearPublicId\":\"" + createAcademicYear(classCode + "-2025-26") + "\""
-						+ ",\"classTeacherId\":" + classTeacherId + "}")
+						+ ",\"classTeacherPublicId\":\"" + publicIds.of(Employee.class, classTeacherId) + "\"}")
 				.when()
 				.post("/api/v1/classrooms")
 				.then()

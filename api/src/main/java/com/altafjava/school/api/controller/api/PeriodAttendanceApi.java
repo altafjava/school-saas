@@ -1,10 +1,12 @@
 package com.altafjava.school.api.controller.api;
 
 import jakarta.validation.Valid;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
 import com.altafjava.platform.api.dto.response.ApiResponse;
+import com.altafjava.platform.core.security.AuthenticatedUser;
 import com.altafjava.school.api.dto.request.MarkPeriodAttendanceRequest;
 import com.altafjava.school.api.dto.response.PeriodAttendanceResponse;
 import io.swagger.v3.oas.annotations.Operation;
@@ -25,5 +27,6 @@ public interface PeriodAttendanceApi {
 	public ApiResponse<PeriodAttendanceResponse> get(@PathVariable String publicId);
 
 	@Operation(summary = "Mark")
-	public ApiResponse<PeriodAttendanceResponse> mark(@Valid @RequestBody MarkPeriodAttendanceRequest request);
+	public ApiResponse<PeriodAttendanceResponse> mark(@Valid @RequestBody MarkPeriodAttendanceRequest request,
+			@AuthenticationPrincipal AuthenticatedUser user);
 }

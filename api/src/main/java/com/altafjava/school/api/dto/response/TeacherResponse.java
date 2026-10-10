@@ -10,7 +10,7 @@ public record TeacherResponse(
 		String email,
 		String phone,
 		LocalDate joinDate,
-		Long departmentId,
+		String departmentPublicId,
 		String designation,
 		String qualification,
 		String employmentType,

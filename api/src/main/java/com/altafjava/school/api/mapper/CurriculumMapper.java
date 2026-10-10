@@ -6,9 +6,11 @@ import org.mapstruct.ReportingPolicy;
 import com.altafjava.school.api.dto.response.CurriculumResponse;
 import com.altafjava.school.domain.curriculum.model.Curriculum;
 
-@Mapper(componentModel = "spring", unmappedTargetPolicy = ReportingPolicy.ERROR)
+@Mapper(componentModel = "spring", uses = PublicIdMapping.class, unmappedTargetPolicy = ReportingPolicy.ERROR)
 public interface CurriculumMapper {
 
 	@Mapping(target = "publicId", expression = "java(curriculum.getPublicId().toString())")
+	@Mapping(target = "boardPublicId", source = "boardId", qualifiedByName = "board")
+	@Mapping(target = "gradingScalePublicId", source = "gradingScaleId", qualifiedByName = "gradingScale")
 	CurriculumResponse toResponse(Curriculum curriculum);
 }

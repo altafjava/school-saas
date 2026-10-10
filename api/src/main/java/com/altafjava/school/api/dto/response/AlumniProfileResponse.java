@@ -2,7 +2,7 @@ package com.altafjava.school.api.dto.response;
 
 public record AlumniProfileResponse(
 		String publicId,
-		Long studentId,
+		String studentPublicId,
 		int graduationYear,
 		String currentOccupation,
 		String contactEmail,

@@ -129,10 +129,12 @@ class OrganizationRollupIntegrationTest extends SchoolIntegrationTestBase {
 					LocalDate.of(2012, 1, 1));
 			classroomService.enrollStudent(classroom.getPublicId().toString(), student.getPublicId().toString(),
 					academicYear.getPublicId().toString());
-			attendanceService.mark(student.getId(), classroom.getId(), LocalDate.of(2026, 1, 10),
+			attendanceService.mark(student.getPublicId().toString(), classroom.getPublicId().toString(),
+					LocalDate.of(2026, 1, 10),
 					AttendanceStatus.PRESENT, "teacher");
 			if (paidPerStudent.signum() > 0) {
-				feePaymentService.record(student.getId(), feeStructure.getId(), paidPerStudent,
+				feePaymentService.record(student.getPublicId().toString(), feeStructure.getPublicId().toString(),
+						paidPerStudent,
 						LocalDateTime.of(2026, 1, 15, 9, 0), "RCPT-" + UUID.randomUUID().toString().substring(0, 10));
 			}
 		}

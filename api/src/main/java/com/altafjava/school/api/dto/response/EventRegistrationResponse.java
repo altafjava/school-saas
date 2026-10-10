@@ -2,7 +2,7 @@ package com.altafjava.school.api.dto.response;
 
 public record EventRegistrationResponse(
 		String publicId,
-		Long eventId,
-		Long studentId,
+		String eventPublicId,
+		String studentPublicId,
 		String status) {
 }

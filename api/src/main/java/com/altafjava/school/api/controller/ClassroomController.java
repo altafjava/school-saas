@@ -94,7 +94,7 @@ public class ClassroomController implements ClassroomApi {
 				request.grade(),
 				request.section(),
 				request.academicYearPublicId(),
-				request.classTeacherId())));
+				request.classTeacherPublicId())));
 	}
 
 	@Override
@@ -103,7 +103,8 @@ public class ClassroomController implements ClassroomApi {
 	public ApiResponse<ClassroomResponse> reassignTeacher(@PathVariable String publicId,
 			@Valid @RequestBody ReassignClassTeacherRequest request) {
 		return ApiResponse
-				.success(classroomMapper.toResponse(classroomService.reassignTeacher(publicId, request.teacherId())));
+				.success(classroomMapper
+						.toResponse(classroomService.reassignTeacher(publicId, request.teacherPublicId())));
 	}
 
 	@Override

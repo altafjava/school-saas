@@ -4,12 +4,12 @@ import java.time.Instant;
 
 public record GuardianAuthorizationChangeResponse(
 		String publicId,
-		Long guardianId,
+		String guardianPublicId,
 		boolean oldAuthorizedForPickup,
 		boolean newAuthorizedForPickup,
 		boolean oldCustodyRestricted,
 		boolean newCustodyRestricted,
 		String note,
-		Long changedByUserId,
+		String changedByUserPublicId,
 		Instant changedAt) {
 }

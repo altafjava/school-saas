@@ -6,9 +6,10 @@ import org.mapstruct.ReportingPolicy;
 import com.altafjava.school.api.dto.response.RouteStopResponse;
 import com.altafjava.school.domain.transport.model.RouteStop;
 
-@Mapper(componentModel = "spring", unmappedTargetPolicy = ReportingPolicy.ERROR)
+@Mapper(componentModel = "spring", uses = PublicIdMapping.class, unmappedTargetPolicy = ReportingPolicy.ERROR)
 public interface RouteStopMapper {
 
 	@Mapping(target = "publicId", expression = "java(routeStop.getPublicId().toString())")
+	@Mapping(target = "routePublicId", source = "routeId", qualifiedByName = "route")
 	RouteStopResponse toResponse(RouteStop routeStop);
 }

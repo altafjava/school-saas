@@ -81,10 +81,11 @@ class TermRolloverIntegrationTest extends SchoolIntegrationTestBase {
 		AcademicYear year = academicYearService.create("2025-26", LocalDate.of(2025, 6, 1),
 				LocalDate.of(2026, 5, 31), true);
 		Term outgoing = termService.create("Term 1", LocalDate.now().minusDays(60), LocalDate.now().minusDays(1),
-				year.getId());
+				year.getPublicId().toString());
 		outgoing.markCurrent();
 		termRepository.save(outgoing);
-		Term incoming = termService.create("Term 2", LocalDate.now(), LocalDate.now().plusDays(60), year.getId());
+		Term incoming = termService.create("Term 2", LocalDate.now(), LocalDate.now().plusDays(60),
+				year.getPublicId().toString());
 
 		termRolloverJob.execute(context());
 
@@ -102,7 +103,7 @@ class TermRolloverIntegrationTest extends SchoolIntegrationTestBase {
 		AcademicYear year = academicYearService.create("2025-26", LocalDate.of(2025, 6, 1),
 				LocalDate.of(2026, 5, 31), true);
 		Term term = termService.create("Term 1", LocalDate.now().plusDays(30), LocalDate.now().plusDays(90),
-				year.getId());
+				year.getPublicId().toString());
 
 		termRolloverJob.execute(context());
 

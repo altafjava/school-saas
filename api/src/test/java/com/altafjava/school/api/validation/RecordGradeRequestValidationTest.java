@@ -25,7 +25,7 @@ class RecordGradeRequestValidationTest {
 	}
 
 	private RecordGradeRequest valid() {
-		return new RecordGradeRequest(1L, 10L, new BigDecimal("85.50"), "teacher@school.com");
+		return new RecordGradeRequest("id-1", "id-10", new BigDecimal("85.50"));
 	}
 
 	@Test
@@ -35,45 +35,33 @@ class RecordGradeRequestValidationTest {
 
 	@Test
 	void studentId_null_failsValidation() {
-		var req = new RecordGradeRequest(null, 10L, new BigDecimal("85.50"), null);
+		var req = new RecordGradeRequest(null, "id-10", new BigDecimal("85.50"));
 		assertFalse(violationsFor(req).isEmpty());
 	}
 
 	@Test
 	void examId_null_failsValidation() {
-		var req = new RecordGradeRequest(1L, null, new BigDecimal("85.50"), null);
+		var req = new RecordGradeRequest("id-1", null, new BigDecimal("85.50"));
 		assertFalse(violationsFor(req).isEmpty());
 	}
 
 	@Test
 	void marks_null_failsValidation() {
-		var req = new RecordGradeRequest(1L, 10L, null, null);
+		var req = new RecordGradeRequest("id-1", "id-10", null);
 		assertFalse(violationsFor(req).isEmpty());
 	}
 
 	@Test
 	void marks_negative_failsDecimalMinValidation() {
-		var req = new RecordGradeRequest(1L, 10L, new BigDecimal("-1.0"), null);
+		var req = new RecordGradeRequest("id-1", "id-10", new BigDecimal("-1.0"));
 		assertFalse(violationsFor(req).isEmpty());
 	}
 
 	@Test
 	void marks_zero_passesValidation() {
 		// @DecimalMin("0.0") inclusive — zero is valid
-		var req = new RecordGradeRequest(1L, 10L, BigDecimal.ZERO, null);
+		var req = new RecordGradeRequest("id-1", "id-10", BigDecimal.ZERO);
 		assertTrue(violationsFor(req).isEmpty());
 	}
 
-	@Test
-	void gradedBy_null_passesValidation() {
-		// gradedBy has no @NotNull — it is optional
-		var req = new RecordGradeRequest(1L, 10L, new BigDecimal("85.50"), null);
-		assertTrue(violationsFor(req).isEmpty());
-	}
-
-	@Test
-	void gradedBy_tooLong_failsValidation() {
-		var req = new RecordGradeRequest(1L, 10L, new BigDecimal("85.50"), "T".repeat(101));
-		assertFalse(violationsFor(req).isEmpty());
-	}
 }

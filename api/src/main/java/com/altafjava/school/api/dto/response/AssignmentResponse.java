@@ -5,9 +5,9 @@ import java.time.LocalDate;
 
 public record AssignmentResponse(
 		String publicId,
-		Long classroomId,
-		Long subjectId,
-		Long teacherId,
+		String classroomPublicId,
+		String subjectPublicId,
+		String teacherPublicId,
 		String title,
 		String description,
 		String storageKey,

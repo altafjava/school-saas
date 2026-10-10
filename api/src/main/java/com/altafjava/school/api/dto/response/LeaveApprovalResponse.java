@@ -6,7 +6,7 @@ public record LeaveApprovalResponse(
 		String publicId,
 		String stage,
 		String decision,
-		Long decidedByUserId,
+		String decidedByUserPublicId,
 		Instant decidedAt,
 		String remarks) {
 }

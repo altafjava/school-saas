@@ -1,10 +1,12 @@
 package com.altafjava.school.api.controller.api;
 
 import jakarta.validation.Valid;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
 import com.altafjava.platform.api.dto.response.ApiResponse;
+import com.altafjava.platform.core.security.AuthenticatedUser;
 import com.altafjava.school.api.dto.request.MarkAttendanceRequest;
 import com.altafjava.school.api.dto.request.UpdateAttendanceStatusRequest;
 import com.altafjava.school.api.dto.response.AttendanceCorrectionResponse;
@@ -27,7 +29,8 @@ public interface AttendanceApi {
 	public ApiResponse<AttendanceResponse> get(@PathVariable String publicId);
 
 	@Operation(summary = "Mark")
-	public ApiResponse<AttendanceResponse> mark(@Valid @RequestBody MarkAttendanceRequest request);
+	public ApiResponse<AttendanceResponse> mark(@Valid @RequestBody MarkAttendanceRequest request,
+			@AuthenticationPrincipal AuthenticatedUser user);
 
 	@Operation(summary = "Update status")
 	public ApiResponse<AttendanceResponse> updateStatus(@PathVariable String publicId,

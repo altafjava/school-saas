@@ -265,15 +265,16 @@ public class FeePaymentService {
 
 	@Transactional
 	@Audited(action = AuditAction.CREATE, resourceType = "FeePayment", details = "Fee payment recorded")
-	public FeePayment record(Long studentId, Long feeStructureId, BigDecimal paidAmount,
+	public FeePayment record(String studentPublicId, String feeStructurePublicId, BigDecimal paidAmount,
 			LocalDateTime paidAt, String receiptNumber) {
 		Long tenantId = TenantContext.getCurrentTenantId();
-		if (!studentRepository.existsByIdAndTenantId(studentId, tenantId)) {
-			throw new ResourceNotFoundException("Student not found: " + studentId);
-		}
-		if (!feeStructureRepository.existsByIdAndTenantId(feeStructureId, tenantId)) {
-			throw new ResourceNotFoundException("FeeStructure not found: " + feeStructureId);
-		}
+		Long studentId = studentRepository.findByPublicIdAndTenantId(UUID.fromString(studentPublicId), tenantId)
+				.orElseThrow(() -> new ResourceNotFoundException("Student not found: " + studentPublicId))
+				.getId();
+		Long feeStructureId = feeStructureRepository
+				.findByPublicIdAndTenantId(UUID.fromString(feeStructurePublicId), tenantId)
+				.orElseThrow(() -> new ResourceNotFoundException("FeeStructure not found: " + feeStructurePublicId))
+				.getId();
 		String resolvedReceiptNumber = resolveReceiptNumber(tenantId, receiptNumber);
 		if (feePaymentRepository.existsByReceiptNumberAndTenantId(resolvedReceiptNumber, tenantId)) {
 			throw new IllegalArgumentException("Receipt number already exists: " + resolvedReceiptNumber);

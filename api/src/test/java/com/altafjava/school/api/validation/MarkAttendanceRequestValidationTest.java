@@ -27,39 +27,32 @@ class MarkAttendanceRequestValidationTest {
 
 	@Test
 	void valid_request_passesAllConstraints() {
-		var req = new MarkAttendanceRequest(1L, 10L, LocalDate.of(2024, 9, 1), AttendanceStatus.PRESENT,
-				"teacher@school.com");
+		var req = new MarkAttendanceRequest("id-1", "id-10", LocalDate.of(2024, 9, 1), AttendanceStatus.PRESENT);
 		assertTrue(violationsFor(req).isEmpty());
 	}
 
 	@Test
 	void studentId_null_failsValidation() {
-		var req = new MarkAttendanceRequest(null, 10L, LocalDate.of(2024, 9, 1), AttendanceStatus.PRESENT, null);
+		var req = new MarkAttendanceRequest(null, "id-10", LocalDate.of(2024, 9, 1), AttendanceStatus.PRESENT);
 		assertFalse(violationsFor(req).isEmpty());
 	}
 
 	@Test
 	void classroomId_null_failsValidation() {
-		var req = new MarkAttendanceRequest(1L, null, LocalDate.of(2024, 9, 1), AttendanceStatus.PRESENT, null);
+		var req = new MarkAttendanceRequest("id-1", null, LocalDate.of(2024, 9, 1), AttendanceStatus.PRESENT);
 		assertFalse(violationsFor(req).isEmpty());
 	}
 
 	@Test
 	void attendanceDate_null_failsValidation() {
-		var req = new MarkAttendanceRequest(1L, 10L, null, AttendanceStatus.PRESENT, null);
+		var req = new MarkAttendanceRequest("id-1", "id-10", null, AttendanceStatus.PRESENT);
 		assertFalse(violationsFor(req).isEmpty());
 	}
 
 	@Test
 	void status_null_failsValidation() {
-		var req = new MarkAttendanceRequest(1L, 10L, LocalDate.of(2024, 9, 1), null, null);
+		var req = new MarkAttendanceRequest("id-1", "id-10", LocalDate.of(2024, 9, 1), null);
 		assertFalse(violationsFor(req).isEmpty());
 	}
 
-	@Test
-	void markedBy_null_passesValidation() {
-		// markedBy has no @NotNull — it is optional
-		var req = new MarkAttendanceRequest(1L, 10L, LocalDate.of(2024, 9, 1), AttendanceStatus.PRESENT, null);
-		assertTrue(violationsFor(req).isEmpty());
-	}
 }

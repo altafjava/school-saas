@@ -152,7 +152,7 @@ class SubjectCrudE2ETest extends SchoolIntegrationTestBase {
 				.patch("/api/v1/subjects/" + subjectPublicId + "/curriculum")
 				.then()
 				.statusCode(HttpStatus.OK.value())
-				.body("data.curriculumId", notNullValue());
+				.body("data.curriculumPublicId", notNullValue());
 	}
 
 	@Test

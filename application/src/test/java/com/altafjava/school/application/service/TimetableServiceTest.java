@@ -1,5 +1,8 @@
 package com.altafjava.school.application.service;
 
+import static com.altafjava.school.application.support.TestEntities.activeTeacher;
+import static com.altafjava.school.application.support.TestEntities.publicId;
+import static com.altafjava.school.application.support.TestEntities.withId;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -20,10 +23,12 @@ import com.altafjava.platform.core.exception.BusinessException;
 import com.altafjava.platform.core.exception.ResourceNotFoundException;
 import com.altafjava.platform.core.tenant.TenantContext;
 import com.altafjava.platform.core.tenant.TenantType;
+import com.altafjava.school.domain.classroom.model.Classroom;
 import com.altafjava.school.domain.classroom.repository.ClassroomRepository;
-import com.altafjava.school.domain.employee.model.EmployeeStatus;
+import com.altafjava.school.domain.subject.model.Subject;
 import com.altafjava.school.domain.subject.repository.SubjectRepository;
 import com.altafjava.school.domain.teacher.repository.TeacherRepository;
+import com.altafjava.school.domain.timetable.model.Period;
 import com.altafjava.school.domain.timetable.model.TimetableEntry;
 import com.altafjava.school.domain.timetable.model.Venue;
 import com.altafjava.school.domain.timetable.model.VenueType;
@@ -64,18 +69,18 @@ class TimetableServiceTest {
 	}
 
 	private void stubAllReferencesExist() {
-		when(periodRepository.existsByIdAndTenantId(1L, 1L)).thenReturn(true);
-		when(classroomRepository.existsByIdAndTenantId(2L, 1L)).thenReturn(true);
-		when(subjectRepository.existsByIdAndTenantId(3L, 1L)).thenReturn(true);
-		when(teacherRepository.existsByIdAndTenantIdAndStatus(4L, 1L, EmployeeStatus.ACTIVE)).thenReturn(true);
+		when(periodRepository.findByPublicIdAndTenantId(publicId("period", 1), 1L)).thenReturn(Optional.of(withId(Period.class, 1L)));
+		when(classroomRepository.findByPublicIdAndTenantId(publicId("classroom", 2), 1L)).thenReturn(Optional.of(withId(Classroom.class, 2L)));
+		when(subjectRepository.findByPublicIdAndTenantId(publicId("subject", 3), 1L)).thenReturn(Optional.of(withId(Subject.class, 3L)));
+		when(teacherRepository.findByPublicIdAndTenantId(publicId("teacher", 4), 1L)).thenReturn(Optional.of(activeTeacher(4L)));
 	}
 
 	@Test
 	void schedule_withNonExistentPeriod_throwsResourceNotFound() {
-		when(periodRepository.existsByIdAndTenantId(1L, 1L)).thenReturn(false);
+		when(periodRepository.findByPublicIdAndTenantId(publicId("period", 1), 1L)).thenReturn(Optional.empty());
 
 		assertThrows(ResourceNotFoundException.class,
-				() -> timetableService.schedule(DayOfWeek.MONDAY, 1L, 2L, 3L, 4L, null));
+				() -> timetableService.schedule(DayOfWeek.MONDAY, publicId("period", 1).toString(), publicId("classroom", 2).toString(), publicId("subject", 3).toString(), publicId("teacher", 4).toString(), null));
 
 		org.mockito.Mockito.verify(timetableEntryRepository, never()).save(any());
 	}
@@ -87,7 +92,9 @@ class TimetableServiceTest {
 				2L)).thenReturn(true);
 
 		assertThrows(BusinessException.class,
-				() -> timetableService.schedule(DayOfWeek.MONDAY, 1L, 2L, 3L, 4L, null));
+				() -> timetableService.schedule(DayOfWeek.MONDAY, publicId("period", 1).toString(),
+						publicId("classroom", 2).toString(), publicId("subject", 3).toString(),
+						publicId("teacher", 4).toString(), null));
 
 		org.mockito.Mockito.verify(timetableEntryRepository, never()).save(any());
 	}
@@ -101,7 +108,9 @@ class TimetableServiceTest {
 				4L)).thenReturn(true);
 
 		assertThrows(BusinessException.class,
-				() -> timetableService.schedule(DayOfWeek.MONDAY, 1L, 2L, 3L, 4L, null));
+				() -> timetableService.schedule(DayOfWeek.MONDAY, publicId("period", 1).toString(),
+						publicId("classroom", 2).toString(), publicId("subject", 3).toString(),
+						publicId("teacher", 4).toString(), null));
 
 		org.mockito.Mockito.verify(timetableEntryRepository, never()).save(any());
 	}
@@ -115,23 +124,25 @@ class TimetableServiceTest {
 				4L)).thenReturn(false);
 		when(timetableEntryRepository.save(any(TimetableEntry.class))).thenAnswer(inv -> inv.getArgument(0));
 
-		assertDoesNotThrow(() -> timetableService.schedule(DayOfWeek.MONDAY, 1L, 2L, 3L, 4L, null));
+		assertDoesNotThrow(() -> timetableService.schedule(DayOfWeek.MONDAY, publicId("period", 1).toString(),
+				publicId("classroom", 2).toString(), publicId("subject", 3).toString(),
+				publicId("teacher", 4).toString(), null));
 	}
 
 	@Test
 	void schedule_sameTeacherDifferentClassroomsDifferentPeriods_succeeds() {
 		// Same teacher, same day, but a *different* period — no conflict.
-		when(periodRepository.existsByIdAndTenantId(5L, 1L)).thenReturn(true);
-		when(classroomRepository.existsByIdAndTenantId(2L, 1L)).thenReturn(true);
-		when(subjectRepository.existsByIdAndTenantId(3L, 1L)).thenReturn(true);
-		when(teacherRepository.existsByIdAndTenantIdAndStatus(4L, 1L, EmployeeStatus.ACTIVE)).thenReturn(true);
+		when(periodRepository.findByPublicIdAndTenantId(publicId("period", 5), 1L)).thenReturn(Optional.of(withId(Period.class, 5L)));
+		when(classroomRepository.findByPublicIdAndTenantId(publicId("classroom", 2), 1L)).thenReturn(Optional.of(withId(Classroom.class, 2L)));
+		when(subjectRepository.findByPublicIdAndTenantId(publicId("subject", 3), 1L)).thenReturn(Optional.of(withId(Subject.class, 3L)));
+		when(teacherRepository.findByPublicIdAndTenantId(publicId("teacher", 4), 1L)).thenReturn(Optional.of(activeTeacher(4L)));
 		when(timetableEntryRepository.existsByTenantIdAndDayOfWeekAndPeriodIdAndClassroomId(1L, DayOfWeek.MONDAY, 5L,
 				2L)).thenReturn(false);
 		when(timetableEntryRepository.existsByTenantIdAndDayOfWeekAndPeriodIdAndTeacherId(1L, DayOfWeek.MONDAY, 5L,
 				4L)).thenReturn(false);
 		when(timetableEntryRepository.save(any(TimetableEntry.class))).thenAnswer(inv -> inv.getArgument(0));
 
-		assertDoesNotThrow(() -> timetableService.schedule(DayOfWeek.MONDAY, 5L, 2L, 3L, 4L, null));
+		assertDoesNotThrow(() -> timetableService.schedule(DayOfWeek.MONDAY, publicId("period", 5).toString(), publicId("classroom", 2).toString(), publicId("subject", 3).toString(), publicId("teacher", 4).toString(), null));
 	}
 
 	private Venue venueWithId(long id, boolean active) {
@@ -167,7 +178,9 @@ class TimetableServiceTest {
 				.thenReturn(List.of());
 		when(timetableEntryRepository.save(any(TimetableEntry.class))).thenAnswer(inv -> inv.getArgument(0));
 
-		TimetableEntry entry = timetableService.schedule(DayOfWeek.MONDAY, 1L, 2L, 3L, 4L,
+		TimetableEntry entry = timetableService.schedule(DayOfWeek.MONDAY, publicId("period", 1).toString(),
+				publicId("classroom", 2).toString(), publicId("subject", 3).toString(),
+				publicId("teacher", 4).toString(),
 				VENUE_PUBLIC_ID.toString());
 
 		assertEquals(7L, entry.getVenueId());
@@ -182,8 +195,11 @@ class TimetableServiceTest {
 		when(timetableEntryRepository.findAllByTenantIdAndDayOfWeekAndPeriodId(1L, DayOfWeek.MONDAY, 1L))
 				.thenReturn(List.of(slotHoldingVenue(50L, 7L)));
 
-		assertThrows(BusinessException.class, () -> timetableService.schedule(DayOfWeek.MONDAY, 1L, 2L, 3L, 4L,
-				VENUE_PUBLIC_ID.toString()));
+		assertThrows(BusinessException.class,
+				() -> timetableService.schedule(DayOfWeek.MONDAY, publicId("period", 1).toString(),
+						publicId("classroom", 2).toString(), publicId("subject", 3).toString(),
+						publicId("teacher", 4).toString(),
+						VENUE_PUBLIC_ID.toString()));
 
 		org.mockito.Mockito.verify(timetableEntryRepository, never()).save(any());
 	}
@@ -195,8 +211,11 @@ class TimetableServiceTest {
 		when(venueRepository.findByPublicIdAndTenantId(VENUE_PUBLIC_ID, 1L))
 				.thenReturn(Optional.of(venueWithId(7L, false)));
 
-		assertThrows(BusinessException.class, () -> timetableService.schedule(DayOfWeek.MONDAY, 1L, 2L, 3L, 4L,
-				VENUE_PUBLIC_ID.toString()));
+		assertThrows(BusinessException.class,
+				() -> timetableService.schedule(DayOfWeek.MONDAY, publicId("period", 1).toString(),
+						publicId("classroom", 2).toString(), publicId("subject", 3).toString(),
+						publicId("teacher", 4).toString(),
+						VENUE_PUBLIC_ID.toString()));
 	}
 
 	@Test
@@ -205,8 +224,10 @@ class TimetableServiceTest {
 		stubNoClassOrTeacherConflict();
 		when(venueRepository.findByPublicIdAndTenantId(VENUE_PUBLIC_ID, 1L)).thenReturn(Optional.empty());
 
-		assertThrows(ResourceNotFoundException.class, () -> timetableService.schedule(DayOfWeek.MONDAY, 1L, 2L, 3L,
-				4L, VENUE_PUBLIC_ID.toString()));
+		assertThrows(ResourceNotFoundException.class,
+				() -> timetableService.schedule(DayOfWeek.MONDAY, publicId("period", 1).toString(),
+						publicId("classroom", 2).toString(), publicId("subject", 3).toString(),
+						publicId("teacher", 4).toString(), VENUE_PUBLIC_ID.toString()));
 	}
 
 	@Test

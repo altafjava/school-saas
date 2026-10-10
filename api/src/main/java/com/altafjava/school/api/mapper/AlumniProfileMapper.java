@@ -6,9 +6,10 @@ import org.mapstruct.ReportingPolicy;
 import com.altafjava.school.api.dto.response.AlumniProfileResponse;
 import com.altafjava.school.domain.alumni.model.AlumniProfile;
 
-@Mapper(componentModel = "spring", unmappedTargetPolicy = ReportingPolicy.ERROR)
+@Mapper(componentModel = "spring", uses = PublicIdMapping.class, unmappedTargetPolicy = ReportingPolicy.ERROR)
 public interface AlumniProfileMapper {
 
 	@Mapping(target = "publicId", expression = "java(profile.getPublicId().toString())")
+	@Mapping(target = "studentPublicId", source = "studentId", qualifiedByName = "student")
 	AlumniProfileResponse toResponse(AlumniProfile profile);
 }

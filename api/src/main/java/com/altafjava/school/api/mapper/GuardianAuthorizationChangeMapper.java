@@ -6,10 +6,12 @@ import org.mapstruct.ReportingPolicy;
 import com.altafjava.school.api.dto.response.GuardianAuthorizationChangeResponse;
 import com.altafjava.school.domain.guardian.model.GuardianAuthorizationChange;
 
-@Mapper(componentModel = "spring", unmappedTargetPolicy = ReportingPolicy.ERROR)
+@Mapper(componentModel = "spring", uses = PublicIdMapping.class, unmappedTargetPolicy = ReportingPolicy.ERROR)
 public interface GuardianAuthorizationChangeMapper {
 
 	@Mapping(target = "publicId", expression = "java(change.getPublicId().toString())")
 	@Mapping(target = "changedAt", source = "createdAt")
+	@Mapping(target = "guardianPublicId", source = "guardianId", qualifiedByName = "guardian")
+	@Mapping(target = "changedByUserPublicId", source = "changedByUserId", qualifiedByName = "user")
 	GuardianAuthorizationChangeResponse toResponse(GuardianAuthorizationChange change);
 }

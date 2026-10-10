@@ -6,14 +6,14 @@ import java.time.LocalDateTime;
 
 public record LeaveRequestResponse(
 		String publicId,
-		Long employeeId,
-		Long leaveTypeId,
+		String employeePublicId,
+		String leaveTypePublicId,
 		LocalDate startDate,
 		LocalDate endDate,
 		BigDecimal daysRequested,
 		String reason,
 		String status,
-		Long approvedByUserId,
+		String approvedByUserPublicId,
 		LocalDateTime approvedAt,
 		String rejectionReason,
 		int approvalsRequired,

@@ -2,7 +2,7 @@ package com.altafjava.school.api.dto.response;
 
 public record BookCopyResponse(
 		String publicId,
-		Long bookId,
+		String bookPublicId,
 		String copyCode,
 		String status) {
 }

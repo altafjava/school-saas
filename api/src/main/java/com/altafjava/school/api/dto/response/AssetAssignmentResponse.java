@@ -4,9 +4,9 @@ import java.time.LocalDate;
 
 public record AssetAssignmentResponse(
 		String publicId,
-		Long assetId,
+		String assetPublicId,
 		String assignedToType,
-		Long assignedToId,
+		String assignedToPublicId,
 		LocalDate assignedAt,
 		LocalDate returnedAt) {
 }

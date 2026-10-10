@@ -97,7 +97,7 @@ public class GuardianController implements GuardianApi {
 				request.lastName(),
 				request.email(),
 				request.phone(),
-				request.userId())));
+				request.userPublicId())));
 	}
 
 	@Override

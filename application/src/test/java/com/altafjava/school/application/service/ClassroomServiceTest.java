@@ -1,5 +1,7 @@
 package com.altafjava.school.application.service;
 
+import static com.altafjava.school.application.support.TestEntities.activeTeacher;
+import static com.altafjava.school.application.support.TestEntities.publicId;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -35,7 +37,6 @@ import com.altafjava.school.domain.classroom.model.StudentClassroomLink;
 import com.altafjava.school.domain.classroom.repository.ClassroomRepository;
 import com.altafjava.school.domain.classroom.repository.StudentClassroomLinkRepository;
 import com.altafjava.school.domain.curriculum.repository.CurriculumRepository;
-import com.altafjava.school.domain.employee.model.EmployeeStatus;
 import com.altafjava.school.domain.student.model.Student;
 import com.altafjava.school.domain.student.repository.StudentRepository;
 import com.altafjava.school.domain.teacher.repository.TeacherRepository;
@@ -84,21 +85,21 @@ class ClassroomServiceTest {
 
 	@Test
 	void create_withNonExistentClassTeacherId_throwsResourceNotFound() {
-		when(teacherRepository.existsByIdAndTenantIdAndStatus(99L, 1L, EmployeeStatus.ACTIVE)).thenReturn(false);
+		when(teacherRepository.findByPublicIdAndTenantId(publicId("teacher", 99), 1L)).thenReturn(Optional.empty());
 
 		assertThrows(ResourceNotFoundException.class,
-				() -> classroomService.create("CLS-001", "Grade 5", "A", ACADEMIC_YEAR_PUBLIC_ID.toString(), 99L));
+				() -> classroomService.create("CLS-001", "Grade 5", "A", ACADEMIC_YEAR_PUBLIC_ID.toString(), publicId("teacher", 99).toString()));
 
 		verify(classroomRepository, never()).save(any());
 	}
 
 	@Test
 	void create_withExistingClassTeacherId_succeeds() {
-		when(teacherRepository.existsByIdAndTenantIdAndStatus(5L, 1L, EmployeeStatus.ACTIVE)).thenReturn(true);
+		when(teacherRepository.findByPublicIdAndTenantId(publicId("teacher", 5), 1L)).thenReturn(Optional.of(activeTeacher(5L)));
 		when(classroomRepository.save(any(Classroom.class))).thenAnswer(inv -> inv.getArgument(0));
 
 		assertDoesNotThrow(
-				() -> classroomService.create("CLS-001", "Grade 5", "A", ACADEMIC_YEAR_PUBLIC_ID.toString(), 5L));
+				() -> classroomService.create("CLS-001", "Grade 5", "A", ACADEMIC_YEAR_PUBLIC_ID.toString(), publicId("teacher", 5).toString()));
 	}
 
 	@Test
@@ -123,10 +124,12 @@ class ClassroomServiceTest {
 		UUID classroomPublicId = UUID.randomUUID();
 		Classroom classroom = classroomWithPublicId(classroomPublicId, 1L);
 		when(classroomRepository.findByPublicIdAndTenantId(classroomPublicId, 1L)).thenReturn(Optional.of(classroom));
-		when(teacherRepository.existsByIdAndTenantIdAndStatus(5L, 1L, EmployeeStatus.ACTIVE)).thenReturn(true);
+		when(teacherRepository.findByPublicIdAndTenantId(publicId("teacher", 5), 1L))
+				.thenReturn(Optional.of(activeTeacher(5L)));
 		when(classroomRepository.save(any(Classroom.class))).thenAnswer(inv -> inv.getArgument(0));
 
-		Classroom updated = classroomService.reassignTeacher(classroomPublicId.toString(), 5L);
+		Classroom updated = classroomService.reassignTeacher(classroomPublicId.toString(),
+				publicId("teacher", 5).toString());
 
 		assertEquals(5L, updated.getClassTeacherId());
 	}
@@ -136,10 +139,11 @@ class ClassroomServiceTest {
 		UUID classroomPublicId = UUID.randomUUID();
 		Classroom classroom = classroomWithPublicId(classroomPublicId, 1L);
 		when(classroomRepository.findByPublicIdAndTenantId(classroomPublicId, 1L)).thenReturn(Optional.of(classroom));
-		when(teacherRepository.existsByIdAndTenantIdAndStatus(99L, 1L, EmployeeStatus.ACTIVE)).thenReturn(false);
+		when(teacherRepository.findByPublicIdAndTenantId(publicId("teacher", 99), 1L)).thenReturn(Optional.empty());
 
 		assertThrows(ResourceNotFoundException.class,
-				() -> classroomService.reassignTeacher(classroomPublicId.toString(), 99L));
+				() -> classroomService.reassignTeacher(classroomPublicId.toString(),
+						publicId("teacher", 99).toString()));
 	}
 
 	@Test

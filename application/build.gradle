@@ -47,6 +47,8 @@ dependencies {
     // scale to/from TenantSettingOverride's JSON value.
     implementation libs.spring.boot.starter.security
     implementation libs.jackson.databind
+    // PublicIdResolver caches the immutable internal-id -> public-id mapping.
+    implementation libs.caffeine
 
     // Report card PDF generation (ReportCardService) and bulk student-roster CSV import
     // (StudentBulkImportService) — see ROADMAP.md Phase 3.

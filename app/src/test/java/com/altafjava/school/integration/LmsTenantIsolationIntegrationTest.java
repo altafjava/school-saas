@@ -198,7 +198,7 @@ class LmsTenantIsolationIntegrationTest extends SchoolIntegrationTestBase {
 		teacher.setUserId(teacherUserId);
 		teacherRepository.save(teacher);
 		Classroom classroom = classroomService.create("CLS-" + suffix, "Grade 5", "A",
-				academicYear.getPublicId().toString(), teacher.getId());
+				academicYear.getPublicId().toString(), teacher.getPublicId().toString());
 		Subject subject = subjectService.create("SUB-" + suffix, "Science", null);
 		return new ClassroomFixture(classroom, subject, teacherUserId);
 	}

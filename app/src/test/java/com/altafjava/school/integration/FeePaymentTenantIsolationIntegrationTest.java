@@ -79,7 +79,8 @@ class FeePaymentTenantIsolationIntegrationTest extends SchoolIntegrationTestBase
 		FeeStructure structure = feeStructureService.create(
 				"Tuition " + UUID.randomUUID().toString().substring(0, 6),
 				BigDecimal.valueOf(500), FeeFrequency.MONTHLY, "Standard");
-		feePaymentService.record(student.getId(), structure.getId(), BigDecimal.valueOf(500),
+		feePaymentService.record(student.getPublicId().toString(), structure.getPublicId().toString(),
+				BigDecimal.valueOf(500),
 				LocalDateTime.now(), "RCPT-" + UUID.randomUUID().toString().substring(0, 8));
 
 		activateTenant(tenantB);
@@ -98,7 +99,8 @@ class FeePaymentTenantIsolationIntegrationTest extends SchoolIntegrationTestBase
 		FeeStructure structure = feeStructureService.create(
 				"Tuition " + UUID.randomUUID().toString().substring(0, 6),
 				BigDecimal.valueOf(500), FeeFrequency.MONTHLY, "Standard");
-		FeePayment payment = feePaymentService.record(student.getId(), structure.getId(),
+		FeePayment payment = feePaymentService.record(student.getPublicId().toString(),
+				structure.getPublicId().toString(),
 				BigDecimal.valueOf(500), LocalDateTime.now(),
 				"RCPT-" + UUID.randomUUID().toString().substring(0, 8));
 		String publicId = payment.getPublicId().toString();

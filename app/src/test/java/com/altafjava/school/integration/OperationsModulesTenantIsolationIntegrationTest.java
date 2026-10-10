@@ -31,6 +31,7 @@ import com.altafjava.school.application.service.AssetService;
 import com.altafjava.school.application.service.BookCatalogService;
 import com.altafjava.school.application.service.CirculationService;
 import com.altafjava.school.application.service.DisciplineIncidentService;
+import com.altafjava.school.application.service.EmployeeService;
 import com.altafjava.school.application.service.EventRegistrationService;
 import com.altafjava.school.application.service.EventService;
 import com.altafjava.school.application.service.StudentService;
@@ -38,6 +39,7 @@ import com.altafjava.school.application.service.VehicleService;
 import com.altafjava.school.base.SchoolIntegrationTestBase;
 import com.altafjava.school.config.TestPaymentConfig;
 import com.altafjava.school.config.TestRedisConfig;
+import com.altafjava.school.domain.employee.model.StaffCategory;
 import com.altafjava.school.domain.event.model.Event;
 import com.altafjava.school.domain.inventory.model.Asset;
 import com.altafjava.school.domain.inventory.model.AssetStatus;
@@ -74,6 +76,9 @@ class OperationsModulesTenantIsolationIntegrationTest extends SchoolIntegrationT
 
 	@Autowired
 	private AssetAssignmentService assetAssignmentService;
+
+	@Autowired
+	private EmployeeService employeeService;
 
 	@Autowired
 	private BookCatalogService bookCatalogService;
@@ -229,8 +234,10 @@ class OperationsModulesTenantIsolationIntegrationTest extends SchoolIntegrationT
 		Asset asset = assetService.create("AST-" + uniqueSuffix(), "Laptop", "Electronics", LocalDate.of(2026, 1, 1),
 				BigDecimal.valueOf(1200), "Store Room");
 
-		var assignment = assetAssignmentService.assign(asset.getPublicId().toString(), AssignedToType.STAFF, 1L,
-				LocalDate.of(2026, 4, 1));
+		var holder = employeeService.hire(StaffCategory.ADMINISTRATIVE, "EMP-" + uniqueSuffix(), "Sam", "Holder",
+				"holder-" + uniqueSuffix() + "@test.edu", LocalDate.of(2020, 1, 1));
+		var assignment = assetAssignmentService.assign(asset.getPublicId().toString(), AssignedToType.STAFF,
+				holder.getPublicId().toString(), LocalDate.of(2026, 4, 1));
 		Asset inUse = assetService.findByPublicId(asset.getPublicId().toString());
 		assertEquals(AssetStatus.IN_USE, inUse.getStatus());
 

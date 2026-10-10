@@ -29,6 +29,7 @@ import com.altafjava.school.config.TestRedisConfig;
 import com.altafjava.school.domain.guardian.model.Guardian;
 import com.altafjava.school.domain.guardian.model.GuardianConsentType;
 import com.altafjava.school.domain.guardian.model.RelationshipType;
+import com.altafjava.school.domain.guardian.repository.GuardianRepository;
 import com.altafjava.school.domain.student.model.Student;
 
 /**
@@ -47,6 +48,9 @@ class GuardianConsentTenantIsolationIntegrationTest extends SchoolIntegrationTes
 
 	@Autowired
 	private GuardianService guardianService;
+
+	@Autowired
+	private GuardianRepository guardianRepository;
 
 	@Autowired
 	private StudentService studentService;
@@ -86,6 +90,12 @@ class GuardianConsentTenantIsolationIntegrationTest extends SchoolIntegrationTes
 				.setAuthentication(new UsernamePasswordAuthenticationToken(principal, null, List.of()));
 	}
 
+	// The account behind the guardian is a bare user id here, so it is set on the record directly.
+	private void linkToUser(Guardian guardian) {
+		guardian.setUserId(GUARDIAN_USER_ID);
+		guardianRepository.save(guardian);
+	}
+
 	@Test
 	void consentGrantedUnderTenantA_notReachableFromTenantB() {
 		activateTenant(tenantA);
@@ -93,7 +103,8 @@ class GuardianConsentTenantIsolationIntegrationTest extends SchoolIntegrationTes
 		Student student = studentService.enroll("STU-" + UUID.randomUUID().toString().substring(0, 6), "Alice",
 				"Smith", "alice@consent.test", LocalDate.of(2012, 1, 1));
 		Guardian guardian = guardianService.create("Bob", "Smith", "bob@consent.test", "+14155552671",
-				GUARDIAN_USER_ID);
+				null);
+		linkToUser(guardian);
 		guardianService.linkToStudent(guardian.getPublicId().toString(), student.getPublicId().toString(),
 				RelationshipType.MOTHER, true);
 		guardianConsentService.grant(student.getPublicId().toString(), GuardianConsentType.DATA_PROCESSING,
@@ -117,7 +128,8 @@ class GuardianConsentTenantIsolationIntegrationTest extends SchoolIntegrationTes
 		Student student = studentService.enroll("STU-" + UUID.randomUUID().toString().substring(0, 6), "Carol",
 				"Jones", "carol@consent.test", LocalDate.of(2013, 3, 3));
 		Guardian guardian = guardianService.create("Dave", "Jones", "dave@consent.test", "+14155552672",
-				GUARDIAN_USER_ID);
+				null);
+		linkToUser(guardian);
 		guardianService.linkToStudent(guardian.getPublicId().toString(), student.getPublicId().toString(),
 				RelationshipType.MOTHER, true);
 		guardianConsentService.grant(student.getPublicId().toString(), GuardianConsentType.DATA_PROCESSING,
