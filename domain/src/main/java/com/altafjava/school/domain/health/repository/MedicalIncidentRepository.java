@@ -13,8 +13,6 @@ import com.altafjava.school.domain.health.model.MedicalIncident;
 
 public interface MedicalIncidentRepository extends JpaRepository<MedicalIncident, Long> {
 
-	Page<MedicalIncident> findAllByTenantId(Long tenantId, Pageable pageable);
-
 	// Every filter is optional (null matches all). `from` is inclusive and `before` exclusive.
 	@Query("""
 			SELECT m FROM MedicalIncident m

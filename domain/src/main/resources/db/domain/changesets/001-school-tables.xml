@@ -67,6 +67,9 @@
         <createIndex indexName="idx_classrooms_tenant_id" tableName="classrooms">
             <column name="tenant_id"/>
         </createIndex>
+        <createIndex indexName="idx_classrooms_grade" tableName="classrooms">
+            <column name="grade"/>
+        </createIndex>
         <createIndex indexName="idx_classrooms_deleted" tableName="classrooms">
             <column name="deleted"/>
         </createIndex>

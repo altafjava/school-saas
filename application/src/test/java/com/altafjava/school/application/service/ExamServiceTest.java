@@ -23,6 +23,8 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.security.access.AccessDeniedException;
 import com.altafjava.platform.application.event.publisher.EventPublisher;
 import com.altafjava.platform.core.concurrency.ExpectedVersion;
@@ -30,6 +32,8 @@ import com.altafjava.platform.core.exception.BusinessException;
 import com.altafjava.platform.core.exception.ResourceNotFoundException;
 import com.altafjava.platform.core.tenant.TenantContext;
 import com.altafjava.platform.core.tenant.TenantType;
+import com.altafjava.school.application.filter.ExamFilter;
+import com.altafjava.school.application.reference.EntityRef;
 import com.altafjava.school.application.reference.PublicIdLookup;
 import com.altafjava.school.application.security.AcademicAccessGuard;
 import com.altafjava.school.domain.classroom.model.Classroom;
@@ -388,5 +392,30 @@ class ExamServiceTest {
 		when(examRepository.findByPublicIdAndTenantId(publicId, 1L)).thenReturn(Optional.of(exam));
 
 		assertThrows(BusinessException.class, () -> examService.cancel(publicId.toString()));
+	}
+
+	@Test
+	void listExams_resolvesEveryPublicIdAndPassesTheFilterToTheQuery() {
+		PageRequest pageable = PageRequest.of(0, 20);
+		when(publicIdLookup.idOrNull(EntityRef.CLASSROOM, "classroom-public")).thenReturn(3L);
+		when(publicIdLookup.idOrNull(EntityRef.TERM, "term-public")).thenReturn(4L);
+		when(publicIdLookup.idOrNull(EntityRef.SUBJECT, "subject-public")).thenReturn(5L);
+		when(examRepository.search(1L, 3L, 4L, 5L, ExamStatus.SCHEDULED, pageable)).thenReturn(Page.empty());
+
+		examService.listExams(new ExamFilter("classroom-public", "term-public", "subject-public", ExamStatus.SCHEDULED),
+				pageable);
+
+		verify(examRepository).search(1L, 3L, 4L, 5L, ExamStatus.SCHEDULED, pageable);
+	}
+
+	@Test
+	void listExams_withNoFilter_searchesEveryExam() {
+		PageRequest pageable = PageRequest.of(0, 20);
+		when(publicIdLookup.idOrNull(any(), any())).thenReturn(null);
+		when(examRepository.search(1L, null, null, null, null, pageable)).thenReturn(Page.empty());
+
+		examService.listExams(ExamFilter.NONE, pageable);
+
+		verify(examRepository).search(1L, null, null, null, null, pageable);
 	}
 }

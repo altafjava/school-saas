@@ -53,6 +53,9 @@
         <createIndex indexName="idx_alumni_profiles_tenant_id" tableName="alumni_profiles">
             <column name="tenant_id"/>
         </createIndex>
+        <createIndex indexName="idx_alumni_profiles_graduation_year" tableName="alumni_profiles">
+            <column name="graduation_year"/>
+        </createIndex>
         <createIndex indexName="idx_alumni_profiles_deleted" tableName="alumni_profiles">
             <column name="deleted"/>
         </createIndex>

@@ -16,8 +16,6 @@ import com.altafjava.school.domain.exam.model.ExamStatus;
 
 public interface ExamRepository extends JpaRepository<Exam, Long> {
 
-	Page<Exam> findAllByTenantId(Long tenantId, Pageable pageable);
-
 	// Every filter is optional (null matches all).
 	@Query("""
 			SELECT e FROM Exam e

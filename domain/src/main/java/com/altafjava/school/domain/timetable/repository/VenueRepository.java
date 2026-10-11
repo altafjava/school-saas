@@ -11,8 +11,6 @@ import com.altafjava.school.domain.timetable.model.Venue;
 
 public interface VenueRepository extends JpaRepository<Venue, Long> {
 
-	Page<Venue> findAllByTenantId(Long tenantId, Pageable pageable);
-
 	// Blank {@code q} matches all; the pattern comes from LikePattern.contains.
 	@Query("""
 			SELECT v FROM Venue v

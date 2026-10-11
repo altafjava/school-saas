@@ -15,8 +15,6 @@ public interface PayslipRepository extends JpaRepository<Payslip, Long> {
 	boolean existsByEmployeeIdAndPayYearAndPayMonthAndTenantId(Long employeeId, int payYear, int payMonth,
 			Long tenantId);
 
-	Page<Payslip> findAllByTenantId(Long tenantId, Pageable pageable);
-
 	// Every filter is optional (null matches all).
 	@Query("""
 			SELECT p FROM Payslip p

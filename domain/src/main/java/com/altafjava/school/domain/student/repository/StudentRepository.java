@@ -9,6 +9,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
+import com.altafjava.school.domain.common.model.Gender;
 import com.altafjava.school.domain.student.model.EnrollmentStatus;
 import com.altafjava.school.domain.student.model.Student;
 
@@ -21,6 +22,7 @@ public interface StudentRepository extends JpaRepository<Student, Long> {
 			SELECT s FROM Student s
 			WHERE s.tenantId = :tenantId
 			  AND (:status IS NULL OR s.enrollmentStatus = :status)
+			  AND (:gender IS NULL OR s.gender = :gender)
 			  AND (:classroomId IS NULL OR s.id IN (
 			       SELECT l.studentId FROM StudentClassroomLink l
 			       WHERE l.tenantId = :tenantId AND l.classroomId = :classroomId))
@@ -30,10 +32,8 @@ public interface StudentRepository extends JpaRepository<Student, Long> {
 			       OR LOWER(s.email) LIKE :pattern ESCAPE '!')
 			""")
 	Page<Student> search(@Param("tenantId") Long tenantId, @Param("status") EnrollmentStatus status,
-			@Param("classroomId") Long classroomId, @Param("pattern") String pattern, Pageable pageable);
-
-	Page<Student> findAllByTenantIdAndEnrollmentStatus(Long tenantId, EnrollmentStatus enrollmentStatus,
-			Pageable pageable);
+			@Param("classroomId") Long classroomId, @Param("gender") Gender gender,
+			@Param("pattern") String pattern, Pageable pageable);
 
 	List<Student> findAllByEnrollmentStatusAndTenantId(EnrollmentStatus enrollmentStatus, Long tenantId);
 

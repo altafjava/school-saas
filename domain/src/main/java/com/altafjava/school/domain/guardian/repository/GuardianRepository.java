@@ -25,8 +25,6 @@ public interface GuardianRepository extends JpaRepository<Guardian, Long> {
 			""")
 	Page<Guardian> search(@Param("tenantId") Long tenantId, @Param("pattern") String pattern, Pageable pageable);
 
-	Page<Guardian> findAllByTenantId(Long tenantId, Pageable pageable);
-
 	Optional<Guardian> findByPublicIdAndTenantId(UUID publicId, Long tenantId);
 
 	Optional<Guardian> findByUserIdAndTenantId(Long userId, Long tenantId);

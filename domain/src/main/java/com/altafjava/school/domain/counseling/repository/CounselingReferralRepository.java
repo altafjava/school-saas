@@ -13,8 +13,6 @@ import com.altafjava.school.domain.counseling.model.CounselingReferralStatus;
 
 public interface CounselingReferralRepository extends JpaRepository<CounselingReferral, Long> {
 
-	Page<CounselingReferral> findAllByTenantId(Long tenantId, Pageable pageable);
-
 	// Every filter is optional (null matches all). `from` is inclusive and `before` exclusive.
 	@Query("""
 			SELECT c FROM CounselingReferral c

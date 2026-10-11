@@ -11,8 +11,6 @@ import com.altafjava.school.domain.curriculum.model.Curriculum;
 
 public interface CurriculumRepository extends JpaRepository<Curriculum, Long> {
 
-	Page<Curriculum> findAllByTenantId(Long tenantId, Pageable pageable);
-
 	// Blank {@code q} matches all; the pattern comes from LikePattern.contains.
 	@Query("""
 			SELECT c FROM Curriculum c

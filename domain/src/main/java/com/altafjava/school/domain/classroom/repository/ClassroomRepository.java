@@ -30,8 +30,6 @@ public interface ClassroomRepository extends JpaRepository<Classroom, Long> {
 	Page<Classroom> search(@Param("tenantId") Long tenantId, @Param("academicYearId") Long academicYearId,
 			@Param("grade") String grade, @Param("pattern") String pattern, Pageable pageable);
 
-	Page<Classroom> findAllByTenantId(Long tenantId, Pageable pageable);
-
 	List<Classroom> findAllByTenantId(Long tenantId);
 
 	Optional<Classroom> findByPublicIdAndTenantId(UUID publicId, Long tenantId);

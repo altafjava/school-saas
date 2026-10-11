@@ -59,6 +59,12 @@
         <createIndex indexName="idx_lesson_classroom_id" tableName="lessons">
             <column name="classroom_id"/>
         </createIndex>
+        <createIndex indexName="idx_lesson_subject_id" tableName="lessons">
+            <column name="subject_id"/>
+        </createIndex>
+        <createIndex indexName="idx_lesson_posted_at" tableName="lessons">
+            <column name="posted_at"/>
+        </createIndex>
         <addForeignKeyConstraint
                 constraintName="fk_lesson_tenant_id"
                 baseTableName="lessons"
@@ -139,6 +145,12 @@
         </createIndex>
         <createIndex indexName="idx_assignment_classroom_id" tableName="assignments">
             <column name="classroom_id"/>
+        </createIndex>
+        <createIndex indexName="idx_assignment_subject_id" tableName="assignments">
+            <column name="subject_id"/>
+        </createIndex>
+        <createIndex indexName="idx_assignment_due_date" tableName="assignments">
+            <column name="due_date"/>
         </createIndex>
         <addForeignKeyConstraint
                 constraintName="fk_assignment_tenant_id"

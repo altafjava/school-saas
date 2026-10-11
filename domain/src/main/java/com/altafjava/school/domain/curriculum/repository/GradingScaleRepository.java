@@ -13,8 +13,6 @@ import com.altafjava.school.domain.curriculum.model.GradingScale;
 
 public interface GradingScaleRepository extends JpaRepository<GradingScale, Long> {
 
-	Page<GradingScale> findAllByTenantId(Long tenantId, Pageable pageable);
-
 	// Blank {@code q} matches all; the pattern comes from LikePattern.contains.
 	@Query("""
 			SELECT g FROM GradingScale g

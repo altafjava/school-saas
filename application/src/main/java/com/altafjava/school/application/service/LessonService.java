@@ -1,6 +1,5 @@
 package com.altafjava.school.application.service;
 
-import java.time.LocalDate;
 import java.util.UUID;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -58,11 +57,9 @@ public class LessonService {
 		Long tenantId = TenantContext.getCurrentTenantId();
 		Long classroomId = publicIdLookup.idOrNull(EntityRef.CLASSROOM, filter.classroomPublicId());
 		CourseworkReach reach = academicAccessGuard.courseworkReach(tenantId, classroomId);
-		LocalDate from = filter.dates().from();
-		LocalDate to = filter.dates().to();
 		return lessonRepository.search(tenantId, reach.everyClassroom(), reach.classroomIds(), classroomId,
 				publicIdLookup.idOrNull(EntityRef.SUBJECT, filter.subjectPublicId()),
-				from != null ? from.atStartOfDay() : null, to != null ? to.plusDays(1).atStartOfDay() : null,
+				filter.dates().startInclusive(), filter.dates().endExclusive(),
 				pageable);
 	}
 }

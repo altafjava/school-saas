@@ -11,6 +11,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import com.altafjava.platform.application.lookup.LookupOption;
 import com.altafjava.platform.application.lookup.LookupProvider;
+import com.altafjava.school.application.filter.StudentFilter;
 import com.altafjava.school.application.filter.TermFilter;
 import com.altafjava.school.application.service.AcademicYearService;
 import com.altafjava.school.application.service.ClassroomService;
@@ -35,7 +36,7 @@ public class SchoolLookupConfiguration {
 	@Bean
 	LookupProvider studentLookup(StudentService students) {
 		return searching("students", "STUDENT_READ",
-				(q, size) -> students.searchStudents(page(size, "firstName"), null, null, q),
+				(q, size) -> students.searchStudents(StudentFilter.matching(q), page(size, "firstName")),
 				s -> new LookupOption(s.getPublicId().toString(), s.getFirstName() + " " + s.getLastName(),
 						s.getStudentCode()));
 	}
@@ -67,7 +68,7 @@ public class SchoolLookupConfiguration {
 	LookupProvider classroomLookup(ClassroomService classrooms) {
 		return searching("classrooms", "CLASSROOM_READ",
 				(q, size) -> classrooms.searchClassrooms(page(size, "grade"), null, null, q),
-				c -> new LookupOption(c.getPublicId().toString(), c.getGrade() + " " + c.getSection(),
+				c -> new LookupOption(c.getPublicId().toString(), c.displayLabel(),
 						c.getClassCode()));
 	}
 

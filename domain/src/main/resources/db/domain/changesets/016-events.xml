@@ -51,6 +51,9 @@
         <createIndex indexName="idx_events_tenant_id" tableName="events">
             <column name="tenant_id"/>
         </createIndex>
+        <createIndex indexName="idx_events_event_date" tableName="events">
+            <column name="event_date"/>
+        </createIndex>
         <createIndex indexName="idx_events_deleted" tableName="events">
             <column name="deleted"/>
         </createIndex>

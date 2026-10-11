@@ -15,6 +15,7 @@ import com.altafjava.platform.core.exception.ResourceNotFoundException;
 import com.altafjava.platform.core.search.LikePattern;
 import com.altafjava.platform.core.tenant.TenantContext;
 import com.altafjava.platform.domain.numbering.model.ResetPeriod;
+import com.altafjava.school.application.filter.StudentFilter;
 import com.altafjava.school.application.lifecycle.LifecycleChange;
 import com.altafjava.school.application.lifecycle.LifecycleRecorder;
 import com.altafjava.school.application.reference.EntityRef;
@@ -46,29 +47,14 @@ public class StudentService {
 	}
 
 	/**
-	 * Every filter is optional: a status, the classroom a student is placed in, and a free-text {@code q}
-	 * (blank = no filter) over the entity's identifying fields.
+	 * Every filter is optional: a status, the classroom a student is placed in, a gender, and a free-text
+	 * {@code q} (blank = no filter) over the entity's identifying fields.
 	 */
 	@Transactional(readOnly = true)
-	public Page<Student> searchStudents(Pageable pageable, EnrollmentStatus status, String classroomPublicId,
-			String q) {
-		Long classroomId = publicIdLookup.idOrNull(EntityRef.CLASSROOM, classroomPublicId);
-		return studentRepository.search(TenantContext.getCurrentTenantId(), status, classroomId,
-				LikePattern.contains(q), pageable);
-	}
-
-	@Transactional(readOnly = true)
-	public Page<Student> listStudents(Pageable pageable) {
-		return studentRepository.findAllByTenantId(TenantContext.getCurrentTenantId(), pageable);
-	}
-
-	@Transactional(readOnly = true)
-	public Page<Student> listStudents(Pageable pageable, EnrollmentStatus status) {
-		if (status == null) {
-			return listStudents(pageable);
-		}
-		return studentRepository.findAllByTenantIdAndEnrollmentStatus(TenantContext.getCurrentTenantId(), status,
-				pageable);
+	public Page<Student> searchStudents(StudentFilter filter, Pageable pageable) {
+		Long classroomId = publicIdLookup.idOrNull(EntityRef.CLASSROOM, filter.classroomPublicId());
+		return studentRepository.search(TenantContext.getCurrentTenantId(), filter.status(), classroomId,
+				filter.gender(), LikePattern.contains(filter.q()), pageable);
 	}
 
 	@Transactional(readOnly = true)

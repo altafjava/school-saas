@@ -18,7 +18,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 @SecurityRequirement(name = "tenantHeader")
 public interface CirculationApi {
 
-	@Operation(summary = "List for student")
+	@Operation(summary = "List", description = "Filter by student, book, returned state and a checkout date range.")
 	public ApiResponse<com.altafjava.platform.core.model.Page<CirculationResponse>> list(
 			@RequestParam(defaultValue = "0") int page,
 			@RequestParam(defaultValue = "20") int size,

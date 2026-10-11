@@ -16,11 +16,16 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import com.altafjava.platform.application.service.TenantSettingOverrideService;
 import com.altafjava.platform.core.exception.BusinessException;
 import com.altafjava.platform.core.tenant.TenantContext;
 import com.altafjava.platform.core.tenant.TenantType;
+import com.altafjava.school.application.filter.CirculationFilter;
+import com.altafjava.school.application.filter.DateWindow;
 import com.altafjava.school.application.library.ReservationAllocator;
+import com.altafjava.school.application.reference.EntityRef;
 import com.altafjava.school.application.reference.PublicIdLookup;
 import com.altafjava.school.domain.library.model.BookCopy;
 import com.altafjava.school.domain.library.model.BookCopyStatus;
@@ -232,5 +237,31 @@ class CirculationServiceTest {
 
 		assertEquals(BookCopyStatus.ON_HOLD, copy.getStatus());
 		verify(circulationRepository, never()).save(any());
+	}
+
+	@Test
+	void list_resolvesStudentAndBookAndPassesReturnedStateAndCheckoutWindow() {
+		PageRequest pageable = PageRequest.of(0, 20);
+		LocalDate from = LocalDate.of(2026, 3, 1);
+		LocalDate to = LocalDate.of(2026, 3, 31);
+		when(publicIdLookup.idOrNull(EntityRef.STUDENT, "student-public")).thenReturn(7L);
+		when(publicIdLookup.idOrNull(EntityRef.BOOK, "book-public")).thenReturn(9L);
+		when(circulationRepository.search(1L, 7L, 9L, false, from, to, pageable)).thenReturn(Page.empty());
+
+		circulationService.list(
+				new CirculationFilter("student-public", "book-public", false, new DateWindow(from, to)), pageable);
+
+		verify(circulationRepository).search(1L, 7L, 9L, false, from, to, pageable);
+	}
+
+	@Test
+	void list_withNoFilter_searchesEveryLoan() {
+		PageRequest pageable = PageRequest.of(0, 20);
+		when(publicIdLookup.idOrNull(any(), any())).thenReturn(null);
+		when(circulationRepository.search(1L, null, null, null, null, null, pageable)).thenReturn(Page.empty());
+
+		circulationService.list(CirculationFilter.NONE, pageable);
+
+		verify(circulationRepository).search(1L, null, null, null, null, null, pageable);
 	}
 }

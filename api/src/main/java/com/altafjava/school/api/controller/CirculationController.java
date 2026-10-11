@@ -22,6 +22,7 @@ import com.altafjava.school.api.dto.request.ReturnBookRequest;
 import com.altafjava.school.api.dto.response.CirculationResponse;
 import com.altafjava.school.api.mapper.CirculationMapper;
 import com.altafjava.school.api.support.PlatformPageMapper;
+import com.altafjava.school.api.support.SortableBy;
 import com.altafjava.school.api.support.SpringDataPageableResolver;
 import com.altafjava.school.application.filter.CirculationFilter;
 import com.altafjava.school.application.filter.DateWindow;
@@ -46,6 +47,7 @@ public class CirculationController implements CirculationApi {
 	@Override
 	@GetMapping
 	@PreAuthorize("@permissionAuthorizationService.hasPermission('CIRCULATION_MANAGE')")
+	@SortableBy({ "checkedOutAt", "dueDate", "returnedAt" })
 	public ApiResponse<com.altafjava.platform.core.model.Page<CirculationResponse>> list(
 			@RequestParam(defaultValue = "0") int page,
 			@RequestParam(defaultValue = "20") int size,

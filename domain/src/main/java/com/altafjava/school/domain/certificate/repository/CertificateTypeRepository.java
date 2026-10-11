@@ -12,8 +12,6 @@ import com.altafjava.school.domain.certificate.model.CertificateType;
 
 public interface CertificateTypeRepository extends JpaRepository<CertificateType, Long> {
 
-	Page<CertificateType> findAllByTenantId(Long tenantId, Pageable pageable);
-
 	// Blank {@code q} matches all; the pattern comes from LikePattern.contains.
 	@Query("""
 			SELECT c FROM CertificateType c

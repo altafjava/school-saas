@@ -27,8 +27,6 @@ public interface AdmissionRepository extends JpaRepository<Admission, Long> {
 	Page<Admission> search(@Param("tenantId") Long tenantId, @Param("status") AdmissionStatus status,
 			@Param("pattern") String pattern, Pageable pageable);
 
-	Page<Admission> findAllByTenantId(Long tenantId, Pageable pageable);
-
 	Optional<Admission> findByPublicIdAndTenantId(UUID publicId, Long tenantId);
 
 	Optional<Admission> findByIdAndTenantId(Long id, Long tenantId);

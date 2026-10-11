@@ -11,8 +11,6 @@ import com.altafjava.school.domain.transport.model.Route;
 
 public interface RouteRepository extends JpaRepository<Route, Long> {
 
-	Page<Route> findAllByTenantId(Long tenantId, Pageable pageable);
-
 	// Blank {@code q} matches all; the pattern comes from LikePattern.contains.
 	@Query("""
 			SELECT r FROM Route r

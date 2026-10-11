@@ -64,8 +64,7 @@ public class MedicalIncidentService {
 	public Page<MedicalIncident> listAll(MedicalIncidentFilter filter, Pageable pageable) {
 		return medicalIncidentRepository.search(TenantContext.getCurrentTenantId(),
 				publicIdLookup.idOrNull(EntityRef.STUDENT, filter.studentPublicId()),
-				filter.dates().from() != null ? filter.dates().from().atStartOfDay() : null,
-				filter.dates().to() != null ? filter.dates().to().plusDays(1).atStartOfDay() : null, pageable);
+				filter.dates().startInclusive(), filter.dates().endExclusive(), pageable);
 	}
 
 	@Transactional(readOnly = true)

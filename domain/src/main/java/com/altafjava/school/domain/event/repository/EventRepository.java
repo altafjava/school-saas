@@ -12,8 +12,6 @@ import com.altafjava.school.domain.event.model.Event;
 
 public interface EventRepository extends JpaRepository<Event, Long> {
 
-	Page<Event> findAllByTenantId(Long tenantId, Pageable pageable);
-
 	// Every filter is optional (null matches all). `from` is inclusive and `before` exclusive.
 	@Query("""
 			SELECT e FROM Event e

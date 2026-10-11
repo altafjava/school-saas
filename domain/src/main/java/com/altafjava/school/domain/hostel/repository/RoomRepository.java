@@ -11,8 +11,6 @@ import com.altafjava.school.domain.hostel.model.Room;
 
 public interface RoomRepository extends JpaRepository<Room, Long> {
 
-	Page<Room> findAllByHostelBuildingIdAndTenantId(Long hostelBuildingId, Long tenantId, Pageable pageable);
-
 	// Blank q matches all; the pattern comes from LikePattern.contains.
 	@Query("""
 			SELECT r FROM Room r

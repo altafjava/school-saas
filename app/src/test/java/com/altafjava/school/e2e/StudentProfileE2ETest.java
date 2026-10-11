@@ -310,6 +310,23 @@ class StudentProfileE2ETest extends SchoolIntegrationTestBase {
 	}
 
 	@Test
+	void list_filteredByGender_returnsOnlyThatGender() {
+		String girl = enroll("GenderGirl", "FEMALE");
+		enroll("GenderBoy", "MALE");
+
+		support.request(school).queryParam("gender", "FEMALE").queryParam("q", "Gender").get("/api/v1/students")
+				.then().statusCode(HttpStatus.OK.value())
+				.body("data.content.publicId", contains(girl))
+				.body("data.totalElements", equalTo(1));
+	}
+
+	@Test
+	void list_filteredByAnUnknownGender_returns400() {
+		support.request(school).queryParam("gender", "ROBOT").get("/api/v1/students")
+				.then().statusCode(HttpStatus.BAD_REQUEST.value());
+	}
+
+	@Test
 	void list_filteredByAnUnknownClassroom_returns404() {
 		support.request(school).queryParam("classroomPublicId", UUID.randomUUID()).get("/api/v1/students")
 				.then().statusCode(HttpStatus.NOT_FOUND.value());

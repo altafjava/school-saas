@@ -74,11 +74,6 @@ public class ClassroomService {
 	}
 
 	@Transactional(readOnly = true)
-	public Page<Classroom> listClassrooms(Pageable pageable) {
-		return classroomRepository.findAllByTenantId(TenantContext.getCurrentTenantId(), pageable);
-	}
-
-	@Transactional(readOnly = true)
 	public Classroom findByPublicId(String publicId) {
 		Long tenantId = TenantContext.getCurrentTenantId();
 		return classroomRepository.findByPublicIdAndTenantId(UUID.fromString(publicId), tenantId)

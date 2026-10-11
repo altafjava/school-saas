@@ -55,6 +55,12 @@
         <createIndex indexName="idx_discipline_incidents_tenant_id" tableName="discipline_incidents">
             <column name="tenant_id"/>
         </createIndex>
+        <createIndex indexName="idx_discipline_incidents_incident_date" tableName="discipline_incidents">
+            <column name="incident_date"/>
+        </createIndex>
+        <createIndex indexName="idx_discipline_incidents_severity" tableName="discipline_incidents">
+            <column name="severity"/>
+        </createIndex>
         <createIndex indexName="idx_discipline_incidents_deleted" tableName="discipline_incidents">
             <column name="deleted"/>
         </createIndex>

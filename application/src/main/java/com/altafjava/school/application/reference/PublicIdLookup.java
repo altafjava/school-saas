@@ -13,7 +13,8 @@ import lombok.RequiredArgsConstructor;
 /**
  * Turns the public id a list filter carries into the internal id its query compares against; the
  * counterpart of {@link PublicIdResolver}. A record's id and public id never change, so answers are
- * cached for the life of the process.
+ * cached for the life of the process, keyed by tenant. Misses are not cached, and a stale hit (rolled-back
+ * insert, erased record) only makes the filter match nothing, as ids are never reused.
  */
 @Component
 @RequiredArgsConstructor

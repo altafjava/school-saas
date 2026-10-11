@@ -202,6 +202,9 @@
         <createIndex indexName="idx_exams_tenant_id" tableName="exams">
             <column name="tenant_id"/>
         </createIndex>
+        <createIndex indexName="idx_exams_status" tableName="exams">
+            <column name="status"/>
+        </createIndex>
         <createIndex indexName="idx_exams_deleted" tableName="exams">
             <column name="deleted"/>
         </createIndex>
@@ -553,6 +556,12 @@
         </sql>
         <createIndex indexName="idx_fee_payments_tenant_id" tableName="fee_payments">
             <column name="tenant_id"/>
+        </createIndex>
+        <createIndex indexName="idx_fee_payments_payment_source" tableName="fee_payments">
+            <column name="payment_source"/>
+        </createIndex>
+        <createIndex indexName="idx_fee_payments_paid_at" tableName="fee_payments">
+            <column name="paid_at"/>
         </createIndex>
         <createIndex indexName="idx_fee_payments_deleted" tableName="fee_payments">
             <column name="deleted"/>

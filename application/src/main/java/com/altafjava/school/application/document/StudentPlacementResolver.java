@@ -25,7 +25,7 @@ public class StudentPlacementResolver {
 			Optional<AcademicYear> academicYear, List<StudentClassroomLink> allLinks) {
 
 		public String classLabel() {
-			return classroom.map(c -> c.getGrade() + " " + c.getSection()).orElse("");
+			return classroom.map(Classroom::displayLabel).orElse("");
 		}
 	}
 

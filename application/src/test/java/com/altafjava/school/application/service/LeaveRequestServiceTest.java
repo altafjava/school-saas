@@ -25,6 +25,8 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -34,6 +36,9 @@ import com.altafjava.platform.core.exception.BusinessException;
 import com.altafjava.platform.core.security.AuthenticatedUser;
 import com.altafjava.platform.core.tenant.TenantContext;
 import com.altafjava.platform.core.tenant.TenantType;
+import com.altafjava.school.application.filter.DateWindow;
+import com.altafjava.school.application.filter.LeaveRequestFilter;
+import com.altafjava.school.application.reference.EntityRef;
 import com.altafjava.school.application.reference.PublicIdLookup;
 import com.altafjava.school.application.scheduler.support.TenantAdminNotifier;
 import com.altafjava.school.application.security.LeaveApprovalAuthorizer;
@@ -478,5 +483,32 @@ class LeaveRequestServiceTest {
 		assertEquals("Exam week", captor.getValue().getRemarks());
 		assertNotNull(captor.getValue().getDecidedAt());
 		assertTrue(result.awaitingStage().isEmpty());
+	}
+
+	@Test
+	void listAll_resolvesTheEmployeeAndLeaveTypeAndPassesTheDateWindow() {
+		PageRequest pageable = PageRequest.of(0, 20);
+		LocalDate from = LocalDate.of(2026, 3, 1);
+		LocalDate to = LocalDate.of(2026, 3, 31);
+		when(publicIdLookup.idOrNull(EntityRef.EMPLOYEE, "employee-public")).thenReturn(6L);
+		when(publicIdLookup.idOrNull(EntityRef.LEAVE_TYPE, "type-public")).thenReturn(2L);
+		when(leaveRequestRepository.search(1L, 6L, 2L, LeaveRequestStatus.PENDING, from, to, pageable))
+				.thenReturn(Page.empty());
+
+		leaveRequestService.listAll(new LeaveRequestFilter("employee-public", "type-public",
+				LeaveRequestStatus.PENDING, new DateWindow(from, to)), pageable);
+
+		verify(leaveRequestRepository).search(1L, 6L, 2L, LeaveRequestStatus.PENDING, from, to, pageable);
+	}
+
+	@Test
+	void listAll_withNoFilter_searchesEveryRequest() {
+		PageRequest pageable = PageRequest.of(0, 20);
+		when(publicIdLookup.idOrNull(any(), any())).thenReturn(null);
+		when(leaveRequestRepository.search(1L, null, null, null, null, null, pageable)).thenReturn(Page.empty());
+
+		leaveRequestService.listAll(LeaveRequestFilter.NONE, pageable);
+
+		verify(leaveRequestRepository).search(1L, null, null, null, null, null, pageable);
 	}
 }

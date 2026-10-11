@@ -14,8 +14,6 @@ import com.altafjava.school.domain.attendance.model.PeriodAttendance;
 
 public interface PeriodAttendanceRepository extends JpaRepository<PeriodAttendance, Long> {
 
-	Page<PeriodAttendance> findAllByTenantId(Long tenantId, Pageable pageable);
-
 	Optional<PeriodAttendance> findByPublicIdAndTenantId(UUID publicId, Long tenantId);
 
 	/**

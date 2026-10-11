@@ -13,8 +13,6 @@ import com.altafjava.school.domain.lms.model.Assignment;
 
 public interface AssignmentRepository extends JpaRepository<Assignment, Long> {
 
-	Page<Assignment> findAllByTenantId(Long tenantId, Pageable pageable);
-
 	Optional<Assignment> findByPublicIdAndTenantId(UUID publicId, Long tenantId);
 
 	Optional<Assignment> findByIdAndTenantId(Long id, Long tenantId);

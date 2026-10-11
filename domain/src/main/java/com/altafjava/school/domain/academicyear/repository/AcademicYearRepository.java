@@ -12,8 +12,6 @@ import com.altafjava.school.domain.academicyear.model.AcademicYear;
 
 public interface AcademicYearRepository extends JpaRepository<AcademicYear, Long> {
 
-	Page<AcademicYear> findAllByTenantId(Long tenantId, Pageable pageable);
-
 	// Blank {@code q} matches all; the pattern comes from LikePattern.contains.
 	@Query("""
 			SELECT a FROM AcademicYear a

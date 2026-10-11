@@ -11254,6 +11254,14 @@
             "type" : "string"
           }
         }, {
+          "name" : "gender",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "type" : "string",
+            "enum" : [ "MALE", "FEMALE", "OTHER", "NOT_SPECIFIED" ]
+          }
+        }, {
           "name" : "q",
           "in" : "query",
           "required" : false,
@@ -16151,7 +16159,7 @@
         }, {
           "name" : "sort",
           "in" : "query",
-          "description" : "Repeatable, `field` or `field,asc|desc`, at most 3 fields. Sortable: createdAt, updatedAt.",
+          "description" : "Repeatable, `field` or `field,asc|desc`, at most 3 fields. Sortable: createdAt, postedAt, title, updatedAt.",
           "required" : false,
           "schema" : {
             "type" : "array",
@@ -25706,7 +25714,7 @@
         }, {
           "name" : "sort",
           "in" : "query",
-          "description" : "Repeatable, `field` or `field,asc|desc`, at most 3 fields. Sortable: createdAt, updatedAt.",
+          "description" : "Repeatable, `field` or `field,asc|desc`, at most 3 fields. Sortable: createdAt, dueDate, maxMarks, title, updatedAt.",
           "required" : false,
           "schema" : {
             "type" : "array",
@@ -55624,7 +55632,8 @@
     "/api/v1/circulations" : {
       "get" : {
         "tags" : [ "Circulation" ],
-        "summary" : "List for student",
+        "summary" : "List",
+        "description" : "Filter by student, book, returned state and a checkout date range.",
         "operationId" : "circulationList",
         "parameters" : [ {
           "name" : "page",
@@ -55684,7 +55693,7 @@
         }, {
           "name" : "sort",
           "in" : "query",
-          "description" : "Repeatable, `field` or `field,asc|desc`, at most 3 fields. Sortable: createdAt, updatedAt.",
+          "description" : "Repeatable, `field` or `field,asc|desc`, at most 3 fields. Sortable: checkedOutAt, createdAt, dueDate, returnedAt, updatedAt.",
           "required" : false,
           "schema" : {
             "type" : "array",

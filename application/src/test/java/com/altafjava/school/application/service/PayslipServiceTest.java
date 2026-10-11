@@ -19,10 +19,14 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import com.altafjava.platform.core.exception.BusinessException;
 import com.altafjava.platform.core.exception.ResourceNotFoundException;
 import com.altafjava.platform.core.tenant.TenantContext;
 import com.altafjava.platform.core.tenant.TenantType;
+import com.altafjava.school.application.filter.PayslipFilter;
+import com.altafjava.school.application.reference.EntityRef;
 import com.altafjava.school.application.reference.PublicIdLookup;
 import com.altafjava.school.domain.employee.repository.EmployeeRepository;
 import com.altafjava.school.domain.leave.model.LeaveRequestStatus;
@@ -166,5 +170,27 @@ class PayslipServiceTest {
 	private PayrollComputation payrollComputation() {
 		return new PayrollComputation(BigDecimal.valueOf(62500), BigDecimal.ZERO, BigDecimal.ZERO,
 				BigDecimal.valueOf(61500));
+	}
+
+	@Test
+	void list_resolvesTheEmployeeAndPassesThePeriodAndStatusToTheQuery() {
+		PageRequest pageable = PageRequest.of(0, 20);
+		when(publicIdLookup.idOrNull(EntityRef.EMPLOYEE, "employee-public")).thenReturn(6L);
+		when(payslipRepository.search(1L, 6L, 2026, 3, PayslipStatus.DRAFT, pageable)).thenReturn(Page.empty());
+
+		payslipService.list(new PayslipFilter("employee-public", 2026, 3, PayslipStatus.DRAFT), pageable);
+
+		verify(payslipRepository).search(1L, 6L, 2026, 3, PayslipStatus.DRAFT, pageable);
+	}
+
+	@Test
+	void list_withNoFilter_searchesEveryPayslip() {
+		PageRequest pageable = PageRequest.of(0, 20);
+		when(publicIdLookup.idOrNull(any(), any())).thenReturn(null);
+		when(payslipRepository.search(1L, null, null, null, null, pageable)).thenReturn(Page.empty());
+
+		payslipService.list(PayslipFilter.NONE, pageable);
+
+		verify(payslipRepository).search(1L, null, null, null, null, pageable);
 	}
 }

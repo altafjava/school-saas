@@ -13,8 +13,6 @@ import com.altafjava.school.domain.grade.model.Grade;
 
 public interface GradeRepository extends JpaRepository<Grade, Long> {
 
-	Page<Grade> findAllByTenantId(Long tenantId, Pageable pageable);
-
 	Optional<Grade> findByPublicIdAndTenantId(UUID publicId, Long tenantId);
 
 	@Query("SELECT g FROM Grade g WHERE g.tenantId = :tenantId AND g.studentId = :studentId")

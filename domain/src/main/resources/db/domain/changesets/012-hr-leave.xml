@@ -309,6 +309,12 @@
         <createIndex indexName="idx_leave_requests_tenant_id" tableName="leave_requests">
             <column name="tenant_id"/>
         </createIndex>
+        <createIndex indexName="idx_leave_requests_end_date" tableName="leave_requests">
+            <column name="end_date"/>
+        </createIndex>
+        <createIndex indexName="idx_leave_requests_start_date" tableName="leave_requests">
+            <column name="start_date"/>
+        </createIndex>
         <createIndex indexName="idx_leave_requests_deleted" tableName="leave_requests">
             <column name="deleted"/>
         </createIndex>

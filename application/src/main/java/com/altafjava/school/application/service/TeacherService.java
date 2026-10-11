@@ -36,11 +36,6 @@ public class TeacherService {
 	}
 
 	@Transactional(readOnly = true)
-	public Page<Teacher> listTeachers(Pageable pageable) {
-		return teacherRepository.findAllByTenantId(TenantContext.getCurrentTenantId(), pageable);
-	}
-
-	@Transactional(readOnly = true)
 	public Teacher findByPublicId(String publicId) {
 		Long tenantId = TenantContext.getCurrentTenantId();
 		return teacherRepository.findByPublicIdAndTenantId(UUID.fromString(publicId), tenantId)

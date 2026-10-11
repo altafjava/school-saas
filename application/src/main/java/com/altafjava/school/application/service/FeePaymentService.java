@@ -84,12 +84,10 @@ public class FeePaymentService {
 
 	@Transactional(readOnly = true)
 	public Page<FeePayment> listFeePayments(FeePaymentFilter filter, Pageable pageable) {
-		LocalDate from = filter.dates().from();
-		LocalDate to = filter.dates().to();
 		return feePaymentRepository.search(TenantContext.getCurrentTenantId(),
 				publicIdLookup.idOrNull(EntityRef.STUDENT, filter.studentPublicId()),
 				publicIdLookup.idOrNull(EntityRef.FEE_STRUCTURE, filter.feeStructurePublicId()),
-				from != null ? from.atStartOfDay() : null, to != null ? to.plusDays(1).atStartOfDay() : null,
+				filter.dates().startInclusive(), filter.dates().endExclusive(),
 				filter.paymentSource(), pageable);
 	}
 

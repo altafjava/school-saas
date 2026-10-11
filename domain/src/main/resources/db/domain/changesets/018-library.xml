@@ -179,6 +179,9 @@
         <createIndex indexName="idx_circulations_tenant_id" tableName="circulations">
             <column name="tenant_id"/>
         </createIndex>
+        <createIndex indexName="idx_circulations_checked_out_at" tableName="circulations">
+            <column name="checked_out_at"/>
+        </createIndex>
         <createIndex indexName="idx_circulations_deleted" tableName="circulations">
             <column name="deleted"/>
         </createIndex>

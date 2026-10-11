@@ -12,8 +12,6 @@ import com.altafjava.school.domain.term.model.Term;
 
 public interface TermRepository extends JpaRepository<Term, Long> {
 
-	Page<Term> findAllByTenantId(Long tenantId, Pageable pageable);
-
 	// Every filter is optional (null matches all).
 	@Query("""
 			SELECT t FROM Term t

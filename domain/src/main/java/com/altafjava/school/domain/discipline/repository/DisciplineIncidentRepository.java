@@ -14,8 +14,6 @@ import com.altafjava.school.domain.discipline.model.IncidentSeverity;
 
 public interface DisciplineIncidentRepository extends JpaRepository<DisciplineIncident, Long> {
 
-	Page<DisciplineIncident> findAllByTenantId(Long tenantId, Pageable pageable);
-
 	// Every filter is optional (null matches all). Dates are inclusive.
 	@Query("""
 			SELECT d FROM DisciplineIncident d
