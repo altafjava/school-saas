@@ -66,11 +66,6 @@ public class GuardianService {
 	}
 
 	@Transactional(readOnly = true)
-	public Page<Guardian> listGuardians(Pageable pageable) {
-		return guardianRepository.findAllByTenantId(TenantContext.getCurrentTenantId(), pageable);
-	}
-
-	@Transactional(readOnly = true)
 	public Guardian findByPublicId(String publicId) {
 		Long tenantId = TenantContext.getCurrentTenantId();
 		return guardianRepository.findByPublicIdAndTenantId(UUID.fromString(publicId), tenantId)

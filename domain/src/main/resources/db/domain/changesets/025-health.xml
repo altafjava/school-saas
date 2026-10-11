@@ -116,6 +116,9 @@
         <createIndex indexName="idx_medical_incidents_tenant_id" tableName="medical_incidents">
             <column name="tenant_id"/>
         </createIndex>
+        <createIndex indexName="idx_medical_incidents_occurred_at" tableName="medical_incidents">
+            <column name="occurred_at"/>
+        </createIndex>
         <createIndex indexName="idx_medical_incidents_deleted" tableName="medical_incidents">
             <column name="deleted"/>
         </createIndex>

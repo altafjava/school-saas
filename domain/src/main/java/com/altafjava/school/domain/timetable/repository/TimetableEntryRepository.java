@@ -13,8 +13,6 @@ import com.altafjava.school.domain.timetable.model.TimetableEntry;
 
 public interface TimetableEntryRepository extends JpaRepository<TimetableEntry, Long> {
 
-	Page<TimetableEntry> findAllByTenantId(Long tenantId, Pageable pageable);
-
 	// Every filter is optional (null matches all).
 	@Query("""
 			SELECT t FROM TimetableEntry t

@@ -65,7 +65,7 @@ class TeacherTenantIsolationIntegrationTest extends SchoolIntegrationTestBase {
 		teacherService.hire(code, "Alice", "Smith", "alice@a.edu", LocalDate.of(2020, 1, 1));
 
 		activateTenant(tenantB);
-		Page<Teacher> tenantBTeachers = teacherService.listTeachers(PageRequest.of(0, 100));
+		Page<Teacher> tenantBTeachers = teacherService.searchTeachers(PageRequest.of(0, 100), null);
 
 		boolean found = tenantBTeachers.getContent().stream()
 				.anyMatch(t -> tenantA.getId().equals(t.getTenantId()));

@@ -16,10 +16,6 @@ import com.altafjava.school.domain.leave.model.LeaveRequestStatus;
 
 public interface LeaveRequestRepository extends JpaRepository<LeaveRequest, Long> {
 
-	Page<LeaveRequest> findAllByTenantId(Long tenantId, Pageable pageable);
-
-	Page<LeaveRequest> findAllByEmployeeIdAndTenantId(Long employeeId, Long tenantId, Pageable pageable);
-
 	// Every filter is optional (null matches all); the dates match any leave overlapping [from, to].
 	@Query("""
 			SELECT lr FROM LeaveRequest lr

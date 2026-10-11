@@ -54,6 +54,9 @@
         <createIndex indexName="idx_assets_tenant_id" tableName="assets">
             <column name="tenant_id"/>
         </createIndex>
+        <createIndex indexName="idx_assets_status" tableName="assets">
+            <column name="status"/>
+        </createIndex>
         <createIndex indexName="idx_assets_deleted" tableName="assets">
             <column name="deleted"/>
         </createIndex>

@@ -24,6 +24,7 @@ import com.altafjava.school.api.dto.response.GradeResponse;
 import com.altafjava.school.api.dto.response.ReportCardResponse;
 import com.altafjava.school.api.dto.response.StudentGuardianResponse;
 import com.altafjava.school.api.dto.response.StudentResponse;
+import com.altafjava.school.domain.common.model.Gender;
 import com.altafjava.school.domain.student.model.EnrollmentStatus;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
@@ -40,6 +41,7 @@ public interface StudentApi {
 			@RequestParam(defaultValue = "20") int size,
 			@RequestParam(required = false) EnrollmentStatus status,
 			@RequestParam(required = false) String classroomPublicId,
+			@RequestParam(required = false) Gender gender,
 			@RequestParam(required = false) String q);
 
 	@Operation(summary = "Get")

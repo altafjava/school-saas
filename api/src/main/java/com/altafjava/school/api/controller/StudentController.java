@@ -53,6 +53,7 @@ import com.altafjava.school.api.support.PlatformPageMapper;
 import com.altafjava.school.api.support.SortableBy;
 import com.altafjava.school.api.support.SpringDataPageableResolver;
 import com.altafjava.school.api.support.StudentResponseAssembler;
+import com.altafjava.school.application.filter.StudentFilter;
 import com.altafjava.school.application.lifecycle.LifecycleChange;
 import com.altafjava.school.application.service.AttendanceService;
 import com.altafjava.school.application.service.FeePaymentService;
@@ -64,6 +65,7 @@ import com.altafjava.school.application.service.StudentBulkImportService;
 import com.altafjava.school.application.service.StudentGpaService;
 import com.altafjava.school.application.service.StudentService;
 import com.altafjava.school.application.service.TermService;
+import com.altafjava.school.domain.common.model.Gender;
 import com.altafjava.school.domain.reportcard.model.ReportCard;
 import com.altafjava.school.domain.student.model.EnrollmentStatus;
 import com.altafjava.school.domain.student.model.Student;
@@ -132,9 +134,11 @@ public class StudentController implements StudentApi {
 			@RequestParam(defaultValue = "20") int size,
 			@RequestParam(required = false) EnrollmentStatus status,
 			@RequestParam(required = false) String classroomPublicId,
+			@RequestParam(required = false) Gender gender,
 			@RequestParam(required = false) String q) {
-		return ApiResponse.success(PlatformPageMapper.toPlatformPage(studentResponseAssembler.toResponses(
-				studentService.searchStudents(pageableResolver.resolve(page, size), status, classroomPublicId, q))));
+		StudentFilter filter = new StudentFilter(status, classroomPublicId, gender, q);
+		return ApiResponse.success(PlatformPageMapper.toPlatformPage(studentResponseAssembler
+				.toResponses(studentService.searchStudents(filter, pageableResolver.resolve(page, size)))));
 	}
 
 	@Override

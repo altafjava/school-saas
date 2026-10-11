@@ -75,7 +75,7 @@ class ClassroomTenantIsolationIntegrationTest extends SchoolIntegrationTestBase 
 		classroomService.create(code, "Grade 5", "A", createAcademicYear("2024-25"), null);
 
 		activateTenant(tenantB);
-		Page<Classroom> tenantBClassrooms = classroomService.listClassrooms(PageRequest.of(0, 100));
+		Page<Classroom> tenantBClassrooms = classroomService.searchClassrooms(PageRequest.of(0, 100), null, null, null);
 
 		boolean found = tenantBClassrooms.getContent().stream()
 				.anyMatch(c -> tenantA.getId().equals(c.getTenantId()));

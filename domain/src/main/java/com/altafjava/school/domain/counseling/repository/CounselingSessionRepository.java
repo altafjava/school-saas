@@ -13,8 +13,6 @@ import com.altafjava.school.domain.counseling.model.CounselingSession;
 
 public interface CounselingSessionRepository extends JpaRepository<CounselingSession, Long> {
 
-	Page<CounselingSession> findAllByTenantId(Long tenantId, Pageable pageable);
-
 	// Every filter is optional (null matches all). Dates are inclusive.
 	@Query("""
 			SELECT c FROM CounselingSession c

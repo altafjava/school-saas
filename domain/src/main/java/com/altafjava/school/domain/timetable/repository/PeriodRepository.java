@@ -12,8 +12,6 @@ import com.altafjava.school.domain.timetable.model.Period;
 
 public interface PeriodRepository extends JpaRepository<Period, Long> {
 
-	Page<Period> findAllByTenantId(Long tenantId, Pageable pageable);
-
 	// Blank {@code q} matches all; the pattern comes from LikePattern.contains.
 	@Query("""
 			SELECT p FROM Period p

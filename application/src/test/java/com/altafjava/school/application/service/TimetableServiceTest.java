@@ -8,6 +8,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import java.time.DayOfWeek;
 import java.util.List;
@@ -19,11 +20,15 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import com.altafjava.platform.core.concurrency.ExpectedVersion;
 import com.altafjava.platform.core.exception.BusinessException;
 import com.altafjava.platform.core.exception.ResourceNotFoundException;
 import com.altafjava.platform.core.tenant.TenantContext;
 import com.altafjava.platform.core.tenant.TenantType;
+import com.altafjava.school.application.filter.TimetableEntryFilter;
+import com.altafjava.school.application.reference.EntityRef;
 import com.altafjava.school.application.reference.PublicIdLookup;
 import com.altafjava.school.domain.classroom.model.Classroom;
 import com.altafjava.school.domain.classroom.repository.ClassroomRepository;
@@ -262,5 +267,31 @@ class TimetableServiceTest {
 		assertThrows(BusinessException.class,
 				() -> timetableService.assignVenue(entryPublicId.toString(), VENUE_PUBLIC_ID.toString(),
 						ExpectedVersion.any()));
+	}
+
+	@Test
+	void listEntries_resolvesClassroomTeacherAndSubjectAndPassesTheDay() {
+		PageRequest pageable = PageRequest.of(0, 20);
+		when(publicIdLookup.idOrNull(EntityRef.CLASSROOM, "classroom-public")).thenReturn(3L);
+		when(publicIdLookup.idOrNull(EntityRef.EMPLOYEE, "teacher-public")).thenReturn(6L);
+		when(publicIdLookup.idOrNull(EntityRef.SUBJECT, "subject-public")).thenReturn(5L);
+		when(timetableEntryRepository.search(1L, 3L, 6L, 5L, DayOfWeek.MONDAY, pageable)).thenReturn(Page.empty());
+
+		timetableService.listEntries(
+				new TimetableEntryFilter("classroom-public", "teacher-public", "subject-public", DayOfWeek.MONDAY),
+				pageable);
+
+		verify(timetableEntryRepository).search(1L, 3L, 6L, 5L, DayOfWeek.MONDAY, pageable);
+	}
+
+	@Test
+	void listEntries_withNoFilter_searchesEveryEntry() {
+		PageRequest pageable = PageRequest.of(0, 20);
+		when(publicIdLookup.idOrNull(any(), any())).thenReturn(null);
+		when(timetableEntryRepository.search(1L, null, null, null, null, pageable)).thenReturn(Page.empty());
+
+		timetableService.listEntries(TimetableEntryFilter.NONE, pageable);
+
+		verify(timetableEntryRepository).search(1L, null, null, null, null, pageable);
 	}
 }

@@ -76,6 +76,11 @@ public class Classroom extends SoftDeletableEntity {
 		this.academicYear = academicYearName;
 	}
 
+	/** The name people use for the class, e.g. "10 A". */
+	public String displayLabel() {
+		return grade + " " + section;
+	}
+
 	public void assignCurriculum(Long curriculumId) {
 		this.curriculumId = curriculumId;
 	}

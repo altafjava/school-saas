@@ -81,11 +81,6 @@ public class AdmissionService {
 	}
 
 	@Transactional(readOnly = true)
-	public Page<Admission> listAdmissions(Pageable pageable) {
-		return admissionRepository.findAllByTenantId(TenantContext.getCurrentTenantId(), pageable);
-	}
-
-	@Transactional(readOnly = true)
 	public Admission findByPublicId(String publicId) {
 		Long tenantId = TenantContext.getCurrentTenantId();
 		return admissionRepository.findByPublicIdAndTenantId(UUID.fromString(publicId), tenantId)

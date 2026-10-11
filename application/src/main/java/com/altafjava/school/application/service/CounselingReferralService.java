@@ -46,8 +46,7 @@ public class CounselingReferralService {
 	public Page<CounselingReferral> listAll(CounselingReferralFilter filter, Pageable pageable) {
 		return counselingReferralRepository.search(TenantContext.getCurrentTenantId(),
 				publicIdLookup.idOrNull(EntityRef.STUDENT, filter.studentPublicId()), filter.status(),
-				filter.dates().from() != null ? filter.dates().from().atStartOfDay() : null,
-				filter.dates().to() != null ? filter.dates().to().plusDays(1).atStartOfDay() : null, pageable);
+				filter.dates().startInclusive(), filter.dates().endExclusive(), pageable);
 	}
 
 	@Transactional(readOnly = true)

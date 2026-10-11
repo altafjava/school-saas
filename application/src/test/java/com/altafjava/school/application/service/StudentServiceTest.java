@@ -23,8 +23,10 @@ import com.altafjava.platform.core.exception.BusinessException;
 import com.altafjava.platform.core.tenant.TenantContext;
 import com.altafjava.platform.core.tenant.TenantType;
 import com.altafjava.platform.domain.numbering.model.ResetPeriod;
+import com.altafjava.school.application.filter.StudentFilter;
 import com.altafjava.school.application.lifecycle.LifecycleChange;
 import com.altafjava.school.application.lifecycle.LifecycleRecorder;
+import com.altafjava.school.application.reference.EntityRef;
 import com.altafjava.school.application.reference.PublicIdLookup;
 import com.altafjava.school.domain.common.model.Address;
 import com.altafjava.school.domain.common.model.Gender;
@@ -225,14 +227,27 @@ class StudentServiceTest {
 	}
 
 	@Test
-	void listStudents_withStatusFilter_delegatesToStatusFilteredQuery() {
-		when(studentRepository.findAllByTenantIdAndEnrollmentStatus(1L, EnrollmentStatus.ACTIVE,
-				org.springframework.data.domain.PageRequest.of(0, 20)))
+	void searchStudents_resolvesTheClassroomFilterAndPassesEveryFilterToTheQuery() {
+		org.springframework.data.domain.PageRequest pageable = org.springframework.data.domain.PageRequest.of(0, 20);
+		when(publicIdLookup.idOrNull(EntityRef.CLASSROOM, "classroom-public")).thenReturn(9L);
+		when(studentRepository.search(1L, EnrollmentStatus.ACTIVE, 9L, Gender.FEMALE, "%ali%", pageable))
 				.thenReturn(org.springframework.data.domain.Page.empty());
 
-		studentService.listStudents(org.springframework.data.domain.PageRequest.of(0, 20), EnrollmentStatus.ACTIVE);
+		studentService.searchStudents(
+				new StudentFilter(EnrollmentStatus.ACTIVE, "classroom-public", Gender.FEMALE, "Ali"), pageable);
 
-		verify(studentRepository).findAllByTenantIdAndEnrollmentStatus(1L, EnrollmentStatus.ACTIVE,
-				org.springframework.data.domain.PageRequest.of(0, 20));
+		verify(studentRepository).search(1L, EnrollmentStatus.ACTIVE, 9L, Gender.FEMALE, "%ali%", pageable);
+	}
+
+	@Test
+	void searchStudents_withNoFilter_searchesEveryStudent() {
+		org.springframework.data.domain.PageRequest pageable = org.springframework.data.domain.PageRequest.of(0, 20);
+		when(publicIdLookup.idOrNull(any(), any())).thenReturn(null);
+		when(studentRepository.search(1L, null, null, null, null, pageable))
+				.thenReturn(org.springframework.data.domain.Page.empty());
+
+		studentService.searchStudents(StudentFilter.NONE, pageable);
+
+		verify(studentRepository).search(1L, null, null, null, null, pageable);
 	}
 }

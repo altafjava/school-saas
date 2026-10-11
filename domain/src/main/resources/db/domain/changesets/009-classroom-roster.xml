@@ -68,6 +68,9 @@
         <createIndex indexName="idx_scl_classroom_id" tableName="student_classroom_links">
             <column name="classroom_id"/>
         </createIndex>
+        <createIndex indexName="idx_scl_academic_year_id" tableName="student_classroom_links">
+            <column name="academic_year_id"/>
+        </createIndex>
         <createIndex indexName="uq_scl_student_active_academic_year" tableName="student_classroom_links" unique="true">
             <column name="student_id"/>
             <column name="active_academic_year_id"/>

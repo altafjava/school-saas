@@ -60,7 +60,7 @@ public class StudentPlacementService {
 
 	private static StudentPlacement placement(StudentClassroomLink link, Classroom classroom, AcademicYear year) {
 		return new StudentPlacement(classroom.getPublicId().toString(),
-				classroom.getGrade() + " " + classroom.getSection(), link.getRollNumber(),
+				classroom.displayLabel(), link.getRollNumber(),
 				year.getPublicId().toString());
 	}
 }

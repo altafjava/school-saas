@@ -11,8 +11,6 @@ import com.altafjava.school.domain.alumni.model.AlumniProfile;
 
 public interface AlumniProfileRepository extends JpaRepository<AlumniProfile, Long> {
 
-	Page<AlumniProfile> findAllByTenantId(Long tenantId, Pageable pageable);
-
 	// Every filter is optional (null matches all).
 	@Query("""
 			SELECT a FROM AlumniProfile a

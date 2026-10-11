@@ -26,8 +26,7 @@ public class EventService {
 	@Transactional(readOnly = true)
 	public Page<Event> list(EventFilter filter, Pageable pageable) {
 		return eventRepository.search(TenantContext.getCurrentTenantId(),
-				filter.dates().from() != null ? filter.dates().from().atStartOfDay() : null,
-				filter.dates().to() != null ? filter.dates().to().plusDays(1).atStartOfDay() : null,
+				filter.dates().startInclusive(), filter.dates().endExclusive(),
 				LikePattern.contains(filter.q()), pageable);
 	}
 

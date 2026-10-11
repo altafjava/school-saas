@@ -12,8 +12,6 @@ import com.altafjava.school.domain.inventory.model.AssetStatus;
 
 public interface AssetRepository extends JpaRepository<Asset, Long> {
 
-	Page<Asset> findAllByTenantId(Long tenantId, Pageable pageable);
-
 	// Every filter is optional (null matches all).
 	@Query("""
 			SELECT a FROM Asset a

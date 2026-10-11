@@ -13,8 +13,6 @@ import com.altafjava.school.domain.lms.model.Lesson;
 
 public interface LessonRepository extends JpaRepository<Lesson, Long> {
 
-	Page<Lesson> findAllByTenantId(Long tenantId, Pageable pageable);
-
 	Optional<Lesson> findByPublicIdAndTenantId(UUID publicId, Long tenantId);
 
 	Optional<Lesson> findByIdAndTenantId(Long id, Long tenantId);

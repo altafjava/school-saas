@@ -11,8 +11,6 @@ import com.altafjava.school.domain.curriculum.model.Board;
 
 public interface BoardRepository extends JpaRepository<Board, Long> {
 
-	Page<Board> findAllByTenantId(Long tenantId, Pageable pageable);
-
 	// Blank {@code q} matches all; the pattern comes from LikePattern.contains.
 	@Query("""
 			SELECT b FROM Board b

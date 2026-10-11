@@ -24,8 +24,6 @@ public interface TeacherRepository extends JpaRepository<Teacher, Long> {
 			""")
 	Page<Teacher> search(@Param("tenantId") Long tenantId, @Param("pattern") String pattern, Pageable pageable);
 
-	Page<Teacher> findAllByTenantId(Long tenantId, Pageable pageable);
-
 	// Unpaged, batch-context-only overload — for scheduler jobs that must process every teacher in
 	// a tenant (e.g. LeaveBalanceAllocationJob), never for a client-facing endpoint.
 	List<Teacher> findAllByTenantId(Long tenantId);

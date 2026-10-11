@@ -12,8 +12,6 @@ import com.altafjava.school.domain.leave.model.LeaveType;
 
 public interface LeaveTypeRepository extends JpaRepository<LeaveType, Long> {
 
-	Page<LeaveType> findAllByTenantId(Long tenantId, Pageable pageable);
-
 	// Blank {@code q} matches all; the pattern comes from LikePattern.contains.
 	@Query("""
 			SELECT l FROM LeaveType l

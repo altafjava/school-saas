@@ -130,6 +130,12 @@
         <createIndex indexName="idx_payslips_tenant_id" tableName="payslips">
             <column name="tenant_id"/>
         </createIndex>
+        <createIndex indexName="idx_payslips_pay_month" tableName="payslips">
+            <column name="pay_month"/>
+        </createIndex>
+        <createIndex indexName="idx_payslips_pay_year" tableName="payslips">
+            <column name="pay_year"/>
+        </createIndex>
         <createIndex indexName="idx_payslips_deleted" tableName="payslips">
             <column name="deleted"/>
         </createIndex>

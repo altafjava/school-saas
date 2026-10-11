@@ -49,6 +49,9 @@
         <createIndex indexName="idx_counseling_sessions_tenant_id" tableName="counseling_sessions">
             <column name="tenant_id"/>
         </createIndex>
+        <createIndex indexName="idx_counseling_sessions_session_date" tableName="counseling_sessions">
+            <column name="session_date"/>
+        </createIndex>
         <createIndex indexName="idx_counseling_sessions_deleted" tableName="counseling_sessions">
             <column name="deleted"/>
         </createIndex>
@@ -124,6 +127,9 @@
         </createTable>
         <createIndex indexName="idx_counseling_referrals_tenant_id" tableName="counseling_referrals">
             <column name="tenant_id"/>
+        </createIndex>
+        <createIndex indexName="idx_counseling_referrals_referred_at" tableName="counseling_referrals">
+            <column name="referred_at"/>
         </createIndex>
         <createIndex indexName="idx_counseling_referrals_deleted" tableName="counseling_referrals">
             <column name="deleted"/>

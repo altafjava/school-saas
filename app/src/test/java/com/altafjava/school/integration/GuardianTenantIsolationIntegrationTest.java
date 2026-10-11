@@ -69,7 +69,7 @@ class GuardianTenantIsolationIntegrationTest extends SchoolIntegrationTestBase {
 		guardianService.create("Jane", "Doe", "jane@guardian-a.test", "+14155552671", null);
 
 		activateTenant(tenantB);
-		Page<Guardian> tenantBGuardians = guardianService.listGuardians(PageRequest.of(0, 100));
+		Page<Guardian> tenantBGuardians = guardianService.searchGuardians(PageRequest.of(0, 100), null);
 
 		boolean found = tenantBGuardians.getContent().stream()
 				.anyMatch(g -> tenantA.getId().equals(g.getTenantId()));
@@ -113,7 +113,8 @@ class GuardianTenantIsolationIntegrationTest extends SchoolIntegrationTestBase {
 				studentA.getPublicId().toString(), RelationshipType.MOTHER, true);
 
 		activateTenant(tenantB);
-		boolean crossTenantLinkExists = guardianService.listGuardians(PageRequest.of(0, 100)).getContent().stream()
+		boolean crossTenantLinkExists = guardianService.searchGuardians(PageRequest.of(0, 100), null).getContent()
+				.stream()
 				.anyMatch(g -> g.getId().equals(link.getGuardianId()));
 		assertFalse(crossTenantLinkExists, "Tenant B must not see tenant A's guardian via any listing");
 	}

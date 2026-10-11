@@ -11,8 +11,6 @@ import com.altafjava.school.domain.transport.model.Vehicle;
 
 public interface VehicleRepository extends JpaRepository<Vehicle, Long> {
 
-	Page<Vehicle> findAllByTenantId(Long tenantId, Pageable pageable);
-
 	// Blank {@code q} matches all; the pattern comes from LikePattern.contains.
 	@Query("""
 			SELECT v FROM Vehicle v

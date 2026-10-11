@@ -70,7 +70,7 @@ class AdmissionTenantIsolationIntegrationTest extends SchoolIntegrationTestBase 
 				"555-1234", "Grade 3");
 
 		activateTenant(tenantB);
-		Page<Admission> tenantBAdmissions = admissionService.listAdmissions(PageRequest.of(0, 100));
+		Page<Admission> tenantBAdmissions = admissionService.searchAdmissions(PageRequest.of(0, 100), null, null);
 
 		boolean found = tenantBAdmissions.getContent().stream()
 				.anyMatch(a -> tenantA.getId().equals(a.getTenantId()));

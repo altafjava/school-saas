@@ -17,6 +17,7 @@ import com.altafjava.platform.application.service.TenantOnboardingService;
 import com.altafjava.platform.core.exception.ResourceNotFoundException;
 import com.altafjava.platform.core.tenant.TenantContext;
 import com.altafjava.platform.domain.tenant.model.Tenant;
+import com.altafjava.school.application.filter.StudentFilter;
 import com.altafjava.school.application.service.StudentService;
 import com.altafjava.school.base.SchoolIntegrationTestBase;
 import com.altafjava.school.config.TestPaymentConfig;
@@ -73,7 +74,7 @@ class StudentTenantIsolationIntegrationTest extends SchoolIntegrationTestBase {
 
 		// When — switch to tenant B and list students
 		activateTenant(tenantB);
-		Page<Student> tenantBStudents = studentService.listStudents(PageRequest.of(0, 100));
+		Page<Student> tenantBStudents = studentService.searchStudents(StudentFilter.NONE, PageRequest.of(0, 100));
 
 		// Then — tenant B must not see tenant A's student
 		boolean found = tenantBStudents.getContent().stream()
@@ -111,13 +112,13 @@ class StudentTenantIsolationIntegrationTest extends SchoolIntegrationTestBase {
 
 		// Tenant A sees only its own students
 		activateTenant(tenantA);
-		Page<Student> studentsA = studentService.listStudents(PageRequest.of(0, 100));
+		Page<Student> studentsA = studentService.searchStudents(StudentFilter.NONE, PageRequest.of(0, 100));
 		assertTrue(studentsA.getContent().stream().allMatch(s -> tenantA.getId().equals(s.getTenantId())),
 				"All students listed under tenant A must belong to tenant A");
 
 		// Tenant B sees only its own students
 		activateTenant(tenantB);
-		Page<Student> studentsB = studentService.listStudents(PageRequest.of(0, 100));
+		Page<Student> studentsB = studentService.searchStudents(StudentFilter.NONE, PageRequest.of(0, 100));
 		assertTrue(studentsB.getContent().stream().allMatch(s -> tenantB.getId().equals(s.getTenantId())),
 				"All students listed under tenant B must belong to tenant B");
 	}
