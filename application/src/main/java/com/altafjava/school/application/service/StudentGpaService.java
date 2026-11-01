@@ -17,7 +17,7 @@ import com.altafjava.school.application.security.ExamResultVisibilityPolicy;
 import com.altafjava.school.application.security.StudentDataAccessGuard;
 import com.altafjava.school.domain.academicyear.model.AcademicYear;
 import com.altafjava.school.domain.academicyear.repository.AcademicYearRepository;
-import com.altafjava.school.domain.curriculum.model.GradingScaleThreshold;
+import com.altafjava.school.domain.curriculum.model.GradeBand;
 import com.altafjava.school.domain.exam.model.Exam;
 import com.altafjava.school.domain.exam.repository.ExamRepository;
 import com.altafjava.school.domain.grade.model.Grade;
@@ -128,7 +128,7 @@ public class StudentGpaService {
 	}
 
 	private Optional<WeightedPoints> resolveWeightedPoints(GradedExam gradedExam) {
-		List<GradingScaleThreshold> thresholds = gradingScaleService
+		List<GradeBand> thresholds = gradingScaleService
 				.resolveEffectiveThresholds(gradedExam.exam().getClassroomId());
 		return gradeCalculator.resolvePoints(gradedExam.grade().getGradeLetter(), thresholds)
 				.map(points -> new WeightedPoints(points, gradedExam.exam().getWeightage()));

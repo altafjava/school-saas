@@ -23,7 +23,7 @@ import com.altafjava.school.application.security.ExamResultVisibilityPolicy;
 import com.altafjava.school.application.security.StudentDataAccessGuard;
 import com.altafjava.school.domain.academicyear.model.AcademicYear;
 import com.altafjava.school.domain.academicyear.repository.AcademicYearRepository;
-import com.altafjava.school.domain.curriculum.model.GradingScaleThreshold;
+import com.altafjava.school.domain.curriculum.model.GradeBand;
 import com.altafjava.school.domain.exam.model.Exam;
 import com.altafjava.school.domain.exam.repository.ExamRepository;
 import com.altafjava.school.domain.grade.model.Grade;
@@ -96,8 +96,8 @@ class StudentGpaServiceTest {
 		when(gradeRepository.findByStudentId(1L, 3L)).thenReturn(List.of(gradeA, gradeB));
 		when(examRepository.findAllByIdInAndTenantId(List.of(1L, 2L), 1L)).thenReturn(List.of(examA, examB));
 		when(gradingScaleService.resolveEffectiveThresholds(10L)).thenReturn(List.of(
-				GradingScaleThreshold.create(99L, "A", new BigDecimal("90"), new BigDecimal("4.0")),
-				GradingScaleThreshold.create(99L, "B", new BigDecimal("80"), new BigDecimal("3.0"))));
+				new GradeBand("A", new BigDecimal("90"), new BigDecimal("4.0")),
+				new GradeBand("B", new BigDecimal("80"), new BigDecimal("3.0"))));
 
 		GpaResult result = studentGpaService.calculateCumulativeGpa(STUDENT_PUBLIC_ID.toString());
 
@@ -124,7 +124,7 @@ class StudentGpaServiceTest {
 		when(gradeRepository.findByStudentId(1L, 3L)).thenReturn(List.of(gradeA, gradeStale));
 		when(examRepository.findAllByIdInAndTenantId(List.of(1L, 2L), 1L)).thenReturn(List.of(examA, examStale));
 		when(gradingScaleService.resolveEffectiveThresholds(10L)).thenReturn(List.of(
-				GradingScaleThreshold.create(99L, "A", new BigDecimal("90"), new BigDecimal("4.0"))));
+				new GradeBand("A", new BigDecimal("90"), new BigDecimal("4.0"))));
 
 		GpaResult result = studentGpaService.calculateCumulativeGpa(STUDENT_PUBLIC_ID.toString());
 
@@ -145,7 +145,7 @@ class StudentGpaServiceTest {
 		when(examRepository.findAllByIdInAndTenantId(List.of(1L, 2L), 1L))
 				.thenReturn(List.of(examInTerm, examOutOfTerm));
 		when(gradingScaleService.resolveEffectiveThresholds(10L)).thenReturn(List.of(
-				GradingScaleThreshold.create(99L, "A", new BigDecimal("90"), new BigDecimal("4.0"))));
+				new GradeBand("A", new BigDecimal("90"), new BigDecimal("4.0"))));
 
 		GpaResult result = studentGpaService.calculateTermGpa(STUDENT_PUBLIC_ID.toString(), termPublicId.toString());
 
@@ -164,7 +164,7 @@ class StudentGpaServiceTest {
 		when(gradeRepository.findByStudentId(1L, 3L)).thenReturn(List.of(inYear));
 		when(examRepository.findAllByIdInAndTenantId(List.of(1L), 1L)).thenReturn(List.of(examInYear));
 		when(gradingScaleService.resolveEffectiveThresholds(10L)).thenReturn(List.of(
-				GradingScaleThreshold.create(99L, "A", new BigDecimal("90"), new BigDecimal("4.0"))));
+				new GradeBand("A", new BigDecimal("90"), new BigDecimal("4.0"))));
 
 		GpaResult result = studentGpaService.calculateAcademicYearGpa(STUDENT_PUBLIC_ID.toString(),
 				academicYearPublicId.toString());
@@ -185,8 +185,8 @@ class StudentGpaServiceTest {
 				.thenReturn(List.of(gradeWithExam(1L, "B"), gradeWithExam(2L, "A")));
 		when(examRepository.findAllByIdInAndTenantId(List.of(1L, 2L), 1L)).thenReturn(List.of(heavy, light));
 		when(gradingScaleService.resolveEffectiveThresholds(10L)).thenReturn(List.of(
-				GradingScaleThreshold.create(99L, "A", new BigDecimal("90"), new BigDecimal("4.0")),
-				GradingScaleThreshold.create(99L, "B", new BigDecimal("80"), new BigDecimal("3.0"))));
+				new GradeBand("A", new BigDecimal("90"), new BigDecimal("4.0")),
+				new GradeBand("B", new BigDecimal("80"), new BigDecimal("3.0"))));
 
 		GpaResult result = studentGpaService.calculateCumulativeGpa(STUDENT_PUBLIC_ID.toString());
 
@@ -205,8 +205,8 @@ class StudentGpaServiceTest {
 				.thenReturn(List.of(gradeWithExam(1L, "A"), gradeWithExam(2L, "B")));
 		when(examRepository.findAllByIdInAndTenantId(List.of(1L, 2L), 1L)).thenReturn(List.of(published, unpublished));
 		when(gradingScaleService.resolveEffectiveThresholds(10L)).thenReturn(List.of(
-				GradingScaleThreshold.create(99L, "A", new BigDecimal("90"), new BigDecimal("4.0")),
-				GradingScaleThreshold.create(99L, "B", new BigDecimal("80"), new BigDecimal("3.0"))));
+				new GradeBand("A", new BigDecimal("90"), new BigDecimal("4.0")),
+				new GradeBand("B", new BigDecimal("80"), new BigDecimal("3.0"))));
 
 		GpaResult result = studentGpaService.calculateCumulativeGpa(STUDENT_PUBLIC_ID.toString());
 

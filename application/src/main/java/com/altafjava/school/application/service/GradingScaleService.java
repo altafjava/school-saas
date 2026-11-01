@@ -18,6 +18,7 @@ import com.altafjava.platform.core.tenant.TenantContext;
 import com.altafjava.school.domain.classroom.model.Classroom;
 import com.altafjava.school.domain.classroom.repository.ClassroomRepository;
 import com.altafjava.school.domain.curriculum.model.Curriculum;
+import com.altafjava.school.domain.curriculum.model.GradeBand;
 import com.altafjava.school.domain.curriculum.model.GradingScale;
 import com.altafjava.school.domain.curriculum.model.GradingScaleThreshold;
 import com.altafjava.school.domain.curriculum.repository.CurriculumRepository;
@@ -129,8 +130,8 @@ public class GradingScaleService {
 	}
 
 	@Transactional(readOnly = true)
-	@Cacheable(cacheNames = CACHE_GRADING_SCALE_THRESHOLDS, keyGenerator = "tenantAwareCacheKeyGenerator")
-	public List<GradingScaleThreshold> resolveEffectiveThresholds(Long classroomId) {
+	@Cacheable(cacheNames = CACHE_GRADING_SCALE_THRESHOLDS, keyGenerator = "tenantAwareCacheKeyGenerator", sync = true)
+	public List<GradeBand> resolveEffectiveThresholds(Long classroomId) {
 		Long tenantId = TenantContext.getCurrentTenantId();
 		Long gradingScaleId = resolveGradingScaleId(tenantId, classroomId);
 		List<GradingScaleThreshold> thresholds = gradingScaleThresholdRepository
@@ -138,7 +139,7 @@ public class GradingScaleService {
 		if (thresholds.isEmpty()) {
 			throw new BusinessException("Grading scale " + gradingScaleId + " has no thresholds configured");
 		}
-		return thresholds;
+		return thresholds.stream().map(GradeBand::of).toList();
 	}
 
 	private Long resolveGradingScaleId(Long tenantId, Long classroomId) {

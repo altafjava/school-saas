@@ -25,6 +25,7 @@ import com.altafjava.platform.core.tenant.TenantType;
 import com.altafjava.school.domain.classroom.model.Classroom;
 import com.altafjava.school.domain.classroom.repository.ClassroomRepository;
 import com.altafjava.school.domain.curriculum.model.Curriculum;
+import com.altafjava.school.domain.curriculum.model.GradeBand;
 import com.altafjava.school.domain.curriculum.model.GradingScale;
 import com.altafjava.school.domain.curriculum.model.GradingScaleThreshold;
 import com.altafjava.school.domain.curriculum.repository.CurriculumRepository;
@@ -146,7 +147,7 @@ class GradingScaleServiceTest {
 		when(gradingScaleThresholdRepository.findAllByGradingScaleIdAndTenantId(40L, 1L))
 				.thenReturn(List.of(threshold));
 
-		List<GradingScaleThreshold> resolved = gradingScaleService.resolveEffectiveThresholds(20L);
+		List<GradeBand> resolved = gradingScaleService.resolveEffectiveThresholds(20L);
 
 		assertEquals(1, resolved.size());
 		verify(gradingScaleRepository, never()).findByIsDefaultTrueAndTenantId(any());
@@ -165,7 +166,7 @@ class GradingScaleServiceTest {
 		when(gradingScaleThresholdRepository.findAllByGradingScaleIdAndTenantId(99L, 1L))
 				.thenReturn(List.of(threshold));
 
-		List<GradingScaleThreshold> resolved = gradingScaleService.resolveEffectiveThresholds(20L);
+		List<GradeBand> resolved = gradingScaleService.resolveEffectiveThresholds(20L);
 
 		assertEquals(1, resolved.size());
 	}

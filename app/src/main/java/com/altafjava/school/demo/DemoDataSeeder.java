@@ -2,6 +2,8 @@ package com.altafjava.school.demo;
 
 import java.math.BigDecimal;
 import java.time.DayOfWeek;
+import java.time.Duration;
+import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -81,6 +83,9 @@ public class DemoDataSeeder {
 	public static final String SUBDOMAIN = "demo";
 	public static final String ADMIN_EMAIL = "admin@demo.school";
 	public static final String PASSWORD = "Demo@12345";
+	private static final String LAST_SEEDED_EMAIL = "parent@demo.school";
+	private static final Duration PROVISIONING_TIMEOUT = Duration.ofSeconds(60);
+	private static final Duration PROVISIONING_POLL_INTERVAL = Duration.ofMillis(100);
 
 	private static final long PLAN_BASIC = 2L;
 	private static final String[] GIVEN = { "Aarav", "Diya", "Vivaan", "Anaya", "Aditya", "Isha", "Arjun", "Meera",
@@ -117,20 +122,44 @@ public class DemoDataSeeder {
 	private final PasswordEncoder passwordEncoder;
 	private final PlatformTransactionManager transactionManager;
 
-	/** @return the demo tenant, newly created or already present */
+	/**
+	 * Seeds in one transaction, so a failure leaves no partial school. The parent login is created
+	 * last, which makes it the marker that seeding finished; a failed attempt reruns at next start.
+	 *
+	 * @return the demo tenant, newly created or already present
+	 */
 	public Tenant seed() {
-		var existing = tenantRepository.findBySubdomain(SUBDOMAIN);
-		if (existing.isPresent()) {
-			log.info("action=demo_seed_skipped reason=tenant-exists subdomain={}", SUBDOMAIN);
-			return existing.get();
+		Tenant tenant = tenantRepository.findBySubdomain(SUBDOMAIN).orElseGet(() -> onboardingService.registerTenant(
+				new RegisterTenantCommand("Demo School", SUBDOMAIN, PLAN_BASIC, ADMIN_EMAIL, PASSWORD, "INR")));
+		if (userRepository.existsByEmail(LAST_SEEDED_EMAIL)) {
+			log.info("action=demo_seed_skipped reason=already-seeded subdomain={}", SUBDOMAIN);
+			return tenant;
 		}
-		Tenant tenant = onboardingService.registerTenant(
-				new RegisterTenantCommand("Demo School", SUBDOMAIN, PLAN_BASIC, ADMIN_EMAIL, PASSWORD, "INR"));
 		TenantContext.runAsTenant(new TenantContextSnapshot(tenant.getId(), tenant.getPublicId(),
 				tenant.getSubdomain(), tenant.getType(), null),
-				() -> runAsTenantAdmin(tenant.getId(), this::seedTenant));
+				() -> runAsTenantAdmin(tenant.getId(), () -> {
+					awaitTenantProvisioning();
+					new TransactionTemplate(transactionManager).executeWithoutResult(status -> seedTenant());
+				}));
 		log.info("action=demo_seed_completed subdomain={} adminEmail={}", SUBDOMAIN, ADMIN_EMAIL);
 		return tenant;
+	}
+
+	// Registration provisions tenant defaults asynchronously in one transaction, so seeing any of
+	// them means all are committed. Seeding earlier would hide them behind the seed's own snapshot.
+	private void awaitTenantProvisioning() {
+		Instant deadline = Instant.now().plus(PROVISIONING_TIMEOUT);
+		while (examTypeDefinitionService.listActive().isEmpty()) {
+			if (Instant.now().isAfter(deadline)) {
+				throw new IllegalStateException("Tenant provisioning did not finish within " + PROVISIONING_TIMEOUT);
+			}
+			try {
+				Thread.sleep(PROVISIONING_POLL_INTERVAL);
+			} catch (InterruptedException e) {
+				Thread.currentThread().interrupt();
+				throw new IllegalStateException("Interrupted while waiting for tenant provisioning", e);
+			}
+		}
 	}
 
 	// The services enforce the caller's classroom scope, so the seed needs a principal that holds it.
@@ -262,9 +291,7 @@ public class DemoDataSeeder {
 
 	private void seedExamsAndGrades(Random random, Term term, List<Subject> subjects, List<Classroom> classrooms,
 			List<Student> students) {
-		List<ExamTypeDefinition> types = examTypeDefinitionService.listActive();
-		ExamTypeDefinition type = types.isEmpty() ? examTypeDefinitionService.create("UNIT_TEST", "Unit test", 1)
-				: types.get(0);
+		ExamTypeDefinition type = examTypeDefinitionService.listActive().getFirst();
 		LocalDateTime when = LocalDateTime.now().minusDays(14);
 		for (int c = 0; c < classrooms.size(); c++) {
 			Classroom classroom = classrooms.get(c);
@@ -320,7 +347,7 @@ public class DemoDataSeeder {
 			student.setUserId(createUser("student@demo.school", student.getFirstName(), student.getLastName(),
 					SchoolRoles.STUDENT).getId());
 			studentRepository.save(student);
-			guardian.linkUserAccount(createUser("parent@demo.school", guardian.getFirstName(),
+			guardian.linkUserAccount(createUser(LAST_SEEDED_EMAIL, guardian.getFirstName(),
 					guardian.getLastName(), SchoolRoles.PARENT).getId());
 			guardianRepository.save(guardian);
 		});

@@ -67,7 +67,7 @@ class ApplicationBootSmokeTest extends SchoolInfrastructureTestBase {
 	void resolveDemoTenant() {
 		tenantId = tenantRepository.findBySubdomain(DemoDataSeeder.SUBDOMAIN).orElseThrow().getId();
 		// All logins here share one client IP, so without this the suite trips the real login limit.
-		Set<String> loginBuckets = redis.keys("endpoint:login:*");
+		Set<String> loginBuckets = redis.keys("endpoint:LOGIN:*");
 		redis.delete(loginBuckets);
 	}
 

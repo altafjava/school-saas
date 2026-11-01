@@ -142,6 +142,9 @@
     "name" : "Submission",
     "description" : "APIs for managing Submission operations.\n\n**Tenant Scope**: All endpoints are tenant-scoped via X-Tenant-ID header.\n**Auth**: JWT Bearer token required on all endpoints unless marked public."
   }, {
+    "name" : "Tenant Rate Limits",
+    "description" : "A tenant's rate limits. A tenant can lower a platform limit but not raise it."
+  }, {
     "name" : "ApiKey Management",
     "description" : "APIs for managing ApiKey operations.\n\n**Tenant Scope**: All endpoints are tenant-scoped via X-Tenant-ID header.\n**Auth**: JWT Bearer token required on all endpoints unless marked public."
   }, {
@@ -1701,6 +1704,165 @@
         "responses" : {
           "204" : {
             "description" : "Config deleted successfully"
+          },
+          "401" : {
+            "description" : "Missing, expired or revoked access token",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "403" : {
+            "description" : "The caller lacks the required permission",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "404" : {
+            "description" : "The resource does not exist in the caller's tenant",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "500" : {
+            "description" : "Unexpected error; quote error.traceId when reporting it",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "security" : [ {
+          "bearerAuth" : [ ]
+        }, {
+          "tenantHeader" : [ ]
+        } ]
+      }
+    },
+    "/api/v1/tenant-settings/rate-limits/{rule}" : {
+      "put" : {
+        "tags" : [ "Tenant Rate Limits" ],
+        "summary" : "Lower a Rate Limit",
+        "description" : "Sets this tenant's limit for one rule, up to the platform limit.",
+        "operationId" : "tenantRateLimitTighten",
+        "parameters" : [ {
+          "name" : "rule",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "string",
+            "enum" : [ "LOGIN", "PASSWORD_RESET_REQUEST", "PASSWORD_RESET_CONFIRM", "OTP_REQUEST", "OTP_VERIFY", "MFA_VERIFY", "USER", "ANONYMOUS_CLIENT" ]
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/UpdateRateLimitRequest"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiResponseRateLimitResponse"
+                }
+              }
+            }
+          },
+          "400" : {
+            "description" : "Validation failed or a business rule rejected the request",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "401" : {
+            "description" : "Missing, expired or revoked access token",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "403" : {
+            "description" : "The caller lacks the required permission",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "404" : {
+            "description" : "The resource does not exist in the caller's tenant",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "500" : {
+            "description" : "Unexpected error; quote error.traceId when reporting it",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "security" : [ {
+          "bearerAuth" : [ ]
+        }, {
+          "tenantHeader" : [ ]
+        } ]
+      },
+      "delete" : {
+        "tags" : [ "Tenant Rate Limits" ],
+        "summary" : "Reset a Rate Limit",
+        "description" : "Returns one rule to the platform limit.",
+        "operationId" : "tenantRateLimitReset",
+        "parameters" : [ {
+          "name" : "rule",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "string",
+            "enum" : [ "LOGIN", "PASSWORD_RESET_REQUEST", "PASSWORD_RESET_CONFIRM", "OTP_REQUEST", "OTP_VERIFY", "MFA_VERIFY", "USER", "ANONYMOUS_CLIENT" ]
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "OK"
           },
           "401" : {
             "description" : "Missing, expired or revoked access token",
@@ -48158,6 +48320,61 @@
         } ]
       }
     },
+    "/api/v1/tenant-settings/rate-limits" : {
+      "get" : {
+        "tags" : [ "Tenant Rate Limits" ],
+        "summary" : "List Rate Limits",
+        "description" : "The platform limit and the limit in force for each rule.",
+        "operationId" : "tenantRateLimitList",
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiResponseListRateLimitResponse"
+                }
+              }
+            }
+          },
+          "401" : {
+            "description" : "Missing, expired or revoked access token",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "403" : {
+            "description" : "The caller lacks the required permission",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "500" : {
+            "description" : "Unexpected error; quote error.traceId when reporting it",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "security" : [ {
+          "bearerAuth" : [ ]
+        }, {
+          "tenantHeader" : [ ]
+        } ]
+      }
+    },
     "/api/v1/tenant-settings/push-providers" : {
       "get" : {
         "tags" : [ "Push Providers (Tenant)" ],
@@ -63682,6 +63899,67 @@
         },
         "required" : [ "active", "publicId", "secretConfigured" ]
       },
+      "UpdateRateLimitRequest" : {
+        "type" : "object",
+        "properties" : {
+          "limit" : {
+            "type" : "integer",
+            "format" : "int64",
+            "description" : "New limit for one window. Cannot exceed the platform limit.",
+            "example" : 3,
+            "minimum" : 1
+          }
+        },
+        "required" : [ "limit" ]
+      },
+      "ApiResponseRateLimitResponse" : {
+        "type" : "object",
+        "properties" : {
+          "success" : {
+            "type" : "boolean"
+          },
+          "data" : {
+            "$ref" : "#/components/schemas/RateLimitResponse"
+          },
+          "error" : {
+            "$ref" : "#/components/schemas/ApiErrorDetail"
+          },
+          "meta" : {
+            "$ref" : "#/components/schemas/ApiResponseMeta"
+          }
+        },
+        "required" : [ "success" ]
+      },
+      "RateLimitResponse" : {
+        "type" : "object",
+        "properties" : {
+          "rule" : {
+            "type" : "string",
+            "description" : "The limited action",
+            "enum" : [ "LOGIN", "PASSWORD_RESET_REQUEST", "PASSWORD_RESET_CONFIRM", "OTP_REQUEST", "OTP_VERIFY", "MFA_VERIFY", "USER", "ANONYMOUS_CLIENT" ],
+            "example" : "LOGIN"
+          },
+          "windowSeconds" : {
+            "type" : "integer",
+            "format" : "int64",
+            "description" : "Length of one limit window in seconds",
+            "example" : 60
+          },
+          "platformLimit" : {
+            "type" : "integer",
+            "format" : "int64",
+            "description" : "Highest limit this tenant may use",
+            "example" : 5
+          },
+          "limit" : {
+            "type" : "integer",
+            "format" : "int64",
+            "description" : "Limit in force for this tenant",
+            "example" : 5
+          }
+        },
+        "required" : [ "limit", "platformLimit", "windowSeconds" ]
+      },
       "UpsertPushProviderConfigRequest" : {
         "type" : "object",
         "properties" : {
@@ -77720,6 +77998,27 @@
             "type" : "array",
             "items" : {
               "$ref" : "#/components/schemas/ScimTokenResponse"
+            }
+          },
+          "error" : {
+            "$ref" : "#/components/schemas/ApiErrorDetail"
+          },
+          "meta" : {
+            "$ref" : "#/components/schemas/ApiResponseMeta"
+          }
+        },
+        "required" : [ "success" ]
+      },
+      "ApiResponseListRateLimitResponse" : {
+        "type" : "object",
+        "properties" : {
+          "success" : {
+            "type" : "boolean"
+          },
+          "data" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/RateLimitResponse"
             }
           },
           "error" : {

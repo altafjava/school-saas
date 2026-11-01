@@ -2,8 +2,6 @@ package com.altafjava.school.application.service;
 
 import java.util.UUID;
 import org.springframework.cache.annotation.CacheEvict;
-import org.springframework.cache.annotation.Cacheable;
-import org.springframework.cache.annotation.Caching;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -22,8 +20,6 @@ import com.altafjava.school.domain.curriculum.repository.GradingScaleRepository;
 public class CurriculumService {
 
 	/** Board/curriculum reference data changes rarely and is read on nearly every admission/roster path. */
-	private static final String CACHE_CURRICULUM_LOOKUP = "curriculumLookup";
-
 	private final CurriculumRepository curriculumRepository;
 	private final BoardRepository boardRepository;
 	private final GradingScaleRepository gradingScaleRepository;
@@ -41,7 +37,6 @@ public class CurriculumService {
 	}
 
 	@Transactional(readOnly = true)
-	@Cacheable(cacheNames = CACHE_CURRICULUM_LOOKUP, keyGenerator = "tenantAwareCacheKeyGenerator")
 	public Curriculum findByPublicId(String publicId) {
 		Long tenantId = TenantContext.getCurrentTenantId();
 		return curriculumRepository.findByPublicIdAndTenantId(UUID.fromString(publicId), tenantId)
@@ -60,7 +55,6 @@ public class CurriculumService {
 	}
 
 	@Transactional
-	@CacheEvict(cacheNames = CACHE_CURRICULUM_LOOKUP, allEntries = true)
 	public Curriculum updateDetails(String publicId, String name, String code, String description,
 			ExpectedVersion expectedVersion) {
 		Curriculum curriculum = findByPublicId(publicId);
@@ -73,10 +67,7 @@ public class CurriculumService {
 	// classroom under this curriculum resolves to, and that cache has no way to know which
 	// classroom IDs are affected.
 	@Transactional
-	@Caching(evict = {
-			@CacheEvict(cacheNames = CACHE_CURRICULUM_LOOKUP, allEntries = true),
-			@CacheEvict(cacheNames = GradingScaleService.CACHE_GRADING_SCALE_THRESHOLDS, allEntries = true)
-	})
+	@CacheEvict(cacheNames = GradingScaleService.CACHE_GRADING_SCALE_THRESHOLDS, allEntries = true)
 	public Curriculum assignGradingScale(String publicId, String gradingScalePublicId,
 			ExpectedVersion expectedVersion) {
 		Long tenantId = TenantContext.getCurrentTenantId();
@@ -90,7 +81,6 @@ public class CurriculumService {
 	}
 
 	@Transactional
-	@CacheEvict(cacheNames = CACHE_CURRICULUM_LOOKUP, allEntries = true)
 	public Curriculum deactivate(String publicId) {
 		Curriculum curriculum = findByPublicId(publicId);
 		curriculum.deactivate();

@@ -44,6 +44,8 @@ app:
 
 platform:
   security:
+    # CIDRs of the BFF and load balancers. Only these may set X-Forwarded-For.
+    trusted-proxies: ${TRUSTED_PROXIES:}
     encryption:
       key: ${PLATFORM_ENCRYPTION_KEY}
 

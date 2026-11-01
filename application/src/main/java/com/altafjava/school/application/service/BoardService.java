@@ -1,8 +1,6 @@
 package com.altafjava.school.application.service;
 
 import java.util.UUID;
-import org.springframework.cache.annotation.CacheEvict;
-import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -19,8 +17,6 @@ import com.altafjava.school.domain.curriculum.repository.BoardRepository;
 public class BoardService {
 
 	/** Board reference data changes rarely and is read on nearly every admission/roster path. */
-	private static final String CACHE_BOARD_LOOKUP = "boardLookup";
-
 	private final BoardRepository boardRepository;
 
 	public BoardService(BoardRepository boardRepository) {
@@ -33,7 +29,6 @@ public class BoardService {
 	}
 
 	@Transactional(readOnly = true)
-	@Cacheable(cacheNames = CACHE_BOARD_LOOKUP, keyGenerator = "tenantAwareCacheKeyGenerator")
 	public Board findByPublicId(String publicId) {
 		Long tenantId = TenantContext.getCurrentTenantId();
 		return boardRepository.findByPublicIdAndTenantId(UUID.fromString(publicId), tenantId)
@@ -50,7 +45,6 @@ public class BoardService {
 	}
 
 	@Transactional
-	@CacheEvict(cacheNames = CACHE_BOARD_LOOKUP, allEntries = true)
 	public Board updateDetails(String publicId, String name, String code, String description,
 			ExpectedVersion expectedVersion) {
 		Board board = findByPublicId(publicId);
@@ -60,7 +54,6 @@ public class BoardService {
 	}
 
 	@Transactional
-	@CacheEvict(cacheNames = CACHE_BOARD_LOOKUP, allEntries = true)
 	public Board deactivate(String publicId) {
 		Board board = findByPublicId(publicId);
 		board.deactivate();
