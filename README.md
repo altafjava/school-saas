@@ -121,10 +121,11 @@ docker compose up -d mariadb redis elasticsearch
 
 ## Running Tests
 
-Tests use TestContainers and spin up their own isolated MariaDB and RabbitMQ containers automatically — no manual broker required and no conflict with the running dev containers.
+Tests start their own MariaDB, Redis and RabbitMQ containers through platform-saas's `test-support` module. Docker must be running; no local service is used.
 
 ```bash
-./gradlew test
+./gradlew test                    # unit, integration and E2E tests
+./gradlew :app:infrastructureTest # boots the real app with demo seed, with no doubles; part of build
 ```
 
 ---

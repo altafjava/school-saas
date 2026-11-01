@@ -324,9 +324,7 @@ public class DemoDataSeeder {
 					guardian.getLastName(), SchoolRoles.PARENT).getId());
 			guardianRepository.save(guardian);
 		});
-		log.info(
-				"action=demo_logins_created password={} roles=admin,principal,finance,hr,academic,teacher,student,parent",
-				PASSWORD);
+		log.info("action=demo_logins_created roles=admin,principal,finance,hr,academic,teacher,student,parent");
 	}
 
 	private User createUser(String email, String firstName, String lastName, String roleName) {

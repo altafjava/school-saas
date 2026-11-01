@@ -4,7 +4,7 @@ pitest-core = "1.25.9"
 pitest-junit5-plugin = "1.2.3"
 archunit = "1.5.0"
 rest-assured = "5.4.0"
-testcontainers = "2.0.1"
+testcontainers = "2.0.5"
 resilience4j = "2.4.0"
 shedlock = "7.7.0"
 mapstruct = "1.6.3"
@@ -65,11 +65,6 @@ json-path = { module = "io.rest-assured:json-path", version.ref = "rest-assured"
 json-schema-validator = { module = "io.rest-assured:json-schema-validator", version.ref = "rest-assured" }
 
 # Testcontainers
-testcontainers-bom = { module = "org.testcontainers:testcontainers-bom", version.ref = "testcontainers" }
-testcontainers-core = { module = "org.testcontainers:testcontainers" }
-testcontainers-junit-jupiter = { module = "org.testcontainers:testcontainers-junit-jupiter" }
-testcontainers-mariadb = { module = "org.testcontainers:testcontainers-mariadb" }
-testcontainers-rabbitmq = { module = "org.testcontainers:testcontainers-rabbitmq" }
 
 # Stripe
 stripe-java = { module = "com.stripe:stripe-java", version = "24.13.0" }
