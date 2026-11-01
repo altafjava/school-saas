@@ -32,6 +32,7 @@ import com.altafjava.school.api.mapper.FeeDiscountMapper;
 import com.altafjava.school.api.mapper.FeeInstallmentMapper;
 import com.altafjava.school.api.mapper.FeeRefundMapper;
 import com.altafjava.school.api.ratelimit.RateLimited;
+import com.altafjava.school.application.reference.ReferenceSummaries;
 import com.altafjava.school.application.service.FeeDiscountService;
 import com.altafjava.school.application.service.FeeInstallmentService;
 import com.altafjava.school.application.service.FeeRefundService;
@@ -42,6 +43,8 @@ import lombok.RequiredArgsConstructor;
 @RequestMapping("/api/v1")
 @RequiredArgsConstructor
 public class FeeAdjustmentController implements FeeAdjustmentApi {
+
+	private final ReferenceSummaries referenceSummaries;
 
 	private static final BigDecimal BASIS_POINTS_PER_PERCENT = BigDecimal.valueOf(100);
 
@@ -56,8 +59,8 @@ public class FeeAdjustmentController implements FeeAdjustmentApi {
 	@GetMapping("/students/{studentPublicId}/fee-discounts")
 	@PreAuthorize("@permissionAuthorizationService.hasPermission('FEE_DISCOUNT_MANAGE')")
 	public ApiResponse<List<FeeDiscountResponse>> listDiscounts(@PathVariable String studentPublicId) {
-		return ApiResponse.success(feeDiscountService.listForStudent(studentPublicId).stream()
-				.map(feeDiscountMapper::toResponse).toList());
+		return ApiResponse.success(referenceSummaries.mapList(feeDiscountService.listForStudent(studentPublicId),
+				feeDiscountMapper::toResponse));
 	}
 
 	@Override
@@ -108,6 +111,7 @@ public class FeeAdjustmentController implements FeeAdjustmentApi {
 
 	@Override
 	@DeleteMapping("/students/{studentPublicId}/fee-installment-plans/{feeStructurePublicId}")
+	@ResponseStatus(HttpStatus.NO_CONTENT)
 	@PreAuthorize("@permissionAuthorizationService.hasPermission('FEE_INSTALLMENT_MANAGE')")
 	public ApiResponse<Void> removePlan(@PathVariable String studentPublicId,
 			@PathVariable String feeStructurePublicId) {
@@ -130,16 +134,16 @@ public class FeeAdjustmentController implements FeeAdjustmentApi {
 	@GetMapping("/fee-payments/{paymentPublicId}/refunds")
 	@PreAuthorize("@permissionAuthorizationService.hasPermission('FEE_REFUND_MANAGE')")
 	public ApiResponse<List<FeeRefundResponse>> listRefundsForPayment(@PathVariable String paymentPublicId) {
-		return ApiResponse.success(feeRefundService.listForPayment(paymentPublicId).stream()
-				.map(feeRefundMapper::toResponse).toList());
+		return ApiResponse.success(referenceSummaries.mapList(feeRefundService.listForPayment(paymentPublicId),
+				feeRefundMapper::toResponse));
 	}
 
 	@Override
 	@GetMapping("/students/{studentPublicId}/fee-refunds")
 	@PreAuthorize("@permissionAuthorizationService.hasPermission('FEE_REFUND_MANAGE')")
 	public ApiResponse<List<FeeRefundResponse>> listRefundsForStudent(@PathVariable String studentPublicId) {
-		return ApiResponse.success(feeRefundService.listForStudent(studentPublicId).stream()
-				.map(feeRefundMapper::toResponse).toList());
+		return ApiResponse.success(referenceSummaries.mapList(feeRefundService.listForStudent(studentPublicId),
+				feeRefundMapper::toResponse));
 	}
 
 	private static int toBasisPoints(BigDecimal percentage) {

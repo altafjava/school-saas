@@ -2,6 +2,7 @@ package com.altafjava.school.api.dto.response;
 
 import java.time.Instant;
 import java.time.LocalDate;
+import com.altafjava.school.application.reference.ReferenceSummary;
 
 public record LifecycleTransitionResponse(
 		String publicId,
@@ -11,5 +12,6 @@ public record LifecycleTransitionResponse(
 		String reason,
 		LocalDate effectiveOn,
 		Instant recordedAt,
-		String recordedByUserPublicId) {
+		String recordedByUserPublicId,
+		ReferenceSummary recordedByUser) {
 }

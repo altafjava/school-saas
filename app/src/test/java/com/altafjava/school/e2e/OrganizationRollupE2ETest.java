@@ -50,11 +50,10 @@ import io.restassured.http.ContentType;
  * <p>
  * The two {@code rollupHappyPath_*} tests are also the regression tests for the real hazard
  * documented on {@link com.altafjava.school.application.rollup.OrganizationRollupService}: a
- * SUPER_ADMIN (system-tenant) token resolves with no Hibernate {@code tenantFilter} bound for the
- * request, but a real tenant user like {@code ORG_ADMIN} does get the filter bound to their home
- * tenant — without {@code TenantFilterSwitcher} explicitly re-pointing it per campus, the
- * per-campus {@code TenantContext.callAsTenant} loop would silently return zero rows for every
- * campus but the caller's own. Only an E2E test that goes through the real filter chain can catch
+ * SUPER_ADMIN token sees every tenant, but a real tenant user like {@code ORG_ADMIN} is scoped to
+ * their home tenant, so the per-campus {@code TenantContext.callAsTenant} loop must move the
+ * Hibernate {@code tenantFilter} with it or every campus but the caller's own returns zero rows. Only an E2E test that
+ * goes through the real filter chain can catch
  * that regression — the service-layer integration test cannot, since it never engages
  * {@code TenantContextFilter}/{@code TenantFilterRequestFilter}.
  */
@@ -190,10 +189,7 @@ class OrganizationRollupE2ETest extends SchoolIntegrationTestBase {
 
 	@Test
 	void rollupHappyPath_asOrgAdminForTheirOwnOrganization_aggregatesBothCampusesCorrectly() {
-		// Regression test for the Hibernate tenantFilter fix (OrganizationRollupService /
-		// TenantFilterSwitcher): unlike the SUPER_ADMIN token above, an ORG_ADMIN is a real tenant
-		// user — their request DOES get the filter bound to their home tenant (campusA). Without
-		// the fix, campusB's rows would be silently ANDed out and every total below would be wrong.
+		// An ORG_ADMIN is scoped to campusA, so campusB only shows if the filter follows callAsTenant.
 		String orgAdminToken = authHelper.tokenForOrgMember(campusA.getId(), 1L, "org-admin@e2e-rollup.test",
 				"ORG_ADMIN", organization.getId());
 

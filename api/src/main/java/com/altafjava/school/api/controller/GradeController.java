@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.altafjava.platform.api.dto.response.ApiResponse;
 import com.altafjava.platform.core.security.AuthenticatedUser;
 import com.altafjava.school.api.controller.api.GradeApi;
+import com.altafjava.school.api.dto.request.BulkRecordGradesRequest;
 import com.altafjava.school.api.dto.request.CorrectGradeRequest;
 import com.altafjava.school.api.dto.request.RecordGradeRequest;
 import com.altafjava.school.api.dto.response.GradeCorrectionResponse;
@@ -25,7 +26,10 @@ import com.altafjava.school.api.mapper.GradeMapper;
 import com.altafjava.school.api.support.PlatformPageMapper;
 import com.altafjava.school.api.support.SortableBy;
 import com.altafjava.school.api.support.SpringDataPageableResolver;
+import com.altafjava.school.application.bulk.BulkEntryResult;
 import com.altafjava.school.application.filter.GradeFilter;
+import com.altafjava.school.application.reference.ReferenceSummaries;
+import com.altafjava.school.application.service.GradeBulkService;
 import com.altafjava.school.application.service.GradeService;
 
 @RestController
@@ -33,14 +37,20 @@ import com.altafjava.school.application.service.GradeService;
 public class GradeController implements GradeApi {
 
 	private final GradeService gradeService;
+	private final GradeBulkService gradeBulkService;
 	private final GradeMapper gradeMapper;
 	private final GradeCorrectionMapper gradeCorrectionMapper;
 
 	private final SpringDataPageableResolver pageableResolver;
 
-	public GradeController(GradeService gradeService, GradeMapper gradeMapper,
-			GradeCorrectionMapper gradeCorrectionMapper, SpringDataPageableResolver pageableResolver) {
+	private final ReferenceSummaries referenceSummaries;
+
+	public GradeController(GradeService gradeService, GradeBulkService gradeBulkService, GradeMapper gradeMapper,
+			GradeCorrectionMapper gradeCorrectionMapper, SpringDataPageableResolver pageableResolver,
+			ReferenceSummaries referenceSummaries) {
+		this.referenceSummaries = referenceSummaries;
 		this.gradeService = gradeService;
+		this.gradeBulkService = gradeBulkService;
 		this.gradeMapper = gradeMapper;
 		this.gradeCorrectionMapper = gradeCorrectionMapper;
 		this.pageableResolver = pageableResolver;
@@ -58,8 +68,9 @@ public class GradeController implements GradeApi {
 			@RequestParam(required = false) String classroomPublicId) {
 		GradeFilter filter = new GradeFilter(examPublicId, studentPublicId, classroomPublicId);
 		return ApiResponse.success(PlatformPageMapper
-				.toPlatformPage(gradeService.listGrades(filter, pageableResolver.resolve(page, size))
-						.map(gradeMapper::toResponse)));
+				.toPlatformPage(referenceSummaries.mapPage(
+						gradeService.listGrades(filter, pageableResolver.resolve(page, size)),
+						gradeMapper::toResponse)));
 	}
 
 	@Override
@@ -101,5 +112,17 @@ public class GradeController implements GradeApi {
 		return ApiResponse.success(PlatformPageMapper
 				.toPlatformPage(gradeService.listCorrections(publicId, pageableResolver.resolve(page, size))
 						.map(gradeCorrectionMapper::toResponse)));
+	}
+
+	@Override
+	@PostMapping("/bulk")
+	@PreAuthorize("@permissionAuthorizationService.hasPermission('STUDENT_GRADES_WRITE')")
+	public ApiResponse<BulkEntryResult> recordBulk(@Valid @RequestBody BulkRecordGradesRequest request,
+			@AuthenticationPrincipal AuthenticatedUser user) {
+		return ApiResponse.success(gradeBulkService.record(request.examPublicId(),
+				request.rows().stream()
+						.map(row -> new GradeBulkService.Entry(row.studentPublicId(), row.marks()))
+						.toList(),
+				user.getUsername()));
 	}
 }

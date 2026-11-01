@@ -17,7 +17,7 @@ import com.altafjava.platform.core.model.Page;
 import com.altafjava.platform.core.model.Pageable;
 import com.altafjava.platform.core.tenant.TenantContext;
 import com.altafjava.platform.domain.notification.model.Notification;
-import com.altafjava.platform.domain.notification.model.NotificationType;
+import com.altafjava.platform.domain.notification.model.NotificationTypes;
 import com.altafjava.platform.domain.notification.repository.NotificationRepository;
 import com.altafjava.platform.domain.scheduler.model.JobExecutionContext;
 import com.altafjava.platform.domain.scheduler.model.JobExecutionResult;
@@ -136,7 +136,7 @@ class ReportCardGenerationJobIntegrationTest extends SchoolIntegrationTestBase {
 		Page<Notification> notifications = notificationRepository.findByUserId(admin.getId(), Pageable.of(0, 10));
 
 		Notification notification = notifications.content().stream()
-				.filter(n -> n.getType() == NotificationType.ANNOUNCEMENT)
+				.filter(n -> NotificationTypes.ANNOUNCEMENT.equals(n.getType()))
 				.filter(n -> "Report Cards Generated".equals(n.getTitle()))
 				.findFirst()
 				.orElseThrow(() -> new AssertionError("Expected a persisted Report Cards Generated notification"));

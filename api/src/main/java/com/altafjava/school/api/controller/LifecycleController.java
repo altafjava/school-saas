@@ -10,6 +10,7 @@ import com.altafjava.platform.api.dto.response.ApiResponse;
 import com.altafjava.school.api.controller.api.LifecycleApi;
 import com.altafjava.school.api.dto.response.LifecycleTransitionResponse;
 import com.altafjava.school.api.mapper.LifecycleTransitionMapper;
+import com.altafjava.school.application.reference.ReferenceSummaries;
 import com.altafjava.school.application.service.LifecycleTimelineService;
 import lombok.RequiredArgsConstructor;
 
@@ -17,6 +18,8 @@ import lombok.RequiredArgsConstructor;
 @RequestMapping("/api/v1")
 @RequiredArgsConstructor
 public class LifecycleController implements LifecycleApi {
+
+	private final ReferenceSummaries referenceSummaries;
 
 	private final LifecycleTimelineService lifecycleTimelineService;
 	private final LifecycleTransitionMapper lifecycleTransitionMapper;
@@ -27,15 +30,15 @@ public class LifecycleController implements LifecycleApi {
 	@GetMapping("/students/{studentPublicId}/lifecycle")
 	@PreAuthorize("@permissionAuthorizationService.hasPermission('STUDENT_READ') or @permissionAuthorizationService.hasPermission('STUDENT_SELF_SERVICE_READ') or @permissionAuthorizationService.hasPermission('GUARDIAN_SELF_SERVICE')")
 	public ApiResponse<List<LifecycleTransitionResponse>> studentTimeline(@PathVariable String studentPublicId) {
-		return ApiResponse.success(lifecycleTimelineService.forStudent(studentPublicId).stream()
-				.map(lifecycleTransitionMapper::toResponse).toList());
+		return ApiResponse.success(referenceSummaries.mapList(lifecycleTimelineService.forStudent(studentPublicId),
+				lifecycleTransitionMapper::toResponse));
 	}
 
 	@Override
 	@GetMapping("/admissions/{admissionPublicId}/lifecycle")
 	@PreAuthorize("@permissionAuthorizationService.hasPermission('ADMISSION_MANAGE')")
 	public ApiResponse<List<LifecycleTransitionResponse>> admissionTimeline(@PathVariable String admissionPublicId) {
-		return ApiResponse.success(lifecycleTimelineService.forAdmission(admissionPublicId).stream()
-				.map(lifecycleTransitionMapper::toResponse).toList());
+		return ApiResponse.success(referenceSummaries.mapList(lifecycleTimelineService.forAdmission(admissionPublicId),
+				lifecycleTransitionMapper::toResponse));
 	}
 }

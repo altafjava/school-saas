@@ -14,6 +14,8 @@ public interface FeeDiscountMapper {
 	@Mapping(target = "active", expression = "java(discount.isActive())")
 	@Mapping(target = "grantedAt", source = "createdAt")
 	@Mapping(target = "grantedByUserPublicId", source = "grantedByUserId", qualifiedByName = "user")
+	@Mapping(target = "grantedByUser", source = "grantedByUserId", qualifiedByName = "userSummary")
 	@Mapping(target = "feeStructurePublicId", source = "feeStructureId", qualifiedByName = "feeStructure")
+	@Mapping(target = "feeStructure", source = "feeStructureId", qualifiedByName = "feeStructureSummary")
 	FeeDiscountResponse toResponse(FeeDiscount discount);
 }

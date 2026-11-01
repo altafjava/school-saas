@@ -14,5 +14,6 @@ public interface LifecycleTransitionMapper {
 	@Mapping(target = "toStage", expression = "java(transition.getToStage().name())")
 	@Mapping(target = "recordedAt", source = "createdAt")
 	@Mapping(target = "recordedByUserPublicId", source = "recordedByUserId", qualifiedByName = "user")
+	@Mapping(target = "recordedByUser", source = "recordedByUserId", qualifiedByName = "userSummary")
 	LifecycleTransitionResponse toResponse(LifecycleTransition transition);
 }

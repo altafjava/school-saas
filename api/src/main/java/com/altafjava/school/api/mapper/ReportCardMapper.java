@@ -11,5 +11,6 @@ public interface ReportCardMapper {
 
 	@Mapping(target = "publicId", expression = "java(reportCard.getPublicId().toString())")
 	@Mapping(target = "termPublicId", source = "termId", qualifiedByName = "term")
+	@Mapping(target = "term", source = "termId", qualifiedByName = "termSummary")
 	ReportCardResponse toResponse(ReportCard reportCard);
 }

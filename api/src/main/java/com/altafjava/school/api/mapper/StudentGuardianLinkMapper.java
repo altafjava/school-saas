@@ -12,6 +12,8 @@ public interface StudentGuardianLinkMapper {
 	@Mapping(target = "publicId", expression = "java(link.getPublicId().toString())")
 	@Mapping(target = "relationshipType", expression = "java(link.getRelationshipType().name())")
 	@Mapping(target = "studentPublicId", source = "studentId", qualifiedByName = "student")
+	@Mapping(target = "student", source = "studentId", qualifiedByName = "studentSummary")
 	@Mapping(target = "guardianPublicId", source = "guardianId", qualifiedByName = "guardian")
+	@Mapping(target = "guardian", source = "guardianId", qualifiedByName = "guardianSummary")
 	StudentGuardianLinkResponse toResponse(StudentGuardianLink link);
 }

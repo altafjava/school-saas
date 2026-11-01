@@ -11,5 +11,6 @@ public interface SubjectMapper {
 
 	@Mapping(target = "publicId", expression = "java(subject.getPublicId().toString())")
 	@Mapping(target = "curriculumPublicId", source = "curriculumId", qualifiedByName = "curriculum")
+	@Mapping(target = "curriculum", source = "curriculumId", qualifiedByName = "curriculumSummary")
 	SubjectResponse toResponse(Subject subject);
 }

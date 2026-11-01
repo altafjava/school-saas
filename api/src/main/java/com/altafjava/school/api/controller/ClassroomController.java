@@ -35,6 +35,7 @@ import com.altafjava.school.api.support.PlatformPageMapper;
 import com.altafjava.school.api.support.SortableBy;
 import com.altafjava.school.api.support.SpringDataPageableResolver;
 import com.altafjava.school.api.support.StudentResponseAssembler;
+import com.altafjava.school.application.reference.ReferenceSummaries;
 import com.altafjava.school.application.service.ClassroomService;
 import com.altafjava.school.application.service.TimetableService;
 
@@ -51,10 +52,14 @@ public class ClassroomController implements ClassroomApi {
 
 	private final SpringDataPageableResolver pageableResolver;
 
+	private final ReferenceSummaries referenceSummaries;
+
 	public ClassroomController(ClassroomService classroomService, ClassroomMapper classroomMapper,
 			TimetableService timetableService, TimetableEntryMapper timetableEntryMapper,
 			StudentClassroomLinkMapper studentClassroomLinkMapper, StudentResponseAssembler studentResponseAssembler,
-			SpringDataPageableResolver pageableResolver) {
+			SpringDataPageableResolver pageableResolver,
+			ReferenceSummaries referenceSummaries) {
+		this.referenceSummaries = referenceSummaries;
 		this.classroomService = classroomService;
 		this.classroomMapper = classroomMapper;
 		this.timetableService = timetableService;
@@ -76,9 +81,9 @@ public class ClassroomController implements ClassroomApi {
 			@RequestParam(required = false) String grade) {
 		return ApiResponse.success(
 				PlatformPageMapper
-						.toPlatformPage(classroomService
-								.searchClassrooms(pageableResolver.resolve(page, size), academicYearPublicId, grade, q)
-								.map(classroomMapper::toResponse)));
+						.toPlatformPage(referenceSummaries.mapPage(classroomService
+								.searchClassrooms(pageableResolver.resolve(page, size), academicYearPublicId, grade, q),
+								classroomMapper::toResponse)));
 	}
 
 	@Override

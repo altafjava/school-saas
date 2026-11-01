@@ -24,6 +24,7 @@ import com.altafjava.school.api.support.PlatformPageMapper;
 import com.altafjava.school.api.support.SpringDataPageableResolver;
 import com.altafjava.school.application.filter.DateWindow;
 import com.altafjava.school.application.filter.DisciplineIncidentFilter;
+import com.altafjava.school.application.reference.ReferenceSummaries;
 import com.altafjava.school.application.service.DisciplineIncidentService;
 import com.altafjava.school.domain.discipline.model.IncidentSeverity;
 
@@ -36,8 +37,12 @@ public class DisciplineIncidentController implements DisciplineIncidentApi {
 
 	private final SpringDataPageableResolver pageableResolver;
 
+	private final ReferenceSummaries referenceSummaries;
+
 	public DisciplineIncidentController(DisciplineIncidentService disciplineIncidentService,
-			DisciplineIncidentMapper disciplineIncidentMapper, SpringDataPageableResolver pageableResolver) {
+			DisciplineIncidentMapper disciplineIncidentMapper, SpringDataPageableResolver pageableResolver,
+			ReferenceSummaries referenceSummaries) {
+		this.referenceSummaries = referenceSummaries;
 		this.disciplineIncidentService = disciplineIncidentService;
 		this.disciplineIncidentMapper = disciplineIncidentMapper;
 		this.pageableResolver = pageableResolver;
@@ -54,10 +59,10 @@ public class DisciplineIncidentController implements DisciplineIncidentApi {
 			@RequestParam(required = false) LocalDate from,
 			@RequestParam(required = false) LocalDate to) {
 		return ApiResponse.success(PlatformPageMapper
-				.toPlatformPage(disciplineIncidentService
+				.toPlatformPage(referenceSummaries.mapPage(disciplineIncidentService
 						.listAll(new DisciplineIncidentFilter(studentPublicId, severity, new DateWindow(from, to)),
-								pageableResolver.resolve(page, size))
-						.map(disciplineIncidentMapper::toResponse)));
+								pageableResolver.resolve(page, size)),
+						disciplineIncidentMapper::toResponse)));
 	}
 
 	@Override
@@ -67,9 +72,9 @@ public class DisciplineIncidentController implements DisciplineIncidentApi {
 			@PathVariable String studentPublicId,
 			@RequestParam(defaultValue = "0") int page,
 			@RequestParam(defaultValue = "20") int size) {
-		return ApiResponse.success(PlatformPageMapper.toPlatformPage(
-				disciplineIncidentService.listForStudent(studentPublicId, pageableResolver.resolve(page, size))
-						.map(disciplineIncidentMapper::toResponse)));
+		return ApiResponse.success(PlatformPageMapper.toPlatformPage(referenceSummaries.mapPage(
+				disciplineIncidentService.listForStudent(studentPublicId, pageableResolver.resolve(page, size)),
+				disciplineIncidentMapper::toResponse)));
 	}
 
 	@Override

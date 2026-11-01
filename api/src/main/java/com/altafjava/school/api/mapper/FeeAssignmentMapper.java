@@ -12,7 +12,10 @@ public interface FeeAssignmentMapper {
 	@Mapping(target = "publicId", expression = "java(feeAssignment.getPublicId().toString())")
 	@Mapping(target = "scope", expression = "java(feeAssignment.getScope().name())")
 	@Mapping(target = "feeStructurePublicId", source = "feeStructureId", qualifiedByName = "feeStructure")
+	@Mapping(target = "feeStructure", source = "feeStructureId", qualifiedByName = "feeStructureSummary")
 	@Mapping(target = "studentPublicId", source = "studentId", qualifiedByName = "student")
+	@Mapping(target = "student", source = "studentId", qualifiedByName = "studentSummary")
 	@Mapping(target = "classroomPublicId", source = "classroomId", qualifiedByName = "classroom")
+	@Mapping(target = "classroom", source = "classroomId", qualifiedByName = "classroomSummary")
 	FeeAssignmentResponse toResponse(FeeAssignment feeAssignment);
 }

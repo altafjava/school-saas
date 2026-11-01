@@ -13,6 +13,7 @@ import com.altafjava.school.domain.fee.model.InstallmentStatus;
 public interface FeeBalanceMapper {
 
 	@Mapping(target = "feeStructurePublicId", source = "feeStructureId", qualifiedByName = "feeStructure")
+	@Mapping(target = "feeStructure", source = "feeStructureId", qualifiedByName = "feeStructureSummary")
 	FeeBalanceResponse toResponse(FeeBalance feeBalance);
 
 	List<FeeBalanceResponse> toResponseList(List<FeeBalance> feeBalances);

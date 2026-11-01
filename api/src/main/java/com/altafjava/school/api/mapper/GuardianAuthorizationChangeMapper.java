@@ -12,6 +12,8 @@ public interface GuardianAuthorizationChangeMapper {
 	@Mapping(target = "publicId", expression = "java(change.getPublicId().toString())")
 	@Mapping(target = "changedAt", source = "createdAt")
 	@Mapping(target = "guardianPublicId", source = "guardianId", qualifiedByName = "guardian")
+	@Mapping(target = "guardian", source = "guardianId", qualifiedByName = "guardianSummary")
 	@Mapping(target = "changedByUserPublicId", source = "changedByUserId", qualifiedByName = "user")
+	@Mapping(target = "changedByUser", source = "changedByUserId", qualifiedByName = "userSummary")
 	GuardianAuthorizationChangeResponse toResponse(GuardianAuthorizationChange change);
 }

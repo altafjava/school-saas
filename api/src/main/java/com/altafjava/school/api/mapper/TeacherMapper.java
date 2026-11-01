@@ -14,5 +14,6 @@ public interface TeacherMapper {
 	@Mapping(target = "status", expression = "java(teacher.getStatus().name())")
 	@Mapping(target = "photoFilePublicId", expression = "java(teacher.getPhotoFilePublicId() != null ? teacher.getPhotoFilePublicId().toString() : null)")
 	@Mapping(target = "departmentPublicId", source = "departmentId", qualifiedByName = "department")
+	@Mapping(target = "department", source = "departmentId", qualifiedByName = "departmentSummary")
 	TeacherResponse toResponse(Teacher teacher);
 }

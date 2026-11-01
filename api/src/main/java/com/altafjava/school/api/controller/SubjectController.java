@@ -20,6 +20,7 @@ import com.altafjava.school.api.dto.response.SubjectResponse;
 import com.altafjava.school.api.mapper.SubjectMapper;
 import com.altafjava.school.api.support.PlatformPageMapper;
 import com.altafjava.school.api.support.SpringDataPageableResolver;
+import com.altafjava.school.application.reference.ReferenceSummaries;
 import com.altafjava.school.application.service.SubjectService;
 
 @RestController
@@ -31,8 +32,12 @@ public class SubjectController implements SubjectApi {
 
 	private final SpringDataPageableResolver pageableResolver;
 
+	private final ReferenceSummaries referenceSummaries;
+
 	public SubjectController(SubjectService subjectService, SubjectMapper subjectMapper,
-			SpringDataPageableResolver pageableResolver) {
+			SpringDataPageableResolver pageableResolver,
+			ReferenceSummaries referenceSummaries) {
+		this.referenceSummaries = referenceSummaries;
 		this.subjectService = subjectService;
 		this.subjectMapper = subjectMapper;
 		this.pageableResolver = pageableResolver;
@@ -46,8 +51,9 @@ public class SubjectController implements SubjectApi {
 			@RequestParam(defaultValue = "20") int size,
 			@RequestParam(required = false) String q) {
 		return ApiResponse.success(
-				PlatformPageMapper.toPlatformPage(subjectService.searchSubjects(pageableResolver.resolve(page, size), q)
-						.map(subjectMapper::toResponse)));
+				PlatformPageMapper.toPlatformPage(referenceSummaries.mapPage(
+						subjectService.searchSubjects(pageableResolver.resolve(page, size), q),
+						subjectMapper::toResponse)));
 	}
 
 	@Override

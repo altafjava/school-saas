@@ -21,6 +21,7 @@ import com.altafjava.school.api.dto.response.CurriculumResponse;
 import com.altafjava.school.api.mapper.CurriculumMapper;
 import com.altafjava.school.api.support.PlatformPageMapper;
 import com.altafjava.school.api.support.SpringDataPageableResolver;
+import com.altafjava.school.application.reference.ReferenceSummaries;
 import com.altafjava.school.application.service.CurriculumService;
 
 @RestController
@@ -32,8 +33,12 @@ public class CurriculumController implements CurriculumApi {
 
 	private final SpringDataPageableResolver pageableResolver;
 
+	private final ReferenceSummaries referenceSummaries;
+
 	public CurriculumController(CurriculumService curriculumService, CurriculumMapper curriculumMapper,
-			SpringDataPageableResolver pageableResolver) {
+			SpringDataPageableResolver pageableResolver,
+			ReferenceSummaries referenceSummaries) {
+		this.referenceSummaries = referenceSummaries;
 		this.curriculumService = curriculumService;
 		this.curriculumMapper = curriculumMapper;
 		this.pageableResolver = pageableResolver;
@@ -46,8 +51,8 @@ public class CurriculumController implements CurriculumApi {
 			@RequestParam(defaultValue = "0") int page,
 			@RequestParam(defaultValue = "20") int size,
 			@RequestParam(required = false) String q) {
-		return ApiResponse.success(PlatformPageMapper.toPlatformPage(
-				curriculumService.list(q, pageableResolver.resolve(page, size)).map(curriculumMapper::toResponse)));
+		return ApiResponse.success(PlatformPageMapper.toPlatformPage(referenceSummaries.mapPage(
+				curriculumService.list(q, pageableResolver.resolve(page, size)), curriculumMapper::toResponse)));
 	}
 
 	@Override

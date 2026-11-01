@@ -29,7 +29,7 @@ import lombok.extern.slf4j.Slf4j;
  * Per-tenant gateway webhook callback — {@code tenantPublicId} in the path is how a single, shared
  * webhook-receiving deployment routes an inbound callback to the right tenant's own gateway
  * account/credentials/secret, since (unlike the platform's own single-account
- * {@code /api/webhooks/stripe}) every school tenant here has its own gateway account.
+ * {@code /api/v1/billing/webhooks/stripe}) every school tenant here has its own gateway account.
  * <p>
  * {@code permitAll()} — no JWT is available for an inbound gateway callback. Reachable without a
  * JWT via a generic {@code /api/v1/*}{@code /webhooks/**} ant pattern in platform-saas's

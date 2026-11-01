@@ -16,7 +16,7 @@ import com.altafjava.platform.core.exception.BusinessException;
 import com.altafjava.platform.core.exception.ResourceNotFoundException;
 import com.altafjava.platform.core.tenant.TenantContext;
 import com.altafjava.platform.domain.notification.model.NotificationPriority;
-import com.altafjava.platform.domain.notification.model.NotificationType;
+import com.altafjava.platform.domain.notification.model.NotificationTypes;
 import com.altafjava.school.application.security.VisitorRequestAuthorizer;
 import com.altafjava.school.domain.employee.model.Employee;
 import com.altafjava.school.domain.employee.repository.EmployeeRepository;
@@ -136,7 +136,7 @@ public class VisitorRequestService {
 		notificationService.send(SendNotificationCommand.builder()
 				.tenantId(tenantId)
 				.userId(host.getUserId())
-				.type(NotificationType.ANNOUNCEMENT)
+				.type(NotificationTypes.ANNOUNCEMENT)
 				.title("Visitor awaiting your approval")
 				.message(request.getVisitorName() + " is due on " + request.getVisitDate() + ": "
 						+ request.getPurpose())

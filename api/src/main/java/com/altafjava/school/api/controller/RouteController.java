@@ -24,6 +24,7 @@ import com.altafjava.school.api.mapper.RouteMapper;
 import com.altafjava.school.api.mapper.RouteStopMapper;
 import com.altafjava.school.api.support.PlatformPageMapper;
 import com.altafjava.school.api.support.SpringDataPageableResolver;
+import com.altafjava.school.application.reference.ReferenceSummaries;
 import com.altafjava.school.application.service.RouteService;
 
 @RestController
@@ -36,8 +37,12 @@ public class RouteController implements RouteApi {
 
 	private final SpringDataPageableResolver pageableResolver;
 
+	private final ReferenceSummaries referenceSummaries;
+
 	public RouteController(RouteService routeService, RouteMapper routeMapper, RouteStopMapper routeStopMapper,
-			SpringDataPageableResolver pageableResolver) {
+			SpringDataPageableResolver pageableResolver,
+			ReferenceSummaries referenceSummaries) {
+		this.referenceSummaries = referenceSummaries;
 		this.routeService = routeService;
 		this.routeMapper = routeMapper;
 		this.routeStopMapper = routeStopMapper;
@@ -93,7 +98,8 @@ public class RouteController implements RouteApi {
 	@GetMapping("/{publicId}/stops")
 	@PreAuthorize("@permissionAuthorizationService.hasPermission('TRANSPORT_ROUTE_READ')")
 	public ApiResponse<List<RouteStopResponse>> listStops(@PathVariable String publicId) {
-		return ApiResponse.success(routeService.listStops(publicId).stream().map(routeStopMapper::toResponse).toList());
+		return ApiResponse
+				.success(referenceSummaries.mapList(routeService.listStops(publicId), routeStopMapper::toResponse));
 	}
 
 	@Override

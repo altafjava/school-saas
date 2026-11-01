@@ -15,5 +15,6 @@ public interface EmployeeMapper {
 	@Mapping(target = "status", expression = "java(employee.getStatus().name())")
 	@Mapping(target = "photoFilePublicId", expression = "java(employee.getPhotoFilePublicId() != null ? employee.getPhotoFilePublicId().toString() : null)")
 	@Mapping(target = "departmentPublicId", source = "departmentId", qualifiedByName = "department")
+	@Mapping(target = "department", source = "departmentId", qualifiedByName = "departmentSummary")
 	EmployeeResponse toResponse(Employee employee);
 }

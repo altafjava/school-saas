@@ -2,6 +2,7 @@ package com.altafjava.school.api.dto.response;
 
 import java.math.BigDecimal;
 import java.time.Instant;
+import com.altafjava.school.application.reference.ReferenceSummary;
 
 public record FeeRefundResponse(
 		String publicId,
@@ -14,5 +15,6 @@ public record FeeRefundResponse(
 		String gatewayRefundReference,
 		String failureReason,
 		Instant refundedAt,
-		String refundedByUserPublicId) {
+		String refundedByUserPublicId,
+		ReferenceSummary refundedByUser) {
 }

@@ -1,6 +1,7 @@
 package com.altafjava.school.domain.student.repository;
 
 import java.time.Instant;
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -34,6 +35,28 @@ public interface StudentRepository extends JpaRepository<Student, Long> {
 	Page<Student> search(@Param("tenantId") Long tenantId, @Param("status") EnrollmentStatus status,
 			@Param("classroomId") Long classroomId, @Param("gender") Gender gender,
 			@Param("pattern") String pattern, Pageable pageable);
+
+	/** {@link #search} restricted to students placed in one of {@code reachableClassroomIds}. */
+	@Query("""
+			SELECT s FROM Student s
+			WHERE s.tenantId = :tenantId
+			  AND (:status IS NULL OR s.enrollmentStatus = :status)
+			  AND (:gender IS NULL OR s.gender = :gender)
+			  AND (:classroomId IS NULL OR s.id IN (
+			       SELECT l.studentId FROM StudentClassroomLink l
+			       WHERE l.tenantId = :tenantId AND l.classroomId = :classroomId))
+			  AND s.id IN (
+			       SELECT r.studentId FROM StudentClassroomLink r
+			       WHERE r.tenantId = :tenantId AND r.classroomId IN :reachableClassroomIds)
+			  AND (:pattern IS NULL
+			       OR LOWER(s.studentCode) LIKE :pattern ESCAPE '!'
+			       OR LOWER(CONCAT(s.firstName, ' ', s.lastName)) LIKE :pattern ESCAPE '!'
+			       OR LOWER(s.email) LIKE :pattern ESCAPE '!')
+			""")
+	Page<Student> searchWithinClassrooms(@Param("tenantId") Long tenantId, @Param("status") EnrollmentStatus status,
+			@Param("classroomId") Long classroomId, @Param("gender") Gender gender,
+			@Param("pattern") String pattern, @Param("reachableClassroomIds") Collection<Long> reachableClassroomIds,
+			Pageable pageable);
 
 	List<Student> findAllByEnrollmentStatusAndTenantId(EnrollmentStatus enrollmentStatus, Long tenantId);
 

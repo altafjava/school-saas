@@ -20,6 +20,7 @@ public abstract class AssetAssignmentMapper {
 	@Mapping(target = "assignedToType", expression = "java(assignment.getAssignedToType().name())")
 	@Mapping(target = "assignedToPublicId", expression = "java(assignedToPublicId(assignment))")
 	@Mapping(target = "assetPublicId", source = "assetId", qualifiedByName = "asset")
+	@Mapping(target = "asset", source = "assetId", qualifiedByName = "assetSummary")
 	public abstract AssetAssignmentResponse toResponse(AssetAssignment assignment);
 
 	// The holder is a staff member or a classroom, so the id is read against the matching table.

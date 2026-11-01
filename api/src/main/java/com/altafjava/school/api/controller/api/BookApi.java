@@ -1,6 +1,5 @@
 package com.altafjava.school.api.controller.api;
 
-import java.util.List;
 import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -35,7 +34,9 @@ public interface BookApi {
 	public ApiResponse<BookResponse> deactivate(@PathVariable String publicId);
 
 	@Operation(summary = "List copies")
-	public ApiResponse<List<BookCopyResponse>> listCopies(@PathVariable String publicId);
+	public ApiResponse<com.altafjava.platform.core.model.Page<BookCopyResponse>> listCopies(
+			@PathVariable String publicId,
+			@RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "20") int size);
 
 	@Operation(summary = "Add copy")
 	public ApiResponse<BookCopyResponse> addCopy(@PathVariable String publicId,

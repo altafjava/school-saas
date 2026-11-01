@@ -1,6 +1,5 @@
 package com.altafjava.school.api.controller;
 
-import java.util.List;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -24,6 +23,7 @@ import com.altafjava.school.api.mapper.BookMapper;
 import com.altafjava.school.api.support.PlatformPageMapper;
 import com.altafjava.school.api.support.SortableBy;
 import com.altafjava.school.api.support.SpringDataPageableResolver;
+import com.altafjava.school.application.reference.ReferenceSummaries;
 import com.altafjava.school.application.service.BookCatalogService;
 
 @RestController
@@ -36,8 +36,12 @@ public class BookController implements BookApi {
 
 	private final SpringDataPageableResolver pageableResolver;
 
+	private final ReferenceSummaries referenceSummaries;
+
 	public BookController(BookCatalogService bookCatalogService, BookMapper bookMapper,
-			BookCopyMapper bookCopyMapper, SpringDataPageableResolver pageableResolver) {
+			BookCopyMapper bookCopyMapper, SpringDataPageableResolver pageableResolver,
+			ReferenceSummaries referenceSummaries) {
+		this.referenceSummaries = referenceSummaries;
 		this.bookCatalogService = bookCatalogService;
 		this.bookMapper = bookMapper;
 		this.bookCopyMapper = bookCopyMapper;
@@ -83,9 +87,12 @@ public class BookController implements BookApi {
 	@Override
 	@GetMapping("/{publicId}/copies")
 	@PreAuthorize("@permissionAuthorizationService.hasPermission('BOOK_READ')")
-	public ApiResponse<List<BookCopyResponse>> listCopies(@PathVariable String publicId) {
-		return ApiResponse
-				.success(bookCatalogService.listCopies(publicId).stream().map(bookCopyMapper::toResponse).toList());
+	public ApiResponse<com.altafjava.platform.core.model.Page<BookCopyResponse>> listCopies(
+			@PathVariable String publicId,
+			@RequestParam(defaultValue = "0") int page,
+			@RequestParam(defaultValue = "20") int size) {
+		return ApiResponse.success(PlatformPageMapper.toPlatformPage(referenceSummaries.mapPage(bookCatalogService
+				.listCopies(publicId, pageableResolver.resolve(page, size)), bookCopyMapper::toResponse)));
 	}
 
 	@Override

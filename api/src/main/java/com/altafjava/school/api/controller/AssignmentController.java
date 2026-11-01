@@ -24,6 +24,7 @@ import com.altafjava.school.api.support.SortableBy;
 import com.altafjava.school.api.support.SpringDataPageableResolver;
 import com.altafjava.school.application.filter.CourseworkFilter;
 import com.altafjava.school.application.filter.DateWindow;
+import com.altafjava.school.application.reference.ReferenceSummaries;
 import com.altafjava.school.application.service.AssignmentService;
 
 @RestController
@@ -35,8 +36,12 @@ public class AssignmentController implements AssignmentApi {
 
 	private final SpringDataPageableResolver pageableResolver;
 
+	private final ReferenceSummaries referenceSummaries;
+
 	public AssignmentController(AssignmentService assignmentService, AssignmentMapper assignmentMapper,
-			SpringDataPageableResolver pageableResolver) {
+			SpringDataPageableResolver pageableResolver,
+			ReferenceSummaries referenceSummaries) {
+		this.referenceSummaries = referenceSummaries;
 		this.assignmentService = assignmentService;
 		this.assignmentMapper = assignmentMapper;
 		this.pageableResolver = pageableResolver;
@@ -70,8 +75,9 @@ public class AssignmentController implements AssignmentApi {
 			@RequestParam(required = false) LocalDate to) {
 		CourseworkFilter filter = new CourseworkFilter(classroomPublicId, subjectPublicId, new DateWindow(from, to));
 		return ApiResponse.success(PlatformPageMapper
-				.toPlatformPage(assignmentService.listAssignments(filter, pageableResolver.resolve(page, size))
-						.map(assignmentMapper::toResponse)));
+				.toPlatformPage(referenceSummaries.mapPage(
+						assignmentService.listAssignments(filter, pageableResolver.resolve(page, size)),
+						assignmentMapper::toResponse)));
 	}
 
 	@Override

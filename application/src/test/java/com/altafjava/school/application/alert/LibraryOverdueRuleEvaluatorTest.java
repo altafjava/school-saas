@@ -13,10 +13,10 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import com.altafjava.platform.application.alert.AlertTrigger;
 import com.altafjava.platform.domain.alert.model.AlertRule;
-import com.altafjava.platform.domain.notification.model.NotificationType;
 import com.altafjava.school.application.scheduler.support.StudentNotificationRecipientResolver;
 import com.altafjava.school.domain.library.model.Circulation;
 import com.altafjava.school.domain.library.repository.CirculationRepository;
+import com.altafjava.school.domain.notification.SchoolNotificationTypes;
 import com.altafjava.school.domain.student.model.Student;
 import com.altafjava.school.domain.student.repository.StudentRepository;
 
@@ -38,7 +38,7 @@ class LibraryOverdueRuleEvaluatorTest {
 
 	private AlertRule ruleWithGraceDays(Integer graceDays) {
 		AlertRule rule = AlertRule.create(LibraryOverdueRuleEvaluator.RULE_TYPE, "Library overdue", true,
-				graceDays == null ? null : BigDecimal.valueOf(graceDays), NotificationType.BOOK_OVERDUE, null);
+				graceDays == null ? null : BigDecimal.valueOf(graceDays), SchoolNotificationTypes.BOOK_OVERDUE, null);
 		rule.setTenantId(1L);
 		return rule;
 	}

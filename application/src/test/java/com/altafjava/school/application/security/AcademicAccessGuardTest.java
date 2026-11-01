@@ -157,7 +157,7 @@ class AcademicAccessGuardTest {
 	@Test
 	void readStudentRecord_staffWhoMayViewAnyStudent_isAllowed() {
 		withScope(false, false);
-		when(permissionAuthorizationService.hasPermission("STUDENT_READ")).thenReturn(true);
+		when(permissionAuthorizationService.hasPermission("STUDENT_READ_ALL")).thenReturn(true);
 
 		assertDoesNotThrow(() -> guard.assertCanReadStudentRecord(TENANT_ID, OTHER, OTHER_STUDENT));
 	}

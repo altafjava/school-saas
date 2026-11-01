@@ -12,7 +12,10 @@ public interface BookReservationMapper {
 	@Mapping(target = "publicId", expression = "java(reservation.getPublicId().toString())")
 	@Mapping(target = "status", expression = "java(reservation.getStatus().name())")
 	@Mapping(target = "bookPublicId", source = "bookId", qualifiedByName = "book")
+	@Mapping(target = "book", source = "bookId", qualifiedByName = "bookSummary")
 	@Mapping(target = "studentPublicId", source = "studentId", qualifiedByName = "student")
+	@Mapping(target = "student", source = "studentId", qualifiedByName = "studentSummary")
 	@Mapping(target = "heldCopyPublicId", source = "heldCopyId", qualifiedByName = "bookCopy")
+	@Mapping(target = "heldCopy", source = "heldCopyId", qualifiedByName = "bookCopySummary")
 	BookReservationResponse toResponse(BookReservation reservation);
 }

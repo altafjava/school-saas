@@ -12,7 +12,10 @@ public interface LeaveBalanceMapper {
 	@Mapping(target = "publicId", expression = "java(leaveBalance.getPublicId().toString())")
 	@Mapping(target = "remainingDays", expression = "java(leaveBalance.remainingDays())")
 	@Mapping(target = "employeePublicId", source = "employeeId", qualifiedByName = "employee")
+	@Mapping(target = "employee", source = "employeeId", qualifiedByName = "employeeSummary")
 	@Mapping(target = "leaveTypePublicId", source = "leaveTypeId", qualifiedByName = "leaveType")
+	@Mapping(target = "leaveType", source = "leaveTypeId", qualifiedByName = "leaveTypeSummary")
 	@Mapping(target = "academicYearPublicId", source = "academicYearId", qualifiedByName = "academicYear")
+	@Mapping(target = "academicYear", source = "academicYearId", qualifiedByName = "academicYearSummary")
 	LeaveBalanceResponse toResponse(LeaveBalance leaveBalance);
 }

@@ -11,6 +11,8 @@ public interface CirculationMapper {
 
 	@Mapping(target = "publicId", expression = "java(circulation.getPublicId().toString())")
 	@Mapping(target = "bookCopyPublicId", source = "bookCopyId", qualifiedByName = "bookCopy")
+	@Mapping(target = "bookCopy", source = "bookCopyId", qualifiedByName = "bookCopySummary")
 	@Mapping(target = "studentPublicId", source = "studentId", qualifiedByName = "student")
+	@Mapping(target = "student", source = "studentId", qualifiedByName = "studentSummary")
 	CirculationResponse toResponse(Circulation circulation);
 }

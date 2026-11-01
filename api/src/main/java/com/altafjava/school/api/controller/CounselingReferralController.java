@@ -24,6 +24,7 @@ import com.altafjava.school.api.support.PlatformPageMapper;
 import com.altafjava.school.api.support.SpringDataPageableResolver;
 import com.altafjava.school.application.filter.CounselingReferralFilter;
 import com.altafjava.school.application.filter.DateWindow;
+import com.altafjava.school.application.reference.ReferenceSummaries;
 import com.altafjava.school.application.service.CounselingReferralService;
 import com.altafjava.school.domain.counseling.model.CounselingReferralStatus;
 
@@ -38,8 +39,12 @@ public class CounselingReferralController implements CounselingReferralApi {
 
 	private final SpringDataPageableResolver pageableResolver;
 
+	private final ReferenceSummaries referenceSummaries;
+
 	public CounselingReferralController(CounselingReferralService counselingReferralService,
-			CounselingReferralMapper counselingReferralMapper, SpringDataPageableResolver pageableResolver) {
+			CounselingReferralMapper counselingReferralMapper, SpringDataPageableResolver pageableResolver,
+			ReferenceSummaries referenceSummaries) {
+		this.referenceSummaries = referenceSummaries;
 		this.counselingReferralService = counselingReferralService;
 		this.counselingReferralMapper = counselingReferralMapper;
 		this.pageableResolver = pageableResolver;
@@ -56,10 +61,10 @@ public class CounselingReferralController implements CounselingReferralApi {
 			@RequestParam(required = false) LocalDate from,
 			@RequestParam(required = false) LocalDate to) {
 		return ApiResponse.success(PlatformPageMapper
-				.toPlatformPage(counselingReferralService
+				.toPlatformPage(referenceSummaries.mapPage(counselingReferralService
 						.listAll(new CounselingReferralFilter(studentPublicId, status, new DateWindow(from, to)),
-								pageableResolver.resolve(page, size))
-						.map(counselingReferralMapper::toResponse)));
+								pageableResolver.resolve(page, size)),
+						counselingReferralMapper::toResponse)));
 	}
 
 	@Override
@@ -69,9 +74,9 @@ public class CounselingReferralController implements CounselingReferralApi {
 			@PathVariable String studentPublicId,
 			@RequestParam(defaultValue = "0") int page,
 			@RequestParam(defaultValue = "20") int size) {
-		return ApiResponse.success(PlatformPageMapper.toPlatformPage(
-				counselingReferralService.listForStudent(studentPublicId, pageableResolver.resolve(page, size))
-						.map(counselingReferralMapper::toResponse)));
+		return ApiResponse.success(PlatformPageMapper.toPlatformPage(referenceSummaries.mapPage(
+				counselingReferralService.listForStudent(studentPublicId, pageableResolver.resolve(page, size)),
+				counselingReferralMapper::toResponse)));
 	}
 
 	@Override

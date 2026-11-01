@@ -11,5 +11,6 @@ public interface HealthRecordMapper {
 
 	@Mapping(target = "publicId", expression = "java(healthRecord.getPublicId().toString())")
 	@Mapping(target = "studentPublicId", source = "studentId", qualifiedByName = "student")
+	@Mapping(target = "student", source = "studentId", qualifiedByName = "studentSummary")
 	HealthRecordResponse toResponse(HealthRecord healthRecord);
 }

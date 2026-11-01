@@ -23,6 +23,7 @@ import com.altafjava.school.api.support.PlatformPageMapper;
 import com.altafjava.school.api.support.SpringDataPageableResolver;
 import com.altafjava.school.application.filter.CounselingSessionFilter;
 import com.altafjava.school.application.filter.DateWindow;
+import com.altafjava.school.application.reference.ReferenceSummaries;
 import com.altafjava.school.application.service.CounselingSessionService;
 
 /**
@@ -40,8 +41,12 @@ public class CounselingSessionController implements CounselingSessionApi {
 
 	private final SpringDataPageableResolver pageableResolver;
 
+	private final ReferenceSummaries referenceSummaries;
+
 	public CounselingSessionController(CounselingSessionService counselingSessionService,
-			CounselingSessionMapper counselingSessionMapper, SpringDataPageableResolver pageableResolver) {
+			CounselingSessionMapper counselingSessionMapper, SpringDataPageableResolver pageableResolver,
+			ReferenceSummaries referenceSummaries) {
+		this.referenceSummaries = referenceSummaries;
 		this.counselingSessionService = counselingSessionService;
 		this.counselingSessionMapper = counselingSessionMapper;
 		this.pageableResolver = pageableResolver;
@@ -58,10 +63,10 @@ public class CounselingSessionController implements CounselingSessionApi {
 			@RequestParam(required = false) LocalDate from,
 			@RequestParam(required = false) LocalDate to) {
 		return ApiResponse.success(
-				PlatformPageMapper.toPlatformPage(counselingSessionService
+				PlatformPageMapper.toPlatformPage(referenceSummaries.mapPage(counselingSessionService
 						.listAll(new CounselingSessionFilter(studentPublicId, new DateWindow(from, to),
-								followUpRequired), pageableResolver.resolve(page, size))
-						.map(counselingSessionMapper::toResponse)));
+								followUpRequired), pageableResolver.resolve(page, size)),
+						counselingSessionMapper::toResponse)));
 	}
 
 	@Override
@@ -71,9 +76,9 @@ public class CounselingSessionController implements CounselingSessionApi {
 			@PathVariable String studentPublicId,
 			@RequestParam(defaultValue = "0") int page,
 			@RequestParam(defaultValue = "20") int size) {
-		return ApiResponse.success(PlatformPageMapper.toPlatformPage(
-				counselingSessionService.listForStudent(studentPublicId, pageableResolver.resolve(page, size))
-						.map(counselingSessionMapper::toResponse)));
+		return ApiResponse.success(PlatformPageMapper.toPlatformPage(referenceSummaries.mapPage(
+				counselingSessionService.listForStudent(studentPublicId, pageableResolver.resolve(page, size)),
+				counselingSessionMapper::toResponse)));
 	}
 
 	@Override

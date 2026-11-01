@@ -102,7 +102,7 @@ class LibraryReservationAndRenewalE2ETest extends SchoolIntegrationTestBase {
 				.body("data.content[0].publicId", equalTo(reservationB))
 				.body("data.content[1].publicId", equalTo(reservationC));
 		support.request(school).get("/api/v1/books/" + bookPublicId + "/copies")
-				.then().statusCode(HttpStatus.OK.value()).body("data[0].status", equalTo("ON_HOLD"));
+				.then().statusCode(HttpStatus.OK.value()).body("data.content[0].status", equalTo("ON_HOLD"));
 
 		mutating().body("{\"bookCopyPublicId\":\"" + copyPublicId + "\",\"studentPublicId\":\"" + studentC + "\"}")
 				.post("/api/v1/circulations/checkout")
@@ -133,7 +133,7 @@ class LibraryReservationAndRenewalE2ETest extends SchoolIntegrationTestBase {
 		support.request(school).get("/api/v1/book-reservations?bookPublicId=" + bookPublicId)
 				.then().body("data.content.status", contains("CANCELLED", "READY"));
 		support.request(school).get("/api/v1/books/" + bookPublicId + "/copies")
-				.then().body("data[0].status", equalTo("ON_HOLD"));
+				.then().body("data.content[0].status", equalTo("ON_HOLD"));
 	}
 
 	@Test

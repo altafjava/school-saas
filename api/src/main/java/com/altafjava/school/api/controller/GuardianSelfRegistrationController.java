@@ -18,7 +18,7 @@ import com.altafjava.school.application.service.GuardianSelfRegistrationService;
 // guardian self-registering has no account yet, so it cannot present a JWT. Deliberately has no
 // @PreAuthorize (matching AuthController/KNOWN_PUBLIC_CONTROLLERS convention for genuinely public
 // endpoints), registered in KNOWN_PUBLIC_CONTROLLERS in ControllerAuthorizationFitnessTest, and
-// reachable without a JWT via a literal entry in platform-saas's SecurityConfig permitAll allowlist.
+// reachable without a JWT through SchoolPlatformConfigurer.domainPublicPaths().
 @RestController
 @RequestMapping("/api/v1/guardians")
 public class GuardianSelfRegistrationController implements GuardianSelfRegistrationApi {

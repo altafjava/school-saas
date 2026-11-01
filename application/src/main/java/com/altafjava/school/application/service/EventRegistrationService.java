@@ -12,13 +12,13 @@ import com.altafjava.platform.core.exception.BusinessException;
 import com.altafjava.platform.core.exception.ResourceNotFoundException;
 import com.altafjava.platform.core.tenant.TenantContext;
 import com.altafjava.platform.domain.notification.model.NotificationPriority;
-import com.altafjava.platform.domain.notification.model.NotificationType;
 import com.altafjava.school.application.scheduler.support.StudentNotificationRecipientResolver;
 import com.altafjava.school.domain.event.model.Event;
 import com.altafjava.school.domain.event.model.EventRegistration;
 import com.altafjava.school.domain.event.model.EventRegistrationStatus;
 import com.altafjava.school.domain.event.repository.EventRegistrationRepository;
 import com.altafjava.school.domain.event.repository.EventRepository;
+import com.altafjava.school.domain.notification.SchoolNotificationTypes;
 import com.altafjava.school.domain.student.model.Student;
 import com.altafjava.school.domain.student.repository.StudentRepository;
 
@@ -100,7 +100,7 @@ public class EventRegistrationService {
 				.ifPresent(userId -> notificationService.send(SendNotificationCommand.builder()
 						.tenantId(tenantId)
 						.userId(userId)
-						.type(NotificationType.EVENT_REGISTRATION_CONFIRMED)
+						.type(SchoolNotificationTypes.EVENT_REGISTRATION_CONFIRMED)
 						.title("Event Registration Confirmed")
 						.message("Registered for " + event.getTitle())
 						.templateVariables(Map.of(

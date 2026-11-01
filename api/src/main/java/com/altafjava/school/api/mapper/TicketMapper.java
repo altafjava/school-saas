@@ -11,6 +11,8 @@ public interface TicketMapper {
 
 	@Mapping(target = "publicId", expression = "java(ticket.getPublicId().toString())")
 	@Mapping(target = "raisedByUserPublicId", source = "raisedByUserId", qualifiedByName = "user")
+	@Mapping(target = "raisedByUser", source = "raisedByUserId", qualifiedByName = "userSummary")
 	@Mapping(target = "assignedToUserPublicId", source = "assignedToUserId", qualifiedByName = "user")
+	@Mapping(target = "assignedToUser", source = "assignedToUserId", qualifiedByName = "userSummary")
 	TicketResponse toResponse(Ticket ticket);
 }

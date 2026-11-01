@@ -20,11 +20,11 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import com.altafjava.platform.application.alert.AlertTrigger;
 import com.altafjava.platform.application.tenant.TenantFormattingService;
 import com.altafjava.platform.domain.alert.model.AlertRule;
-import com.altafjava.platform.domain.notification.model.NotificationType;
 import com.altafjava.school.application.scheduler.support.StudentNotificationRecipientResolver;
 import com.altafjava.school.domain.attendance.repository.AttendanceRepository;
 import com.altafjava.school.domain.exam.model.Exam;
 import com.altafjava.school.domain.exam.repository.ExamRepository;
+import com.altafjava.school.domain.notification.SchoolNotificationTypes;
 import com.altafjava.school.domain.student.model.Student;
 import com.altafjava.school.domain.student.repository.StudentRepository;
 import com.altafjava.school.domain.subject.model.Subject;
@@ -55,7 +55,7 @@ class ExamScheduleReminderRuleEvaluatorTest {
 
 	private AlertRule rule() {
 		AlertRule rule = AlertRule.create(ExamScheduleReminderRuleEvaluator.RULE_TYPE, "Exam reminder", true, null,
-				NotificationType.EXAM_SCHEDULED, null);
+				SchoolNotificationTypes.EXAM_SCHEDULED, null);
 		rule.setTenantId(1L);
 		return rule;
 	}

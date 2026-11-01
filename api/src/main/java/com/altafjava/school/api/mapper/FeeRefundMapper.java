@@ -14,5 +14,6 @@ public interface FeeRefundMapper {
 	@Mapping(target = "status", expression = "java(refund.getStatus().name())")
 	@Mapping(target = "refundedAt", source = "createdAt")
 	@Mapping(target = "refundedByUserPublicId", source = "refundedByUserId", qualifiedByName = "user")
+	@Mapping(target = "refundedByUser", source = "refundedByUserId", qualifiedByName = "userSummary")
 	FeeRefundResponse toResponse(FeeRefund refund);
 }

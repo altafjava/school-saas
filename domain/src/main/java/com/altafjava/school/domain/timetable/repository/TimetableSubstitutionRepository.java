@@ -4,6 +4,8 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -16,6 +18,14 @@ public interface TimetableSubstitutionRepository extends JpaRepository<Timetable
 	@Query("SELECT s FROM TimetableSubstitution s WHERE s.tenantId = :tenantId AND s.substitutionDate = :date "
 			+ "AND s.cancelledAt IS NULL ORDER BY s.periodId, s.id")
 	List<TimetableSubstitution> findActiveOn(@Param("tenantId") Long tenantId, @Param("date") LocalDate date);
+
+	@Query("""
+			SELECT s FROM TimetableSubstitution s
+			WHERE s.tenantId = :tenantId AND s.substitutionDate = :date AND s.cancelledAt IS NULL
+			ORDER BY s.periodId, s.id
+			""")
+	Page<TimetableSubstitution> findActiveOn(@Param("tenantId") Long tenantId, @Param("date") LocalDate date,
+			Pageable pageable);
 
 	@Query("SELECT s FROM TimetableSubstitution s WHERE s.tenantId = :tenantId AND s.substitutionDate = :date "
 			+ "AND s.periodId = :periodId AND s.cancelledAt IS NULL")

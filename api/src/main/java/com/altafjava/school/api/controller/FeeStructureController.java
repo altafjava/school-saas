@@ -28,6 +28,7 @@ import com.altafjava.school.api.mapper.FeeStructureRevisionMapper;
 import com.altafjava.school.api.support.PlatformPageMapper;
 import com.altafjava.school.api.support.SortableBy;
 import com.altafjava.school.api.support.SpringDataPageableResolver;
+import com.altafjava.school.application.reference.ReferenceSummaries;
 import com.altafjava.school.application.service.FeeAssignmentService;
 import com.altafjava.school.application.service.FeeStructureService;
 import com.altafjava.school.domain.fee.model.FeeFrequency;
@@ -44,9 +45,13 @@ public class FeeStructureController implements FeeStructureApi {
 
 	private final SpringDataPageableResolver pageableResolver;
 
+	private final ReferenceSummaries referenceSummaries;
+
 	public FeeStructureController(FeeStructureService feeStructureService, FeeStructureMapper feeStructureMapper,
 			FeeStructureRevisionMapper feeStructureRevisionMapper, FeeAssignmentService feeAssignmentService,
-			FeeAssignmentMapper feeAssignmentMapper, SpringDataPageableResolver pageableResolver) {
+			FeeAssignmentMapper feeAssignmentMapper, SpringDataPageableResolver pageableResolver,
+			ReferenceSummaries referenceSummaries) {
+		this.referenceSummaries = referenceSummaries;
 		this.feeStructureService = feeStructureService;
 		this.feeStructureMapper = feeStructureMapper;
 		this.feeStructureRevisionMapper = feeStructureRevisionMapper;
@@ -137,8 +142,9 @@ public class FeeStructureController implements FeeStructureApi {
 			@RequestParam(defaultValue = "0") int page,
 			@RequestParam(defaultValue = "20") int size) {
 		return ApiResponse.success(PlatformPageMapper
-				.toPlatformPage(feeAssignmentService.listForFeeStructure(publicId, pageableResolver.resolve(page, size))
-						.map(feeAssignmentMapper::toResponse)));
+				.toPlatformPage(referenceSummaries.mapPage(
+						feeAssignmentService.listForFeeStructure(publicId, pageableResolver.resolve(page, size)),
+						feeAssignmentMapper::toResponse)));
 	}
 
 	@Override

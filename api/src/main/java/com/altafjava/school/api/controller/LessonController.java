@@ -21,6 +21,7 @@ import com.altafjava.school.api.support.SortableBy;
 import com.altafjava.school.api.support.SpringDataPageableResolver;
 import com.altafjava.school.application.filter.CourseworkFilter;
 import com.altafjava.school.application.filter.DateWindow;
+import com.altafjava.school.application.reference.ReferenceSummaries;
 import com.altafjava.school.application.service.LessonService;
 
 @RestController
@@ -32,8 +33,12 @@ public class LessonController implements LessonApi {
 
 	private final SpringDataPageableResolver pageableResolver;
 
+	private final ReferenceSummaries referenceSummaries;
+
 	public LessonController(LessonService lessonService, LessonMapper lessonMapper,
-			SpringDataPageableResolver pageableResolver) {
+			SpringDataPageableResolver pageableResolver,
+			ReferenceSummaries referenceSummaries) {
+		this.referenceSummaries = referenceSummaries;
 		this.lessonService = lessonService;
 		this.lessonMapper = lessonMapper;
 		this.pageableResolver = pageableResolver;
@@ -65,7 +70,8 @@ public class LessonController implements LessonApi {
 			@RequestParam(required = false) LocalDate to) {
 		CourseworkFilter filter = new CourseworkFilter(classroomPublicId, subjectPublicId, new DateWindow(from, to));
 		return ApiResponse.success(PlatformPageMapper
-				.toPlatformPage(lessonService.listLessons(filter, pageableResolver.resolve(page, size))
-						.map(lessonMapper::toResponse)));
+				.toPlatformPage(referenceSummaries.mapPage(
+						lessonService.listLessons(filter, pageableResolver.resolve(page, size)),
+						lessonMapper::toResponse)));
 	}
 }

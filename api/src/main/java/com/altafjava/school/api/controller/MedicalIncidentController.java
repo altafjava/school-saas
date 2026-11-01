@@ -21,6 +21,7 @@ import com.altafjava.school.api.support.PlatformPageMapper;
 import com.altafjava.school.api.support.SpringDataPageableResolver;
 import com.altafjava.school.application.filter.DateWindow;
 import com.altafjava.school.application.filter.MedicalIncidentFilter;
+import com.altafjava.school.application.reference.ReferenceSummaries;
 import com.altafjava.school.application.service.MedicalIncidentService;
 
 // See HealthRecordController for the TENANT_ADMIN-only rationale (PHI-grade data, no dedicated
@@ -34,8 +35,12 @@ public class MedicalIncidentController implements MedicalIncidentApi {
 
 	private final SpringDataPageableResolver pageableResolver;
 
+	private final ReferenceSummaries referenceSummaries;
+
 	public MedicalIncidentController(MedicalIncidentService medicalIncidentService,
-			MedicalIncidentMapper medicalIncidentMapper, SpringDataPageableResolver pageableResolver) {
+			MedicalIncidentMapper medicalIncidentMapper, SpringDataPageableResolver pageableResolver,
+			ReferenceSummaries referenceSummaries) {
+		this.referenceSummaries = referenceSummaries;
 		this.medicalIncidentService = medicalIncidentService;
 		this.medicalIncidentMapper = medicalIncidentMapper;
 		this.pageableResolver = pageableResolver;
@@ -51,10 +56,10 @@ public class MedicalIncidentController implements MedicalIncidentApi {
 			@RequestParam(required = false) LocalDate from,
 			@RequestParam(required = false) LocalDate to) {
 		return ApiResponse.success(
-				PlatformPageMapper.toPlatformPage(medicalIncidentService
+				PlatformPageMapper.toPlatformPage(referenceSummaries.mapPage(medicalIncidentService
 						.listAll(new MedicalIncidentFilter(studentPublicId, new DateWindow(from, to)),
-								pageableResolver.resolve(page, size))
-						.map(medicalIncidentMapper::toResponse)));
+								pageableResolver.resolve(page, size)),
+						medicalIncidentMapper::toResponse)));
 	}
 
 	@Override
@@ -64,9 +69,9 @@ public class MedicalIncidentController implements MedicalIncidentApi {
 			@PathVariable String studentPublicId,
 			@RequestParam(defaultValue = "0") int page,
 			@RequestParam(defaultValue = "20") int size) {
-		return ApiResponse.success(PlatformPageMapper.toPlatformPage(
-				medicalIncidentService.listForStudent(studentPublicId, pageableResolver.resolve(page, size))
-						.map(medicalIncidentMapper::toResponse)));
+		return ApiResponse.success(PlatformPageMapper.toPlatformPage(referenceSummaries.mapPage(
+				medicalIncidentService.listForStudent(studentPublicId, pageableResolver.resolve(page, size)),
+				medicalIncidentMapper::toResponse)));
 	}
 
 	@Override

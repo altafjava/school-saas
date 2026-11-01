@@ -29,6 +29,7 @@ import com.altafjava.school.api.mapper.EmployeeMapper;
 import com.altafjava.school.api.support.PlatformPageMapper;
 import com.altafjava.school.api.support.SortableBy;
 import com.altafjava.school.api.support.SpringDataPageableResolver;
+import com.altafjava.school.application.reference.ReferenceSummaries;
 import com.altafjava.school.application.service.EmployeeService;
 import com.altafjava.school.domain.employee.model.EmployeeStatus;
 import com.altafjava.school.domain.employee.model.StaffCategory;
@@ -38,6 +39,8 @@ import lombok.RequiredArgsConstructor;
 @RequestMapping("/api/v1/employees")
 @RequiredArgsConstructor
 public class EmployeeController implements EmployeeApi {
+
+	private final ReferenceSummaries referenceSummaries;
 
 	private final EmployeeService employeeService;
 	private final EmployeeMapper employeeMapper;
@@ -55,9 +58,9 @@ public class EmployeeController implements EmployeeApi {
 			@RequestParam(defaultValue = "20") int size,
 			@RequestParam(required = false) String q,
 			@RequestParam(required = false) String departmentPublicId) {
-		return ApiResponse.success(PlatformPageMapper.toPlatformPage(
-				employeeService.search(category, status, departmentPublicId, q, pageableResolver.resolve(page, size))
-						.map(employeeMapper::toResponse)));
+		return ApiResponse.success(PlatformPageMapper.toPlatformPage(referenceSummaries.mapPage(
+				employeeService.search(category, status, departmentPublicId, q, pageableResolver.resolve(page, size)),
+				employeeMapper::toResponse)));
 	}
 
 	@Override

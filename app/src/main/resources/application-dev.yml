@@ -1,4 +1,7 @@
 spring:
+  rabbitmq:
+    username: ${RABBITMQ_USERNAME:platform}
+    password: ${RABBITMQ_PASSWORD:platform}
   datasource:
     url: jdbc:mariadb://${DB_HOST:localhost}:${DB_PORT:3306}/${DB_NAME:school_saas}
     username: ${DB_USERNAME:root}

@@ -26,6 +26,7 @@ import com.altafjava.school.api.support.PlatformPageMapper;
 import com.altafjava.school.api.support.SortableBy;
 import com.altafjava.school.api.support.SpringDataPageableResolver;
 import com.altafjava.school.application.filter.ExamFilter;
+import com.altafjava.school.application.reference.ReferenceSummaries;
 import com.altafjava.school.application.service.ExamService;
 import com.altafjava.school.domain.exam.model.ExamStatus;
 
@@ -38,7 +39,11 @@ public class ExamController implements ExamApi {
 
 	private final SpringDataPageableResolver pageableResolver;
 
-	public ExamController(ExamService examService, ExamMapper examMapper, SpringDataPageableResolver pageableResolver) {
+	private final ReferenceSummaries referenceSummaries;
+
+	public ExamController(ExamService examService, ExamMapper examMapper, SpringDataPageableResolver pageableResolver,
+			ReferenceSummaries referenceSummaries) {
+		this.referenceSummaries = referenceSummaries;
 		this.examService = examService;
 		this.examMapper = examMapper;
 		this.pageableResolver = pageableResolver;
@@ -57,8 +62,8 @@ public class ExamController implements ExamApi {
 			@RequestParam(required = false) ExamStatus status) {
 		ExamFilter filter = new ExamFilter(classroomPublicId, termPublicId, subjectPublicId, status);
 		return ApiResponse.success(PlatformPageMapper
-				.toPlatformPage(examService.listExams(filter, pageableResolver.resolve(page, size))
-						.map(examMapper::toResponse)));
+				.toPlatformPage(referenceSummaries.mapPage(
+						examService.listExams(filter, pageableResolver.resolve(page, size)), examMapper::toResponse)));
 	}
 
 	@Override

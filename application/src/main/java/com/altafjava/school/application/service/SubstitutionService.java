@@ -8,6 +8,9 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import com.altafjava.platform.application.dto.notification.SendNotificationCommand;
@@ -16,7 +19,7 @@ import com.altafjava.platform.core.exception.BusinessException;
 import com.altafjava.platform.core.exception.ResourceNotFoundException;
 import com.altafjava.platform.core.tenant.TenantContext;
 import com.altafjava.platform.domain.notification.model.NotificationPriority;
-import com.altafjava.platform.domain.notification.model.NotificationType;
+import com.altafjava.platform.domain.notification.model.NotificationTypes;
 import com.altafjava.school.domain.leave.repository.LeaveRequestRepository;
 import com.altafjava.school.domain.teacher.model.Teacher;
 import com.altafjava.school.domain.teacher.repository.TeacherRepository;
@@ -43,9 +46,10 @@ public class SubstitutionService {
 	private final NotificationService notificationService;
 
 	@Transactional(readOnly = true)
-	public List<SubstitutionDetails> listOn(LocalDate date) {
+	public Page<SubstitutionDetails> listOn(LocalDate date, Pageable pageable) {
 		Long tenantId = TenantContext.getCurrentTenantId();
-		return details(tenantId, substitutionRepository.findActiveOn(tenantId, date));
+		Page<TimetableSubstitution> page = substitutionRepository.findActiveOn(tenantId, date, pageable);
+		return new PageImpl<>(details(tenantId, page.getContent()), pageable, page.getTotalElements());
 	}
 
 	@Transactional(readOnly = true)
@@ -170,7 +174,7 @@ public class SubstitutionService {
 		notificationService.send(SendNotificationCommand.builder()
 				.tenantId(tenantId)
 				.userId(substitute.getUserId())
-				.type(NotificationType.ANNOUNCEMENT)
+				.type(NotificationTypes.ANNOUNCEMENT)
 				.title("Substitution assigned")
 				.message("You have been asked to cover a class on " + date + ".")
 				.priority(NotificationPriority.NORMAL)

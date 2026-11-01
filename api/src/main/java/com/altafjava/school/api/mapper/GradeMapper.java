@@ -11,7 +11,10 @@ public interface GradeMapper {
 
 	@Mapping(target = "publicId", expression = "java(grade.getPublicId().toString())")
 	@Mapping(target = "studentPublicId", source = "studentId", qualifiedByName = "student")
+	@Mapping(target = "student", source = "studentId", qualifiedByName = "studentSummary")
 	@Mapping(target = "subjectPublicId", source = "subjectId", qualifiedByName = "subject")
+	@Mapping(target = "subject", source = "subjectId", qualifiedByName = "subjectSummary")
 	@Mapping(target = "examPublicId", source = "examId", qualifiedByName = "exam")
+	@Mapping(target = "exam", source = "examId", qualifiedByName = "examSummary")
 	GradeResponse toResponse(Grade grade);
 }

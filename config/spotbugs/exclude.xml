@@ -369,4 +369,10 @@
         <Method name="&lt;init&gt;"/>
         <Bug pattern="EI_EXPOSE_REP2"/>
     </Match>
+    <!-- EI_EXPOSE_REP2: constructor injection of the shared, immutable ObjectMapper. -->
+    <Match>
+        <Class name="com.altafjava.school.api.controller.DashboardController"/>
+        <Method name="&lt;init&gt;"/>
+        <Bug pattern="EI_EXPOSE_REP2"/>
+    </Match>
 </FindBugsFilter>

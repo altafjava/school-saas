@@ -21,6 +21,7 @@ import com.altafjava.school.api.dto.response.DepartmentResponse;
 import com.altafjava.school.api.mapper.DepartmentMapper;
 import com.altafjava.school.api.support.PlatformPageMapper;
 import com.altafjava.school.api.support.SpringDataPageableResolver;
+import com.altafjava.school.application.reference.ReferenceSummaries;
 import com.altafjava.school.application.service.DepartmentService;
 
 @RestController
@@ -32,8 +33,12 @@ public class DepartmentController implements DepartmentApi {
 
 	private final SpringDataPageableResolver pageableResolver;
 
+	private final ReferenceSummaries referenceSummaries;
+
 	public DepartmentController(DepartmentService departmentService, DepartmentMapper departmentMapper,
-			SpringDataPageableResolver pageableResolver) {
+			SpringDataPageableResolver pageableResolver,
+			ReferenceSummaries referenceSummaries) {
+		this.referenceSummaries = referenceSummaries;
 		this.departmentService = departmentService;
 		this.departmentMapper = departmentMapper;
 		this.pageableResolver = pageableResolver;
@@ -46,8 +51,8 @@ public class DepartmentController implements DepartmentApi {
 			@RequestParam(defaultValue = "0") int page,
 			@RequestParam(defaultValue = "20") int size,
 			@RequestParam(required = false) String q) {
-		return ApiResponse.success(PlatformPageMapper.toPlatformPage(
-				departmentService.list(q, pageableResolver.resolve(page, size)).map(departmentMapper::toResponse)));
+		return ApiResponse.success(PlatformPageMapper.toPlatformPage(referenceSummaries.mapPage(
+				departmentService.list(q, pageableResolver.resolve(page, size)), departmentMapper::toResponse)));
 	}
 
 	@Override

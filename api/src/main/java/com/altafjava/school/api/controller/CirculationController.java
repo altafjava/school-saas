@@ -26,6 +26,7 @@ import com.altafjava.school.api.support.SortableBy;
 import com.altafjava.school.api.support.SpringDataPageableResolver;
 import com.altafjava.school.application.filter.CirculationFilter;
 import com.altafjava.school.application.filter.DateWindow;
+import com.altafjava.school.application.reference.ReferenceSummaries;
 import com.altafjava.school.application.service.CirculationService;
 
 @RestController
@@ -37,8 +38,12 @@ public class CirculationController implements CirculationApi {
 
 	private final SpringDataPageableResolver pageableResolver;
 
+	private final ReferenceSummaries referenceSummaries;
+
 	public CirculationController(CirculationService circulationService, CirculationMapper circulationMapper,
-			SpringDataPageableResolver pageableResolver) {
+			SpringDataPageableResolver pageableResolver,
+			ReferenceSummaries referenceSummaries) {
+		this.referenceSummaries = referenceSummaries;
 		this.circulationService = circulationService;
 		this.circulationMapper = circulationMapper;
 		this.pageableResolver = pageableResolver;
@@ -58,9 +63,8 @@ public class CirculationController implements CirculationApi {
 			@RequestParam(required = false) LocalDate to) {
 		CirculationFilter filter = new CirculationFilter(studentPublicId, bookPublicId, returned,
 				new DateWindow(from, to));
-		return ApiResponse.success(PlatformPageMapper.toPlatformPage(
-				circulationService.list(filter, pageableResolver.resolve(page, size))
-						.map(circulationMapper::toResponse)));
+		return ApiResponse.success(PlatformPageMapper.toPlatformPage(referenceSummaries.mapPage(
+				circulationService.list(filter, pageableResolver.resolve(page, size)), circulationMapper::toResponse)));
 	}
 
 	@Override

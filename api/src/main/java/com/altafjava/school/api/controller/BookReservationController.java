@@ -21,6 +21,7 @@ import com.altafjava.school.api.support.PlatformPageMapper;
 import com.altafjava.school.api.support.SortableBy;
 import com.altafjava.school.api.support.SpringDataPageableResolver;
 import com.altafjava.school.application.filter.BookReservationFilter;
+import com.altafjava.school.application.reference.ReferenceSummaries;
 import com.altafjava.school.application.service.BookReservationService;
 import com.altafjava.school.domain.library.model.ReservationStatus;
 
@@ -32,8 +33,12 @@ public class BookReservationController implements BookReservationApi {
 	private final BookReservationMapper bookReservationMapper;
 	private final SpringDataPageableResolver pageableResolver;
 
+	private final ReferenceSummaries referenceSummaries;
+
 	public BookReservationController(BookReservationService bookReservationService,
-			BookReservationMapper bookReservationMapper, SpringDataPageableResolver pageableResolver) {
+			BookReservationMapper bookReservationMapper, SpringDataPageableResolver pageableResolver,
+			ReferenceSummaries referenceSummaries) {
+		this.referenceSummaries = referenceSummaries;
 		this.bookReservationService = bookReservationService;
 		this.bookReservationMapper = bookReservationMapper;
 		this.pageableResolver = pageableResolver;
@@ -49,10 +54,16 @@ public class BookReservationController implements BookReservationApi {
 			@RequestParam(defaultValue = "0") int page,
 			@RequestParam(defaultValue = "20") int size,
 			@RequestParam(required = false) ReservationStatus status) {
-		return ApiResponse.success(PlatformPageMapper.toPlatformPage(
-				bookReservationService.list(new BookReservationFilter(bookPublicId, studentPublicId, status),
-						pageableResolver.resolve(page, size))
-						.map(bookReservationMapper::toResponse)));
+		return ApiResponse
+				.success(
+						PlatformPageMapper
+								.toPlatformPage(
+										referenceSummaries.mapPage(
+												bookReservationService.list(
+														new BookReservationFilter(bookPublicId, studentPublicId,
+																status),
+														pageableResolver.resolve(page, size)),
+												bookReservationMapper::toResponse)));
 	}
 
 	@Override

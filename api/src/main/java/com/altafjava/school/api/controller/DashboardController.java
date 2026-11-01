@@ -9,6 +9,13 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import com.altafjava.platform.api.dto.response.ApiResponse;
 import com.altafjava.school.api.controller.api.DashboardApi;
+import com.altafjava.school.api.dto.response.dashboard.AcademicDashboardRow;
+import com.altafjava.school.api.dto.response.dashboard.AttendanceTrendPoint;
+import com.altafjava.school.api.dto.response.dashboard.FeeCollectionTrendPoint;
+import com.altafjava.school.api.dto.response.dashboard.FinanceDashboardResponse;
+import com.altafjava.school.api.dto.response.dashboard.HrDashboardResponse;
+import com.altafjava.school.api.dto.response.dashboard.LeaveUtilizationTrendPoint;
+import com.altafjava.school.api.dto.response.dashboard.PrincipalDashboardResponse;
 import com.altafjava.school.application.dashboard.AcademicDashboardDataProvider;
 import com.altafjava.school.application.dashboard.AttendanceTrendDataProvider;
 import com.altafjava.school.application.dashboard.FeeCollectionTrendDataProvider;
@@ -16,6 +23,7 @@ import com.altafjava.school.application.dashboard.FinanceDashboardDataProvider;
 import com.altafjava.school.application.dashboard.HrDashboardDataProvider;
 import com.altafjava.school.application.dashboard.LeaveUtilizationTrendDataProvider;
 import com.altafjava.school.application.dashboard.PrincipalDashboardDataProvider;
+import tools.jackson.databind.ObjectMapper;
 
 /**
  * Live JSON view of each role-scoped dashboard — calls the same {@code ReportDataProvider} bean
@@ -42,13 +50,17 @@ public class DashboardController implements DashboardApi {
 	private final FeeCollectionTrendDataProvider feeCollectionTrendDataProvider;
 	private final LeaveUtilizationTrendDataProvider leaveUtilizationTrendDataProvider;
 
-	public DashboardController(PrincipalDashboardDataProvider principalDashboardDataProvider,
+	private final ObjectMapper objectMapper;
+
+	public DashboardController(ObjectMapper objectMapper,
+			PrincipalDashboardDataProvider principalDashboardDataProvider,
 			FinanceDashboardDataProvider financeDashboardDataProvider,
 			HrDashboardDataProvider hrDashboardDataProvider,
 			AcademicDashboardDataProvider academicDashboardDataProvider,
 			AttendanceTrendDataProvider attendanceTrendDataProvider,
 			FeeCollectionTrendDataProvider feeCollectionTrendDataProvider,
 			LeaveUtilizationTrendDataProvider leaveUtilizationTrendDataProvider) {
+		this.objectMapper = objectMapper;
 		this.principalDashboardDataProvider = principalDashboardDataProvider;
 		this.financeDashboardDataProvider = financeDashboardDataProvider;
 		this.hrDashboardDataProvider = hrDashboardDataProvider;
@@ -61,57 +73,69 @@ public class DashboardController implements DashboardApi {
 	@Override
 	@GetMapping("/principal")
 	@PreAuthorize("@permissionAuthorizationService.hasPermission('DASHBOARD_PRINCIPAL_READ')")
-	public ApiResponse<List<Map<String, Object>>> principal() {
-		return ApiResponse.success(principalDashboardDataProvider.fetchData(Map.of()));
+	public ApiResponse<List<PrincipalDashboardResponse>> principal() {
+		return ApiResponse
+				.success(typed(principalDashboardDataProvider.fetchData(Map.of()), PrincipalDashboardResponse.class));
 	}
 
 	@Override
 	@GetMapping("/finance")
 	@PreAuthorize("@permissionAuthorizationService.hasPermission('DASHBOARD_FINANCE_READ')")
-	public ApiResponse<List<Map<String, Object>>> finance() {
-		return ApiResponse.success(financeDashboardDataProvider.fetchData(Map.of()));
+	public ApiResponse<List<FinanceDashboardResponse>> finance() {
+		return ApiResponse
+				.success(typed(financeDashboardDataProvider.fetchData(Map.of()), FinanceDashboardResponse.class));
 	}
 
 	@Override
 	@GetMapping("/hr")
 	@PreAuthorize("@permissionAuthorizationService.hasPermission('DASHBOARD_HR_READ')")
-	public ApiResponse<List<Map<String, Object>>> hr() {
-		return ApiResponse.success(hrDashboardDataProvider.fetchData(Map.of()));
+	public ApiResponse<List<HrDashboardResponse>> hr() {
+		return ApiResponse.success(typed(hrDashboardDataProvider.fetchData(Map.of()), HrDashboardResponse.class));
 	}
 
 	@Override
 	@GetMapping("/academic")
 	@PreAuthorize("@permissionAuthorizationService.hasPermission('DASHBOARD_ACADEMIC_READ')")
-	public ApiResponse<List<Map<String, Object>>> academic() {
-		return ApiResponse.success(academicDashboardDataProvider.fetchData(Map.of()));
+	public ApiResponse<List<AcademicDashboardRow>> academic() {
+		return ApiResponse
+				.success(typed(academicDashboardDataProvider.fetchData(Map.of()), AcademicDashboardRow.class));
 	}
 
 	@Override
 	@GetMapping("/principal/trends")
 	@PreAuthorize("@permissionAuthorizationService.hasPermission('DASHBOARD_PRINCIPAL_READ')")
-	public ApiResponse<List<Map<String, Object>>> principalTrends(@RequestParam(required = false) Integer periods) {
-		return ApiResponse.success(attendanceTrendDataProvider.fetchData(trendParameters(periods)));
+	public ApiResponse<List<AttendanceTrendPoint>> principalTrends(@RequestParam(required = false) Integer periods) {
+		return ApiResponse.success(
+				typed(attendanceTrendDataProvider.fetchData(trendParameters(periods)), AttendanceTrendPoint.class));
 	}
 
 	@Override
 	@GetMapping("/academic/trends")
 	@PreAuthorize("@permissionAuthorizationService.hasPermission('DASHBOARD_ACADEMIC_READ')")
-	public ApiResponse<List<Map<String, Object>>> academicTrends(@RequestParam(required = false) Integer periods) {
-		return ApiResponse.success(attendanceTrendDataProvider.fetchData(trendParameters(periods)));
+	public ApiResponse<List<AttendanceTrendPoint>> academicTrends(@RequestParam(required = false) Integer periods) {
+		return ApiResponse.success(
+				typed(attendanceTrendDataProvider.fetchData(trendParameters(periods)), AttendanceTrendPoint.class));
 	}
 
 	@Override
 	@GetMapping("/finance/trends")
 	@PreAuthorize("@permissionAuthorizationService.hasPermission('DASHBOARD_FINANCE_READ')")
-	public ApiResponse<List<Map<String, Object>>> financeTrends(@RequestParam(required = false) Integer periods) {
-		return ApiResponse.success(feeCollectionTrendDataProvider.fetchData(trendParameters(periods)));
+	public ApiResponse<List<FeeCollectionTrendPoint>> financeTrends(@RequestParam(required = false) Integer periods) {
+		return ApiResponse.success(typed(feeCollectionTrendDataProvider.fetchData(trendParameters(periods)),
+				FeeCollectionTrendPoint.class));
 	}
 
 	@Override
 	@GetMapping("/hr/trends")
 	@PreAuthorize("@permissionAuthorizationService.hasPermission('DASHBOARD_HR_READ')")
-	public ApiResponse<List<Map<String, Object>>> hrTrends(@RequestParam(required = false) Integer periods) {
-		return ApiResponse.success(leaveUtilizationTrendDataProvider.fetchData(trendParameters(periods)));
+	public ApiResponse<List<LeaveUtilizationTrendPoint>> hrTrends(@RequestParam(required = false) Integer periods) {
+		return ApiResponse.success(typed(leaveUtilizationTrendDataProvider.fetchData(trendParameters(periods)),
+				LeaveUtilizationTrendPoint.class));
+	}
+
+	// The providers also feed the report engine, which works on rows; the API contract stays typed.
+	private <T> List<T> typed(List<Map<String, Object>> rows, Class<T> type) {
+		return rows.stream().map(row -> objectMapper.convertValue(row, type)).toList();
 	}
 
 	private Map<String, Object> trendParameters(Integer periods) {

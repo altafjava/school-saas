@@ -24,7 +24,9 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 public interface SubstitutionApi {
 
 	@Operation(summary = "List on date", description = "The substitutions standing on one date.")
-	public ApiResponse<List<SubstitutionResponse>> listOn(@RequestParam LocalDate date);
+	public ApiResponse<com.altafjava.platform.core.model.Page<SubstitutionResponse>> listOn(
+			@RequestParam LocalDate date,
+			@RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "20") int size);
 
 	@Operation(summary = "List uncovered", description = "Slots on the date whose regular teacher is on approved leave and that have "
 			+ "no substitute yet.")

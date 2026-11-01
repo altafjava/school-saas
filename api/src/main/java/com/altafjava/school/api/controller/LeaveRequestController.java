@@ -28,6 +28,7 @@ import com.altafjava.school.api.support.SortableBy;
 import com.altafjava.school.api.support.SpringDataPageableResolver;
 import com.altafjava.school.application.filter.DateWindow;
 import com.altafjava.school.application.filter.LeaveRequestFilter;
+import com.altafjava.school.application.reference.ReferenceSummaries;
 import com.altafjava.school.application.service.LeaveRequestService;
 import com.altafjava.school.domain.leave.model.LeaveRequestStatus;
 
@@ -46,8 +47,12 @@ public class LeaveRequestController implements LeaveRequestApi {
 
 	private final SpringDataPageableResolver pageableResolver;
 
+	private final ReferenceSummaries referenceSummaries;
+
 	public LeaveRequestController(LeaveRequestService leaveRequestService, LeaveRequestMapper leaveRequestMapper,
-			LeaveApprovalMapper leaveApprovalMapper, SpringDataPageableResolver pageableResolver) {
+			LeaveApprovalMapper leaveApprovalMapper, SpringDataPageableResolver pageableResolver,
+			ReferenceSummaries referenceSummaries) {
+		this.referenceSummaries = referenceSummaries;
 		this.leaveRequestService = leaveRequestService;
 		this.leaveRequestMapper = leaveRequestMapper;
 		this.leaveApprovalMapper = leaveApprovalMapper;
@@ -69,8 +74,9 @@ public class LeaveRequestController implements LeaveRequestApi {
 		LeaveRequestFilter filter = new LeaveRequestFilter(employeePublicId, leaveTypePublicId, status,
 				new DateWindow(from, to));
 		return ApiResponse.success(PlatformPageMapper
-				.toPlatformPage(leaveRequestService.listAll(filter, pageableResolver.resolve(page, size))
-						.map(leaveRequestMapper::toResponse)));
+				.toPlatformPage(referenceSummaries.mapPage(
+						leaveRequestService.listAll(filter, pageableResolver.resolve(page, size)),
+						leaveRequestMapper::toResponse)));
 	}
 
 	@Override
@@ -86,8 +92,9 @@ public class LeaveRequestController implements LeaveRequestApi {
 			@RequestParam(required = false) LocalDate to) {
 		LeaveRequestFilter filter = new LeaveRequestFilter(null, leaveTypePublicId, status, new DateWindow(from, to));
 		return ApiResponse.success(PlatformPageMapper
-				.toPlatformPage(leaveRequestService.listForCurrentEmployee(filter, pageableResolver.resolve(page, size))
-						.map(leaveRequestMapper::toResponse)));
+				.toPlatformPage(referenceSummaries.mapPage(
+						leaveRequestService.listForCurrentEmployee(filter, pageableResolver.resolve(page, size)),
+						leaveRequestMapper::toResponse)));
 	}
 
 	@Override
@@ -106,16 +113,17 @@ public class LeaveRequestController implements LeaveRequestApi {
 			@RequestParam(defaultValue = "0") int page,
 			@RequestParam(defaultValue = "20") int size) {
 		return ApiResponse.success(PlatformPageMapper
-				.toPlatformPage(leaveRequestService.listAwaitingMyReview(pageableResolver.resolve(page, size))
-						.map(leaveRequestMapper::toResponse)));
+				.toPlatformPage(referenceSummaries.mapPage(
+						leaveRequestService.listAwaitingMyReview(pageableResolver.resolve(page, size)),
+						leaveRequestMapper::toResponse)));
 	}
 
 	@Override
 	@GetMapping("/{publicId}/approvals")
 	@PreAuthorize("@permissionAuthorizationService.hasPermission('LEAVE_REQUEST_MANAGE')")
 	public ApiResponse<List<LeaveApprovalResponse>> listApprovals(@PathVariable String publicId) {
-		return ApiResponse.success(leaveRequestService.listApprovals(publicId).stream()
-				.map(leaveApprovalMapper::toResponse).toList());
+		return ApiResponse.success(referenceSummaries.mapList(leaveRequestService.listApprovals(publicId),
+				leaveApprovalMapper::toResponse));
 	}
 
 	@Override

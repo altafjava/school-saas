@@ -8,10 +8,12 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
 import com.altafjava.platform.api.dto.response.ApiResponse;
 import com.altafjava.platform.core.security.AuthenticatedUser;
+import com.altafjava.school.api.dto.request.BulkMarkAttendanceRequest;
 import com.altafjava.school.api.dto.request.MarkAttendanceRequest;
 import com.altafjava.school.api.dto.request.UpdateAttendanceStatusRequest;
 import com.altafjava.school.api.dto.response.AttendanceCorrectionResponse;
 import com.altafjava.school.api.dto.response.AttendanceResponse;
+import com.altafjava.school.application.bulk.BulkEntryResult;
 import com.altafjava.school.domain.attendance.model.AttendanceStatus;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
@@ -51,4 +53,8 @@ public interface AttendanceApi {
 
 	@Operation(summary = "Delete")
 	public ApiResponse<Void> delete(@PathVariable String publicId);
+
+	@Operation(summary = "Mark a class", description = "Marks a roster in one request and reports each row. Safe to resend.")
+	public ApiResponse<BulkEntryResult> markBulk(@Valid @RequestBody BulkMarkAttendanceRequest request,
+			@AuthenticationPrincipal AuthenticatedUser user);
 }

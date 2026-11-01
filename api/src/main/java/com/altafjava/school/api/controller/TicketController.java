@@ -23,6 +23,7 @@ import com.altafjava.school.api.mapper.TicketMapper;
 import com.altafjava.school.api.support.PlatformPageMapper;
 import com.altafjava.school.api.support.SortableBy;
 import com.altafjava.school.api.support.SpringDataPageableResolver;
+import com.altafjava.school.application.reference.ReferenceSummaries;
 import com.altafjava.school.application.service.TicketService;
 import com.altafjava.school.domain.helpdesk.model.TicketCategory;
 import com.altafjava.school.domain.helpdesk.model.TicketStatus;
@@ -45,8 +46,12 @@ public class TicketController implements TicketApi {
 
 	private final SpringDataPageableResolver pageableResolver;
 
+	private final ReferenceSummaries referenceSummaries;
+
 	public TicketController(TicketService ticketService, TicketMapper ticketMapper,
-			SpringDataPageableResolver pageableResolver) {
+			SpringDataPageableResolver pageableResolver,
+			ReferenceSummaries referenceSummaries) {
+		this.referenceSummaries = referenceSummaries;
 		this.ticketService = ticketService;
 		this.ticketMapper = ticketMapper;
 		this.pageableResolver = pageableResolver;
@@ -63,9 +68,9 @@ public class TicketController implements TicketApi {
 			@RequestParam(defaultValue = "0") int page,
 			@RequestParam(defaultValue = "20") int size,
 			@RequestParam(required = false) String q) {
-		return ApiResponse.success(PlatformPageMapper.toPlatformPage(
-				ticketService.search(status, category, assignedToUserPublicId, q, pageableResolver.resolve(page, size))
-						.map(ticketMapper::toResponse)));
+		return ApiResponse.success(PlatformPageMapper.toPlatformPage(referenceSummaries.mapPage(
+				ticketService.search(status, category, assignedToUserPublicId, q, pageableResolver.resolve(page, size)),
+				ticketMapper::toResponse)));
 	}
 
 	@Override
@@ -74,8 +79,8 @@ public class TicketController implements TicketApi {
 	public ApiResponse<com.altafjava.platform.core.model.Page<TicketResponse>> listMine(
 			@RequestParam(defaultValue = "0") int page,
 			@RequestParam(defaultValue = "20") int size) {
-		return ApiResponse.success(PlatformPageMapper.toPlatformPage(
-				ticketService.listMine(pageableResolver.resolve(page, size)).map(ticketMapper::toResponse)));
+		return ApiResponse.success(PlatformPageMapper.toPlatformPage(referenceSummaries
+				.mapPage(ticketService.listMine(pageableResolver.resolve(page, size)), ticketMapper::toResponse)));
 	}
 
 	@Override

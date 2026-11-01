@@ -16,6 +16,7 @@ import com.altafjava.school.api.support.PlatformPageMapper;
 import com.altafjava.school.api.support.SortableBy;
 import com.altafjava.school.api.support.SpringDataPageableResolver;
 import com.altafjava.school.application.filter.PayslipFilter;
+import com.altafjava.school.application.reference.ReferenceSummaries;
 import com.altafjava.school.application.service.PayslipService;
 import com.altafjava.school.domain.payroll.model.PayslipStatus;
 
@@ -28,8 +29,12 @@ public class PayslipController implements PayslipApi {
 
 	private final SpringDataPageableResolver pageableResolver;
 
+	private final ReferenceSummaries referenceSummaries;
+
 	public PayslipController(PayslipService payslipService, PayslipMapper payslipMapper,
-			SpringDataPageableResolver pageableResolver) {
+			SpringDataPageableResolver pageableResolver,
+			ReferenceSummaries referenceSummaries) {
+		this.referenceSummaries = referenceSummaries;
 		this.payslipService = payslipService;
 		this.payslipMapper = payslipMapper;
 		this.pageableResolver = pageableResolver;
@@ -47,8 +52,8 @@ public class PayslipController implements PayslipApi {
 			@RequestParam(required = false) Integer payMonth,
 			@RequestParam(required = false) PayslipStatus status) {
 		PayslipFilter filter = new PayslipFilter(employeePublicId, payYear, payMonth, status);
-		return ApiResponse.success(PlatformPageMapper.toPlatformPage(
-				payslipService.list(filter, pageableResolver.resolve(page, size)).map(payslipMapper::toResponse)));
+		return ApiResponse.success(PlatformPageMapper.toPlatformPage(referenceSummaries.mapPage(
+				payslipService.list(filter, pageableResolver.resolve(page, size)), payslipMapper::toResponse)));
 	}
 
 	@Override

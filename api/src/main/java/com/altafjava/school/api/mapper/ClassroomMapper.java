@@ -11,6 +11,8 @@ public interface ClassroomMapper {
 
 	@Mapping(target = "publicId", expression = "java(classroom.getPublicId().toString())")
 	@Mapping(target = "classTeacherPublicId", source = "classTeacherId", qualifiedByName = "employee")
+	@Mapping(target = "classTeacher", source = "classTeacherId", qualifiedByName = "employeeSummary")
 	@Mapping(target = "curriculumPublicId", source = "curriculumId", qualifiedByName = "curriculum")
+	@Mapping(target = "curriculum", source = "curriculumId", qualifiedByName = "curriculumSummary")
 	ClassroomResponse toResponse(Classroom classroom);
 }

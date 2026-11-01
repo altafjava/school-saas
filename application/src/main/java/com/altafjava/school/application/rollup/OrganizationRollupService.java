@@ -12,7 +12,6 @@ import java.util.stream.Collectors;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import com.altafjava.platform.application.organization.OrganizationService;
-import com.altafjava.platform.application.tenant.TenantFilterSwitcher;
 import com.altafjava.platform.core.exception.BusinessException;
 import com.altafjava.platform.core.exception.ResourceNotFoundException;
 import com.altafjava.platform.core.tenant.TenantContext;
@@ -42,16 +41,7 @@ import com.altafjava.school.domain.student.repository.StudentRepository;
  *
  * <p>
  * Each campus is read by binding {@link TenantContext#callAsTenant} to that campus's snapshot in
- * turn (the platform's own sanctioned "act as tenant X for a bounded scope" API — see its use in
- * {@code AbstractBaseJob} and {@code SchoolTenantProvisioningListener}), wrapped in {@link
- * TenantFilterSwitcher#runWithTenantFilter} so the campus's own tenant id is also what Hibernate's
- * session-level {@code tenantFilter} enforces for the duration of that campus's queries — {@code
- * callAsTenant} alone only rebinds the ambient {@code TenantContext} (cache keys, schema routing),
- * not the Hibernate filter parameter, which {@code TenantFilterRequestFilter} sets once for the
- * whole request. Without the switcher, a caller whose own request already has the filter bound to
- * a real tenant (any {@code ORG_ADMIN}, as opposed to a {@code SUPER_ADMIN}/system-level caller
- * whose request never enables the filter at all) would have every campus's queries silently ANDed
- * with the caller's own tenant id and return zero rows for every campus but their own.
+ * turn, which is also what scopes the Hibernate tenant filter to that campus.
  */
 @Service
 public class OrganizationRollupService {
@@ -65,7 +55,6 @@ public class OrganizationRollupService {
 	private final FeePaymentRepository feePaymentRepository;
 	private final FeeAssignmentRepository feeAssignmentRepository;
 	private final StudentClassroomLinkRepository studentClassroomLinkRepository;
-	private final TenantFilterSwitcher tenantFilterSwitcher;
 
 	public OrganizationRollupService(OrganizationService organizationService,
 			StudentRepository studentRepository,
@@ -73,8 +62,7 @@ public class OrganizationRollupService {
 			FeeStructureRepository feeStructureRepository,
 			FeePaymentRepository feePaymentRepository,
 			FeeAssignmentRepository feeAssignmentRepository,
-			StudentClassroomLinkRepository studentClassroomLinkRepository,
-			TenantFilterSwitcher tenantFilterSwitcher) {
+			StudentClassroomLinkRepository studentClassroomLinkRepository) {
 		this.organizationService = organizationService;
 		this.studentRepository = studentRepository;
 		this.attendanceRepository = attendanceRepository;
@@ -82,7 +70,6 @@ public class OrganizationRollupService {
 		this.feePaymentRepository = feePaymentRepository;
 		this.feeAssignmentRepository = feeAssignmentRepository;
 		this.studentClassroomLinkRepository = studentClassroomLinkRepository;
-		this.tenantFilterSwitcher = tenantFilterSwitcher;
 	}
 
 	@Transactional(readOnly = true)
@@ -114,9 +101,8 @@ public class OrganizationRollupService {
 		TenantContextSnapshot snapshot = new TenantContextSnapshot(
 				campus.getId(), campus.getPublicId(), campus.getSubdomain(), campus.getType(),
 				campus.getOrganizationId());
-		return tenantFilterSwitcher.runWithTenantFilter(campus.getId(),
-				() -> TenantContext.<CampusRollup, RuntimeException>callAsTenant(snapshot,
-						() -> computeCampusRollup(campus, periodStart, periodEnd)));
+		return TenantContext.<CampusRollup, RuntimeException>callAsTenant(snapshot,
+				() -> computeCampusRollup(campus, periodStart, periodEnd));
 	}
 
 	private CampusRollup computeCampusRollup(Tenant campus, LocalDate periodStart, LocalDate periodEnd) {

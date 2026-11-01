@@ -28,6 +28,7 @@ import com.altafjava.school.api.mapper.VisitorLogMapper;
 import com.altafjava.school.api.support.PlatformPageMapper;
 import com.altafjava.school.api.support.SortableBy;
 import com.altafjava.school.api.support.SpringDataPageableResolver;
+import com.altafjava.school.application.reference.ReferenceSummaries;
 import com.altafjava.school.application.service.VisitorLogService;
 
 /**
@@ -46,8 +47,12 @@ public class VisitorLogController implements VisitorLogApi {
 
 	private final SpringDataPageableResolver pageableResolver;
 
+	private final ReferenceSummaries referenceSummaries;
+
 	public VisitorLogController(VisitorLogService visitorLogService, VisitorLogMapper visitorLogMapper,
-			SpringDataPageableResolver pageableResolver) {
+			SpringDataPageableResolver pageableResolver,
+			ReferenceSummaries referenceSummaries) {
+		this.referenceSummaries = referenceSummaries;
 		this.visitorLogService = visitorLogService;
 		this.visitorLogMapper = visitorLogMapper;
 		this.pageableResolver = pageableResolver;
@@ -64,8 +69,9 @@ public class VisitorLogController implements VisitorLogApi {
 			@RequestParam(defaultValue = "0") int page,
 			@RequestParam(defaultValue = "20") int size) {
 		return ApiResponse.success(PlatformPageMapper
-				.toPlatformPage(visitorLogService.list(stillCheckedIn, from, to, pageableResolver.resolve(page, size))
-						.map(visitorLogMapper::toResponse)));
+				.toPlatformPage(referenceSummaries.mapPage(
+						visitorLogService.list(stillCheckedIn, from, to, pageableResolver.resolve(page, size)),
+						visitorLogMapper::toResponse)));
 	}
 
 	@Override

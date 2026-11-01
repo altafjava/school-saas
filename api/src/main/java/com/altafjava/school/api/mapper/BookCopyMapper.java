@@ -12,5 +12,6 @@ public interface BookCopyMapper {
 	@Mapping(target = "publicId", expression = "java(bookCopy.getPublicId().toString())")
 	@Mapping(target = "status", expression = "java(bookCopy.getStatus().name())")
 	@Mapping(target = "bookPublicId", source = "bookId", qualifiedByName = "book")
+	@Mapping(target = "book", source = "bookId", qualifiedByName = "bookSummary")
 	BookCopyResponse toResponse(BookCopy bookCopy);
 }

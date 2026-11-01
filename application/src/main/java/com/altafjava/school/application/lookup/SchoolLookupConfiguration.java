@@ -20,7 +20,7 @@ import com.altafjava.school.application.service.EmployeeService;
 import com.altafjava.school.application.service.FeeStructureService;
 import com.altafjava.school.application.service.GuardianService;
 import com.altafjava.school.application.service.LeaveTypeService;
-import com.altafjava.school.application.service.StudentService;
+import com.altafjava.school.application.service.StudentDirectory;
 import com.altafjava.school.application.service.SubjectService;
 import com.altafjava.school.application.service.TeacherService;
 import com.altafjava.school.application.service.TermService;
@@ -34,9 +34,9 @@ public class SchoolLookupConfiguration {
 	private static final int CATALOG_LIMIT = 500;
 
 	@Bean
-	LookupProvider studentLookup(StudentService students) {
+	LookupProvider studentLookup(StudentDirectory students) {
 		return searching("students", "STUDENT_READ",
-				(q, size) -> students.searchStudents(StudentFilter.matching(q), page(size, "firstName")),
+				(q, size) -> students.search(StudentFilter.matching(q), page(size, "firstName")),
 				s -> new LookupOption(s.getPublicId().toString(), s.getFirstName() + " " + s.getLastName(),
 						s.getStudentCode()));
 	}

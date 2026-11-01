@@ -2,6 +2,7 @@ package com.altafjava.school.application.service;
 
 import java.time.LocalDate;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 import java.util.function.Consumer;
 import org.springframework.data.domain.Page;
@@ -55,6 +56,17 @@ public class StudentService {
 		Long classroomId = publicIdLookup.idOrNull(EntityRef.CLASSROOM, filter.classroomPublicId());
 		return studentRepository.search(TenantContext.getCurrentTenantId(), filter.status(), classroomId,
 				filter.gender(), LikePattern.contains(filter.q()), pageable);
+	}
+
+	/** {@link #searchStudents} limited to students placed in one of the given classrooms. */
+	@Transactional(readOnly = true)
+	public Page<Student> searchStudentsWithin(StudentFilter filter, Set<Long> classroomIds, Pageable pageable) {
+		if (classroomIds.isEmpty()) {
+			return Page.empty(pageable);
+		}
+		Long classroomId = publicIdLookup.idOrNull(EntityRef.CLASSROOM, filter.classroomPublicId());
+		return studentRepository.searchWithinClassrooms(TenantContext.getCurrentTenantId(), filter.status(),
+				classroomId, filter.gender(), LikePattern.contains(filter.q()), classroomIds, pageable);
 	}
 
 	@Transactional(readOnly = true)

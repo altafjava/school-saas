@@ -21,6 +21,7 @@ import com.altafjava.school.api.dto.response.SubmissionResponse;
 import com.altafjava.school.api.mapper.SubmissionMapper;
 import com.altafjava.school.api.support.PlatformPageMapper;
 import com.altafjava.school.api.support.SpringDataPageableResolver;
+import com.altafjava.school.application.reference.ReferenceSummaries;
 import com.altafjava.school.application.service.SubmissionService;
 
 @RestController
@@ -32,8 +33,12 @@ public class SubmissionController implements SubmissionApi {
 
 	private final SpringDataPageableResolver pageableResolver;
 
+	private final ReferenceSummaries referenceSummaries;
+
 	public SubmissionController(SubmissionService submissionService, SubmissionMapper submissionMapper,
-			SpringDataPageableResolver pageableResolver) {
+			SpringDataPageableResolver pageableResolver,
+			ReferenceSummaries referenceSummaries) {
+		this.referenceSummaries = referenceSummaries;
 		this.submissionService = submissionService;
 		this.submissionMapper = submissionMapper;
 		this.pageableResolver = pageableResolver;
@@ -57,8 +62,9 @@ public class SubmissionController implements SubmissionApi {
 			@RequestParam(defaultValue = "0") int page,
 			@RequestParam(defaultValue = "20") int size) {
 		return ApiResponse.success(PlatformPageMapper
-				.toPlatformPage(submissionService.list(assignmentPublicId, pageableResolver.resolve(page, size))
-						.map(submissionMapper::toResponse)));
+				.toPlatformPage(referenceSummaries.mapPage(
+						submissionService.list(assignmentPublicId, pageableResolver.resolve(page, size)),
+						submissionMapper::toResponse)));
 	}
 
 	@Override

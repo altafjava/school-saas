@@ -19,8 +19,9 @@ import com.altafjava.platform.core.tenant.TenantContextSnapshot;
 import com.altafjava.platform.domain.approval.repository.ApprovalWorkflowDefinitionRepository;
 import com.altafjava.platform.domain.notification.model.NotificationChannel;
 import com.altafjava.platform.domain.notification.model.NotificationTemplate;
-import com.altafjava.platform.domain.notification.model.NotificationType;
+import com.altafjava.platform.domain.notification.model.NotificationTypes;
 import com.altafjava.platform.domain.notification.repository.NotificationTemplateRepository;
+import com.altafjava.platform.domain.platform.setting.service.GlobalSettingService;
 import com.altafjava.platform.domain.privacy.model.DeletionPolicy;
 import com.altafjava.platform.domain.report.model.ReportDefinition;
 import com.altafjava.platform.domain.report.model.ReportOutputFormat;
@@ -41,6 +42,7 @@ import com.altafjava.school.domain.curriculum.repository.GradingScaleRepository;
 import com.altafjava.school.domain.curriculum.repository.GradingScaleThresholdRepository;
 import com.altafjava.school.domain.exam.model.ExamTypeDefinition;
 import com.altafjava.school.domain.exam.repository.ExamTypeDefinitionRepository;
+import com.altafjava.school.domain.notification.SchoolNotificationTypes;
 import com.altafjava.school.domain.payroll.model.PayComponentDefinition;
 import com.altafjava.school.domain.payroll.model.PayComponentType;
 import com.altafjava.school.domain.payroll.repository.PayComponentDefinitionRepository;
@@ -63,52 +65,52 @@ public class SchoolTenantProvisioningListener {
 			NotificationChannel.IN_APP);
 
 	private static final List<TemplateSeed> NOTIFICATION_TEMPLATE_SEEDS = List.of(
-			new TemplateSeed(NotificationType.FEE_DUE, "Fee Payment Reminder",
+			new TemplateSeed(SchoolNotificationTypes.FEE_DUE, "Fee Payment Reminder",
 					"Dear parent/guardian,\n\n{{studentName}} has an outstanding fee balance of {{amount}}. "
 							+ "Please make payment at your earliest convenience to avoid any disruption to "
 							+ "enrollment.\n\nThank you.",
 					List.of("studentName", "amount")),
-			new TemplateSeed(NotificationType.EXAM_SCHEDULED, "Upcoming Exam: {{examTitle}}",
+			new TemplateSeed(SchoolNotificationTypes.EXAM_SCHEDULED, "Upcoming Exam: {{examTitle}}",
 					"Dear parent/guardian,\n\n{{studentName}} has a {{subjectName}} exam ({{examTitle}}) "
 							+ "scheduled for {{scheduledAt}}. Please ensure they are well prepared.\n\nThank you.",
 					List.of("studentName", "examTitle", "subjectName", "scheduledAt")),
-			new TemplateSeed(NotificationType.LOW_ATTENDANCE_ALERT, "Low Attendance Alert",
+			new TemplateSeed(SchoolNotificationTypes.LOW_ATTENDANCE_ALERT, "Low Attendance Alert",
 					"Dear parent/guardian,\n\n{{studentName}}'s attendance over the last {{windowDays}} days is "
 							+ "{{percentage}}%, which is below the school's minimum threshold. Please contact the "
 							+ "school office if you have any concerns.\n\nThank you.",
 					List.of("studentName", "percentage", "windowDays")),
-			new TemplateSeed(NotificationType.ASSIGNMENT_POSTED, "New Assignment: {{assignmentTitle}}",
+			new TemplateSeed(SchoolNotificationTypes.ASSIGNMENT_POSTED, "New Assignment: {{assignmentTitle}}",
 					"Dear {{studentName}},\n\nA new assignment \"{{assignmentTitle}}\" has been posted and is "
 							+ "due on {{dueDate}}. Please log in to view details and submit your work on "
 							+ "time.\n\nThank you.",
 					List.of("studentName", "assignmentTitle", "dueDate")),
-			new TemplateSeed(NotificationType.SUBMISSION_GRADED, "Submission Graded: {{assignmentTitle}}",
+			new TemplateSeed(SchoolNotificationTypes.SUBMISSION_GRADED, "Submission Graded: {{assignmentTitle}}",
 					"Dear student,\n\nYour submission for \"{{assignmentTitle}}\" has been graded. You received "
 							+ "{{marksObtained}} marks.\n\nFeedback: {{feedback}}\n\nThank you.",
 					List.of("assignmentTitle", "marksObtained", "feedback")),
-			new TemplateSeed(NotificationType.LEAVE_REQUESTED, "Leave Request: {{teacherName}}",
+			new TemplateSeed(SchoolNotificationTypes.LEAVE_REQUESTED, "Leave Request: {{teacherName}}",
 					"{{teacherName}} requested {{daysRequested}} day(s) of {{leaveTypeName}} leave, from "
 							+ "{{startDate}} to {{endDate}}. Please review and approve or reject this request.",
 					List.of("teacherName", "leaveTypeName", "startDate", "endDate", "daysRequested")),
-			new TemplateSeed(NotificationType.LEAVE_APPROVED, "Leave Request Approved",
+			new TemplateSeed(SchoolNotificationTypes.LEAVE_APPROVED, "Leave Request Approved",
 					"Dear teacher,\n\nYour leave request from {{startDate}} to {{endDate}} "
 							+ "({{daysRequested}} day(s)) has been approved.\n\nThank you.",
 					List.of("startDate", "endDate", "daysRequested")),
-			new TemplateSeed(NotificationType.LEAVE_REJECTED, "Leave Request Rejected",
+			new TemplateSeed(SchoolNotificationTypes.LEAVE_REJECTED, "Leave Request Rejected",
 					"Dear teacher,\n\nYour leave request from {{startDate}} to {{endDate}} "
 							+ "({{daysRequested}} day(s)) has been rejected.\n\nReason: {{rejectionReason}}\n\n"
 							+ "Please contact the school office if you have any questions.",
 					List.of("startDate", "endDate", "daysRequested", "rejectionReason")),
-			new TemplateSeed(NotificationType.DISCIPLINE_INCIDENT_RECORDED, "Discipline Incident Reported",
+			new TemplateSeed(SchoolNotificationTypes.DISCIPLINE_INCIDENT_RECORDED, "Discipline Incident Reported",
 					"Dear parent/guardian,\n\nA {{severity}} discipline incident was recorded for {{studentName}} "
 							+ "on {{incidentDate}}.\n\nDetails: {{description}}\n\nPlease contact the school office "
 							+ "if you have any questions.",
 					List.of("studentName", "severity", "incidentDate", "description")),
-			new TemplateSeed(NotificationType.BOOK_OVERDUE, "Overdue Library Book",
+			new TemplateSeed(SchoolNotificationTypes.BOOK_OVERDUE, "Overdue Library Book",
 					"Dear parent/guardian,\n\n{{studentName}} has a library book overdue since {{dueDate}}. "
 							+ "Please return it at your earliest convenience to avoid further fines.\n\nThank you.",
 					List.of("studentName", "dueDate")),
-			new TemplateSeed(NotificationType.EVENT_REGISTRATION_CONFIRMED, "Event Registration Confirmed",
+			new TemplateSeed(SchoolNotificationTypes.EVENT_REGISTRATION_CONFIRMED, "Event Registration Confirmed",
 					"Dear {{studentName}},\n\nYour registration for \"{{eventTitle}}\" on {{eventDate}} is "
 							+ "confirmed.\n\nThank you.",
 					List.of("studentName", "eventTitle", "eventDate")));
@@ -127,17 +129,17 @@ public class SchoolTenantProvisioningListener {
 	// disable any of these via AlertRuleController without a deploy.
 	private static final List<AlertRuleSeed> ALERT_RULE_SEEDS = List.of(
 			new AlertRuleSeed(LowAttendanceRuleEvaluator.RULE_TYPE, "Low attendance alert",
-					BigDecimal.valueOf(75), NotificationType.LOW_ATTENDANCE_ALERT),
+					BigDecimal.valueOf(75), SchoolNotificationTypes.LOW_ATTENDANCE_ALERT),
 			new AlertRuleSeed(FeePaymentReminderRuleEvaluator.RULE_TYPE, "Fee payment reminder",
-					null, NotificationType.FEE_DUE),
+					null, SchoolNotificationTypes.FEE_DUE),
 			new AlertRuleSeed(FeeDefaultRiskRuleEvaluator.RULE_TYPE, "Fee default risk",
-					BigDecimal.valueOf(1000), NotificationType.FEE_DEFAULT_RISK),
+					BigDecimal.valueOf(1000), SchoolNotificationTypes.FEE_DEFAULT_RISK),
 			new AlertRuleSeed(ExamScheduleReminderRuleEvaluator.RULE_TYPE, "Exam schedule reminder",
-					BigDecimal.valueOf(2), NotificationType.EXAM_SCHEDULED),
+					BigDecimal.valueOf(2), SchoolNotificationTypes.EXAM_SCHEDULED),
 			new AlertRuleSeed(AttendanceNotMarkedRuleEvaluator.RULE_TYPE, "Daily attendance not marked",
-					null, NotificationType.ANNOUNCEMENT),
+					null, NotificationTypes.ANNOUNCEMENT),
 			new AlertRuleSeed(LibraryOverdueRuleEvaluator.RULE_TYPE, "Library book overdue",
-					BigDecimal.ZERO, NotificationType.BOOK_OVERDUE));
+					BigDecimal.ZERO, SchoolNotificationTypes.BOOK_OVERDUE));
 
 	// Default starting catalog — freely renamed/deactivated afterward via
 	// PayComponentDefinitionController, no code change needed for non-Indian tenants.
@@ -167,13 +169,13 @@ public class SchoolTenantProvisioningListener {
 	private final PayComponentDefinitionRepository payComponentDefinitionRepository;
 	private final ExamTypeDefinitionRepository examTypeDefinitionRepository;
 	private final DataRetentionPolicyService dataRetentionPolicyService;
+	private final GlobalSettingService globalSettingService;
 	private final ObjectMapper objectMapper;
 
 	private static final String STUDENT_ENTITY_TYPE = "STUDENT";
-	// 7 years post-withdrawal/graduation — an editable starting point (PUT
-	// /api/v1/data-retention-policies/{id}), not a legal opinion; confirm against the tenant's
-	// actual jurisdiction (FERPA/COPPA/GDPR-K/DPDP) before relying on it.
-	private static final int STUDENT_RETENTION_PERIOD_DAYS = 2555;
+	// Super Admin's starting point, editable per tenant up to SchoolPlatformConfigurer's ceiling.
+	// Not a legal opinion: confirm per jurisdiction.
+	private static final String STUDENT_RETENTION_SETTING = "school.student-retention-days";
 
 	@Async("platformTaskExecutor")
 	@Transactional(propagation = Propagation.REQUIRES_NEW)
@@ -359,11 +361,12 @@ public class SchoolTenantProvisioningListener {
 					tenantId, STUDENT_ENTITY_TYPE);
 			return;
 		}
-		dataRetentionPolicyService.create(tenantId, STUDENT_ENTITY_TYPE, STUDENT_RETENTION_PERIOD_DAYS,
+		int retentionPeriodDays = globalSettingService.getInt(STUDENT_RETENTION_SETTING);
+		dataRetentionPolicyService.create(tenantId, STUDENT_ENTITY_TYPE, retentionPeriodDays,
 				DeletionPolicy.ANONYMIZE,
 				"Default starting point — confirm against the tenant's actual jurisdiction before relying on it");
 		log.info("action=seed-retention-policy-created tenantId={} entityType={} retentionPeriodDays={}", tenantId,
-				STUDENT_ENTITY_TYPE, STUDENT_RETENTION_PERIOD_DAYS);
+				STUDENT_ENTITY_TYPE, retentionPeriodDays);
 	}
 
 	private String serializeVariableNames(List<String> variableNames) {
@@ -374,7 +377,7 @@ public class SchoolTenantProvisioningListener {
 		}
 	}
 
-	private record TemplateSeed(NotificationType type, String subject, String body, List<String> variableNames) {
+	private record TemplateSeed(String type, String subject, String body, List<String> variableNames) {
 	}
 
 	private record ThresholdSeed(String letter, BigDecimal minPercentage, BigDecimal points) {
@@ -384,7 +387,7 @@ public class SchoolTenantProvisioningListener {
 	}
 
 	private record AlertRuleSeed(String ruleType, String name, BigDecimal thresholdValue,
-			NotificationType notificationType) {
+			String notificationType) {
 	}
 
 	private record PayComponentSeed(String code, String name, PayComponentType type, int displayOrder) {

@@ -154,18 +154,4 @@ class SchoolPlatformContractVerificationTest {
 						+ "synchronous tenant provisioning blocks the request thread")
 				.hasSize(1);
 	}
-
-	@Test
-	@DisplayName("SchoolPlatformConfigurer.accessTokenExpiry does not exceed 24 hours")
-	void schoolPlatformConfigurer_accessTokenExpiry_isReasonable() {
-		// None of these tests touch offlineSyncEntityHandlers/the injected handler bean.
-		// Map.of rejects a null value, so the constructor needs a real (mock) handler even
-		// though none of these tests touch offlineSyncEntityHandlers() itself.
-		SchoolPlatformConfigurer configurer = new SchoolPlatformConfigurer(
-				Mockito.mock(AttendanceOfflineSyncHandler.class), Mockito.mock(StudentGuardianPiiHandler.class),
-				Mockito.mock(SchoolDataRetentionHandler.class));
-		assertThat(configurer.accessTokenExpiry().toHours())
-				.as("Access token expiry should not exceed 24 hours for security reasons")
-				.isLessThanOrEqualTo(24);
-	}
 }

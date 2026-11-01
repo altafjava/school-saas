@@ -179,13 +179,13 @@ class TimetableVenueAndSubstitutionE2ETest extends SchoolIntegrationTestBase {
 				.then().statusCode(HttpStatus.BAD_REQUEST.value());
 
 		support.request(school).get("/api/v1/timetable-substitutions?date=" + nextMonday)
-				.then().statusCode(HttpStatus.OK.value()).body("data", hasSize(1));
+				.then().statusCode(HttpStatus.OK.value()).body("data.content", hasSize(1));
 
 		support.request(school).body("{\"reason\":\"Teacher returned\"}")
 				.patch("/api/v1/timetable-substitutions/" + substitutionPublicId + "/cancel")
 				.then().statusCode(HttpStatus.OK.value()).body("data.active", equalTo(false));
 		support.request(school).get("/api/v1/timetable-substitutions?date=" + nextMonday)
-				.then().statusCode(HttpStatus.OK.value()).body("data", hasSize(0));
+				.then().statusCode(HttpStatus.OK.value()).body("data.content", hasSize(0));
 		support.request(school)
 				.body("{\"timetableEntryPublicId\":\"" + entryPublicId + "\",\"date\":\"" + nextMonday
 						+ "\",\"substituteTeacherPublicId\":\"" + freeTeacher.getPublicId() + "\"}")
@@ -201,7 +201,7 @@ class TimetableVenueAndSubstitutionE2ETest extends SchoolIntegrationTestBase {
 				.patch("/api/v1/timetable-substitutions/" + UUID.randomUUID() + "/cancel")
 				.then().statusCode(HttpStatus.NOT_FOUND.value());
 		support.request(other).get("/api/v1/timetable-substitutions?date=" + nextMonday)
-				.then().statusCode(HttpStatus.OK.value()).body("data", hasSize(0));
+				.then().statusCode(HttpStatus.OK.value()).body("data.content", hasSize(0));
 	}
 
 	@Test

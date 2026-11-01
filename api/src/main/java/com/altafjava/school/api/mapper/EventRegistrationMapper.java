@@ -12,6 +12,8 @@ public interface EventRegistrationMapper {
 	@Mapping(target = "publicId", expression = "java(registration.getPublicId().toString())")
 	@Mapping(target = "status", expression = "java(registration.getStatus().name())")
 	@Mapping(target = "eventPublicId", source = "eventId", qualifiedByName = "event")
+	@Mapping(target = "event", source = "eventId", qualifiedByName = "eventSummary")
 	@Mapping(target = "studentPublicId", source = "studentId", qualifiedByName = "student")
+	@Mapping(target = "student", source = "studentId", qualifiedByName = "studentSummary")
 	EventRegistrationResponse toResponse(EventRegistration registration);
 }

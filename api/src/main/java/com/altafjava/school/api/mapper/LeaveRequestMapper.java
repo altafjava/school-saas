@@ -13,7 +13,10 @@ public interface LeaveRequestMapper {
 	@Mapping(target = "status", expression = "java(leaveRequest.getStatus().name())")
 	@Mapping(target = "awaitingStage", expression = "java(leaveRequest.awaitingStage().map(Enum::name).orElse(null))")
 	@Mapping(target = "employeePublicId", source = "employeeId", qualifiedByName = "employee")
+	@Mapping(target = "employee", source = "employeeId", qualifiedByName = "employeeSummary")
 	@Mapping(target = "leaveTypePublicId", source = "leaveTypeId", qualifiedByName = "leaveType")
+	@Mapping(target = "leaveType", source = "leaveTypeId", qualifiedByName = "leaveTypeSummary")
 	@Mapping(target = "approvedByUserPublicId", source = "approvedByUserId", qualifiedByName = "user")
+	@Mapping(target = "approvedByUser", source = "approvedByUserId", qualifiedByName = "userSummary")
 	LeaveRequestResponse toResponse(LeaveRequest leaveRequest);
 }

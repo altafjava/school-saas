@@ -11,6 +11,8 @@ public interface MedicalIncidentMapper {
 
 	@Mapping(target = "publicId", expression = "java(incident.getPublicId().toString())")
 	@Mapping(target = "studentPublicId", source = "studentId", qualifiedByName = "student")
+	@Mapping(target = "student", source = "studentId", qualifiedByName = "studentSummary")
 	@Mapping(target = "recordedByUserPublicId", source = "recordedByUserId", qualifiedByName = "user")
+	@Mapping(target = "recordedByUser", source = "recordedByUserId", qualifiedByName = "userSummary")
 	MedicalIncidentResponse toResponse(MedicalIncident incident);
 }

@@ -11,5 +11,6 @@ public interface AlumniProfileMapper {
 
 	@Mapping(target = "publicId", expression = "java(profile.getPublicId().toString())")
 	@Mapping(target = "studentPublicId", source = "studentId", qualifiedByName = "student")
+	@Mapping(target = "student", source = "studentId", qualifiedByName = "studentSummary")
 	AlumniProfileResponse toResponse(AlumniProfile profile);
 }

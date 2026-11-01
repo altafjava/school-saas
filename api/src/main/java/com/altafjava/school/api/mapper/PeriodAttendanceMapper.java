@@ -12,7 +12,9 @@ public interface PeriodAttendanceMapper {
 	@Mapping(target = "publicId", expression = "java(periodAttendance.getPublicId().toString())")
 	@Mapping(target = "status", expression = "java(periodAttendance.getStatus().name())")
 	@Mapping(target = "studentPublicId", source = "studentId", qualifiedByName = "student")
+	@Mapping(target = "student", source = "studentId", qualifiedByName = "studentSummary")
 	@Mapping(target = "classroomPublicId", source = "classroomId", qualifiedByName = "classroom")
+	@Mapping(target = "classroom", source = "classroomId", qualifiedByName = "classroomSummary")
 	@Mapping(target = "timetableEntryPublicId", source = "timetableEntryId", qualifiedByName = "timetableEntry")
 	PeriodAttendanceResponse toResponse(PeriodAttendance periodAttendance);
 }

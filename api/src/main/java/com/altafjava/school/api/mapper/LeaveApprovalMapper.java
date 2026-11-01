@@ -13,5 +13,6 @@ public interface LeaveApprovalMapper {
 	@Mapping(target = "stage", expression = "java(approval.getStage().name())")
 	@Mapping(target = "decision", expression = "java(approval.getDecision().name())")
 	@Mapping(target = "decidedByUserPublicId", source = "decidedByUserId", qualifiedByName = "user")
+	@Mapping(target = "decidedByUser", source = "decidedByUserId", qualifiedByName = "userSummary")
 	LeaveApprovalResponse toResponse(LeaveApproval approval);
 }

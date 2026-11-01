@@ -174,6 +174,7 @@ public class GuardianController implements GuardianApi {
 
 	@Override
 	@PostMapping("/me/students/{studentPublicId}/consents")
+	@ResponseStatus(HttpStatus.CREATED)
 	@PreAuthorize("@permissionAuthorizationService.hasPermission('GUARDIAN_SELF_SERVICE')")
 	public ApiResponse<GuardianConsentRecordResponse> grantSelfConsent(@PathVariable String studentPublicId,
 			@Valid @RequestBody GrantGuardianConsentRequest request) {
@@ -183,6 +184,7 @@ public class GuardianController implements GuardianApi {
 
 	@Override
 	@DeleteMapping("/me/students/{studentPublicId}/consents/{consentType}")
+	@ResponseStatus(HttpStatus.NO_CONTENT)
 	@PreAuthorize("@permissionAuthorizationService.hasPermission('GUARDIAN_SELF_SERVICE')")
 	public ApiResponse<GuardianConsentRecordResponse> revokeSelfConsent(@PathVariable String studentPublicId,
 			@PathVariable GuardianConsentType consentType) {
