@@ -219,11 +219,12 @@ Three tiers, each with its own store — never collapse into one:
 
 ## Testing
 
-Three mandatory tiers — no tier substitutes for another.
+Four mandatory tiers — no tier substitutes for another.
 
 - **Unit** (`{ClassName}Test`, JUnit 5 + Mockito, no Spring): domain invariants, service rules, DTO constraints. Never unit test controllers, repos, or security config.
 - **Integration** (extend `BaseIntegrationTest`, real DB, no HTTP): queries, transactions, events, cache. Never mock repositories.
 - **E2E** (extend `BaseRestAssuredTest`, full HTTP + real DB): status codes, response body shape, RBAC, tenant isolation.
+- **Real infrastructure** (extend `SchoolInfrastructureTestBase`, run by `infrastructureTest`): the real app with demo seed, real Redis and RabbitMQ, no doubles. Every new cached type needs a round-trip sample here.
 
 Per-controller E2E minimum: happy path (status + body shape), unauthenticated → 401, wrong role → 403, tenant isolation.
 

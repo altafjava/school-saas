@@ -90,11 +90,8 @@ dependencies {
     testImplementation libs.spring.boot.starter.data.redis
     testImplementation libs.bucket4j.core
 
-    testImplementation platform(libs.testcontainers.bom)
-    testImplementation libs.testcontainers.core
-    testImplementation libs.testcontainers.junit.jupiter
-    testImplementation libs.testcontainers.mariadb
-    testImplementation libs.testcontainers.rabbitmq
+    // Real MariaDB, Redis and RabbitMQ containers, shared with platform-saas.
+    testImplementation 'com.altafjava.platform:test-support'
 
     testRuntimeOnly libs.junit.platform.launcher
     testImplementation libs.archunit.junit5
@@ -151,4 +148,38 @@ tasks.register('exportOpenApi') {
 
 tasks.named('build') {
     dependsOn 'exportOpenApi'
+}
+
+// Ensure Testcontainers (Ryuk) mounts the standard socket path inside containers: on Rancher
+// Desktop, Podman and similar, the host socket path differs from the one containers see.
+tasks.withType(Test).configureEach {
+    environment 'TESTCONTAINERS_DOCKER_SOCKET_OVERRIDE', '/var/run/docker.sock'
+}
+
+tasks.named('test') {
+    useJUnitPlatform {
+        excludeTags 'infrastructure'
+    }
+}
+
+// Real-infrastructure tier: no Redis or RabbitMQ doubles. Part of `check`, so `build` always runs it.
+def infrastructureTest = tasks.register('infrastructureTest', Test) {
+    group = 'verification'
+    description = 'Runs @InfrastructureTest tests, including the boot smoke test, against real containers'
+    testClassesDirs = sourceSets.test.output.classesDirs
+    classpath = sourceSets.test.runtimeClasspath
+    useJUnitPlatform {
+        includeTags 'infrastructure'
+    }
+    jvmArgs '-Xmx2g', '-Xms512m'
+    systemProperty 'user.timezone', 'UTC'
+    shouldRunAfter tasks.named('test')
+    testLogging {
+        events "passed", "skipped", "failed"
+        exceptionFormat "full"
+    }
+}
+
+tasks.named('check') {
+    dependsOn infrastructureTest
 }
