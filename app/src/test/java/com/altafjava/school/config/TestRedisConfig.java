@@ -16,7 +16,6 @@ import org.springframework.data.redis.connection.RedisKeyCommands;
 import org.springframework.data.redis.connection.RedisServerCommands;
 import org.springframework.data.redis.connection.RedisStringCommands;
 import org.springframework.data.redis.listener.RedisMessageListenerContainer;
-import com.altafjava.platform.application.migration.MigrationLockService;
 import com.altafjava.platform.application.security.TokenBlacklist;
 import com.altafjava.platform.domain.subscription.service.UsageTrackingService;
 import io.github.bucket4j.BucketConfiguration;
@@ -69,15 +68,6 @@ public class TestRedisConfig {
 	@Primary
 	public CacheManager cacheManager() {
 		return new ConcurrentMapCacheManager();
-	}
-
-	@Bean
-	@Primary
-	public MigrationLockService migrationLockService() {
-		return (tenantId, action) -> {
-			action.run();
-			return true;
-		};
 	}
 
 	@Bean

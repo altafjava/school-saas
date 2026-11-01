@@ -46,6 +46,13 @@ app:
       refresh-expiration: 604800000
 
 platform:
+  # Required by the platform, which has no defaults for these.
+  tax:
+    provider: none
+  exchangerate:
+    provider: none
+  virus-scan:
+    enabled: false
   admin:
     # Dev-only: sets a known password so the bootstrap admin is predictable.
     # ADMIN_INITIAL_PASSWORD env var is read by SystemAdminBootstrapService at first startup.
