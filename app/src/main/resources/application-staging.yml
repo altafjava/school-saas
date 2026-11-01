@@ -43,6 +43,13 @@ app:
       refresh-expiration: ${JWT_REFRESH_EXPIRATION:604800000}
 
 platform:
+  # Required, with no defaults: a deployment must choose each one, 'none' or 'false' included.
+  tax:
+    provider: ${TAX_PROVIDER}
+  exchangerate:
+    provider: ${EXCHANGE_RATE_PROVIDER}
+  virus-scan:
+    enabled: ${VIRUS_SCAN_ENABLED}
   security:
     # CIDRs of the BFF and load balancers. Only these may set X-Forwarded-For.
     trusted-proxies: ${TRUSTED_PROXIES:}

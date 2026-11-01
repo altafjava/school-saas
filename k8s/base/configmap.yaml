@@ -6,6 +6,12 @@ data:
   SPRING_PROFILES_ACTIVE: "prod"
   # school-saas resolves DB_HOST/DB_PORT/DB_NAME separately (see application-prod.yml),
   # unlike platform-saas's single SPRING_DATASOURCE_URL — keep these in sync with that contract.
+  # Required choices with no application default. Review each one before deploying.
+  TAX_PROVIDER: "none"
+  EXCHANGE_RATE_PROVIDER: "none"
+  VIRUS_SCAN_ENABLED: "false"
+  # CIDRs of the BFF and load balancers. Empty means X-Forwarded-For is never believed.
+  TRUSTED_PROXIES: ""
   DB_HOST: "mariadb-service"
   DB_PORT: "3306"
   DB_NAME: "school_saas"

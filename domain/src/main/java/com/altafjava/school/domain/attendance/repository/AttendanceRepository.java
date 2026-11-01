@@ -135,9 +135,7 @@ public interface AttendanceRepository extends JpaRepository<Attendance, Long> {
 		long getTotal();
 	}
 
-	// Offline-sync delta pulls — @SQLRestriction("deleted = false") means a soft-deleted row is
-	// invisible here, so a delete never surfaces as a tombstone via this query; acceptable for now
-	// since AttendanceOfflineSyncHandler's own delete() path already reflects the deletion in its
-	// synchronous response, only a later independent delta pull would miss it.
+	// Offline-sync delta pull. Soft-deleted rows are invisible to it, so other devices do not learn
+	// of a delete; only the device that deleted sees it, in its own sync response.
 	List<Attendance> findByTenantIdAndUpdatedAtAfter(Long tenantId, Instant updatedAt);
 }
