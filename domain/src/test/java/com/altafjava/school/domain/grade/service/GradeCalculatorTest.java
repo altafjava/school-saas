@@ -6,19 +6,19 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import java.math.BigDecimal;
 import java.util.List;
 import org.junit.jupiter.api.Test;
-import com.altafjava.school.domain.curriculum.model.GradingScaleThreshold;
+import com.altafjava.school.domain.curriculum.model.GradeBand;
 
 class GradeCalculatorTest {
 
 	private final GradeCalculator calculator = new GradeCalculator();
 
-	private List<GradingScaleThreshold> defaultThresholds() {
+	private List<GradeBand> defaultThresholds() {
 		return List.of(
-				GradingScaleThreshold.create(1L, "A", new BigDecimal("90"), new BigDecimal("4.0")),
-				GradingScaleThreshold.create(1L, "B", new BigDecimal("80"), new BigDecimal("3.0")),
-				GradingScaleThreshold.create(1L, "C", new BigDecimal("70"), new BigDecimal("2.0")),
-				GradingScaleThreshold.create(1L, "D", new BigDecimal("60"), new BigDecimal("1.0")),
-				GradingScaleThreshold.create(1L, "F", BigDecimal.ZERO, BigDecimal.ZERO));
+				new GradeBand("A", new BigDecimal("90"), new BigDecimal("4.0")),
+				new GradeBand("B", new BigDecimal("80"), new BigDecimal("3.0")),
+				new GradeBand("C", new BigDecimal("70"), new BigDecimal("2.0")),
+				new GradeBand("D", new BigDecimal("60"), new BigDecimal("1.0")),
+				new GradeBand("F", BigDecimal.ZERO, BigDecimal.ZERO));
 	}
 
 	@Test

@@ -7,13 +7,16 @@ import java.util.Optional;
 import java.util.Set;
 import org.springframework.stereotype.Component;
 import com.altafjava.platform.core.PlatformConfigurer;
+import com.altafjava.platform.core.cache.CacheRegion;
 import com.altafjava.platform.core.privacy.DomainPiiHandler;
 import com.altafjava.platform.core.privacy.DomainRetentionHandler;
 import com.altafjava.platform.core.security.permission.PermissionDefinition;
 import com.altafjava.platform.core.sync.OfflineSyncEntityHandler;
 import com.altafjava.school.application.privacy.SchoolDataRetentionHandler;
 import com.altafjava.school.application.privacy.StudentGuardianPiiHandler;
+import com.altafjava.school.application.service.GradingScaleService;
 import com.altafjava.school.application.sync.AttendanceOfflineSyncHandler;
+import com.altafjava.school.domain.curriculum.model.GradeBand;
 import com.altafjava.school.domain.metrics.SchoolMetricTypes;
 import com.altafjava.school.domain.security.permission.SchoolPermissions;
 
@@ -23,6 +26,8 @@ import com.altafjava.school.domain.security.permission.SchoolPermissions;
  */
 @Component
 public class SchoolPlatformConfigurer implements PlatformConfigurer {
+
+	private static final Duration GRADING_SCALE_CACHE_TTL = Duration.ofHours(1);
 
 	// Built once from the constructor-injected singleton handler bean, not inside
 	// offlineSyncEntityHandlers() itself — that method is called on every sync operation, and a
@@ -91,9 +96,9 @@ public class SchoolPlatformConfigurer implements PlatformConfigurer {
 	}
 
 	@Override
-	public Set<String> additionalTrustedDeserializationPackages() {
-		// Lets the platform's Redis serializer deserialize cached com.altafjava.school.* domain types.
-		return Set.of("com.altafjava.school.");
+	public List<CacheRegion> domainCacheRegions() {
+		return List.of(CacheRegion.listOf(GradingScaleService.CACHE_GRADING_SCALE_THRESHOLDS, GradeBand.class,
+				GRADING_SCALE_CACHE_TTL));
 	}
 
 	@Override

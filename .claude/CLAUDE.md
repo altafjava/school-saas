@@ -224,7 +224,7 @@ Four mandatory tiers — no tier substitutes for another.
 - **Unit** (`{ClassName}Test`, JUnit 5 + Mockito, no Spring): domain invariants, service rules, DTO constraints. Never unit test controllers, repos, or security config.
 - **Integration** (extend `BaseIntegrationTest`, real DB, no HTTP): queries, transactions, events, cache. Never mock repositories.
 - **E2E** (extend `BaseRestAssuredTest`, full HTTP + real DB): status codes, response body shape, RBAC, tenant isolation.
-- **Real infrastructure** (extend `SchoolInfrastructureTestBase`, run by `infrastructureTest`): the real app with demo seed, real Redis and RabbitMQ, no doubles. Every new cached type needs a round-trip sample here.
+- **Real infrastructure** (extend `SchoolInfrastructureTestBase`, run by `infrastructureTest`): the real app with demo seed, real Redis and RabbitMQ, no doubles. Every new cache region needs a round-trip sample here.
 
 Per-controller E2E minimum: happy path (status + body shape), unauthenticated → 401, wrong role → 403, tenant isolation.
 
@@ -268,7 +268,7 @@ Never: mock repos in integration tests, `@Disabled` placeholders, OpenAPI assert
 ## Caching
 
 - Tenant-scoped data: always `tenantAwareCacheKeyGenerator` — plain `@Cacheable` on tenant data is a data breach risk.
-- Every cache region has a TTL in `ApplicationCacheConfig`.
+- Every Redis region is declared as a `CacheRegion` with one value type and a TTL. Cache small records, never entities.
 - Mutation methods evict the relevant region.
 - Never cache individual records by ID — cache aggregate read models and reference data.
 

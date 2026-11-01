@@ -40,7 +40,7 @@ import com.altafjava.school.application.security.AcademicScopeResolver;
 import com.altafjava.school.application.security.ExamResultVisibilityPolicy;
 import com.altafjava.school.application.security.StudentDataAccessGuard;
 import com.altafjava.school.application.security.TeachingAssignments;
-import com.altafjava.school.domain.curriculum.model.GradingScaleThreshold;
+import com.altafjava.school.domain.curriculum.model.GradeBand;
 import com.altafjava.school.domain.exam.model.Exam;
 import com.altafjava.school.domain.exam.repository.ExamRepository;
 import com.altafjava.school.domain.grade.model.Grade;
@@ -134,9 +134,9 @@ class GradeServiceTest {
 	void record_withValidReferences_computesLetterGradeFromDefaultScale() {
 		Exam exam = Exam.create("Midterm", 5L, 10L, null, BigDecimal.valueOf(100), null,
 				1L, Exam.FULL_WEIGHTAGE);
-		List<GradingScaleThreshold> thresholds = List.of(
-				GradingScaleThreshold.create(1L, "A", new BigDecimal("90"), new BigDecimal("4.0")),
-				GradingScaleThreshold.create(1L, "F", BigDecimal.ZERO, BigDecimal.ZERO));
+		List<GradeBand> thresholds = List.of(
+				new GradeBand("A", new BigDecimal("90"), new BigDecimal("4.0")),
+				new GradeBand("F", BigDecimal.ZERO, BigDecimal.ZERO));
 		when(studentRepository.findByPublicIdAndTenantId(STUDENT_PUBLIC_ID, 1L))
 				.thenReturn(Optional.of(studentWithId(1L)));
 		exam.setId(2L);
@@ -258,9 +258,9 @@ class GradeServiceTest {
 		grade.setPublicId(java.util.UUID.fromString("11111111-1111-1111-1111-111111111111"));
 		Exam exam = Exam.create("Midterm", 5L, 10L, null, BigDecimal.valueOf(100), null,
 				1L, Exam.FULL_WEIGHTAGE);
-		List<GradingScaleThreshold> thresholds = List.of(
-				GradingScaleThreshold.create(1L, "A", new BigDecimal("90"), new BigDecimal("4.0")),
-				GradingScaleThreshold.create(1L, "F", BigDecimal.ZERO, BigDecimal.ZERO));
+		List<GradeBand> thresholds = List.of(
+				new GradeBand("A", new BigDecimal("90"), new BigDecimal("4.0")),
+				new GradeBand("F", BigDecimal.ZERO, BigDecimal.ZERO));
 		when(gradeRepository.findByPublicIdAndTenantId(grade.getPublicId(), 1L)).thenReturn(Optional.of(grade));
 		when(examRepository.findByIdAndTenantId(2L, 1L)).thenReturn(Optional.of(exam));
 		when(gradingScaleService.resolveEffectiveThresholds(10L)).thenReturn(thresholds);

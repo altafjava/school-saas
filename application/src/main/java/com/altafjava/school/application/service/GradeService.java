@@ -19,7 +19,7 @@ import com.altafjava.school.application.security.AcademicScope;
 import com.altafjava.school.application.security.AcademicScopeResolver;
 import com.altafjava.school.application.security.ExamResultVisibilityPolicy;
 import com.altafjava.school.application.security.StudentDataAccessGuard;
-import com.altafjava.school.domain.curriculum.model.GradingScaleThreshold;
+import com.altafjava.school.domain.curriculum.model.GradeBand;
 import com.altafjava.school.domain.exam.model.Exam;
 import com.altafjava.school.domain.exam.model.ExamStatus;
 import com.altafjava.school.domain.exam.repository.ExamRepository;
@@ -142,7 +142,7 @@ public class GradeService {
 		if (exam.getStatus() == ExamStatus.CANCELLED) {
 			throw new BusinessException("Grades cannot be recorded for a cancelled exam");
 		}
-		List<GradingScaleThreshold> thresholds = gradingScaleService.resolveEffectiveThresholds(exam.getClassroomId());
+		List<GradeBand> thresholds = gradingScaleService.resolveEffectiveThresholds(exam.getClassroomId());
 		String gradeLetter = gradeCalculator.calculateLetterGrade(marks, exam.getMaxMarks(), thresholds);
 		// The subject always comes from the exam, so a grade can never disagree with its exam.
 		Grade grade = Grade.create(studentId, exam.getSubjectId(), exam.getId(), marks, gradeLetter, gradedBy);
@@ -164,7 +164,7 @@ public class GradeService {
 		Exam exam = examRepository.findByIdAndTenantId(grade.getExamId(), tenantId)
 				.orElseThrow(() -> new ResourceNotFoundException("Exam not found: " + grade.getExamId()));
 		academicAccessGuard.assertCanWriteSubject(tenantId, exam.getClassroomId(), exam.getSubjectId());
-		List<GradingScaleThreshold> thresholds = gradingScaleService.resolveEffectiveThresholds(exam.getClassroomId());
+		List<GradeBand> thresholds = gradingScaleService.resolveEffectiveThresholds(exam.getClassroomId());
 		String newGradeLetter = gradeCalculator.calculateLetterGrade(marks, exam.getMaxMarks(), thresholds);
 
 		gradeCorrectionRepository.save(GradeCorrection.record(grade.getId(), grade.getMarks(), grade.getGradeLetter(),

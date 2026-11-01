@@ -45,6 +45,7 @@ import com.altafjava.school.domain.academicyear.model.AcademicYear;
 import com.altafjava.school.domain.classroom.model.Classroom;
 import com.altafjava.school.domain.curriculum.model.Board;
 import com.altafjava.school.domain.curriculum.model.Curriculum;
+import com.altafjava.school.domain.curriculum.model.GradeBand;
 import com.altafjava.school.domain.curriculum.model.GradingScale;
 import com.altafjava.school.domain.exam.model.Exam;
 import com.altafjava.school.domain.exam.repository.ExamRepository;
@@ -333,15 +334,15 @@ class CurriculumTenantIsolationIntegrationTest extends SchoolIntegrationTestBase
 		classroomService.assignCurriculum(classroom.getPublicId().toString(), curriculum.getPublicId().toString(),
 				ExpectedVersion.any());
 
-		List<com.altafjava.school.domain.curriculum.model.GradingScaleThreshold> firstRead = gradingScaleService
+		List<GradeBand> firstRead = gradingScaleService
 				.resolveEffectiveThresholds(classroom.getId());
-		assertEquals("A", firstRead.get(0).getLetter());
+		assertEquals("A", firstRead.get(0).letter());
 
 		curriculumService.assignGradingScale(curriculum.getPublicId().toString(), scaleTwo.getPublicId().toString(),
 				ExpectedVersion.any());
-		List<com.altafjava.school.domain.curriculum.model.GradingScaleThreshold> afterReassignment = gradingScaleService
+		List<GradeBand> afterReassignment = gradingScaleService
 				.resolveEffectiveThresholds(classroom.getId());
 
-		assertEquals("P", afterReassignment.get(0).getLetter());
+		assertEquals("P", afterReassignment.get(0).letter());
 	}
 }
