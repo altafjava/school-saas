@@ -10,7 +10,7 @@
             <column name="id" type="BIGINT" autoIncrement="true">
                 <constraints primaryKey="true" nullable="false"/>
             </column>
-            <column name="public_id" type="VARCHAR(36)">
+            <column name="public_id" type="UUID">
                 <constraints nullable="false" unique="true"/>
             </column>
             <column name="tenant_id" type="BIGINT">
@@ -40,15 +40,13 @@
             </column>
             <column name="deleted_at" type="TIMESTAMP"/>
             <column name="deleted_by" type="VARCHAR(100)"/>
+            <column name="deleted_token" type="BIGINT" defaultValueNumeric="0">
+                <constraints nullable="false"/>
+            </column>
             <column name="version" type="BIGINT" defaultValueNumeric="0">
                 <constraints nullable="false"/>
             </column>
         </createTable>
-        <sql>
-            ALTER TABLE departments
-                ADD COLUMN active_code VARCHAR(50)
-                GENERATED ALWAYS AS (CASE WHEN deleted = FALSE THEN code ELSE NULL END) STORED;
-        </sql>
         <createIndex indexName="idx_departments_tenant_id" tableName="departments">
             <column name="tenant_id"/>
         </createIndex>
@@ -57,7 +55,8 @@
         </createIndex>
         <createIndex indexName="uq_departments_tenant_active_code" tableName="departments" unique="true">
             <column name="tenant_id"/>
-            <column name="active_code"/>
+            <column name="code"/>
+            <column name="deleted_token"/>
         </createIndex>
         <createIndex indexName="idx_departments_head_employee_id" tableName="departments">
             <column name="head_employee_id"/>
@@ -75,7 +74,7 @@
             <column name="id" type="BIGINT" autoIncrement="true">
                 <constraints primaryKey="true" nullable="false"/>
             </column>
-            <column name="public_id" type="VARCHAR(36)">
+            <column name="public_id" type="UUID">
                 <constraints nullable="false" unique="true"/>
             </column>
             <column name="tenant_id" type="BIGINT">
@@ -117,18 +116,13 @@
             </column>
             <column name="deleted_at" type="TIMESTAMP"/>
             <column name="deleted_by" type="VARCHAR(100)"/>
+            <column name="deleted_token" type="BIGINT" defaultValueNumeric="0">
+                <constraints nullable="false"/>
+            </column>
             <column name="version" type="BIGINT" defaultValueNumeric="0">
                 <constraints nullable="false"/>
             </column>
         </createTable>
-        <sql>
-            ALTER TABLE leave_types
-                ADD COLUMN active_name VARCHAR(100)
-                GENERATED ALWAYS AS (CASE WHEN deleted = FALSE THEN name ELSE NULL END) STORED;
-        </sql>
-        <sql>
-            ALTER TABLE leave_types ADD CONSTRAINT chk_leave_types_approval_levels CHECK (approval_levels BETWEEN 1 AND 2);
-        </sql>
         <createIndex indexName="idx_leave_types_tenant_id" tableName="leave_types">
             <column name="tenant_id"/>
         </createIndex>
@@ -137,7 +131,8 @@
         </createIndex>
         <createIndex indexName="uq_leave_types_tenant_active_name" tableName="leave_types" unique="true">
             <column name="tenant_id"/>
-            <column name="active_name"/>
+            <column name="name"/>
+            <column name="deleted_token"/>
         </createIndex>
         <addForeignKeyConstraint
                 constraintName="fk_leave_types_tenant_id"
@@ -152,7 +147,7 @@
             <column name="id" type="BIGINT" autoIncrement="true">
                 <constraints primaryKey="true" nullable="false"/>
             </column>
-            <column name="public_id" type="VARCHAR(36)">
+            <column name="public_id" type="UUID">
                 <constraints nullable="false" unique="true"/>
             </column>
             <column name="tenant_id" type="BIGINT">
@@ -190,15 +185,13 @@
             </column>
             <column name="deleted_at" type="TIMESTAMP"/>
             <column name="deleted_by" type="VARCHAR(100)"/>
+            <column name="deleted_token" type="BIGINT" defaultValueNumeric="0">
+                <constraints nullable="false"/>
+            </column>
             <column name="version" type="BIGINT" defaultValueNumeric="0">
                 <constraints nullable="false"/>
             </column>
         </createTable>
-        <sql>
-            ALTER TABLE leave_balances
-                ADD COLUMN active_academic_year_id BIGINT
-                GENERATED ALWAYS AS (CASE WHEN deleted = FALSE THEN academic_year_id ELSE NULL END) STORED;
-        </sql>
         <createIndex indexName="idx_leave_balances_tenant_id" tableName="leave_balances">
             <column name="tenant_id"/>
         </createIndex>
@@ -221,7 +214,8 @@
         <createIndex indexName="uq_leave_balances_employee_type_active_year" tableName="leave_balances" unique="true">
             <column name="employee_id"/>
             <column name="leave_type_id"/>
-            <column name="active_academic_year_id"/>
+            <column name="academic_year_id"/>
+            <column name="deleted_token"/>
         </createIndex>
         <addForeignKeyConstraint
                 constraintName="fk_leave_balances_tenant_id"
@@ -248,7 +242,7 @@
             <column name="id" type="BIGINT" autoIncrement="true">
                 <constraints primaryKey="true" nullable="false"/>
             </column>
-            <column name="public_id" type="VARCHAR(36)">
+            <column name="public_id" type="UUID">
                 <constraints nullable="false" unique="true"/>
             </column>
             <column name="tenant_id" type="BIGINT">
@@ -298,14 +292,13 @@
             </column>
             <column name="deleted_at" type="TIMESTAMP"/>
             <column name="deleted_by" type="VARCHAR(100)"/>
+            <column name="deleted_token" type="BIGINT" defaultValueNumeric="0">
+                <constraints nullable="false"/>
+            </column>
             <column name="version" type="BIGINT" defaultValueNumeric="0">
                 <constraints nullable="false"/>
             </column>
         </createTable>
-        <sql>
-            ALTER TABLE leave_requests ADD CONSTRAINT chk_leave_requests_approvals
-                CHECK (approvals_required BETWEEN 1 AND 2 AND approvals_granted BETWEEN 0 AND approvals_required);
-        </sql>
         <createIndex indexName="idx_leave_requests_tenant_id" tableName="leave_requests">
             <column name="tenant_id"/>
         </createIndex>

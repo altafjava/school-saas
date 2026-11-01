@@ -17,7 +17,7 @@ import com.altafjava.platform.core.exception.ResourceNotFoundException;
 import com.altafjava.platform.core.security.AuthenticatedUser;
 import com.altafjava.platform.core.tenant.TenantContext;
 import com.altafjava.platform.domain.notification.model.NotificationPriority;
-import com.altafjava.platform.domain.notification.model.NotificationType;
+import com.altafjava.platform.domain.notification.model.NotificationTypes;
 import com.altafjava.school.application.filter.MedicalIncidentFilter;
 import com.altafjava.school.application.reference.EntityRef;
 import com.altafjava.school.application.reference.PublicIdLookup;
@@ -27,17 +27,7 @@ import com.altafjava.school.domain.health.repository.MedicalIncidentRepository;
 import com.altafjava.school.domain.student.model.Student;
 import com.altafjava.school.domain.student.repository.StudentRepository;
 
-/**
- * Guardian notification reuses {@link NotificationType#SYSTEM_ALERT} — platform-saas's
- * {@code NotificationType} enum has no medical-incident-specific value, and this codebase must not
- * modify platform-saas to add one. {@code SYSTEM_ALERT} is the closest existing value that does not
- * actively mislabel the incident as something else (e.g. {@code DISCIPLINE_INCIDENT_RECORDED}
- * would present a medical event to a guardian as a disciplinary one). The actual title/message text
- * sent is still "Medical Incident Reported" — only the enum used for notification-preference
- * filtering is generic. Known limitation: a guardian who has muted {@code SYSTEM_ALERT} for
- * unrelated reasons would also miss this notification; a dedicated
- * {@code MEDICAL_INCIDENT_REPORTED} platform enum value is a follow-up outside this module's reach.
- */
+/** Guardians are told through {@link NotificationTypes#SYSTEM_ALERT}, which does not mislabel the incident. */
 @Service
 public class MedicalIncidentService {
 
@@ -98,7 +88,7 @@ public class MedicalIncidentService {
 			notificationService.send(SendNotificationCommand.builder()
 					.tenantId(tenantId)
 					.userId(userId)
-					.type(NotificationType.SYSTEM_ALERT)
+					.type(NotificationTypes.SYSTEM_ALERT)
 					.title("Medical Incident Reported")
 					.message("A medical incident was recorded for your child.")
 					.templateVariables(Map.of(

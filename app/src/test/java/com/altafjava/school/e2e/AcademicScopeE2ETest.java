@@ -1,11 +1,14 @@
 package com.altafjava.school.e2e;
 
+import static io.restassured.RestAssured.given;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.everyItem;
+import static org.hamcrest.Matchers.greaterThanOrEqualTo;
 import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.hasItems;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.not;
+import static org.hamcrest.Matchers.notNullValue;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.LocalTime;
@@ -41,6 +44,7 @@ import com.altafjava.school.util.SchoolE2eSupport;
 import com.altafjava.school.util.SchoolE2eSupport.School;
 import com.altafjava.school.util.TestPublicIds;
 import io.restassured.RestAssured;
+import io.restassured.http.ContentType;
 import io.restassured.response.Response;
 import io.restassured.specification.RequestSpecification;
 
@@ -182,6 +186,127 @@ class AcademicScopeE2ETest extends SchoolIntegrationTestBase {
 		}
 	}
 
+	// ---- labels, bulk entry and accounts ----
+
+	@Test
+	void attendanceList_labelsEveryReference_fromOneCall() {
+		admin().get("/api/v1/attendance?size=100").then()
+				.statusCode(HttpStatus.OK.value())
+				.body("data.content[0].student.publicId", notNullValue())
+				.body("data.content[0].student.name", notNullValue())
+				.body("data.content[0].classroom.code", notNullValue());
+	}
+
+	@Test
+	void attendanceBulk_reportsEachRow_andResendingChangesNothing() {
+		String body = "{\"classroomPublicId\":\"" + classroomA + "\",\"attendanceDate\":\"2026-03-02\",\"rows\":["
+				+ "{\"studentPublicId\":\"" + studentA + "\",\"status\":\"PRESENT\"},"
+				+ "{\"studentPublicId\":\"" + studentB + "\",\"status\":\"PRESENT\"}]}";
+
+		admin().body(body).post("/api/v1/attendance/bulk").then()
+				.statusCode(HttpStatus.OK.value())
+				.body("data.succeeded", equalTo(1))
+				.body("data.failed", equalTo(1))
+				.body("data.rows[0].outcome", equalTo("CREATED"))
+				.body("data.rows[1].outcome", equalTo("FAILED"));
+
+		admin().body(body).post("/api/v1/attendance/bulk").then()
+				.body("data.rows[0].outcome", equalTo("UNCHANGED"));
+	}
+
+	@Test
+	void attendanceBulk_changedStatus_keepsCorrectionHistory() {
+		String sheet = "{\"classroomPublicId\":\"" + classroomA + "\",\"attendanceDate\":\"2026-03-03\",\"rows\":["
+				+ "{\"studentPublicId\":\"" + studentA + "\",\"status\":\"%s\"}]}";
+		String recordId = admin().body(sheet.formatted("PRESENT")).post("/api/v1/attendance/bulk").then()
+				.extract().path("data.rows[0].recordPublicId");
+
+		admin().body(sheet.formatted("ABSENT")).post("/api/v1/attendance/bulk").then()
+				.body("data.rows[0].outcome", equalTo("UPDATED"));
+
+		admin().get("/api/v1/attendance/" + recordId + "/corrections").then()
+				.body("data.totalElements", equalTo(1));
+	}
+
+	@Test
+	void attendanceBulk_outsideCallersClassroom_isForbidden() {
+		String body = "{\"classroomPublicId\":\"" + classroomB + "\",\"attendanceDate\":\"2026-03-04\",\"rows\":["
+				+ "{\"studentPublicId\":\"" + studentB + "\",\"status\":\"PRESENT\"}]}";
+
+		as(classTeacherUser, "TEACHER").body(body).post("/api/v1/attendance/bulk").then()
+				.statusCode(HttpStatus.FORBIDDEN.value());
+	}
+
+	@Test
+	void gradesBulk_studentOutsideTheClass_failsOnlyThatRow() {
+		String exam = createExam("Bulk maths", subjectId(mathPublicId), classroomAId);
+		String body = "{\"examPublicId\":\"" + exam + "\",\"rows\":["
+				+ "{\"studentPublicId\":\"" + studentA + "\",\"marks\":40},"
+				+ "{\"studentPublicId\":\"" + studentB + "\",\"marks\":40}]}";
+
+		admin().body(body).post("/api/v1/grades/bulk").then()
+				.statusCode(HttpStatus.OK.value())
+				.body("data.rows[0].outcome", equalTo("CREATED"))
+				.body("data.rows[1].outcome", equalTo("FAILED"));
+		admin().body(body).post("/api/v1/grades/bulk").then()
+				.body("data.rows[0].outcome", equalTo("UNCHANGED"));
+	}
+
+	@Test
+	void teacherAccount_createdThroughTheApi_canSignIn() {
+		String code = "EMP-login-" + UUID.randomUUID().toString().substring(0, 6);
+		String teacher = admin()
+				.body("{\"employeeCode\":\"" + code + "\",\"firstName\":\"Jo\",\"lastName\":\"Roe\",\"email\":\""
+						+ code + "@school.test\",\"joinDate\":\"2020-08-01\"}")
+				.post("/api/v1/teachers").then().statusCode(HttpStatus.CREATED.value()).extract()
+				.path("data.publicId");
+		String login = email("login");
+		String account = "{\"email\":\"" + login + "\",\"password\":\"Password123!\"}";
+
+		admin().body(account).post("/api/v1/teachers/" + teacher + "/account").then()
+				.statusCode(HttpStatus.CREATED.value())
+				.body("data.userPublicId", notNullValue());
+
+		given().contentType(ContentType.JSON).header("X-Tenant-ID", school.tenantId())
+				.body("{\"email\":\"" + login + "\",\"password\":\"Password123!\"}")
+				.post("/api/v1/auth/login").then()
+				.statusCode(HttpStatus.OK.value())
+				.body("data.accessToken", notNullValue());
+		admin().body(account).post("/api/v1/teachers/" + teacher + "/account").then()
+				.statusCode(HttpStatus.BAD_REQUEST.value());
+	}
+
+	@Test
+	void employeeAccount_withAdminRole_isRefused() {
+		String code = "EMP-role-" + UUID.randomUUID().toString().substring(0, 6);
+		String employee = admin()
+				.body("{\"employeeCode\":\"" + code + "\",\"firstName\":\"Al\",\"lastName\":\"Poe\",\"email\":\""
+						+ code + "@school.test\",\"joinDate\":\"2020-08-01\"}")
+				.post("/api/v1/teachers").then().statusCode(HttpStatus.CREATED.value()).extract()
+				.path("data.publicId");
+
+		admin().body("{\"email\":\"" + email("root") + "\",\"password\":\"Password123!\",\"role\":\"TENANT_ADMIN\"}")
+				.post("/api/v1/employees/" + employee + "/account").then()
+				.statusCode(HttpStatus.BAD_REQUEST.value());
+	}
+
+	@Test
+	void softDeletedRow_freesItsUniqueValue_whileALiveDuplicateIsRefused() {
+		String code = "SD" + UUID.randomUUID().toString().substring(0, 6);
+		String body = "{\"code\":\"" + code + "\",\"name\":\"" + code + "\"}";
+		Long subjectId = subjectId(support.createSubject(school, code));
+
+		admin().body(body).post("/api/v1/subjects").then().statusCode(greaterThanOrEqualTo(400));
+
+		support.inTenant(school.tenantId(), () -> {
+			var subject = subjectRepository.findByIdAndTenantId(subjectId, school.tenantId()).orElseThrow();
+			subject.softDelete("test");
+			subjectRepository.save(subject);
+		});
+
+		admin().body(body).post("/api/v1/subjects").then().statusCode(HttpStatus.CREATED.value());
+	}
+
 	// ---- attendance ----
 
 	@Test
@@ -218,6 +343,23 @@ class AcademicScopeE2ETest extends SchoolIntegrationTestBase {
 				.statusCode(HttpStatus.FORBIDDEN.value());
 		as(studentAUser, "STUDENT").get("/api/v1/attendance/" + attendanceOfB + "/corrections").then()
 				.statusCode(HttpStatus.FORBIDDEN.value());
+	}
+
+	@Test
+	void studentRecords_areLimitedToTheStudentsATeacherTeaches() {
+		as(classTeacherUser, "TEACHER").get("/api/v1/students/" + studentA).then()
+				.statusCode(HttpStatus.OK.value());
+		as(classTeacherUser, "TEACHER").get("/api/v1/students/" + studentB).then()
+				.statusCode(HttpStatus.FORBIDDEN.value());
+		as(classTeacherUser, "TEACHER").get("/api/v1/students").then()
+				.statusCode(HttpStatus.OK.value())
+				.body("data.content.publicId", org.hamcrest.Matchers.contains(studentA));
+		as(unassignedTeacherUser, "TEACHER").get("/api/v1/students").then()
+				.statusCode(HttpStatus.OK.value())
+				.body("data.content", org.hamcrest.Matchers.empty());
+		admin().get("/api/v1/students").then()
+				.statusCode(HttpStatus.OK.value())
+				.body("data.content.publicId", org.hamcrest.Matchers.hasItems(studentA, studentB));
 	}
 
 	@Test

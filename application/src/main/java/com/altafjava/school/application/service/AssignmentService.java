@@ -16,7 +16,6 @@ import com.altafjava.platform.core.concurrency.ExpectedVersion;
 import com.altafjava.platform.core.exception.ResourceNotFoundException;
 import com.altafjava.platform.core.tenant.TenantContext;
 import com.altafjava.platform.domain.notification.model.NotificationPriority;
-import com.altafjava.platform.domain.notification.model.NotificationType;
 import com.altafjava.school.application.filter.CourseworkFilter;
 import com.altafjava.school.application.reference.EntityRef;
 import com.altafjava.school.application.reference.PublicIdLookup;
@@ -29,6 +28,7 @@ import com.altafjava.school.domain.classroom.repository.ClassroomRepository;
 import com.altafjava.school.domain.classroom.repository.StudentClassroomLinkRepository;
 import com.altafjava.school.domain.lms.model.Assignment;
 import com.altafjava.school.domain.lms.repository.AssignmentRepository;
+import com.altafjava.school.domain.notification.SchoolNotificationTypes;
 import com.altafjava.school.domain.student.model.Student;
 import com.altafjava.school.domain.student.repository.StudentRepository;
 import com.altafjava.school.domain.subject.repository.SubjectRepository;
@@ -122,7 +122,7 @@ public class AssignmentService {
 				.send(SendNotificationCommand.builder()
 						.tenantId(tenantId)
 						.userId(userId)
-						.type(NotificationType.ASSIGNMENT_POSTED)
+						.type(SchoolNotificationTypes.ASSIGNMENT_POSTED)
 						.title("New Assignment: " + assignment.getTitle())
 						.message("A new assignment \"" + assignment.getTitle() + "\" has been posted, due "
 								+ assignment.getDueDate() + ".")

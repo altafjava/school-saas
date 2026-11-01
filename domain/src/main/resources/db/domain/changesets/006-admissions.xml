@@ -10,7 +10,7 @@
             <column name="id" type="BIGINT" autoIncrement="true">
                 <constraints primaryKey="true" nullable="false"/>
             </column>
-            <column name="public_id" type="VARCHAR(36)">
+            <column name="public_id" type="UUID">
                 <constraints nullable="false" unique="true"/>
             </column>
             <column name="tenant_id" type="BIGINT">
@@ -43,7 +43,7 @@
             <column name="submitted_at" type="TIMESTAMP">
                 <constraints nullable="false"/>
             </column>
-            <column name="enrollment_saga_id" type="VARCHAR(36)"/>
+            <column name="enrollment_saga_id" type="UUID"/>
             <column name="entrance_test_score" type="DECIMAL(10,2)"/>
             <column name="entrance_test_max_score" type="DECIMAL(10,2)"/>
             <column name="merit_rank" type="INTEGER"/>
@@ -70,15 +70,13 @@
             </column>
             <column name="deleted_at" type="TIMESTAMP"/>
             <column name="deleted_by" type="VARCHAR(100)"/>
+            <column name="deleted_token" type="BIGINT" defaultValueNumeric="0">
+                <constraints nullable="false"/>
+            </column>
             <column name="version" type="BIGINT" defaultValueNumeric="0">
                 <constraints nullable="false"/>
             </column>
         </createTable>
-        <sql>
-            ALTER TABLE admissions ADD CONSTRAINT chk_admissions_fee_consistency
-                CHECK ((application_fee_status = 'NOT_REQUIRED' AND application_fee_amount IS NULL)
-                OR (application_fee_status &lt;&gt; 'NOT_REQUIRED' AND application_fee_amount IS NOT NULL));
-        </sql>
         <createIndex indexName="idx_admissions_tenant_id" tableName="admissions">
             <column name="tenant_id"/>
         </createIndex>
@@ -128,7 +126,7 @@
             <column name="id" type="BIGINT" autoIncrement="true">
                 <constraints primaryKey="true" nullable="false"/>
             </column>
-            <column name="public_id" type="VARCHAR(36)">
+            <column name="public_id" type="UUID">
                 <constraints nullable="false" unique="true"/>
             </column>
             <column name="tenant_id" type="BIGINT">
@@ -158,6 +156,9 @@
             </column>
             <column name="deleted_at" type="TIMESTAMP"/>
             <column name="deleted_by" type="VARCHAR(100)"/>
+            <column name="deleted_token" type="BIGINT" defaultValueNumeric="0">
+                <constraints nullable="false"/>
+            </column>
             <column name="version" type="BIGINT" defaultValueNumeric="0">
                 <constraints nullable="false"/>
             </column>

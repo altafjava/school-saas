@@ -16,7 +16,7 @@ public interface DepartmentRepository extends JpaRepository<Department, Long> {
 	@Query("""
 			SELECT d FROM Department d
 			WHERE d.tenantId = :tenantId
-			  AND (:pattern IS NULL OR LOWER(d.name) LIKE :pattern ESCAPE '!'
+			  AND (:#{#pattern == null} = TRUE OR LOWER(d.name) LIKE :pattern ESCAPE '!'
 			       OR LOWER(d.code) LIKE :pattern ESCAPE '!')
 			""")
 	Page<Department> search(@Param("tenantId") Long tenantId, @Param("pattern") String pattern, Pageable pageable);

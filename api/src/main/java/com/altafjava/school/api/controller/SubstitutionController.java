@@ -27,6 +27,9 @@ import com.altafjava.school.api.dto.response.SubstitutionResponse;
 import com.altafjava.school.api.dto.response.TimetableEntryResponse;
 import com.altafjava.school.api.mapper.SubstitutionMapper;
 import com.altafjava.school.api.mapper.TimetableEntryMapper;
+import com.altafjava.school.api.support.PlatformPageMapper;
+import com.altafjava.school.api.support.SpringDataPageableResolver;
+import com.altafjava.school.application.reference.ReferenceSummaries;
 import com.altafjava.school.application.service.SubstitutionService;
 
 @RestController
@@ -36,9 +39,16 @@ public class SubstitutionController implements SubstitutionApi {
 	private final SubstitutionService substitutionService;
 	private final SubstitutionMapper substitutionMapper;
 	private final TimetableEntryMapper timetableEntryMapper;
+	private final SpringDataPageableResolver pageableResolver;
+
+	private final ReferenceSummaries referenceSummaries;
 
 	public SubstitutionController(SubstitutionService substitutionService, SubstitutionMapper substitutionMapper,
-			TimetableEntryMapper timetableEntryMapper) {
+			TimetableEntryMapper timetableEntryMapper,
+			SpringDataPageableResolver pageableResolver,
+			ReferenceSummaries referenceSummaries) {
+		this.referenceSummaries = referenceSummaries;
+		this.pageableResolver = pageableResolver;
 		this.substitutionService = substitutionService;
 		this.substitutionMapper = substitutionMapper;
 		this.timetableEntryMapper = timetableEntryMapper;
@@ -47,10 +57,12 @@ public class SubstitutionController implements SubstitutionApi {
 	@Override
 	@GetMapping
 	@PreAuthorize("@permissionAuthorizationService.hasPermission('TIMETABLE_READ')")
-	public ApiResponse<List<SubstitutionResponse>> listOn(
-			@RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date) {
-		return ApiResponse.success(substitutionService.listOn(date).stream().map(substitutionMapper::toResponse)
-				.toList());
+	public ApiResponse<com.altafjava.platform.core.model.Page<SubstitutionResponse>> listOn(
+			@RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date,
+			@RequestParam(defaultValue = "0") int page,
+			@RequestParam(defaultValue = "20") int size) {
+		return ApiResponse.success(PlatformPageMapper.toPlatformPage(referenceSummaries.mapPage(substitutionService
+				.listOn(date, pageableResolver.resolve(page, size)), substitutionMapper::toResponse)));
 	}
 
 	@Override
@@ -67,8 +79,9 @@ public class SubstitutionController implements SubstitutionApi {
 	public ApiResponse<List<AvailableTeacherResponse>> listAvailableTeachers(
 			@RequestParam String timetableEntryPublicId,
 			@RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date) {
-		return ApiResponse.success(substitutionService.availableTeachers(timetableEntryPublicId, date).stream()
-				.map(substitutionMapper::toAvailableTeacher).toList());
+		return ApiResponse
+				.success(referenceSummaries.mapList(substitutionService.availableTeachers(timetableEntryPublicId, date),
+						substitutionMapper::toAvailableTeacher));
 	}
 
 	@Override

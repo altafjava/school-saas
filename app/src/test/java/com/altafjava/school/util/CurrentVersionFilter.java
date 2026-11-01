@@ -1,12 +1,15 @@
 package com.altafjava.school.util;
 
+import java.sql.Connection;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Component;
+import com.altafjava.platform.core.database.DatabasePlatform;
 import io.restassured.RestAssured;
 import io.restassured.filter.Filter;
 import io.restassured.filter.FilterContext;
@@ -80,7 +83,7 @@ public class CurrentVersionFilter implements Filter {
 		}
 		for (Map.Entry<Pattern, String> owned : OWNER_ADDRESSED.entrySet()) {
 			if (owned.getKey().matcher(path).find()) {
-				return first(jdbcTemplate.queryForList(owned.getValue(), Long.class, lastId));
+				return first(jdbcTemplate.queryForList(owned.getValue(), Long.class, UUID.fromString(lastId)));
 			}
 		}
 		String shape = UUID_IN_PATH.matcher(path).replaceAll("{id}");
@@ -100,11 +103,16 @@ public class CurrentVersionFilter implements Filter {
 
 	private Long versionIn(String table, String publicId) {
 		return first(jdbcTemplate.queryForList("SELECT version FROM " + table + " WHERE public_id = ?", Long.class,
-				publicId));
+				UUID.fromString(publicId)));
 	}
 
 	private static Long first(List<Long> versions) {
 		return versions.isEmpty() ? null : versions.get(0);
+	}
+
+	private String currentSchema() {
+		return jdbcTemplate
+				.execute((Connection connection) -> DatabasePlatform.of(connection).currentSchema(connection));
 	}
 
 	private List<String> versionedTables() {
@@ -113,8 +121,8 @@ public class CurrentVersionFilter implements Filter {
 					SELECT p.table_name FROM information_schema.columns p
 					JOIN information_schema.columns v
 					  ON v.table_schema = p.table_schema AND v.table_name = p.table_name AND v.column_name = 'version'
-					WHERE p.table_schema = DATABASE() AND p.column_name = 'public_id'
-					""", String.class);
+					WHERE p.table_schema = ? AND p.column_name = 'public_id'
+					""", String.class, currentSchema());
 		}
 		return versionedTables;
 	}

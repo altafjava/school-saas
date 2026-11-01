@@ -23,6 +23,7 @@ import com.altafjava.school.api.support.SortableBy;
 import com.altafjava.school.api.support.SpringDataPageableResolver;
 import com.altafjava.school.application.filter.DateWindow;
 import com.altafjava.school.application.filter.FeePaymentFilter;
+import com.altafjava.school.application.reference.ReferenceSummaries;
 import com.altafjava.school.application.service.FeePaymentService;
 import com.altafjava.school.domain.fee.model.PaymentSource;
 
@@ -35,8 +36,12 @@ public class FeePaymentController implements FeePaymentApi {
 
 	private final SpringDataPageableResolver pageableResolver;
 
+	private final ReferenceSummaries referenceSummaries;
+
 	public FeePaymentController(FeePaymentService feePaymentService, FeePaymentMapper feePaymentMapper,
-			SpringDataPageableResolver pageableResolver) {
+			SpringDataPageableResolver pageableResolver,
+			ReferenceSummaries referenceSummaries) {
+		this.referenceSummaries = referenceSummaries;
 		this.feePaymentService = feePaymentService;
 		this.feePaymentMapper = feePaymentMapper;
 		this.pageableResolver = pageableResolver;
@@ -57,8 +62,9 @@ public class FeePaymentController implements FeePaymentApi {
 		FeePaymentFilter filter = new FeePaymentFilter(studentPublicId, feeStructurePublicId,
 				new DateWindow(from, to), paymentSource);
 		return ApiResponse.success(PlatformPageMapper
-				.toPlatformPage(feePaymentService.listFeePayments(filter, pageableResolver.resolve(page, size))
-						.map(feePaymentMapper::toResponse)));
+				.toPlatformPage(referenceSummaries.mapPage(
+						feePaymentService.listFeePayments(filter, pageableResolver.resolve(page, size)),
+						feePaymentMapper::toResponse)));
 	}
 
 	@Override

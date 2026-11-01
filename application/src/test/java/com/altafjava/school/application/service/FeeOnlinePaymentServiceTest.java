@@ -6,6 +6,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -37,6 +38,7 @@ import com.altafjava.platform.domain.paymentgateway.service.PaymentChargeStatus;
 import com.altafjava.platform.domain.paymentgateway.service.PaymentGatewayCredentials;
 import com.altafjava.platform.domain.paymentgateway.service.PaymentGatewayProvider;
 import com.altafjava.platform.domain.paymentgateway.service.PaymentWebhookEvent;
+import com.altafjava.platform.domain.tenant.model.Tenant;
 import com.altafjava.platform.domain.tenant.repository.TenantRepository;
 import com.altafjava.school.application.security.StudentDataAccessGuard;
 import com.altafjava.school.domain.fee.model.FeeBalance;
@@ -152,7 +154,9 @@ class FeeOnlinePaymentServiceTest {
 		when(paymentGatewayProviderRegistry.resolve(PaymentGatewayType.STRIPE)).thenReturn(paymentGatewayProvider);
 		when(paymentGatewayProvider.createCharge(any(), any()))
 				.thenReturn(new PaymentChargeResult(GATEWAY_CHARGE_REFERENCE, "requires_confirmation", "secret_abc"));
-		when(tenantRepository.findById(1L)).thenReturn(Optional.empty());
+		Tenant tenant = mock(Tenant.class);
+		when(tenant.getCurrencyCode()).thenReturn("INR");
+		when(tenantRepository.findById(1L)).thenReturn(Optional.of(tenant));
 
 		PaymentChargeResult result = service.createCharge(STUDENT_PUBLIC_ID, FEE_STRUCTURE_PUBLIC_ID);
 

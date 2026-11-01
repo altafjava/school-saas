@@ -27,6 +27,7 @@ import com.altafjava.school.api.support.SortableBy;
 import com.altafjava.school.api.support.SpringDataPageableResolver;
 import com.altafjava.school.application.filter.DateWindow;
 import com.altafjava.school.application.filter.EventFilter;
+import com.altafjava.school.application.reference.ReferenceSummaries;
 import com.altafjava.school.application.service.EventRegistrationService;
 import com.altafjava.school.application.service.EventService;
 
@@ -41,9 +42,13 @@ public class EventController implements EventApi {
 
 	private final SpringDataPageableResolver pageableResolver;
 
+	private final ReferenceSummaries referenceSummaries;
+
 	public EventController(EventService eventService, EventMapper eventMapper,
 			EventRegistrationService eventRegistrationService, EventRegistrationMapper eventRegistrationMapper,
-			SpringDataPageableResolver pageableResolver) {
+			SpringDataPageableResolver pageableResolver,
+			ReferenceSummaries referenceSummaries) {
+		this.referenceSummaries = referenceSummaries;
 		this.eventService = eventService;
 		this.eventMapper = eventMapper;
 		this.eventRegistrationService = eventRegistrationService;
@@ -108,8 +113,9 @@ public class EventController implements EventApi {
 			@RequestParam(defaultValue = "0") int page,
 			@RequestParam(defaultValue = "20") int size) {
 		return ApiResponse.success(PlatformPageMapper
-				.toPlatformPage(eventRegistrationService.listForEvent(publicId, pageableResolver.resolve(page, size))
-						.map(eventRegistrationMapper::toResponse)));
+				.toPlatformPage(referenceSummaries.mapPage(
+						eventRegistrationService.listForEvent(publicId, pageableResolver.resolve(page, size)),
+						eventRegistrationMapper::toResponse)));
 	}
 
 	@Override

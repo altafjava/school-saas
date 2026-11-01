@@ -16,7 +16,7 @@ public interface AcademicYearRepository extends JpaRepository<AcademicYear, Long
 	@Query("""
 			SELECT a FROM AcademicYear a
 			WHERE a.tenantId = :tenantId
-			  AND (:pattern IS NULL OR LOWER(a.name) LIKE :pattern ESCAPE '!')
+			  AND (:#{#pattern == null} = TRUE OR LOWER(a.name) LIKE :pattern ESCAPE '!')
 			""")
 	Page<AcademicYear> search(@Param("tenantId") Long tenantId, @Param("pattern") String pattern, Pageable pageable);
 

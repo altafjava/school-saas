@@ -20,6 +20,7 @@ import com.altafjava.school.api.dto.response.RoomResponse;
 import com.altafjava.school.api.mapper.RoomMapper;
 import com.altafjava.school.api.support.PlatformPageMapper;
 import com.altafjava.school.api.support.SpringDataPageableResolver;
+import com.altafjava.school.application.reference.ReferenceSummaries;
 import com.altafjava.school.application.service.RoomService;
 
 @RestController
@@ -31,8 +32,12 @@ public class RoomController implements RoomApi {
 
 	private final SpringDataPageableResolver pageableResolver;
 
+	private final ReferenceSummaries referenceSummaries;
+
 	public RoomController(RoomService roomService, RoomMapper roomMapper,
-			SpringDataPageableResolver pageableResolver) {
+			SpringDataPageableResolver pageableResolver,
+			ReferenceSummaries referenceSummaries) {
+		this.referenceSummaries = referenceSummaries;
 		this.roomService = roomService;
 		this.roomMapper = roomMapper;
 		this.pageableResolver = pageableResolver;
@@ -46,9 +51,9 @@ public class RoomController implements RoomApi {
 			@RequestParam(defaultValue = "0") int page,
 			@RequestParam(defaultValue = "20") int size,
 			@RequestParam(required = false) String q) {
-		return ApiResponse.success(PlatformPageMapper.toPlatformPage(
-				roomService.listForBuilding(hostelBuildingPublicId, q, pageableResolver.resolve(page, size))
-						.map(roomMapper::toResponse)));
+		return ApiResponse.success(PlatformPageMapper.toPlatformPage(referenceSummaries.mapPage(
+				roomService.listForBuilding(hostelBuildingPublicId, q, pageableResolver.resolve(page, size)),
+				roomMapper::toResponse)));
 	}
 
 	@Override

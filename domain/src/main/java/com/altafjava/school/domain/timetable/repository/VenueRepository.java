@@ -15,7 +15,7 @@ public interface VenueRepository extends JpaRepository<Venue, Long> {
 	@Query("""
 			SELECT v FROM Venue v
 			WHERE v.tenantId = :tenantId
-			  AND (:pattern IS NULL OR LOWER(v.name) LIKE :pattern ESCAPE '!'
+			  AND (:#{#pattern == null} = TRUE OR LOWER(v.name) LIKE :pattern ESCAPE '!'
 			       OR LOWER(v.code) LIKE :pattern ESCAPE '!')
 			""")
 	Page<Venue> search(@Param("tenantId") Long tenantId, @Param("pattern") String pattern, Pageable pageable);

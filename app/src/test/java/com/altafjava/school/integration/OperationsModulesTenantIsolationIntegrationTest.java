@@ -275,7 +275,9 @@ class OperationsModulesTenantIsolationIntegrationTest extends SchoolIntegrationT
 
 		Circulation circulation = circulationService.checkout(copy.getPublicId().toString(),
 				student.getPublicId().toString());
-		BookCopy checkedOut = bookCatalogService.listCopies(book.getPublicId().toString()).stream()
+		BookCopy checkedOut = bookCatalogService
+				.listCopies(book.getPublicId().toString(), org.springframework.data.domain.PageRequest.of(0, 20))
+				.stream()
 				.filter(c -> c.getId().equals(copy.getId()))
 				.findFirst()
 				.orElseThrow();
@@ -286,7 +288,9 @@ class OperationsModulesTenantIsolationIntegrationTest extends SchoolIntegrationT
 				overdueReturnDate);
 
 		assertTrue(returned.getFineAmount().compareTo(BigDecimal.ZERO) > 0, "Overdue return must incur a fine");
-		BookCopy availableAgain = bookCatalogService.listCopies(book.getPublicId().toString()).stream()
+		BookCopy availableAgain = bookCatalogService
+				.listCopies(book.getPublicId().toString(), org.springframework.data.domain.PageRequest.of(0, 20))
+				.stream()
 				.filter(c -> c.getId().equals(copy.getId()))
 				.findFirst()
 				.orElseThrow();

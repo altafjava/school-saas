@@ -15,7 +15,7 @@ public interface BookRepository extends JpaRepository<Book, Long> {
 	@Query("""
 			SELECT b FROM Book b
 			WHERE b.tenantId = :tenantId
-			  AND (:pattern IS NULL
+			  AND (:#{#pattern == null} = TRUE
 			       OR LOWER(b.title) LIKE :pattern ESCAPE '!' OR LOWER(b.author) LIKE :pattern ESCAPE '!' OR LOWER(b.isbn) LIKE :pattern ESCAPE '!' OR LOWER(b.category) LIKE :pattern ESCAPE '!' OR LOWER(b.publisher) LIKE :pattern ESCAPE '!')
 			""")
 	Page<Book> search(@Param("tenantId") Long tenantId, @Param("pattern") String pattern, Pageable pageable);

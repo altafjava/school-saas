@@ -19,9 +19,9 @@ public interface ClassroomRepository extends JpaRepository<Classroom, Long> {
 	@Query("""
 			SELECT c FROM Classroom c
 			WHERE c.tenantId = :tenantId
-			  AND (:academicYearId IS NULL OR c.academicYearId = :academicYearId)
-			  AND (:grade IS NULL OR c.grade = :grade)
-			  AND (:pattern IS NULL
+			  AND (:#{#academicYearId == null} = TRUE OR c.academicYearId = :academicYearId)
+			  AND (:#{#grade == null} = TRUE OR c.grade = :grade)
+			  AND (:#{#pattern == null} = TRUE
 			       OR LOWER(c.classCode) LIKE :pattern ESCAPE '!'
 			       OR LOWER(c.grade) LIKE :pattern ESCAPE '!'
 			       OR LOWER(c.section) LIKE :pattern ESCAPE '!'

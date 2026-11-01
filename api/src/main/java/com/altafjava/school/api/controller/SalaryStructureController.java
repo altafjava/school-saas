@@ -26,6 +26,7 @@ import com.altafjava.school.api.dto.response.SalaryStructureResponse;
 import com.altafjava.school.api.mapper.SalaryStructureMapper;
 import com.altafjava.school.api.support.PlatformPageMapper;
 import com.altafjava.school.api.support.SpringDataPageableResolver;
+import com.altafjava.school.application.reference.ReferenceSummaries;
 import com.altafjava.school.application.service.SalaryStructureService;
 
 @RestController
@@ -37,8 +38,12 @@ public class SalaryStructureController implements SalaryStructureApi {
 
 	private final SpringDataPageableResolver pageableResolver;
 
+	private final ReferenceSummaries referenceSummaries;
+
 	public SalaryStructureController(SalaryStructureService salaryStructureService,
-			SalaryStructureMapper salaryStructureMapper, SpringDataPageableResolver pageableResolver) {
+			SalaryStructureMapper salaryStructureMapper, SpringDataPageableResolver pageableResolver,
+			ReferenceSummaries referenceSummaries) {
+		this.referenceSummaries = referenceSummaries;
 		this.salaryStructureService = salaryStructureService;
 		this.salaryStructureMapper = salaryStructureMapper;
 		this.pageableResolver = pageableResolver;
@@ -51,9 +56,9 @@ public class SalaryStructureController implements SalaryStructureApi {
 			@RequestParam String employeePublicId,
 			@RequestParam(defaultValue = "0") int page,
 			@RequestParam(defaultValue = "20") int size) {
-		return ApiResponse.success(PlatformPageMapper.toPlatformPage(
-				salaryStructureService.listForEmployee(employeePublicId, pageableResolver.resolve(page, size))
-						.map(salaryStructureMapper::toResponse)));
+		return ApiResponse.success(PlatformPageMapper.toPlatformPage(referenceSummaries.mapPage(
+				salaryStructureService.listForEmployee(employeePublicId, pageableResolver.resolve(page, size)),
+				salaryStructureMapper::toResponse)));
 	}
 
 	@Override

@@ -48,9 +48,9 @@ public interface GradeRepository extends JpaRepository<Grade, Long> {
 			       OR (g.studentId IN :studentIds
 			           AND EXISTS (SELECT 1 FROM Exam e WHERE e.id = g.examId AND e.tenantId = :tenantId
 			                       AND e.resultsPublishedAt IS NOT NULL)))
-			  AND (:examId IS NULL OR g.examId = :examId)
-			  AND (:studentId IS NULL OR g.studentId = :studentId)
-			  AND (:classroomId IS NULL
+			  AND (:#{#examId == null} = TRUE OR g.examId = :examId)
+			  AND (:#{#studentId == null} = TRUE OR g.studentId = :studentId)
+			  AND (:#{#classroomId == null} = TRUE
 			       OR EXISTS (SELECT 1 FROM Exam c WHERE c.id = g.examId AND c.tenantId = :tenantId
 			                  AND c.classroomId = :classroomId))
 			""", countQuery = """
@@ -61,9 +61,9 @@ public interface GradeRepository extends JpaRepository<Grade, Long> {
 			       OR (g.studentId IN :studentIds
 			           AND EXISTS (SELECT 1 FROM Exam e WHERE e.id = g.examId AND e.tenantId = :tenantId
 			                       AND e.resultsPublishedAt IS NOT NULL)))
-			  AND (:examId IS NULL OR g.examId = :examId)
-			  AND (:studentId IS NULL OR g.studentId = :studentId)
-			  AND (:classroomId IS NULL
+			  AND (:#{#examId == null} = TRUE OR g.examId = :examId)
+			  AND (:#{#studentId == null} = TRUE OR g.studentId = :studentId)
+			  AND (:#{#classroomId == null} = TRUE
 			       OR EXISTS (SELECT 1 FROM Exam c WHERE c.id = g.examId AND c.tenantId = :tenantId
 			                  AND c.classroomId = :classroomId))
 			""")

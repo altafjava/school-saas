@@ -15,7 +15,7 @@ public interface HostelBuildingRepository extends JpaRepository<HostelBuilding, 
 	@Query("""
 			SELECT h FROM HostelBuilding h
 			WHERE h.tenantId = :tenantId
-			  AND (:pattern IS NULL OR LOWER(h.name) LIKE :pattern ESCAPE '!')
+			  AND (:#{#pattern == null} = TRUE OR LOWER(h.name) LIKE :pattern ESCAPE '!')
 			""")
 	Page<HostelBuilding> search(@Param("tenantId") Long tenantId, @Param("pattern") String pattern, Pageable pageable);
 

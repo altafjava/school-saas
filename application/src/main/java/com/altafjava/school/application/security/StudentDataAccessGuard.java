@@ -9,24 +9,33 @@ import com.altafjava.platform.application.security.ResourceAccessPolicyEnforcer;
 import com.altafjava.platform.core.security.AuthenticatedUser;
 import com.altafjava.school.application.policy.ResourceAction;
 import com.altafjava.school.application.policy.ResourceType;
+import com.altafjava.school.application.reference.EntityRef;
+import com.altafjava.school.application.reference.PublicIdLookup;
 
-// Enforces "own child/own record only" on student-scoped reads; anyone holding STUDENT_READ
-// (TENANT_ADMIN always, TEACHER by default seed, or any tenant-granted custom role) bypasses it.
+// Enforces "own child/own record only" on student-scoped reads. STUDENT_READ_ALL bypasses it, and
+// staff pass for the students they teach; a school extends a role's reach by granting that permission.
 @Component
 public class StudentDataAccessGuard {
 
 	private final ResourceAccessPolicyEnforcer resourceAccessPolicyEnforcer;
 	private final PermissionAuthorizationService permissionAuthorizationService;
+	private final AcademicAccessGuard academicAccessGuard;
+	private final PublicIdLookup publicIdLookup;
 
 	public StudentDataAccessGuard(ResourceAccessPolicyEnforcer resourceAccessPolicyEnforcer,
-			PermissionAuthorizationService permissionAuthorizationService) {
+			PermissionAuthorizationService permissionAuthorizationService, AcademicAccessGuard academicAccessGuard,
+			PublicIdLookup publicIdLookup) {
 		this.resourceAccessPolicyEnforcer = resourceAccessPolicyEnforcer;
 		this.permissionAuthorizationService = permissionAuthorizationService;
+		this.academicAccessGuard = academicAccessGuard;
+		this.publicIdLookup = publicIdLookup;
 	}
 
 	public void assertCanView(Long tenantId, String studentPublicId) {
 		Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-		if (permissionAuthorizationService.hasPermission("STUDENT_READ")) {
+		if (permissionAuthorizationService.hasPermission("STUDENT_READ_ALL")
+				|| academicAccessGuard.teachesStudent(tenantId, publicIdLookup.idOrNull(EntityRef.STUDENT,
+						studentPublicId))) {
 			return;
 		}
 		String userId = resolveUserId(authentication);

@@ -50,7 +50,7 @@ class PublicIdLookupTest {
 	@Test
 	void idOrNull_resolvesTheInternalIdWithinTheCurrentTenant() {
 		UUID publicId = UUID.randomUUID();
-		when(jdbcTemplate.queryForList(anyString(), eq(Long.class), eq(publicId.toString()), eq(TENANT_ID)))
+		when(jdbcTemplate.queryForList(anyString(), eq(Long.class), eq(publicId), eq(TENANT_ID)))
 				.thenReturn(List.of(42L));
 
 		assertEquals(42L, lookup.idOrNull(EntityRef.CLASSROOM, publicId.toString()));

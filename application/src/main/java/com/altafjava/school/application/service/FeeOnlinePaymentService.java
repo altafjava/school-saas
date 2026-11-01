@@ -50,7 +50,6 @@ import lombok.extern.slf4j.Slf4j;
 public class FeeOnlinePaymentService {
 
 	private static final String SUCCEEDED_STATUS = "succeeded";
-	private static final String DEFAULT_CURRENCY = "USD";
 	private static final String METADATA_TENANT_PUBLIC_ID = "tenantPublicId";
 	private static final String METADATA_STUDENT_PUBLIC_ID = "studentPublicId";
 	private static final String METADATA_FEE_STRUCTURE_PUBLIC_ID = "feeStructurePublicId";
@@ -211,7 +210,7 @@ public class FeeOnlinePaymentService {
 		return tenantRepository.findById(tenantId)
 				.map(Tenant::getCurrencyCode)
 				.filter(code -> code != null && !code.isBlank())
-				.orElse(DEFAULT_CURRENCY);
+				.orElseThrow(() -> new BusinessException("This school has no currency configured"));
 	}
 
 	private boolean isSucceeded(String status) {

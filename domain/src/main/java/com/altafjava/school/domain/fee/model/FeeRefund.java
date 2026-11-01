@@ -5,6 +5,8 @@ import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
+import jakarta.persistence.PrePersist;
+import jakarta.persistence.PreUpdate;
 import jakarta.persistence.Table;
 import com.altafjava.platform.core.exception.BusinessException;
 import com.altafjava.platform.core.model.TenantEntity;
@@ -64,6 +66,14 @@ public class FeeRefund extends TenantEntity {
 	@Enumerated(EnumType.STRING)
 	@Column(name = "status", nullable = false, length = 20)
 	private RefundStatus status;
+
+	@PrePersist
+	@PreUpdate
+	private void assertConsistent() {
+		if (amount.signum() <= 0) {
+			throw new BusinessException("A refund must be positive");
+		}
+	}
 
 	public static FeeRefund reserve(FeePayment payment, BigDecimal amount, String reason, RefundMethod method,
 			String creditNoteNumber, Long refundedByUserId) {

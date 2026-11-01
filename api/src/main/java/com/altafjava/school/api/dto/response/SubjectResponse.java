@@ -1,5 +1,7 @@
 package com.altafjava.school.api.dto.response;
 
+import com.altafjava.school.application.reference.ReferenceSummary;
+
 public record SubjectResponse(
 		String publicId,
 		Long version,
@@ -7,5 +9,6 @@ public record SubjectResponse(
 		String name,
 		String description,
 		boolean active,
-		String curriculumPublicId) {
+		String curriculumPublicId,
+		ReferenceSummary curriculum) {
 }

@@ -21,7 +21,6 @@ import com.altafjava.platform.core.exception.ResourceNotFoundException;
 import com.altafjava.platform.core.security.AuthenticatedUser;
 import com.altafjava.platform.core.tenant.TenantContext;
 import com.altafjava.platform.domain.notification.model.NotificationPriority;
-import com.altafjava.platform.domain.notification.model.NotificationType;
 import com.altafjava.school.application.filter.LeaveRequestFilter;
 import com.altafjava.school.application.reference.EntityRef;
 import com.altafjava.school.application.reference.PublicIdLookup;
@@ -44,6 +43,7 @@ import com.altafjava.school.domain.leave.repository.LeaveBalanceRepository;
 import com.altafjava.school.domain.leave.repository.LeaveRequestRepository;
 import com.altafjava.school.domain.leave.repository.LeaveTypeRepository;
 import com.altafjava.school.domain.leave.service.LeaveDayCalculator;
+import com.altafjava.school.domain.notification.SchoolNotificationTypes;
 
 @Service
 public class LeaveRequestService {
@@ -187,7 +187,7 @@ public class LeaveRequestService {
 		}
 		LeaveRequest saved = leaveRequestRepository.save(request);
 		if (saved.getStatus() == LeaveRequestStatus.APPROVED) {
-			notifyEmployeeOfDecision(tenantId, saved, NotificationType.LEAVE_APPROVED,
+			notifyEmployeeOfDecision(tenantId, saved, SchoolNotificationTypes.LEAVE_APPROVED,
 					"Your leave request was approved");
 		} else {
 			notifyAdminsAwaitingFinalApproval(tenantId, saved);
@@ -204,7 +204,8 @@ public class LeaveRequestService {
 		leaveApprovalRepository.save(LeaveApproval.rejected(request.getId(), stage, actorUserId, rejectionReason));
 		request.reject(actorUserId, rejectionReason);
 		LeaveRequest saved = leaveRequestRepository.save(request);
-		notifyEmployeeOfDecision(tenantId, saved, NotificationType.LEAVE_REJECTED, "Your leave request was rejected");
+		notifyEmployeeOfDecision(tenantId, saved, SchoolNotificationTypes.LEAVE_REJECTED,
+				"Your leave request was rejected");
 		return saved;
 	}
 
@@ -285,7 +286,7 @@ public class LeaveRequestService {
 
 	private void notifyAdminsOfRequest(Long tenantId, Employee employee, LeaveType leaveType, LeaveRequest request) {
 		String employeeName = employee.getFirstName() + " " + employee.getLastName();
-		tenantAdminNotifier.notifyAll(tenantId, NotificationType.LEAVE_REQUESTED,
+		tenantAdminNotifier.notifyAll(tenantId, SchoolNotificationTypes.LEAVE_REQUESTED,
 				"Leave Request: " + employeeName,
 				employeeName + " requested " + request.getDaysRequested() + " day(s) of " + leaveType.getName(),
 				Map.of(
@@ -296,7 +297,7 @@ public class LeaveRequestService {
 						"daysRequested", request.getDaysRequested().toString()));
 	}
 
-	private void notifyEmployeeOfDecision(Long tenantId, LeaveRequest request, NotificationType type, String message) {
+	private void notifyEmployeeOfDecision(Long tenantId, LeaveRequest request, String type, String message) {
 		employeeRepository.findByIdAndTenantId(request.getEmployeeId(), tenantId)
 				.map(Employee::getUserId)
 				.ifPresent(userId -> notificationService.send(SendNotificationCommand.builder()
@@ -322,7 +323,7 @@ public class LeaveRequestService {
 		notificationService.send(SendNotificationCommand.builder()
 				.tenantId(tenantId)
 				.userId(head.getUserId())
-				.type(NotificationType.LEAVE_REQUESTED)
+				.type(SchoolNotificationTypes.LEAVE_REQUESTED)
 				.title("Leave Request: " + employeeName)
 				.message(employeeName + " requested " + request.getDaysRequested() + " day(s) of "
 						+ leaveType.getName() + " and needs your approval")
@@ -339,7 +340,7 @@ public class LeaveRequestService {
 	private void notifyAdminsAwaitingFinalApproval(Long tenantId, LeaveRequest request) {
 		employeeRepository.findByIdAndTenantId(request.getEmployeeId(), tenantId).ifPresent(employee -> {
 			String employeeName = employee.getFirstName() + " " + employee.getLastName();
-			tenantAdminNotifier.notifyAll(tenantId, NotificationType.LEAVE_REQUESTED,
+			tenantAdminNotifier.notifyAll(tenantId, SchoolNotificationTypes.LEAVE_REQUESTED,
 					"Leave Request awaiting final approval: " + employeeName,
 					"The department head approved " + employeeName + "'s request for "
 							+ request.getDaysRequested() + " day(s)",

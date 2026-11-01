@@ -10,7 +10,6 @@ spring:
   rabbitmq:
     enabled: false
   datasource:
-    driver-class-name: org.mariadb.jdbc.Driver
     hikari:
       maximum-pool-size: 10
       minimum-idle: 2

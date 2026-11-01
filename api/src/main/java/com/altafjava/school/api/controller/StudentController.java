@@ -55,6 +55,7 @@ import com.altafjava.school.api.support.SpringDataPageableResolver;
 import com.altafjava.school.api.support.StudentResponseAssembler;
 import com.altafjava.school.application.filter.StudentFilter;
 import com.altafjava.school.application.lifecycle.LifecycleChange;
+import com.altafjava.school.application.reference.ReferenceSummaries;
 import com.altafjava.school.application.service.AttendanceService;
 import com.altafjava.school.application.service.FeePaymentService;
 import com.altafjava.school.application.service.GpaResult;
@@ -62,6 +63,7 @@ import com.altafjava.school.application.service.GradeService;
 import com.altafjava.school.application.service.GuardianService;
 import com.altafjava.school.application.service.ReportCardService;
 import com.altafjava.school.application.service.StudentBulkImportService;
+import com.altafjava.school.application.service.StudentDirectory;
 import com.altafjava.school.application.service.StudentGpaService;
 import com.altafjava.school.application.service.StudentService;
 import com.altafjava.school.application.service.TermService;
@@ -75,6 +77,7 @@ import com.altafjava.school.domain.student.model.Student;
 public class StudentController implements StudentApi {
 
 	private final StudentService studentService;
+	private final StudentDirectory studentDirectory;
 	private final StudentResponseAssembler studentResponseAssembler;
 	private final GuardianService guardianService;
 	private final StudentGuardianMapper studentGuardianMapper;
@@ -95,7 +98,10 @@ public class StudentController implements StudentApi {
 
 	private final SpringDataPageableResolver pageableResolver;
 
-	public StudentController(StudentService studentService, StudentResponseAssembler studentResponseAssembler,
+	private final ReferenceSummaries referenceSummaries;
+
+	public StudentController(StudentService studentService, StudentDirectory studentDirectory,
+			StudentResponseAssembler studentResponseAssembler,
 			GuardianService guardianService, StudentGuardianMapper studentGuardianMapper, AddressMapper addressMapper,
 			GradeService gradeService,
 			GradeMapper gradeMapper, AttendanceService attendanceService, AttendanceMapper attendanceMapper,
@@ -103,8 +109,11 @@ public class StudentController implements StudentApi {
 			FeeBalanceMapper feeBalanceMapper, ReportCardService reportCardService, ReportCardMapper reportCardMapper,
 			TermService termService, StudentBulkImportService studentBulkImportService,
 			BulkImportMapper bulkImportMapper, StudentGpaService studentGpaService,
-			SpringDataPageableResolver pageableResolver) {
+			SpringDataPageableResolver pageableResolver,
+			ReferenceSummaries referenceSummaries) {
+		this.referenceSummaries = referenceSummaries;
 		this.studentService = studentService;
+		this.studentDirectory = studentDirectory;
 		this.studentResponseAssembler = studentResponseAssembler;
 		this.guardianService = guardianService;
 		this.studentGuardianMapper = studentGuardianMapper;
@@ -138,14 +147,14 @@ public class StudentController implements StudentApi {
 			@RequestParam(required = false) String q) {
 		StudentFilter filter = new StudentFilter(status, classroomPublicId, gender, q);
 		return ApiResponse.success(PlatformPageMapper.toPlatformPage(studentResponseAssembler
-				.toResponses(studentService.searchStudents(filter, pageableResolver.resolve(page, size)))));
+				.toResponses(studentDirectory.search(filter, pageableResolver.resolve(page, size)))));
 	}
 
 	@Override
 	@GetMapping("/{publicId}")
 	@PreAuthorize("@permissionAuthorizationService.hasPermission('STUDENT_READ')")
 	public ApiResponse<StudentResponse> get(@PathVariable String publicId) {
-		return ApiResponse.success(studentResponseAssembler.toResponse(studentService.findByPublicId(publicId)));
+		return ApiResponse.success(studentResponseAssembler.toResponse(studentDirectory.get(publicId)));
 	}
 
 	@Override
@@ -287,8 +296,9 @@ public class StudentController implements StudentApi {
 			@RequestParam(defaultValue = "0") int page,
 			@RequestParam(defaultValue = "20") int size) {
 		return ApiResponse.success(PlatformPageMapper
-				.toPlatformPage(gradeService.getStudentGrades(publicId, pageableResolver.resolve(page, size))
-						.map(gradeMapper::toResponse)));
+				.toPlatformPage(referenceSummaries.mapPage(
+						gradeService.getStudentGrades(publicId, pageableResolver.resolve(page, size)),
+						gradeMapper::toResponse)));
 	}
 
 	@Override
@@ -326,8 +336,9 @@ public class StudentController implements StudentApi {
 			@RequestParam(defaultValue = "0") int page,
 			@RequestParam(defaultValue = "20") int size) {
 		return ApiResponse.success(PlatformPageMapper
-				.toPlatformPage(attendanceService.getStudentAttendance(publicId, pageableResolver.resolve(page, size))
-						.map(attendanceMapper::toResponse)));
+				.toPlatformPage(referenceSummaries.mapPage(
+						attendanceService.getStudentAttendance(publicId, pageableResolver.resolve(page, size)),
+						attendanceMapper::toResponse)));
 	}
 
 	@Override
@@ -355,8 +366,9 @@ public class StudentController implements StudentApi {
 			@RequestParam(defaultValue = "0") int page,
 			@RequestParam(defaultValue = "20") int size) {
 		return ApiResponse.success(PlatformPageMapper
-				.toPlatformPage(reportCardService.listForStudent(publicId, pageableResolver.resolve(page, size))
-						.map(reportCardMapper::toResponse)));
+				.toPlatformPage(referenceSummaries.mapPage(
+						reportCardService.listForStudent(publicId, pageableResolver.resolve(page, size)),
+						reportCardMapper::toResponse)));
 	}
 
 	@Override

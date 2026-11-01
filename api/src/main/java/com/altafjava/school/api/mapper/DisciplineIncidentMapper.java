@@ -12,6 +12,8 @@ public interface DisciplineIncidentMapper {
 	@Mapping(target = "publicId", expression = "java(incident.getPublicId().toString())")
 	@Mapping(target = "severity", expression = "java(incident.getSeverity().name())")
 	@Mapping(target = "studentPublicId", source = "studentId", qualifiedByName = "student")
+	@Mapping(target = "student", source = "studentId", qualifiedByName = "studentSummary")
 	@Mapping(target = "reportedByTeacherPublicId", source = "reportedByTeacherId", qualifiedByName = "employee")
+	@Mapping(target = "reportedByTeacher", source = "reportedByTeacherId", qualifiedByName = "employeeSummary")
 	DisciplineIncidentResponse toResponse(DisciplineIncident incident);
 }

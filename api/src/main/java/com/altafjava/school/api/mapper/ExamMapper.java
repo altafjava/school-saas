@@ -13,8 +13,12 @@ public interface ExamMapper {
 	@Mapping(target = "status", expression = "java(exam.getStatus().name())")
 	@Mapping(target = "resultsPublished", expression = "java(exam.isResultsPublished())")
 	@Mapping(target = "subjectPublicId", source = "subjectId", qualifiedByName = "subject")
+	@Mapping(target = "subject", source = "subjectId", qualifiedByName = "subjectSummary")
 	@Mapping(target = "classroomPublicId", source = "classroomId", qualifiedByName = "classroom")
+	@Mapping(target = "classroom", source = "classroomId", qualifiedByName = "classroomSummary")
 	@Mapping(target = "termPublicId", source = "termId", qualifiedByName = "term")
+	@Mapping(target = "term", source = "termId", qualifiedByName = "termSummary")
 	@Mapping(target = "examTypePublicId", source = "examTypeId", qualifiedByName = "examType")
+	@Mapping(target = "examType", source = "examTypeId", qualifiedByName = "examTypeSummary")
 	ExamResponse toResponse(Exam exam);
 }

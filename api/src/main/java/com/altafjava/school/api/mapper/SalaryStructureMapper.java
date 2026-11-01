@@ -14,6 +14,7 @@ public interface SalaryStructureMapper {
 	@Mapping(target = "publicId", expression = "java(salaryStructure.getPublicId().toString())")
 	@Mapping(target = "grossPay", expression = "java(salaryStructure.grossPay())")
 	@Mapping(target = "employeePublicId", source = "employeeId", qualifiedByName = "employee")
+	@Mapping(target = "employee", source = "employeeId", qualifiedByName = "employeeSummary")
 	SalaryStructureResponse toResponse(SalaryStructure salaryStructure);
 
 	PayComponentAmountResponse toResponse(PayComponentAmount component);

@@ -11,6 +11,8 @@ public interface CounselingSessionMapper {
 
 	@Mapping(target = "publicId", expression = "java(session.getPublicId().toString())")
 	@Mapping(target = "studentPublicId", source = "studentId", qualifiedByName = "student")
+	@Mapping(target = "student", source = "studentId", qualifiedByName = "studentSummary")
 	@Mapping(target = "counselorTeacherPublicId", source = "counselorTeacherId", qualifiedByName = "employee")
+	@Mapping(target = "counselorTeacher", source = "counselorTeacherId", qualifiedByName = "employeeSummary")
 	CounselingSessionResponse toResponse(CounselingSession session);
 }

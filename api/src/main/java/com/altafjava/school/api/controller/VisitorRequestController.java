@@ -27,6 +27,7 @@ import com.altafjava.school.api.mapper.VisitorRequestMapper;
 import com.altafjava.school.api.support.PlatformPageMapper;
 import com.altafjava.school.api.support.SortableBy;
 import com.altafjava.school.api.support.SpringDataPageableResolver;
+import com.altafjava.school.application.reference.ReferenceSummaries;
 import com.altafjava.school.application.service.VisitorRequestService;
 import com.altafjava.school.domain.visitor.model.VisitorRequestStatus;
 
@@ -50,8 +51,12 @@ public class VisitorRequestController implements VisitorRequestApi {
 	private final VisitorRequestMapper visitorRequestMapper;
 	private final SpringDataPageableResolver pageableResolver;
 
+	private final ReferenceSummaries referenceSummaries;
+
 	public VisitorRequestController(VisitorRequestService visitorRequestService,
-			VisitorRequestMapper visitorRequestMapper, SpringDataPageableResolver pageableResolver) {
+			VisitorRequestMapper visitorRequestMapper, SpringDataPageableResolver pageableResolver,
+			ReferenceSummaries referenceSummaries) {
+		this.referenceSummaries = referenceSummaries;
 		this.visitorRequestService = visitorRequestService;
 		this.visitorRequestMapper = visitorRequestMapper;
 		this.pageableResolver = pageableResolver;
@@ -67,9 +72,9 @@ public class VisitorRequestController implements VisitorRequestApi {
 			@RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate to,
 			@RequestParam(defaultValue = "0") int page,
 			@RequestParam(defaultValue = "20") int size) {
-		return ApiResponse.success(PlatformPageMapper.toPlatformPage(
-				visitorRequestService.list(status, from, to, pageableResolver.resolve(page, size))
-						.map(visitorRequestMapper::toResponse)));
+		return ApiResponse.success(PlatformPageMapper.toPlatformPage(referenceSummaries.mapPage(
+				visitorRequestService.list(status, from, to, pageableResolver.resolve(page, size)),
+				visitorRequestMapper::toResponse)));
 	}
 
 	@Override
@@ -83,9 +88,9 @@ public class VisitorRequestController implements VisitorRequestApi {
 			@RequestParam(defaultValue = "0") int page,
 			@RequestParam(defaultValue = "20") int size,
 			@AuthenticationPrincipal AuthenticatedUser user) {
-		return ApiResponse.success(PlatformPageMapper.toPlatformPage(visitorRequestService
-				.listHostedByCurrentEmployee(user.getId(), status, from, to, pageableResolver.resolve(page, size))
-				.map(visitorRequestMapper::toResponse)));
+		return ApiResponse.success(PlatformPageMapper.toPlatformPage(referenceSummaries.mapPage(visitorRequestService
+				.listHostedByCurrentEmployee(user.getId(), status, from, to, pageableResolver.resolve(page, size)),
+				visitorRequestMapper::toResponse)));
 	}
 
 	@Override

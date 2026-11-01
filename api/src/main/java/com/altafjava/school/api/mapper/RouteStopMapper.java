@@ -11,5 +11,6 @@ public interface RouteStopMapper {
 
 	@Mapping(target = "publicId", expression = "java(routeStop.getPublicId().toString())")
 	@Mapping(target = "routePublicId", source = "routeId", qualifiedByName = "route")
+	@Mapping(target = "route", source = "routeId", qualifiedByName = "routeSummary")
 	RouteStopResponse toResponse(RouteStop routeStop);
 }

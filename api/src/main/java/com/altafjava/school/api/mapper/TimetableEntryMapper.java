@@ -13,10 +13,15 @@ public interface TimetableEntryMapper {
 	@Mapping(target = "publicId", expression = "java(entry.getPublicId().toString())")
 	@Mapping(target = "dayOfWeek", expression = "java(entry.getDayOfWeek().name())")
 	@Mapping(target = "periodPublicId", source = "periodId", qualifiedByName = "period")
+	@Mapping(target = "period", source = "periodId", qualifiedByName = "periodSummary")
 	@Mapping(target = "classroomPublicId", source = "classroomId", qualifiedByName = "classroom")
+	@Mapping(target = "classroom", source = "classroomId", qualifiedByName = "classroomSummary")
 	@Mapping(target = "subjectPublicId", source = "subjectId", qualifiedByName = "subject")
+	@Mapping(target = "subject", source = "subjectId", qualifiedByName = "subjectSummary")
 	@Mapping(target = "teacherPublicId", source = "teacherId", qualifiedByName = "employee")
+	@Mapping(target = "teacher", source = "teacherId", qualifiedByName = "employeeSummary")
 	@Mapping(target = "venuePublicId", source = "venueId", qualifiedByName = "venue")
+	@Mapping(target = "venue", source = "venueId", qualifiedByName = "venueSummary")
 	TimetableEntryResponse toResponse(TimetableEntry entry);
 
 	List<TimetableEntryResponse> toResponseList(List<TimetableEntry> entries);

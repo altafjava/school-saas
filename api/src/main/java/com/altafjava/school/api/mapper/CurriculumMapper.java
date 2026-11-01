@@ -11,6 +11,8 @@ public interface CurriculumMapper {
 
 	@Mapping(target = "publicId", expression = "java(curriculum.getPublicId().toString())")
 	@Mapping(target = "boardPublicId", source = "boardId", qualifiedByName = "board")
+	@Mapping(target = "board", source = "boardId", qualifiedByName = "boardSummary")
 	@Mapping(target = "gradingScalePublicId", source = "gradingScaleId", qualifiedByName = "gradingScale")
+	@Mapping(target = "gradingScale", source = "gradingScaleId", qualifiedByName = "gradingScaleSummary")
 	CurriculumResponse toResponse(Curriculum curriculum);
 }

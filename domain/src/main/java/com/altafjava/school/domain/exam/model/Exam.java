@@ -7,6 +7,8 @@ import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
+import jakarta.persistence.PrePersist;
+import jakarta.persistence.PreUpdate;
 import jakarta.persistence.Table;
 import org.hibernate.annotations.SQLRestriction;
 import com.altafjava.platform.core.exception.BusinessException;
@@ -24,6 +26,14 @@ import lombok.experimental.SuperBuilder;
 @SuperBuilder
 @NoArgsConstructor
 public class Exam extends SoftDeletableEntity {
+
+	@PrePersist
+	@PreUpdate
+	private void assertConsistent() {
+		if (weightage != null && (weightage.signum() <= 0 || weightage.compareTo(BigDecimal.valueOf(100)) > 0)) {
+			throw new BusinessException("Exam weightage must be above 0 and at most 100");
+		}
+	}
 
 	public static final BigDecimal FULL_WEIGHTAGE = BigDecimal.valueOf(100);
 

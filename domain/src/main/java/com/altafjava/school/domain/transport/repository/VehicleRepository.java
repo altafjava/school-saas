@@ -15,7 +15,7 @@ public interface VehicleRepository extends JpaRepository<Vehicle, Long> {
 	@Query("""
 			SELECT v FROM Vehicle v
 			WHERE v.tenantId = :tenantId
-			  AND (:pattern IS NULL OR LOWER(v.registrationNumber) LIKE :pattern ESCAPE '!'
+			  AND (:#{#pattern == null} = TRUE OR LOWER(v.registrationNumber) LIKE :pattern ESCAPE '!'
 			       OR LOWER(v.driverName) LIKE :pattern ESCAPE '!')
 			""")
 	Page<Vehicle> search(@Param("tenantId") Long tenantId, @Param("pattern") String pattern, Pageable pageable);

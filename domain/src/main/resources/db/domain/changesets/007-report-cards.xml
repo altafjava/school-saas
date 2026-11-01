@@ -10,7 +10,7 @@
             <column name="id" type="BIGINT" autoIncrement="true">
                 <constraints primaryKey="true" nullable="false"/>
             </column>
-            <column name="public_id" type="VARCHAR(36)">
+            <column name="public_id" type="UUID">
                 <constraints nullable="false" unique="true"/>
             </column>
             <column name="tenant_id" type="BIGINT">
@@ -44,15 +44,13 @@
             </column>
             <column name="deleted_at" type="TIMESTAMP"/>
             <column name="deleted_by" type="VARCHAR(100)"/>
+            <column name="deleted_token" type="BIGINT" defaultValueNumeric="0">
+                <constraints nullable="false"/>
+            </column>
             <column name="version" type="BIGINT" defaultValueNumeric="0">
                 <constraints nullable="false"/>
             </column>
         </createTable>
-        <sql>
-            ALTER TABLE report_cards
-                ADD COLUMN active_term_id BIGINT
-                GENERATED ALWAYS AS (CASE WHEN deleted = FALSE THEN term_id ELSE NULL END) STORED;
-        </sql>
         <createIndex indexName="idx_report_cards_tenant_id" tableName="report_cards">
             <column name="tenant_id"/>
         </createIndex>
@@ -64,8 +62,9 @@
         </createIndex>
         <createIndex indexName="uq_report_cards_student_active_term_tenant" tableName="report_cards" unique="true">
             <column name="student_id"/>
-            <column name="active_term_id"/>
+            <column name="term_id"/>
             <column name="tenant_id"/>
+            <column name="deleted_token"/>
         </createIndex>
         <addForeignKeyConstraint
                 constraintName="fk_report_cards_tenant_id"

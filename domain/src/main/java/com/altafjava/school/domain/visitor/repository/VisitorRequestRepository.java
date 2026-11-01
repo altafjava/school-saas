@@ -19,12 +19,12 @@ public interface VisitorRequestRepository extends JpaRepository<VisitorRequest, 
 
 	// A null status matches every status.
 	@Query("SELECT r FROM VisitorRequest r WHERE r.tenantId = :tenantId AND r.visitDate BETWEEN :from AND :to "
-			+ "AND (:status IS NULL OR r.status = :status)")
+			+ "AND (:#{#status == null} = TRUE OR r.status = :status)")
 	Page<VisitorRequest> search(@Param("tenantId") Long tenantId, @Param("from") LocalDate from,
 			@Param("to") LocalDate to, @Param("status") VisitorRequestStatus status, Pageable pageable);
 
 	@Query("SELECT r FROM VisitorRequest r WHERE r.tenantId = :tenantId AND r.hostEmployeeId = :hostEmployeeId "
-			+ "AND r.visitDate BETWEEN :from AND :to AND (:status IS NULL OR r.status = :status)")
+			+ "AND r.visitDate BETWEEN :from AND :to AND (:#{#status == null} = TRUE OR r.status = :status)")
 	Page<VisitorRequest> searchByHost(@Param("tenantId") Long tenantId,
 			@Param("hostEmployeeId") Long hostEmployeeId, @Param("from") LocalDate from,
 			@Param("to") LocalDate to, @Param("status") VisitorRequestStatus status, Pageable pageable);

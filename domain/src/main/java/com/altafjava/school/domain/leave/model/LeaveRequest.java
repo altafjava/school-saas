@@ -8,6 +8,8 @@ import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
+import jakarta.persistence.PrePersist;
+import jakarta.persistence.PreUpdate;
 import jakarta.persistence.Table;
 import org.hibernate.annotations.SQLRestriction;
 import com.altafjava.platform.core.exception.BusinessException;
@@ -73,6 +75,15 @@ public class LeaveRequest extends SoftDeletableEntity {
 
 	// daysRequested is precomputed by the caller (LeaveDayCalculator, given the tenant's holiday
 	// calendar) rather than derived here — this entity has no way to reach holiday data itself.
+	@PrePersist
+	@PreUpdate
+	private void assertConsistent() {
+		if (approvalsRequired < 1 || approvalsRequired > 2 || approvalsGranted < 0
+				|| approvalsGranted > approvalsRequired) {
+			throw new BusinessException("Leave approvals are out of range");
+		}
+	}
+
 	public static LeaveRequest submit(Long employeeId, Long leaveTypeId, Long academicYearId, LocalDate startDate,
 			LocalDate endDate, String reason, BigDecimal daysRequested, int approvalsRequired) {
 		if (endDate.isBefore(startDate)) {

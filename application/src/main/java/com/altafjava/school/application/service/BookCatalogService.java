@@ -1,7 +1,6 @@
 package com.altafjava.school.application.service;
 
 import java.time.LocalDate;
-import java.util.List;
 import java.util.UUID;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -50,9 +49,10 @@ public class BookCatalogService {
 	}
 
 	@Transactional(readOnly = true)
-	public List<BookCopy> listCopies(String bookPublicId) {
+	public Page<BookCopy> listCopies(String bookPublicId, Pageable pageable) {
 		Book book = findByPublicId(bookPublicId);
-		return bookCopyRepository.findAllByBookIdAndTenantId(book.getId(), TenantContext.getCurrentTenantId());
+		return bookCopyRepository.findAllByBookIdAndTenantId(book.getId(), TenantContext.getCurrentTenantId(),
+				pageable);
 	}
 
 	@Transactional

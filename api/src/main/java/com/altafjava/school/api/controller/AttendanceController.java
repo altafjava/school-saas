@@ -19,6 +19,7 @@ import com.altafjava.platform.api.dto.response.ApiResponse;
 import com.altafjava.platform.core.idempotency.RequireIdempotencyKey;
 import com.altafjava.platform.core.security.AuthenticatedUser;
 import com.altafjava.school.api.controller.api.AttendanceApi;
+import com.altafjava.school.api.dto.request.BulkMarkAttendanceRequest;
 import com.altafjava.school.api.dto.request.MarkAttendanceRequest;
 import com.altafjava.school.api.dto.request.UpdateAttendanceStatusRequest;
 import com.altafjava.school.api.dto.response.AttendanceCorrectionResponse;
@@ -28,8 +29,11 @@ import com.altafjava.school.api.mapper.AttendanceMapper;
 import com.altafjava.school.api.support.PlatformPageMapper;
 import com.altafjava.school.api.support.SortableBy;
 import com.altafjava.school.api.support.SpringDataPageableResolver;
+import com.altafjava.school.application.bulk.BulkEntryResult;
 import com.altafjava.school.application.filter.AttendanceFilter;
 import com.altafjava.school.application.filter.DateWindow;
+import com.altafjava.school.application.reference.ReferenceSummaries;
+import com.altafjava.school.application.service.AttendanceBulkService;
 import com.altafjava.school.application.service.AttendanceService;
 import com.altafjava.school.domain.attendance.model.AttendanceStatus;
 
@@ -38,14 +42,21 @@ import com.altafjava.school.domain.attendance.model.AttendanceStatus;
 public class AttendanceController implements AttendanceApi {
 
 	private final AttendanceService attendanceService;
+	private final AttendanceBulkService attendanceBulkService;
 	private final AttendanceMapper attendanceMapper;
 	private final AttendanceCorrectionMapper attendanceCorrectionMapper;
 
 	private final SpringDataPageableResolver pageableResolver;
 
-	public AttendanceController(AttendanceService attendanceService, AttendanceMapper attendanceMapper,
-			AttendanceCorrectionMapper attendanceCorrectionMapper, SpringDataPageableResolver pageableResolver) {
+	private final ReferenceSummaries referenceSummaries;
+
+	public AttendanceController(AttendanceService attendanceService, AttendanceBulkService attendanceBulkService,
+			AttendanceMapper attendanceMapper,
+			AttendanceCorrectionMapper attendanceCorrectionMapper, SpringDataPageableResolver pageableResolver,
+			ReferenceSummaries referenceSummaries) {
+		this.referenceSummaries = referenceSummaries;
 		this.attendanceService = attendanceService;
+		this.attendanceBulkService = attendanceBulkService;
 		this.attendanceMapper = attendanceMapper;
 		this.attendanceCorrectionMapper = attendanceCorrectionMapper;
 		this.pageableResolver = pageableResolver;
@@ -66,8 +77,9 @@ public class AttendanceController implements AttendanceApi {
 		AttendanceFilter filter = new AttendanceFilter(classroomPublicId, studentPublicId, new DateWindow(from, to),
 				status);
 		return ApiResponse.success(PlatformPageMapper
-				.toPlatformPage(attendanceService.listAttendance(filter, pageableResolver.resolve(page, size))
-						.map(attendanceMapper::toResponse)));
+				.toPlatformPage(referenceSummaries.mapPage(
+						attendanceService.listAttendance(filter, pageableResolver.resolve(page, size)),
+						attendanceMapper::toResponse)));
 	}
 
 	@Override
@@ -121,5 +133,17 @@ public class AttendanceController implements AttendanceApi {
 	public ApiResponse<Void> delete(@PathVariable String publicId) {
 		attendanceService.delete(publicId);
 		return ApiResponse.success(null);
+	}
+
+	@Override
+	@PostMapping("/bulk")
+	@PreAuthorize("@permissionAuthorizationService.hasPermission('STUDENT_ATTENDANCE_WRITE')")
+	public ApiResponse<BulkEntryResult> markBulk(@Valid @RequestBody BulkMarkAttendanceRequest request,
+			@AuthenticationPrincipal AuthenticatedUser user) {
+		return ApiResponse.success(attendanceBulkService.mark(request.classroomPublicId(), request.attendanceDate(),
+				request.rows().stream()
+						.map(row -> new AttendanceBulkService.Entry(row.studentPublicId(), row.status()))
+						.toList(),
+				user.getUsername()));
 	}
 }

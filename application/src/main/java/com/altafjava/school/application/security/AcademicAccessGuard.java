@@ -3,6 +3,7 @@ package com.altafjava.school.application.security;
 import java.time.LocalDate;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Component;
@@ -20,7 +21,7 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class AcademicAccessGuard {
 
-	private static final String STUDENT_READ = "STUDENT_READ";
+	private static final String STUDENT_READ_ALL = "STUDENT_READ_ALL";
 
 	private final AcademicScopeResolver academicScopeResolver;
 	private final PermissionAuthorizationService permissionAuthorizationService;
@@ -34,6 +35,26 @@ public class AcademicAccessGuard {
 			return;
 		}
 		throw new AccessDeniedException("Not authorized to view this student's record");
+	}
+
+	/** Whether a staff member reaches the student through a classroom they read. */
+	public boolean teachesStudent(Long tenantId, Long studentId) {
+		AcademicScope scope = academicScopeResolver.current(tenantId);
+		if (scope.readsAllClassrooms()) {
+			return true;
+		}
+		Set<Long> taught = scope.teaching().classroomIds();
+		return !taught.isEmpty() && studentClassroomLinkRepository.findByStudentIdIn(tenantId, List.of(studentId))
+				.stream().anyMatch(link -> taught.contains(link.getClassroomId()));
+	}
+
+	/** The classrooms a student list may draw from; empty when the caller reaches every student. */
+	public Optional<Set<Long>> studentListReach(Long tenantId) {
+		AcademicScope scope = academicScopeResolver.current(tenantId);
+		if (scope.readsAllClassrooms() || mayViewAnyStudent()) {
+			return Optional.empty();
+		}
+		return Optional.of(scope.teaching().classroomIds());
 	}
 
 	/** The roster exposes every classmate's personal details, so being enrolled is not enough. */
@@ -126,6 +147,6 @@ public class AcademicAccessGuard {
 	}
 
 	private boolean mayViewAnyStudent() {
-		return permissionAuthorizationService.hasPermission(STUDENT_READ);
+		return permissionAuthorizationService.hasPermission(STUDENT_READ_ALL);
 	}
 }

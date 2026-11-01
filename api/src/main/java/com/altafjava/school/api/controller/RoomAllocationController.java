@@ -21,6 +21,7 @@ import com.altafjava.school.api.dto.response.RoomAllocationResponse;
 import com.altafjava.school.api.mapper.RoomAllocationMapper;
 import com.altafjava.school.api.support.PlatformPageMapper;
 import com.altafjava.school.api.support.SpringDataPageableResolver;
+import com.altafjava.school.application.reference.ReferenceSummaries;
 import com.altafjava.school.application.service.RoomAllocationService;
 
 @RestController
@@ -32,8 +33,12 @@ public class RoomAllocationController implements RoomAllocationApi {
 
 	private final SpringDataPageableResolver pageableResolver;
 
+	private final ReferenceSummaries referenceSummaries;
+
 	public RoomAllocationController(RoomAllocationService roomAllocationService,
-			RoomAllocationMapper roomAllocationMapper, SpringDataPageableResolver pageableResolver) {
+			RoomAllocationMapper roomAllocationMapper, SpringDataPageableResolver pageableResolver,
+			ReferenceSummaries referenceSummaries) {
+		this.referenceSummaries = referenceSummaries;
 		this.roomAllocationService = roomAllocationService;
 		this.roomAllocationMapper = roomAllocationMapper;
 		this.pageableResolver = pageableResolver;
@@ -47,8 +52,9 @@ public class RoomAllocationController implements RoomAllocationApi {
 			@RequestParam(defaultValue = "0") int page,
 			@RequestParam(defaultValue = "20") int size) {
 		return ApiResponse.success(PlatformPageMapper
-				.toPlatformPage(roomAllocationService.listForRoom(roomPublicId, pageableResolver.resolve(page, size))
-						.map(roomAllocationMapper::toResponse)));
+				.toPlatformPage(referenceSummaries.mapPage(
+						roomAllocationService.listForRoom(roomPublicId, pageableResolver.resolve(page, size)),
+						roomAllocationMapper::toResponse)));
 	}
 
 	@Override

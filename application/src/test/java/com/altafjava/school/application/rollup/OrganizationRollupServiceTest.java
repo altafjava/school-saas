@@ -4,21 +4,18 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.when;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
-import java.util.function.Supplier;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import com.altafjava.platform.application.organization.OrganizationService;
-import com.altafjava.platform.application.tenant.TenantFilterSwitcher;
 import com.altafjava.platform.core.exception.BusinessException;
 import com.altafjava.platform.core.exception.ResourceNotFoundException;
 import com.altafjava.platform.core.tenant.TenantType;
@@ -57,8 +54,6 @@ class OrganizationRollupServiceTest {
 	private FeeAssignmentRepository feeAssignmentRepository;
 	@Mock
 	private StudentClassroomLinkRepository studentClassroomLinkRepository;
-	@Mock
-	private TenantFilterSwitcher tenantFilterSwitcher;
 
 	private OrganizationRollupService rollupService;
 
@@ -68,11 +63,8 @@ class OrganizationRollupServiceTest {
 
 	@BeforeEach
 	void setUp() {
-		lenient().when(tenantFilterSwitcher.runWithTenantFilter(any(), any(Supplier.class)))
-				.thenAnswer(invocation -> ((Supplier<?>) invocation.getArgument(1)).get());
 		rollupService = new OrganizationRollupService(organizationService, studentRepository, attendanceRepository,
-				feeStructureRepository, feePaymentRepository, feeAssignmentRepository, studentClassroomLinkRepository,
-				tenantFilterSwitcher);
+				feeStructureRepository, feePaymentRepository, feeAssignmentRepository, studentClassroomLinkRepository);
 	}
 
 	private Organization organization() {

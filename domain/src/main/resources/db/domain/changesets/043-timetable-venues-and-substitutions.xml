@@ -12,7 +12,7 @@
             <column name="id" type="BIGINT" autoIncrement="true">
                 <constraints primaryKey="true" nullable="false"/>
             </column>
-            <column name="public_id" type="VARCHAR(36)">
+            <column name="public_id" type="UUID">
                 <constraints nullable="false" unique="true"/>
             </column>
             <column name="tenant_id" type="BIGINT">
@@ -44,21 +44,17 @@
             </column>
             <column name="deleted_at" type="TIMESTAMP"/>
             <column name="deleted_by" type="VARCHAR(100)"/>
+            <column name="deleted_token" type="BIGINT" defaultValueNumeric="0">
+                <constraints nullable="false"/>
+            </column>
             <column name="version" type="BIGINT" defaultValueNumeric="0">
                 <constraints nullable="false"/>
             </column>
         </createTable>
-        <sql>
-            ALTER TABLE venues
-                ADD COLUMN active_code VARCHAR(50)
-                GENERATED ALWAYS AS (CASE WHEN deleted = FALSE THEN code ELSE NULL END) STORED;
-        </sql>
-        <sql>
-            ALTER TABLE venues ADD CONSTRAINT chk_venues_capacity CHECK (capacity IS NULL OR capacity &gt; 0);
-        </sql>
         <createIndex indexName="uq_venues_tenant_active_code" tableName="venues" unique="true">
             <column name="tenant_id"/>
-            <column name="active_code"/>
+            <column name="code"/>
+            <column name="deleted_token"/>
         </createIndex>
         <createIndex indexName="idx_venues_tenant_id" tableName="venues">
             <column name="tenant_id"/>
@@ -85,7 +81,7 @@
             <column name="id" type="BIGINT" autoIncrement="true">
                 <constraints primaryKey="true" nullable="false"/>
             </column>
-            <column name="public_id" type="VARCHAR(36)">
+            <column name="public_id" type="UUID">
                 <constraints nullable="false" unique="true"/>
             </column>
             <column name="tenant_id" type="BIGINT">
@@ -120,15 +116,16 @@
             </column>
             <column name="deleted_at" type="TIMESTAMP"/>
             <column name="deleted_by" type="VARCHAR(100)"/>
+            <column name="deleted_token" type="BIGINT" defaultValueNumeric="0">
+                <constraints nullable="false"/>
+            </column>
+            <column name="retired_token" type="BIGINT" defaultValueNumeric="0">
+                <constraints nullable="false"/>
+            </column>
             <column name="version" type="BIGINT" defaultValueNumeric="0">
                 <constraints nullable="false"/>
             </column>
         </createTable>
-        <sql>
-            ALTER TABLE timetable_substitutions
-                ADD COLUMN live_marker TINYINT
-                GENERATED ALWAYS AS (CASE WHEN deleted = FALSE AND cancelled_at IS NULL THEN 1 ELSE NULL END) STORED;
-        </sql>
         <createIndex
                 indexName="uq_timetable_substitutions_live_entry_date"
                 tableName="timetable_substitutions"
@@ -136,7 +133,8 @@
             <column name="tenant_id"/>
             <column name="timetable_entry_id"/>
             <column name="substitution_date"/>
-            <column name="live_marker"/>
+            <column name="retired_token"/>
+            <column name="deleted_token"/>
         </createIndex>
         <createIndex
                 indexName="uq_timetable_substitutions_live_teacher_period_date"
@@ -146,7 +144,8 @@
             <column name="substitute_teacher_id"/>
             <column name="period_id"/>
             <column name="substitution_date"/>
-            <column name="live_marker"/>
+            <column name="retired_token"/>
+            <column name="deleted_token"/>
         </createIndex>
         <createIndex indexName="idx_timetable_substitutions_tenant_date" tableName="timetable_substitutions">
             <column name="tenant_id"/>

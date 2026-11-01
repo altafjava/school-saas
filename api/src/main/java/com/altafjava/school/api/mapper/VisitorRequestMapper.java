@@ -14,6 +14,8 @@ public interface VisitorRequestMapper {
 	@Mapping(target = "status", expression = "java(request.getStatus().name())")
 	@Mapping(target = "photoFilePublicId", expression = "java(request.getPhotoFilePublicId() != null ? request.getPhotoFilePublicId().toString() : null)")
 	@Mapping(target = "hostEmployeePublicId", source = "hostEmployeeId", qualifiedByName = "employee")
+	@Mapping(target = "hostEmployee", source = "hostEmployeeId", qualifiedByName = "employeeSummary")
 	@Mapping(target = "decidedByUserPublicId", source = "decidedByUserId", qualifiedByName = "user")
+	@Mapping(target = "decidedByUser", source = "decidedByUserId", qualifiedByName = "userSummary")
 	VisitorRequestResponse toResponse(VisitorRequest request);
 }

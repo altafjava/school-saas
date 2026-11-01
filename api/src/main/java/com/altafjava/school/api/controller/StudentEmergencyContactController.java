@@ -68,6 +68,7 @@ public class StudentEmergencyContactController implements StudentEmergencyContac
 
 	@Override
 	@DeleteMapping("/{contactPublicId}")
+	@ResponseStatus(HttpStatus.NO_CONTENT)
 	@PreAuthorize("@permissionAuthorizationService.hasPermission('EMERGENCY_CONTACT_MANAGE')")
 	public ApiResponse<Void> remove(@PathVariable String studentPublicId, @PathVariable String contactPublicId,
 			@AuthenticationPrincipal AuthenticatedUser user) {

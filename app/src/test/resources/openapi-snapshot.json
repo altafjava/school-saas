@@ -22,9 +22,6 @@
     "name" : "Route",
     "description" : "APIs for managing Route operations.\n\n**Tenant Scope**: All endpoints are tenant-scoped via X-Tenant-ID header.\n**Auth**: JWT Bearer token required on all endpoints unless marked public."
   }, {
-    "name" : "AdminPerformance Management",
-    "description" : "APIs for managing AdminPerformance operations.\n\n**Tenant Scope**: All endpoints are tenant-scoped via X-Tenant-ID header.\n**Auth**: JWT Bearer token required on all endpoints unless marked public."
-  }, {
     "name" : "Book",
     "description" : "APIs for managing Book operations.\n\n**Tenant Scope**: All endpoints are tenant-scoped via X-Tenant-ID header.\n**Auth**: JWT Bearer token required on all endpoints unless marked public."
   }, {
@@ -310,6 +307,9 @@
     "name" : "Me",
     "description" : "The caller's own session bootstrap."
   }, {
+    "name" : "User Accounts",
+    "description" : "Logins for students and staff"
+  }, {
     "name" : "Payslip",
     "description" : "APIs for managing Payslip operations.\n\n**Tenant Scope**: All endpoints are tenant-scoped via X-Tenant-ID header.\n**Auth**: JWT Bearer token required on all endpoints unless marked public."
   }, {
@@ -418,9 +418,6 @@
     "name" : "Organization Rollup",
     "description" : "Cross-campus aggregate reporting for a multi-campus organization.\n\n**Scope**: SUPER_ADMIN or ORG_ADMIN only — this is org-wide, not a single tenant's data.\n**Auth**: JWT Bearer token required."
   }, {
-    "name" : "Health Management",
-    "description" : "APIs for managing Health operations.\n\n**Tenant Scope**: All endpoints are tenant-scoped via X-Tenant-ID header.\n**Auth**: JWT Bearer token required on all endpoints unless marked public."
-  }, {
     "name" : "Salary Structure",
     "description" : "APIs for managing Salary Structure operations.\n\n**Tenant Scope**: All endpoints are tenant-scoped via X-Tenant-ID header.\n**Auth**: JWT Bearer token required on all endpoints unless marked public."
   }, {
@@ -484,6 +481,9 @@
     "name" : "Medical Incident",
     "description" : "APIs for managing Medical Incident operations.\n\n**Tenant Scope**: All endpoints are tenant-scoped via X-Tenant-ID header.\n**Auth**: JWT Bearer token required on all endpoints unless marked public."
   }, {
+    "name" : "Admin Plans",
+    "description" : "Super Admin plan limits"
+  }, {
     "name" : "User Management",
     "description" : "APIs for managing User operations.\n\n**Tenant Scope**: All endpoints are tenant-scoped via X-Tenant-ID header.\n**Auth**: JWT Bearer token required on all endpoints unless marked public."
   }, {
@@ -501,6 +501,9 @@
   }, {
     "name" : "AdminPrivacy Management",
     "description" : "APIs for managing AdminPrivacy operations.\n\n**Tenant Scope**: All endpoints are tenant-scoped via X-Tenant-ID header.\n**Auth**: JWT Bearer token required on all endpoints unless marked public."
+  }, {
+    "name" : "Public Tenants",
+    "description" : "What a sign-in page needs before anyone has signed in."
   } ],
   "paths" : {
     "/scim/v2/Users/{id}" : {
@@ -2772,8 +2775,8 @@
           }
         } ],
         "responses" : {
-          "200" : {
-            "description" : "OK",
+          "204" : {
+            "description" : "No Content",
             "content" : {
               "application/json" : {
                 "schema" : {
@@ -2948,8 +2951,8 @@
           }
         } ],
         "responses" : {
-          "200" : {
-            "description" : "OK",
+          "204" : {
+            "description" : "No Content",
             "content" : {
               "application/json" : {
                 "schema" : {
@@ -6406,6 +6409,94 @@
         } ]
       }
     },
+    "/api/v1/admin/plans/{id}/hourly-api-limit" : {
+      "put" : {
+        "tags" : [ "Admin Plans" ],
+        "summary" : "Set a plan's hourly API limit",
+        "operationId" : "adminPlanUpdateHourlyApiLimit",
+        "parameters" : [ {
+          "name" : "id",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/UpdatePlanLimitRequest"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiResponsePlanLimitResponse"
+                }
+              }
+            }
+          },
+          "400" : {
+            "description" : "Validation failed or a business rule rejected the request",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "401" : {
+            "description" : "Missing, expired or revoked access token",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "403" : {
+            "description" : "The caller lacks the required permission",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "404" : {
+            "description" : "The resource does not exist in the caller's tenant",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "500" : {
+            "description" : "Unexpected error; quote error.traceId when reporting it",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/admin/payment-gateways/{providerType}" : {
       "put" : {
         "tags" : [ "Payment Gateways (Admin)" ],
@@ -6884,7 +6975,7 @@
         } ]
       }
     },
-    "/api/admin/coupons/{id}/deactivate" : {
+    "/api/v1/admin/coupons/{id}/deactivate" : {
       "put" : {
         "tags" : [ "AdminCoupon Management" ],
         "summary" : "deactivateCoupon",
@@ -6957,7 +7048,7 @@
         } ]
       }
     },
-    "/api/admin/alerts/{id}/toggle" : {
+    "/api/v1/admin/alerts/{id}/toggle" : {
       "put" : {
         "tags" : [ "AdminAlert Management" ],
         "summary" : "toggleAlert",
@@ -7314,70 +7405,6 @@
             }
           }
         }
-      }
-    },
-    "/api/webhooks/stripe" : {
-      "post" : {
-        "tags" : [ "Webhook Management" ],
-        "operationId" : "webhookHandleStripeWebhook",
-        "parameters" : [ {
-          "name" : "Stripe-Signature",
-          "in" : "header",
-          "required" : true,
-          "schema" : {
-            "type" : "string"
-          }
-        } ],
-        "requestBody" : {
-          "content" : {
-            "application/json" : {
-              "schema" : {
-                "type" : "string"
-              }
-            }
-          },
-          "required" : true
-        },
-        "responses" : {
-          "200" : {
-            "description" : "OK"
-          },
-          "400" : {
-            "description" : "Validation failed or a business rule rejected the request",
-            "content" : {
-              "application/json" : {
-                "schema" : {
-                  "$ref" : "#/components/schemas/ApiErrorResponse"
-                }
-              }
-            }
-          },
-          "401" : {
-            "description" : "Missing, expired or revoked access token",
-            "content" : {
-              "application/json" : {
-                "schema" : {
-                  "$ref" : "#/components/schemas/ApiErrorResponse"
-                }
-              }
-            }
-          },
-          "500" : {
-            "description" : "Unexpected error; quote error.traceId when reporting it",
-            "content" : {
-              "application/json" : {
-                "schema" : {
-                  "$ref" : "#/components/schemas/ApiErrorResponse"
-                }
-              }
-            }
-          }
-        },
-        "security" : [ {
-          "bearerAuth" : [ ]
-        }, {
-          "tenantHeader" : [ ]
-        } ]
       }
     },
     "/api/v1/webhooks" : {
@@ -8515,7 +8542,7 @@
             "content" : {
               "application/json" : {
                 "schema" : {
-                  "$ref" : "#/components/schemas/ApiResponseMapStringString"
+                  "$ref" : "#/components/schemas/ApiResponseInvitationResponse"
                 }
               }
             }
@@ -8664,7 +8691,7 @@
             "content" : {
               "application/json" : {
                 "schema" : {
-                  "$ref" : "#/components/schemas/ApiResponseListMapStringString"
+                  "$ref" : "#/components/schemas/ApiResponseListInvitationResponse"
                 }
               }
             }
@@ -9131,6 +9158,35 @@
             "type" : "string",
             "format" : "date"
           }
+        }, {
+          "name" : "page",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int32",
+            "default" : 0
+          }
+        }, {
+          "name" : "size",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int32",
+            "default" : 20
+          }
+        }, {
+          "name" : "sort",
+          "in" : "query",
+          "description" : "Repeatable, `field` or `field,asc|desc`, at most 3 fields. Sortable: createdAt, updatedAt.",
+          "required" : false,
+          "schema" : {
+            "type" : "array",
+            "items" : {
+              "type" : "string"
+            }
+          }
         } ],
         "responses" : {
           "200" : {
@@ -9138,7 +9194,7 @@
             "content" : {
               "application/json" : {
                 "schema" : {
-                  "$ref" : "#/components/schemas/ApiResponseListSubstitutionResponse"
+                  "$ref" : "#/components/schemas/ApiResponsePageSubstitutionResponse"
                 }
               }
             }
@@ -10510,6 +10566,93 @@
         }, {
           "tenantHeader" : [ ]
         } ]
+      }
+    },
+    "/api/v1/teachers/{publicId}/account" : {
+      "post" : {
+        "tags" : [ "User Accounts" ],
+        "summary" : "Create or link a teacher's login",
+        "operationId" : "userAccountLinkTeacher",
+        "parameters" : [ {
+          "name" : "publicId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/CreateAccountRequest"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "201" : {
+            "description" : "Created",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiResponseAccountResponse"
+                }
+              }
+            }
+          },
+          "400" : {
+            "description" : "Validation failed or a business rule rejected the request",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "401" : {
+            "description" : "Missing, expired or revoked access token",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "403" : {
+            "description" : "The caller lacks the required permission",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "404" : {
+            "description" : "The resource does not exist in the caller's tenant",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "500" : {
+            "description" : "Unexpected error; quote error.traceId when reporting it",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          }
+        }
       }
     },
     "/api/v1/system/auth/login" : {
@@ -12809,6 +12952,93 @@
         } ]
       }
     },
+    "/api/v1/students/{publicId}/account" : {
+      "post" : {
+        "tags" : [ "User Accounts" ],
+        "summary" : "Create or link a student's login",
+        "operationId" : "userAccountLinkStudent",
+        "parameters" : [ {
+          "name" : "publicId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/CreateAccountRequest"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "201" : {
+            "description" : "Created",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiResponseAccountResponse"
+                }
+              }
+            }
+          },
+          "400" : {
+            "description" : "Validation failed or a business rule rejected the request",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "401" : {
+            "description" : "Missing, expired or revoked access token",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "403" : {
+            "description" : "The caller lacks the required permission",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "404" : {
+            "description" : "The resource does not exist in the caller's tenant",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "500" : {
+            "description" : "Unexpected error; quote error.traceId when reporting it",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/students/bulk-import" : {
       "post" : {
         "tags" : [ "Student" ],
@@ -14289,13 +14519,53 @@
         "tags" : [ "Privacy Management" ],
         "summary" : "getMyRequests",
         "operationId" : "privacyGetMyRequests",
+        "parameters" : [ {
+          "name" : "page",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int32",
+            "default" : 0
+          }
+        }, {
+          "name" : "size",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int32",
+            "default" : 20
+          }
+        }, {
+          "name" : "sort",
+          "in" : "query",
+          "description" : "Repeatable, `field` or `field,asc|desc`, at most 3 fields. Sortable: createdAt, updatedAt.",
+          "required" : false,
+          "schema" : {
+            "type" : "array",
+            "items" : {
+              "type" : "string"
+            }
+          }
+        } ],
         "responses" : {
           "200" : {
             "description" : "OK",
             "content" : {
               "application/json" : {
                 "schema" : {
-                  "$ref" : "#/components/schemas/ApiResponseListDataSubjectRequestResponse"
+                  "$ref" : "#/components/schemas/ApiResponsePageDataSubjectRequestResponse"
+                }
+              }
+            }
+          },
+          "400" : {
+            "description" : "Validation failed or a business rule rejected the request",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiErrorResponse"
                 }
               }
             }
@@ -15418,14 +15688,7 @@
         } ],
         "responses" : {
           "200" : {
-            "description" : "OK",
-            "content" : {
-              "application/json" : {
-                "schema" : {
-                  "$ref" : "#/components/schemas/ApiResponseTenantResponse"
-                }
-              }
-            }
+            "description" : "OK"
           },
           "401" : {
             "description" : "Missing, expired or revoked access token",
@@ -15486,6 +15749,35 @@
           "schema" : {
             "type" : "string"
           }
+        }, {
+          "name" : "page",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int32",
+            "default" : 0
+          }
+        }, {
+          "name" : "size",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int32",
+            "default" : 20
+          }
+        }, {
+          "name" : "sort",
+          "in" : "query",
+          "description" : "Repeatable, `field` or `field,asc|desc`, at most 3 fields. Sortable: createdAt, updatedAt.",
+          "required" : false,
+          "schema" : {
+            "type" : "array",
+            "items" : {
+              "type" : "string"
+            }
+          }
         } ],
         "responses" : {
           "200" : {
@@ -15493,7 +15785,17 @@
             "content" : {
               "application/json" : {
                 "schema" : {
-                  "$ref" : "#/components/schemas/ApiResponseListOrganizationMembershipResponse"
+                  "$ref" : "#/components/schemas/ApiResponsePageOrganizationMembershipResponse"
+                }
+              }
+            }
+          },
+          "400" : {
+            "description" : "Validation failed or a business rule rejected the request",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiErrorResponse"
                 }
               }
             }
@@ -17485,8 +17787,8 @@
           "required" : true
         },
         "responses" : {
-          "200" : {
-            "description" : "OK",
+          "201" : {
+            "description" : "Created",
             "content" : {
               "application/json" : {
                 "schema" : {
@@ -17862,6 +18164,81 @@
               "application/json" : {
                 "schema" : {
                   "$ref" : "#/components/schemas/ApiResponseGradeResponse"
+                }
+              }
+            }
+          },
+          "400" : {
+            "description" : "Validation failed or a business rule rejected the request",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "401" : {
+            "description" : "Missing, expired or revoked access token",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "403" : {
+            "description" : "The caller lacks the required permission",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "500" : {
+            "description" : "Unexpected error; quote error.traceId when reporting it",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "security" : [ {
+          "bearerAuth" : [ ]
+        }, {
+          "tenantHeader" : [ ]
+        } ]
+      }
+    },
+    "/api/v1/grades/bulk" : {
+      "post" : {
+        "tags" : [ "Grade" ],
+        "summary" : "Record an exam's marks",
+        "description" : "Records a roster in one request and reports each row. Safe to resend.",
+        "operationId" : "gradeRecordBulk",
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/BulkRecordGradesRequest"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiResponseBulkEntryResult"
                 }
               }
             }
@@ -20126,6 +20503,93 @@
         } ]
       }
     },
+    "/api/v1/employees/{publicId}/account" : {
+      "post" : {
+        "tags" : [ "User Accounts" ],
+        "summary" : "Create or link an employee's login",
+        "operationId" : "userAccountLinkEmployee",
+        "parameters" : [ {
+          "name" : "publicId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/CreateAccountRequest"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "201" : {
+            "description" : "Created",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiResponseAccountResponse"
+                }
+              }
+            }
+          },
+          "400" : {
+            "description" : "Validation failed or a business rule rejected the request",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "401" : {
+            "description" : "Missing, expired or revoked access token",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "403" : {
+            "description" : "The caller lacks the required permission",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "404" : {
+            "description" : "The resource does not exist in the caller's tenant",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "500" : {
+            "description" : "Unexpected error; quote error.traceId when reporting it",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/employees/{employeePublicId}/id-card" : {
       "post" : {
         "tags" : [ "Staff ID Card" ],
@@ -20203,13 +20667,53 @@
         "tags" : [ "Document Templates" ],
         "summary" : "List the caller's tenant's document templates",
         "operationId" : "documentTemplateList",
+        "parameters" : [ {
+          "name" : "page",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int32",
+            "default" : 0
+          }
+        }, {
+          "name" : "size",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int32",
+            "default" : 20
+          }
+        }, {
+          "name" : "sort",
+          "in" : "query",
+          "description" : "Repeatable, `field` or `field,asc|desc`, at most 3 fields. Sortable: createdAt, updatedAt.",
+          "required" : false,
+          "schema" : {
+            "type" : "array",
+            "items" : {
+              "type" : "string"
+            }
+          }
+        } ],
         "responses" : {
           "200" : {
             "description" : "OK",
             "content" : {
               "application/json" : {
                 "schema" : {
-                  "$ref" : "#/components/schemas/ApiResponseListDocumentTemplateResponse"
+                  "$ref" : "#/components/schemas/ApiResponsePageDocumentTemplateResponse"
+                }
+              }
+            }
+          },
+          "400" : {
+            "description" : "Validation failed or a business rule rejected the request",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiErrorResponse"
                 }
               }
             }
@@ -22605,6 +23109,35 @@
           "schema" : {
             "type" : "string"
           }
+        }, {
+          "name" : "page",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int32",
+            "default" : 0
+          }
+        }, {
+          "name" : "size",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int32",
+            "default" : 20
+          }
+        }, {
+          "name" : "sort",
+          "in" : "query",
+          "description" : "Repeatable, `field` or `field,asc|desc`, at most 3 fields. Sortable: createdAt, updatedAt.",
+          "required" : false,
+          "schema" : {
+            "type" : "array",
+            "items" : {
+              "type" : "string"
+            }
+          }
         } ],
         "responses" : {
           "200" : {
@@ -22612,7 +23145,17 @@
             "content" : {
               "application/json" : {
                 "schema" : {
-                  "$ref" : "#/components/schemas/ApiResponseListBookCopyResponse"
+                  "$ref" : "#/components/schemas/ApiResponsePageBookCopyResponse"
+                }
+              }
+            }
+          },
+          "400" : {
+            "description" : "Validation failed or a business rule rejected the request",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiErrorResponse"
                 }
               }
             }
@@ -23092,6 +23635,70 @@
           },
           "403" : {
             "description" : "The caller lacks the required permission",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "500" : {
+            "description" : "Unexpected error; quote error.traceId when reporting it",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "security" : [ {
+          "bearerAuth" : [ ]
+        }, {
+          "tenantHeader" : [ ]
+        } ]
+      }
+    },
+    "/api/v1/billing/webhooks/stripe" : {
+      "post" : {
+        "tags" : [ "Webhook Management" ],
+        "operationId" : "webhookHandleStripeWebhook",
+        "parameters" : [ {
+          "name" : "Stripe-Signature",
+          "in" : "header",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "type" : "string"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "description" : "OK"
+          },
+          "400" : {
+            "description" : "Validation failed or a business rule rejected the request",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "401" : {
+            "description" : "Missing, expired or revoked access token",
             "content" : {
               "application/json" : {
                 "schema" : {
@@ -23865,6 +24472,163 @@
               "application/json" : {
                 "schema" : {
                   "$ref" : "#/components/schemas/ApiResponseCreditResponse"
+                }
+              }
+            }
+          },
+          "400" : {
+            "description" : "Validation failed or a business rule rejected the request",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "401" : {
+            "description" : "Missing, expired or revoked access token",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "403" : {
+            "description" : "The caller lacks the required permission",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "500" : {
+            "description" : "Unexpected error; quote error.traceId when reporting it",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "security" : [ {
+          "bearerAuth" : [ ]
+        }, {
+          "tenantHeader" : [ ]
+        } ]
+      }
+    },
+    "/api/v1/billing/coupons/validate" : {
+      "post" : {
+        "tags" : [ "BillingCoupon Management" ],
+        "summary" : "validateCoupon",
+        "operationId" : "billingCouponValidateCoupon",
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/ValidateCouponRequest"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiResponseCouponResponse"
+                }
+              }
+            }
+          },
+          "400" : {
+            "description" : "Validation failed or a business rule rejected the request",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "401" : {
+            "description" : "Missing, expired or revoked access token",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "403" : {
+            "description" : "The caller lacks the required permission",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "500" : {
+            "description" : "Unexpected error; quote error.traceId when reporting it",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "security" : [ {
+          "bearerAuth" : [ ]
+        }, {
+          "tenantHeader" : [ ]
+        } ]
+      }
+    },
+    "/api/v1/billing/coupons/apply" : {
+      "post" : {
+        "tags" : [ "BillingCoupon Management" ],
+        "summary" : "applyCoupon",
+        "operationId" : "billingCouponApplyCoupon",
+        "parameters" : [ {
+          "name" : "Idempotency-Key",
+          "in" : "header",
+          "description" : "Unique per logical request; a retry carrying the same key is applied once",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/ApplyCouponRequest"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiResponseVoid"
                 }
               }
             }
@@ -25561,6 +26325,81 @@
               "application/json" : {
                 "schema" : {
                   "$ref" : "#/components/schemas/ApiResponseAttendanceScanResponse"
+                }
+              }
+            }
+          },
+          "400" : {
+            "description" : "Validation failed or a business rule rejected the request",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "401" : {
+            "description" : "Missing, expired or revoked access token",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "403" : {
+            "description" : "The caller lacks the required permission",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "500" : {
+            "description" : "Unexpected error; quote error.traceId when reporting it",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "security" : [ {
+          "bearerAuth" : [ ]
+        }, {
+          "tenantHeader" : [ ]
+        } ]
+      }
+    },
+    "/api/v1/attendance/bulk" : {
+      "post" : {
+        "tags" : [ "Attendance" ],
+        "summary" : "Mark a class",
+        "description" : "Marks a roster in one request and reports each row. Safe to resend.",
+        "operationId" : "attendanceMarkBulk",
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/BulkMarkAttendanceRequest"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiResponseBulkEntryResult"
                 }
               }
             }
@@ -28172,7 +29011,7 @@
             "content" : {
               "application/json" : {
                 "schema" : {
-                  "$ref" : "#/components/schemas/ApiResponseMapStringString"
+                  "$ref" : "#/components/schemas/ApiResponseExportJobResponse"
                 }
               }
             }
@@ -29163,14 +30002,7 @@
         "operationId" : "adminPrivacyRunCleanup",
         "responses" : {
           "200" : {
-            "description" : "OK",
-            "content" : {
-              "application/json" : {
-                "schema" : {
-                  "$ref" : "#/components/schemas/ApiResponseMapStringString"
-                }
-              }
-            }
+            "description" : "OK"
           },
           "401" : {
             "description" : "Missing, expired or revoked access token",
@@ -29541,45 +30373,18 @@
         } ]
       }
     },
-    "/api/v1/admin/elasticsearch/reindex/{tenantId}" : {
+    "/api/v1/admin/exchange-rates/refresh" : {
       "post" : {
-        "tags" : [ "Admin Elasticsearch" ],
-        "summary" : "Manual Reindex Trigger",
-        "description" : "Triggers a full reindex for a tenant and entity type",
-        "operationId" : "adminElasticsearchTriggerReindex",
-        "parameters" : [ {
-          "name" : "tenantId",
-          "in" : "path",
-          "required" : true,
-          "schema" : {
-            "type" : "string",
-            "format" : "uuid"
-          }
-        }, {
-          "name" : "entityType",
-          "in" : "query",
-          "required" : true,
-          "schema" : {
-            "type" : "string"
-          }
-        } ],
+        "tags" : [ "AdminExchangeRate Management" ],
+        "summary" : "refreshRates",
+        "operationId" : "adminExchangeRateRefreshRates",
         "responses" : {
           "200" : {
             "description" : "OK",
             "content" : {
               "application/json" : {
                 "schema" : {
-                  "$ref" : "#/components/schemas/ApiResponseMapStringString"
-                }
-              }
-            }
-          },
-          "400" : {
-            "description" : "Validation failed or a business rule rejected the request",
-            "content" : {
-              "application/json" : {
-                "schema" : {
-                  "$ref" : "#/components/schemas/ApiErrorResponse"
+                  "$ref" : "#/components/schemas/ApiResponseVoid"
                 }
               }
             }
@@ -29596,16 +30401,6 @@
           },
           "403" : {
             "description" : "The caller lacks the required permission",
-            "content" : {
-              "application/json" : {
-                "schema" : {
-                  "$ref" : "#/components/schemas/ApiErrorResponse"
-                }
-              }
-            }
-          },
-          "404" : {
-            "description" : "The resource does not exist in the caller's tenant",
             "content" : {
               "application/json" : {
                 "schema" : {
@@ -29722,537 +30517,7 @@
         } ]
       }
     },
-    "/api/v1/admin/cache/warm" : {
-      "post" : {
-        "tags" : [ "Admin Cache Management" ],
-        "operationId" : "adminCacheWarmUpCache",
-        "requestBody" : {
-          "content" : {
-            "application/json" : {
-              "schema" : {
-                "$ref" : "#/components/schemas/WarmUpCacheRequest"
-              }
-            }
-          },
-          "required" : true
-        },
-        "responses" : {
-          "200" : {
-            "description" : "OK",
-            "content" : {
-              "application/json" : {
-                "schema" : {
-                  "$ref" : "#/components/schemas/ApiResponseVoid"
-                }
-              }
-            }
-          },
-          "400" : {
-            "description" : "Validation failed or a business rule rejected the request",
-            "content" : {
-              "application/json" : {
-                "schema" : {
-                  "$ref" : "#/components/schemas/ApiErrorResponse"
-                }
-              }
-            }
-          },
-          "401" : {
-            "description" : "Missing, expired or revoked access token",
-            "content" : {
-              "application/json" : {
-                "schema" : {
-                  "$ref" : "#/components/schemas/ApiErrorResponse"
-                }
-              }
-            }
-          },
-          "403" : {
-            "description" : "The caller lacks the required permission",
-            "content" : {
-              "application/json" : {
-                "schema" : {
-                  "$ref" : "#/components/schemas/ApiErrorResponse"
-                }
-              }
-            }
-          },
-          "500" : {
-            "description" : "Unexpected error; quote error.traceId when reporting it",
-            "content" : {
-              "application/json" : {
-                "schema" : {
-                  "$ref" : "#/components/schemas/ApiErrorResponse"
-                }
-              }
-            }
-          }
-        },
-        "security" : [ {
-          "bearerAuth" : [ ]
-        }, {
-          "tenantHeader" : [ ]
-        } ]
-      }
-    },
-    "/api/v1/admin/api-keys/{id}/rotate" : {
-      "post" : {
-        "tags" : [ "ApiKey Management" ],
-        "summary" : "rotateApiKey",
-        "operationId" : "apiKeyRotateApiKey",
-        "parameters" : [ {
-          "name" : "id",
-          "in" : "path",
-          "required" : true,
-          "schema" : {
-            "type" : "string",
-            "format" : "uuid"
-          }
-        } ],
-        "responses" : {
-          "200" : {
-            "description" : "OK",
-            "content" : {
-              "application/json" : {
-                "schema" : {
-                  "$ref" : "#/components/schemas/ApiResponseString"
-                }
-              }
-            }
-          },
-          "401" : {
-            "description" : "Missing, expired or revoked access token",
-            "content" : {
-              "application/json" : {
-                "schema" : {
-                  "$ref" : "#/components/schemas/ApiErrorResponse"
-                }
-              }
-            }
-          },
-          "403" : {
-            "description" : "The caller lacks the required permission",
-            "content" : {
-              "application/json" : {
-                "schema" : {
-                  "$ref" : "#/components/schemas/ApiErrorResponse"
-                }
-              }
-            }
-          },
-          "404" : {
-            "description" : "The resource does not exist in the caller's tenant",
-            "content" : {
-              "application/json" : {
-                "schema" : {
-                  "$ref" : "#/components/schemas/ApiErrorResponse"
-                }
-              }
-            }
-          },
-          "500" : {
-            "description" : "Unexpected error; quote error.traceId when reporting it",
-            "content" : {
-              "application/json" : {
-                "schema" : {
-                  "$ref" : "#/components/schemas/ApiErrorResponse"
-                }
-              }
-            }
-          }
-        },
-        "security" : [ {
-          "bearerAuth" : [ ]
-        }, {
-          "tenantHeader" : [ ]
-        } ]
-      }
-    },
-    "/api/v1/academic-years" : {
-      "get" : {
-        "tags" : [ "Academic Year" ],
-        "summary" : "List",
-        "operationId" : "academicYearList",
-        "parameters" : [ {
-          "name" : "page",
-          "in" : "query",
-          "required" : false,
-          "schema" : {
-            "type" : "integer",
-            "format" : "int32",
-            "default" : 0
-          }
-        }, {
-          "name" : "size",
-          "in" : "query",
-          "required" : false,
-          "schema" : {
-            "type" : "integer",
-            "format" : "int32",
-            "default" : 20
-          }
-        }, {
-          "name" : "q",
-          "in" : "query",
-          "required" : false,
-          "schema" : {
-            "type" : "string"
-          }
-        }, {
-          "name" : "sort",
-          "in" : "query",
-          "description" : "Repeatable, `field` or `field,asc|desc`, at most 3 fields. Sortable: createdAt, updatedAt.",
-          "required" : false,
-          "schema" : {
-            "type" : "array",
-            "items" : {
-              "type" : "string"
-            }
-          }
-        } ],
-        "responses" : {
-          "200" : {
-            "description" : "OK",
-            "content" : {
-              "application/json" : {
-                "schema" : {
-                  "$ref" : "#/components/schemas/ApiResponsePageAcademicYearResponse"
-                }
-              }
-            }
-          },
-          "400" : {
-            "description" : "Validation failed or a business rule rejected the request",
-            "content" : {
-              "application/json" : {
-                "schema" : {
-                  "$ref" : "#/components/schemas/ApiErrorResponse"
-                }
-              }
-            }
-          },
-          "401" : {
-            "description" : "Missing, expired or revoked access token",
-            "content" : {
-              "application/json" : {
-                "schema" : {
-                  "$ref" : "#/components/schemas/ApiErrorResponse"
-                }
-              }
-            }
-          },
-          "403" : {
-            "description" : "The caller lacks the required permission",
-            "content" : {
-              "application/json" : {
-                "schema" : {
-                  "$ref" : "#/components/schemas/ApiErrorResponse"
-                }
-              }
-            }
-          },
-          "500" : {
-            "description" : "Unexpected error; quote error.traceId when reporting it",
-            "content" : {
-              "application/json" : {
-                "schema" : {
-                  "$ref" : "#/components/schemas/ApiErrorResponse"
-                }
-              }
-            }
-          }
-        },
-        "security" : [ {
-          "bearerAuth" : [ ]
-        }, {
-          "tenantHeader" : [ ]
-        } ]
-      },
-      "post" : {
-        "tags" : [ "Academic Year" ],
-        "summary" : "Create",
-        "operationId" : "academicYearCreate",
-        "requestBody" : {
-          "content" : {
-            "application/json" : {
-              "schema" : {
-                "$ref" : "#/components/schemas/CreateAcademicYearRequest"
-              }
-            }
-          },
-          "required" : true
-        },
-        "responses" : {
-          "201" : {
-            "description" : "Created",
-            "content" : {
-              "application/json" : {
-                "schema" : {
-                  "$ref" : "#/components/schemas/ApiResponseAcademicYearResponse"
-                }
-              }
-            }
-          },
-          "400" : {
-            "description" : "Validation failed or a business rule rejected the request",
-            "content" : {
-              "application/json" : {
-                "schema" : {
-                  "$ref" : "#/components/schemas/ApiErrorResponse"
-                }
-              }
-            }
-          },
-          "401" : {
-            "description" : "Missing, expired or revoked access token",
-            "content" : {
-              "application/json" : {
-                "schema" : {
-                  "$ref" : "#/components/schemas/ApiErrorResponse"
-                }
-              }
-            }
-          },
-          "403" : {
-            "description" : "The caller lacks the required permission",
-            "content" : {
-              "application/json" : {
-                "schema" : {
-                  "$ref" : "#/components/schemas/ApiErrorResponse"
-                }
-              }
-            }
-          },
-          "500" : {
-            "description" : "Unexpected error; quote error.traceId when reporting it",
-            "content" : {
-              "application/json" : {
-                "schema" : {
-                  "$ref" : "#/components/schemas/ApiErrorResponse"
-                }
-              }
-            }
-          }
-        },
-        "security" : [ {
-          "bearerAuth" : [ ]
-        }, {
-          "tenantHeader" : [ ]
-        } ]
-      }
-    },
-    "/api/billing/coupons/validate" : {
-      "post" : {
-        "tags" : [ "BillingCoupon Management" ],
-        "summary" : "validateCoupon",
-        "operationId" : "billingCouponValidateCoupon",
-        "requestBody" : {
-          "content" : {
-            "application/json" : {
-              "schema" : {
-                "$ref" : "#/components/schemas/ValidateCouponRequest"
-              }
-            }
-          },
-          "required" : true
-        },
-        "responses" : {
-          "200" : {
-            "description" : "OK",
-            "content" : {
-              "application/json" : {
-                "schema" : {
-                  "$ref" : "#/components/schemas/ApiResponseCouponResponse"
-                }
-              }
-            }
-          },
-          "400" : {
-            "description" : "Validation failed or a business rule rejected the request",
-            "content" : {
-              "application/json" : {
-                "schema" : {
-                  "$ref" : "#/components/schemas/ApiErrorResponse"
-                }
-              }
-            }
-          },
-          "401" : {
-            "description" : "Missing, expired or revoked access token",
-            "content" : {
-              "application/json" : {
-                "schema" : {
-                  "$ref" : "#/components/schemas/ApiErrorResponse"
-                }
-              }
-            }
-          },
-          "403" : {
-            "description" : "The caller lacks the required permission",
-            "content" : {
-              "application/json" : {
-                "schema" : {
-                  "$ref" : "#/components/schemas/ApiErrorResponse"
-                }
-              }
-            }
-          },
-          "500" : {
-            "description" : "Unexpected error; quote error.traceId when reporting it",
-            "content" : {
-              "application/json" : {
-                "schema" : {
-                  "$ref" : "#/components/schemas/ApiErrorResponse"
-                }
-              }
-            }
-          }
-        },
-        "security" : [ {
-          "bearerAuth" : [ ]
-        }, {
-          "tenantHeader" : [ ]
-        } ]
-      }
-    },
-    "/api/billing/coupons/apply" : {
-      "post" : {
-        "tags" : [ "BillingCoupon Management" ],
-        "summary" : "applyCoupon",
-        "operationId" : "billingCouponApplyCoupon",
-        "parameters" : [ {
-          "name" : "Idempotency-Key",
-          "in" : "header",
-          "description" : "Unique per logical request; a retry carrying the same key is applied once",
-          "required" : true,
-          "schema" : {
-            "type" : "string"
-          }
-        } ],
-        "requestBody" : {
-          "content" : {
-            "application/json" : {
-              "schema" : {
-                "$ref" : "#/components/schemas/ApplyCouponRequest"
-              }
-            }
-          },
-          "required" : true
-        },
-        "responses" : {
-          "200" : {
-            "description" : "OK",
-            "content" : {
-              "application/json" : {
-                "schema" : {
-                  "$ref" : "#/components/schemas/ApiResponseVoid"
-                }
-              }
-            }
-          },
-          "400" : {
-            "description" : "Validation failed or a business rule rejected the request",
-            "content" : {
-              "application/json" : {
-                "schema" : {
-                  "$ref" : "#/components/schemas/ApiErrorResponse"
-                }
-              }
-            }
-          },
-          "401" : {
-            "description" : "Missing, expired or revoked access token",
-            "content" : {
-              "application/json" : {
-                "schema" : {
-                  "$ref" : "#/components/schemas/ApiErrorResponse"
-                }
-              }
-            }
-          },
-          "403" : {
-            "description" : "The caller lacks the required permission",
-            "content" : {
-              "application/json" : {
-                "schema" : {
-                  "$ref" : "#/components/schemas/ApiErrorResponse"
-                }
-              }
-            }
-          },
-          "500" : {
-            "description" : "Unexpected error; quote error.traceId when reporting it",
-            "content" : {
-              "application/json" : {
-                "schema" : {
-                  "$ref" : "#/components/schemas/ApiErrorResponse"
-                }
-              }
-            }
-          }
-        },
-        "security" : [ {
-          "bearerAuth" : [ ]
-        }, {
-          "tenantHeader" : [ ]
-        } ]
-      }
-    },
-    "/api/admin/exchange-rates/refresh" : {
-      "post" : {
-        "tags" : [ "AdminExchangeRate Management" ],
-        "summary" : "refreshRates",
-        "operationId" : "adminExchangeRateRefreshRates",
-        "responses" : {
-          "200" : {
-            "description" : "OK",
-            "content" : {
-              "application/json" : {
-                "schema" : {
-                  "$ref" : "#/components/schemas/ApiResponseVoid"
-                }
-              }
-            }
-          },
-          "401" : {
-            "description" : "Missing, expired or revoked access token",
-            "content" : {
-              "application/json" : {
-                "schema" : {
-                  "$ref" : "#/components/schemas/ApiErrorResponse"
-                }
-              }
-            }
-          },
-          "403" : {
-            "description" : "The caller lacks the required permission",
-            "content" : {
-              "application/json" : {
-                "schema" : {
-                  "$ref" : "#/components/schemas/ApiErrorResponse"
-                }
-              }
-            }
-          },
-          "500" : {
-            "description" : "Unexpected error; quote error.traceId when reporting it",
-            "content" : {
-              "application/json" : {
-                "schema" : {
-                  "$ref" : "#/components/schemas/ApiErrorResponse"
-                }
-              }
-            }
-          }
-        },
-        "security" : [ {
-          "bearerAuth" : [ ]
-        }, {
-          "tenantHeader" : [ ]
-        } ]
-      }
-    },
-    "/api/admin/coupons" : {
+    "/api/v1/admin/coupons" : {
       "get" : {
         "tags" : [ "AdminCoupon Management" ],
         "summary" : "getCoupons",
@@ -30378,7 +30643,7 @@
         } ]
       }
     },
-    "/api/admin/campaigns" : {
+    "/api/v1/admin/campaigns" : {
       "get" : {
         "tags" : [ "AdminCampaign Management" ],
         "summary" : "getCampaigns",
@@ -30544,7 +30809,80 @@
         } ]
       }
     },
-    "/api/admin/billing/refund" : {
+    "/api/v1/admin/cache/warm" : {
+      "post" : {
+        "tags" : [ "Admin Cache Management" ],
+        "operationId" : "adminCacheWarmUpCache",
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/WarmUpCacheRequest"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiResponseVoid"
+                }
+              }
+            }
+          },
+          "400" : {
+            "description" : "Validation failed or a business rule rejected the request",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "401" : {
+            "description" : "Missing, expired or revoked access token",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "403" : {
+            "description" : "The caller lacks the required permission",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "500" : {
+            "description" : "Unexpected error; quote error.traceId when reporting it",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "security" : [ {
+          "bearerAuth" : [ ]
+        }, {
+          "tenantHeader" : [ ]
+        } ]
+      }
+    },
+    "/api/v1/admin/billing/refund" : {
       "post" : {
         "tags" : [ "AdminBilling Management" ],
         "summary" : "processRefund",
@@ -30618,7 +30956,80 @@
         } ]
       }
     },
-    "/api/admin/alerts/configure" : {
+    "/api/v1/admin/api-keys/{id}/rotate" : {
+      "post" : {
+        "tags" : [ "ApiKey Management" ],
+        "summary" : "rotateApiKey",
+        "operationId" : "apiKeyRotateApiKey",
+        "parameters" : [ {
+          "name" : "id",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiResponseString"
+                }
+              }
+            }
+          },
+          "401" : {
+            "description" : "Missing, expired or revoked access token",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "403" : {
+            "description" : "The caller lacks the required permission",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "404" : {
+            "description" : "The resource does not exist in the caller's tenant",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "500" : {
+            "description" : "Unexpected error; quote error.traceId when reporting it",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "security" : [ {
+          "bearerAuth" : [ ]
+        }, {
+          "tenantHeader" : [ ]
+        } ]
+      }
+    },
+    "/api/v1/admin/alerts/configure" : {
       "post" : {
         "tags" : [ "AdminAlert Management" ],
         "summary" : "configureAlert",
@@ -30640,6 +31051,179 @@
               "application/json" : {
                 "schema" : {
                   "$ref" : "#/components/schemas/ApiResponseAlertResponse"
+                }
+              }
+            }
+          },
+          "400" : {
+            "description" : "Validation failed or a business rule rejected the request",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "401" : {
+            "description" : "Missing, expired or revoked access token",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "403" : {
+            "description" : "The caller lacks the required permission",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "500" : {
+            "description" : "Unexpected error; quote error.traceId when reporting it",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "security" : [ {
+          "bearerAuth" : [ ]
+        }, {
+          "tenantHeader" : [ ]
+        } ]
+      }
+    },
+    "/api/v1/academic-years" : {
+      "get" : {
+        "tags" : [ "Academic Year" ],
+        "summary" : "List",
+        "operationId" : "academicYearList",
+        "parameters" : [ {
+          "name" : "page",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int32",
+            "default" : 0
+          }
+        }, {
+          "name" : "size",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int32",
+            "default" : 20
+          }
+        }, {
+          "name" : "q",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "name" : "sort",
+          "in" : "query",
+          "description" : "Repeatable, `field` or `field,asc|desc`, at most 3 fields. Sortable: createdAt, updatedAt.",
+          "required" : false,
+          "schema" : {
+            "type" : "array",
+            "items" : {
+              "type" : "string"
+            }
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiResponsePageAcademicYearResponse"
+                }
+              }
+            }
+          },
+          "400" : {
+            "description" : "Validation failed or a business rule rejected the request",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "401" : {
+            "description" : "Missing, expired or revoked access token",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "403" : {
+            "description" : "The caller lacks the required permission",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "500" : {
+            "description" : "Unexpected error; quote error.traceId when reporting it",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "security" : [ {
+          "bearerAuth" : [ ]
+        }, {
+          "tenantHeader" : [ ]
+        } ]
+      },
+      "post" : {
+        "tags" : [ "Academic Year" ],
+        "summary" : "Create",
+        "operationId" : "academicYearCreate",
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/CreateAcademicYearRequest"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "201" : {
+            "description" : "Created",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiResponseAcademicYearResponse"
                 }
               }
             }
@@ -49704,6 +50288,65 @@
         } ]
       }
     },
+    "/api/v1/public/tenants/{subdomain}" : {
+      "get" : {
+        "tags" : [ "Public Tenants" ],
+        "summary" : "Get Public Tenant Profile",
+        "description" : "Name and branding for a subdomain, or 404 when no tenant uses it.",
+        "operationId" : "publicTenantBySubdomain",
+        "parameters" : [ {
+          "name" : "subdomain",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiResponsePublicTenantProfile"
+                }
+              }
+            }
+          },
+          "401" : {
+            "description" : "Missing, expired or revoked access token",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "404" : {
+            "description" : "The resource does not exist in the caller's tenant",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "500" : {
+            "description" : "Unexpected error; quote error.traceId when reporting it",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "security" : [ ]
+      }
+    },
     "/api/v1/privacy/policy/latest" : {
       "get" : {
         "tags" : [ "Privacy Management" ],
@@ -53344,7 +53987,7 @@
             "content" : {
               "application/json" : {
                 "schema" : {
-                  "$ref" : "#/components/schemas/ApiResponseListMapStringObject"
+                  "$ref" : "#/components/schemas/ApiResponseListPrincipalDashboardResponse"
                 }
               }
             }
@@ -53407,7 +54050,7 @@
             "content" : {
               "application/json" : {
                 "schema" : {
-                  "$ref" : "#/components/schemas/ApiResponseListMapStringObject"
+                  "$ref" : "#/components/schemas/ApiResponseListAttendanceTrendPoint"
                 }
               }
             }
@@ -53471,7 +54114,7 @@
             "content" : {
               "application/json" : {
                 "schema" : {
-                  "$ref" : "#/components/schemas/ApiResponseListMapStringObject"
+                  "$ref" : "#/components/schemas/ApiResponseListHrDashboardResponse"
                 }
               }
             }
@@ -53534,7 +54177,7 @@
             "content" : {
               "application/json" : {
                 "schema" : {
-                  "$ref" : "#/components/schemas/ApiResponseListMapStringObject"
+                  "$ref" : "#/components/schemas/ApiResponseListLeaveUtilizationTrendPoint"
                 }
               }
             }
@@ -53598,7 +54241,7 @@
             "content" : {
               "application/json" : {
                 "schema" : {
-                  "$ref" : "#/components/schemas/ApiResponseListMapStringObject"
+                  "$ref" : "#/components/schemas/ApiResponseListFinanceDashboardResponse"
                 }
               }
             }
@@ -53661,7 +54304,7 @@
             "content" : {
               "application/json" : {
                 "schema" : {
-                  "$ref" : "#/components/schemas/ApiResponseListMapStringObject"
+                  "$ref" : "#/components/schemas/ApiResponseListFeeCollectionTrendPoint"
                 }
               }
             }
@@ -53725,7 +54368,7 @@
             "content" : {
               "application/json" : {
                 "schema" : {
-                  "$ref" : "#/components/schemas/ApiResponseListMapStringObject"
+                  "$ref" : "#/components/schemas/ApiResponseListAcademicDashboardRow"
                 }
               }
             }
@@ -53788,7 +54431,7 @@
             "content" : {
               "application/json" : {
                 "schema" : {
-                  "$ref" : "#/components/schemas/ApiResponseListMapStringObject"
+                  "$ref" : "#/components/schemas/ApiResponseListAttendanceTrendPoint"
                 }
               }
             }
@@ -57365,7 +58008,7 @@
             "content" : {
               "application/json" : {
                 "schema" : {
-                  "$ref" : "#/components/schemas/ApiResponseListMapStringObject"
+                  "$ref" : "#/components/schemas/ApiResponseListRunningJobResponse"
                 }
               }
             }
@@ -58016,59 +58659,6 @@
         } ]
       }
     },
-    "/api/v1/admin/performance/metrics" : {
-      "get" : {
-        "tags" : [ "AdminPerformance Management" ],
-        "operationId" : "adminPerformanceGetPerformanceMetrics",
-        "responses" : {
-          "200" : {
-            "description" : "OK",
-            "content" : {
-              "application/json" : {
-                "schema" : {
-                  "$ref" : "#/components/schemas/ApiResponseMapStringObject"
-                }
-              }
-            }
-          },
-          "401" : {
-            "description" : "Missing, expired or revoked access token",
-            "content" : {
-              "application/json" : {
-                "schema" : {
-                  "$ref" : "#/components/schemas/ApiErrorResponse"
-                }
-              }
-            }
-          },
-          "403" : {
-            "description" : "The caller lacks the required permission",
-            "content" : {
-              "application/json" : {
-                "schema" : {
-                  "$ref" : "#/components/schemas/ApiErrorResponse"
-                }
-              }
-            }
-          },
-          "500" : {
-            "description" : "Unexpected error; quote error.traceId when reporting it",
-            "content" : {
-              "application/json" : {
-                "schema" : {
-                  "$ref" : "#/components/schemas/ApiErrorResponse"
-                }
-              }
-            }
-          }
-        },
-        "security" : [ {
-          "bearerAuth" : [ ]
-        }, {
-          "tenantHeader" : [ ]
-        } ]
-      }
-    },
     "/api/v1/admin/payment-gateways" : {
       "get" : {
         "tags" : [ "Payment Gateways (Admin)" ],
@@ -58572,14 +59162,7 @@
         } ],
         "responses" : {
           "200" : {
-            "description" : "OK",
-            "content" : {
-              "application/json" : {
-                "schema" : {
-                  "$ref" : "#/components/schemas/ApiResponseInteger"
-                }
-              }
-            }
+            "description" : "OK"
           },
           "400" : {
             "description" : "Validation failed or a business rule rejected the request",
@@ -58694,7 +59277,7 @@
             "content" : {
               "application/json" : {
                 "schema" : {
-                  "$ref" : "#/components/schemas/ApiResponseMapStringObject"
+                  "$ref" : "#/components/schemas/ApiResponseSearchSyncStatus"
                 }
               }
             }
@@ -58749,7 +59332,7 @@
             "content" : {
               "application/json" : {
                 "schema" : {
-                  "$ref" : "#/components/schemas/ApiResponseMapStringObject"
+                  "$ref" : "#/components/schemas/ApiResponseSearchClusterHealth"
                 }
               }
             }
@@ -58766,6 +59349,151 @@
           },
           "403" : {
             "description" : "The caller lacks the required permission",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "500" : {
+            "description" : "Unexpected error; quote error.traceId when reporting it",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "security" : [ {
+          "bearerAuth" : [ ]
+        }, {
+          "tenantHeader" : [ ]
+        } ]
+      }
+    },
+    "/api/v1/admin/coupons/{id}" : {
+      "get" : {
+        "tags" : [ "AdminCoupon Management" ],
+        "summary" : "getCoupon",
+        "operationId" : "adminCouponGetCoupon",
+        "parameters" : [ {
+          "name" : "id",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiResponseCouponResponse"
+                }
+              }
+            }
+          },
+          "401" : {
+            "description" : "Missing, expired or revoked access token",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "403" : {
+            "description" : "The caller lacks the required permission",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "404" : {
+            "description" : "The resource does not exist in the caller's tenant",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "500" : {
+            "description" : "Unexpected error; quote error.traceId when reporting it",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "security" : [ {
+          "bearerAuth" : [ ]
+        }, {
+          "tenantHeader" : [ ]
+        } ]
+      }
+    },
+    "/api/v1/admin/campaigns/{id}/performance" : {
+      "get" : {
+        "tags" : [ "AdminCampaign Management" ],
+        "summary" : "getCampaignPerformance",
+        "operationId" : "adminCampaignGetCampaignPerformance",
+        "parameters" : [ {
+          "name" : "id",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiResponseCampaignPerformanceResponse"
+                }
+              }
+            }
+          },
+          "401" : {
+            "description" : "Missing, expired or revoked access token",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "403" : {
+            "description" : "The caller lacks the required permission",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "404" : {
+            "description" : "The resource does not exist in the caller's tenant",
             "content" : {
               "application/json" : {
                 "schema" : {
@@ -58866,6 +59594,133 @@
               "application/json" : {
                 "schema" : {
                   "$ref" : "#/components/schemas/ApiResponsePageSystemAuditLogResponse"
+                }
+              }
+            }
+          },
+          "401" : {
+            "description" : "Missing, expired or revoked access token",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "403" : {
+            "description" : "The caller lacks the required permission",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "500" : {
+            "description" : "Unexpected error; quote error.traceId when reporting it",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "security" : [ {
+          "bearerAuth" : [ ]
+        }, {
+          "tenantHeader" : [ ]
+        } ]
+      }
+    },
+    "/api/v1/admin/analytics/at-risk" : {
+      "get" : {
+        "tags" : [ "AdminAnalytics Management" ],
+        "operationId" : "adminAnalyticsGetAtRiskSubscriptions",
+        "parameters" : [ {
+          "name" : "minScore",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int32",
+            "default" : 50
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiResponseListAtRiskSubscriptionResponse"
+                }
+              }
+            }
+          },
+          "400" : {
+            "description" : "Validation failed or a business rule rejected the request",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "401" : {
+            "description" : "Missing, expired or revoked access token",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "403" : {
+            "description" : "The caller lacks the required permission",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "500" : {
+            "description" : "Unexpected error; quote error.traceId when reporting it",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "security" : [ {
+          "bearerAuth" : [ ]
+        }, {
+          "tenantHeader" : [ ]
+        } ]
+      }
+    },
+    "/api/v1/admin/alerts" : {
+      "get" : {
+        "tags" : [ "AdminAlert Management" ],
+        "summary" : "getAlerts",
+        "operationId" : "adminAlertGetAlerts",
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiResponseListAlertResponse"
                 }
               }
             }
@@ -59329,321 +60184,6 @@
         }
       }
     },
-    "/api/health/rate-limit" : {
-      "get" : {
-        "tags" : [ "Health Management" ],
-        "operationId" : "healthGetRateLimitHealth",
-        "responses" : {
-          "200" : {
-            "description" : "OK",
-            "content" : {
-              "application/json" : {
-                "schema" : {
-                  "$ref" : "#/components/schemas/ApiResponseMapStringObject"
-                }
-              }
-            }
-          },
-          "401" : {
-            "description" : "Missing, expired or revoked access token",
-            "content" : {
-              "application/json" : {
-                "schema" : {
-                  "$ref" : "#/components/schemas/ApiErrorResponse"
-                }
-              }
-            }
-          },
-          "500" : {
-            "description" : "Unexpected error; quote error.traceId when reporting it",
-            "content" : {
-              "application/json" : {
-                "schema" : {
-                  "$ref" : "#/components/schemas/ApiErrorResponse"
-                }
-              }
-            }
-          }
-        },
-        "security" : [ {
-          "bearerAuth" : [ ]
-        }, {
-          "tenantHeader" : [ ]
-        } ]
-      }
-    },
-    "/api/admin/coupons/{id}" : {
-      "get" : {
-        "tags" : [ "AdminCoupon Management" ],
-        "summary" : "getCoupon",
-        "operationId" : "adminCouponGetCoupon",
-        "parameters" : [ {
-          "name" : "id",
-          "in" : "path",
-          "required" : true,
-          "schema" : {
-            "type" : "string",
-            "format" : "uuid"
-          }
-        } ],
-        "responses" : {
-          "200" : {
-            "description" : "OK",
-            "content" : {
-              "application/json" : {
-                "schema" : {
-                  "$ref" : "#/components/schemas/ApiResponseCouponResponse"
-                }
-              }
-            }
-          },
-          "401" : {
-            "description" : "Missing, expired or revoked access token",
-            "content" : {
-              "application/json" : {
-                "schema" : {
-                  "$ref" : "#/components/schemas/ApiErrorResponse"
-                }
-              }
-            }
-          },
-          "403" : {
-            "description" : "The caller lacks the required permission",
-            "content" : {
-              "application/json" : {
-                "schema" : {
-                  "$ref" : "#/components/schemas/ApiErrorResponse"
-                }
-              }
-            }
-          },
-          "404" : {
-            "description" : "The resource does not exist in the caller's tenant",
-            "content" : {
-              "application/json" : {
-                "schema" : {
-                  "$ref" : "#/components/schemas/ApiErrorResponse"
-                }
-              }
-            }
-          },
-          "500" : {
-            "description" : "Unexpected error; quote error.traceId when reporting it",
-            "content" : {
-              "application/json" : {
-                "schema" : {
-                  "$ref" : "#/components/schemas/ApiErrorResponse"
-                }
-              }
-            }
-          }
-        },
-        "security" : [ {
-          "bearerAuth" : [ ]
-        }, {
-          "tenantHeader" : [ ]
-        } ]
-      }
-    },
-    "/api/admin/campaigns/{id}/performance" : {
-      "get" : {
-        "tags" : [ "AdminCampaign Management" ],
-        "summary" : "getCampaignPerformance",
-        "operationId" : "adminCampaignGetCampaignPerformance",
-        "parameters" : [ {
-          "name" : "id",
-          "in" : "path",
-          "required" : true,
-          "schema" : {
-            "type" : "string"
-          }
-        } ],
-        "responses" : {
-          "200" : {
-            "description" : "OK",
-            "content" : {
-              "application/json" : {
-                "schema" : {
-                  "$ref" : "#/components/schemas/ApiResponseCampaignPerformanceResponse"
-                }
-              }
-            }
-          },
-          "401" : {
-            "description" : "Missing, expired or revoked access token",
-            "content" : {
-              "application/json" : {
-                "schema" : {
-                  "$ref" : "#/components/schemas/ApiErrorResponse"
-                }
-              }
-            }
-          },
-          "403" : {
-            "description" : "The caller lacks the required permission",
-            "content" : {
-              "application/json" : {
-                "schema" : {
-                  "$ref" : "#/components/schemas/ApiErrorResponse"
-                }
-              }
-            }
-          },
-          "404" : {
-            "description" : "The resource does not exist in the caller's tenant",
-            "content" : {
-              "application/json" : {
-                "schema" : {
-                  "$ref" : "#/components/schemas/ApiErrorResponse"
-                }
-              }
-            }
-          },
-          "500" : {
-            "description" : "Unexpected error; quote error.traceId when reporting it",
-            "content" : {
-              "application/json" : {
-                "schema" : {
-                  "$ref" : "#/components/schemas/ApiErrorResponse"
-                }
-              }
-            }
-          }
-        },
-        "security" : [ {
-          "bearerAuth" : [ ]
-        }, {
-          "tenantHeader" : [ ]
-        } ]
-      }
-    },
-    "/api/admin/analytics/at-risk" : {
-      "get" : {
-        "tags" : [ "AdminAnalytics Management" ],
-        "operationId" : "adminAnalyticsGetAtRiskSubscriptions",
-        "parameters" : [ {
-          "name" : "minScore",
-          "in" : "query",
-          "required" : false,
-          "schema" : {
-            "type" : "integer",
-            "format" : "int32",
-            "default" : 50
-          }
-        } ],
-        "responses" : {
-          "200" : {
-            "description" : "OK",
-            "content" : {
-              "application/json" : {
-                "schema" : {
-                  "$ref" : "#/components/schemas/ApiResponseListAtRiskSubscriptionResponse"
-                }
-              }
-            }
-          },
-          "400" : {
-            "description" : "Validation failed or a business rule rejected the request",
-            "content" : {
-              "application/json" : {
-                "schema" : {
-                  "$ref" : "#/components/schemas/ApiErrorResponse"
-                }
-              }
-            }
-          },
-          "401" : {
-            "description" : "Missing, expired or revoked access token",
-            "content" : {
-              "application/json" : {
-                "schema" : {
-                  "$ref" : "#/components/schemas/ApiErrorResponse"
-                }
-              }
-            }
-          },
-          "403" : {
-            "description" : "The caller lacks the required permission",
-            "content" : {
-              "application/json" : {
-                "schema" : {
-                  "$ref" : "#/components/schemas/ApiErrorResponse"
-                }
-              }
-            }
-          },
-          "500" : {
-            "description" : "Unexpected error; quote error.traceId when reporting it",
-            "content" : {
-              "application/json" : {
-                "schema" : {
-                  "$ref" : "#/components/schemas/ApiErrorResponse"
-                }
-              }
-            }
-          }
-        },
-        "security" : [ {
-          "bearerAuth" : [ ]
-        }, {
-          "tenantHeader" : [ ]
-        } ]
-      }
-    },
-    "/api/admin/alerts" : {
-      "get" : {
-        "tags" : [ "AdminAlert Management" ],
-        "summary" : "getAlerts",
-        "operationId" : "adminAlertGetAlerts",
-        "responses" : {
-          "200" : {
-            "description" : "OK",
-            "content" : {
-              "application/json" : {
-                "schema" : {
-                  "$ref" : "#/components/schemas/ApiResponseListAlertResponse"
-                }
-              }
-            }
-          },
-          "401" : {
-            "description" : "Missing, expired or revoked access token",
-            "content" : {
-              "application/json" : {
-                "schema" : {
-                  "$ref" : "#/components/schemas/ApiErrorResponse"
-                }
-              }
-            }
-          },
-          "403" : {
-            "description" : "The caller lacks the required permission",
-            "content" : {
-              "application/json" : {
-                "schema" : {
-                  "$ref" : "#/components/schemas/ApiErrorResponse"
-                }
-              }
-            }
-          },
-          "500" : {
-            "description" : "Unexpected error; quote error.traceId when reporting it",
-            "content" : {
-              "application/json" : {
-                "schema" : {
-                  "$ref" : "#/components/schemas/ApiErrorResponse"
-                }
-              }
-            }
-          }
-        },
-        "security" : [ {
-          "bearerAuth" : [ ]
-        }, {
-          "tenantHeader" : [ ]
-        } ]
-      }
-    },
     "/api/v1/users/{id}/permanent" : {
       "delete" : {
         "tags" : [ "User Management" ],
@@ -59866,24 +60406,10 @@
         } ],
         "responses" : {
           "200" : {
-            "description" : "Add-on cancelled successfully",
-            "content" : {
-              "application/json" : {
-                "schema" : {
-                  "$ref" : "#/components/schemas/ApiResponseSubscriptionAddOnResponse"
-                }
-              }
-            }
+            "description" : "Add-on cancelled successfully"
           },
           "400" : {
-            "description" : "Add-on purchase not found or not active",
-            "content" : {
-              "application/json" : {
-                "schema" : {
-                  "$ref" : "#/components/schemas/ApiResponseSubscriptionAddOnResponse"
-                }
-              }
-            }
+            "description" : "Add-on purchase not found or not active"
           },
           "401" : {
             "description" : "Missing, expired or revoked access token",
@@ -59955,14 +60481,7 @@
         } ],
         "responses" : {
           "200" : {
-            "description" : "OK",
-            "content" : {
-              "application/json" : {
-                "schema" : {
-                  "$ref" : "#/components/schemas/ApiResponseRoleResponse"
-                }
-              }
-            }
+            "description" : "OK"
           },
           "401" : {
             "description" : "Missing, expired or revoked access token",
@@ -60094,8 +60613,8 @@
           }
         } ],
         "responses" : {
-          "200" : {
-            "description" : "OK",
+          "204" : {
+            "description" : "No Content",
             "content" : {
               "application/json" : {
                 "schema" : {
@@ -60255,6 +60774,80 @@
           },
           "404" : {
             "description" : "The resource does not exist in the caller's tenant",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "500" : {
+            "description" : "Unexpected error; quote error.traceId when reporting it",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "security" : [ {
+          "bearerAuth" : [ ]
+        }, {
+          "tenantHeader" : [ ]
+        } ]
+      }
+    },
+    "/api/v1/billing/coupons/remove" : {
+      "delete" : {
+        "tags" : [ "BillingCoupon Management" ],
+        "summary" : "removeCoupon",
+        "operationId" : "billingCouponRemoveCoupon",
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/RemoveCouponRequest"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiResponseVoid"
+                }
+              }
+            }
+          },
+          "400" : {
+            "description" : "Validation failed or a business rule rejected the request",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "401" : {
+            "description" : "Missing, expired or revoked access token",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "403" : {
+            "description" : "The caller lacks the required permission",
             "content" : {
               "application/json" : {
                 "schema" : {
@@ -60813,80 +61406,6 @@
           },
           "404" : {
             "description" : "The resource does not exist in the caller's tenant",
-            "content" : {
-              "application/json" : {
-                "schema" : {
-                  "$ref" : "#/components/schemas/ApiErrorResponse"
-                }
-              }
-            }
-          },
-          "500" : {
-            "description" : "Unexpected error; quote error.traceId when reporting it",
-            "content" : {
-              "application/json" : {
-                "schema" : {
-                  "$ref" : "#/components/schemas/ApiErrorResponse"
-                }
-              }
-            }
-          }
-        },
-        "security" : [ {
-          "bearerAuth" : [ ]
-        }, {
-          "tenantHeader" : [ ]
-        } ]
-      }
-    },
-    "/api/billing/coupons/remove" : {
-      "delete" : {
-        "tags" : [ "BillingCoupon Management" ],
-        "summary" : "removeCoupon",
-        "operationId" : "billingCouponRemoveCoupon",
-        "requestBody" : {
-          "content" : {
-            "application/json" : {
-              "schema" : {
-                "$ref" : "#/components/schemas/RemoveCouponRequest"
-              }
-            }
-          },
-          "required" : true
-        },
-        "responses" : {
-          "200" : {
-            "description" : "OK",
-            "content" : {
-              "application/json" : {
-                "schema" : {
-                  "$ref" : "#/components/schemas/ApiResponseVoid"
-                }
-              }
-            }
-          },
-          "400" : {
-            "description" : "Validation failed or a business rule rejected the request",
-            "content" : {
-              "application/json" : {
-                "schema" : {
-                  "$ref" : "#/components/schemas/ApiErrorResponse"
-                }
-              }
-            }
-          },
-          "401" : {
-            "description" : "Missing, expired or revoked access token",
-            "content" : {
-              "application/json" : {
-                "schema" : {
-                  "$ref" : "#/components/schemas/ApiErrorResponse"
-                }
-              }
-            }
-          },
-          "403" : {
-            "description" : "The caller lacks the required permission",
             "content" : {
               "application/json" : {
                 "schema" : {
@@ -62135,8 +62654,7 @@
         "type" : "object",
         "properties" : {
           "type" : {
-            "type" : "string",
-            "enum" : [ "GRADE_PUBLISHED", "ATTENDANCE_MARKED", "FEE_DUE", "FEE_OVERDUE", "EXAM_SCHEDULED", "ANNOUNCEMENT", "SYSTEM_ALERT", "ACCOUNT_SUSPENDED", "SUBSCRIPTION_EXPIRING", "ASSIGNMENT_POSTED", "SUBMISSION_GRADED", "LOW_ATTENDANCE_ALERT", "APPLICATION_STATUS_CHANGED", "MERIT_LIST_PUBLISHED", "PAYMENT_RECEIVED", "GATEWAY_PAYMENT_FAILED", "ACCOUNT_LINKED", "LEAVE_REQUESTED", "LEAVE_APPROVED", "LEAVE_REJECTED", "DISCIPLINE_INCIDENT_RECORDED", "BOOK_OVERDUE", "EVENT_REGISTRATION_CONFIRMED", "FEE_DEFAULT_RISK", "APPROVAL_REQUESTED", "APPROVAL_APPROVED", "APPROVAL_REJECTED" ]
+            "type" : "string"
           },
           "channels" : {
             "type" : "array",
@@ -62174,8 +62692,7 @@
             "type" : "string"
           },
           "type" : {
-            "type" : "string",
-            "enum" : [ "GRADE_PUBLISHED", "ATTENDANCE_MARKED", "FEE_DUE", "FEE_OVERDUE", "EXAM_SCHEDULED", "ANNOUNCEMENT", "SYSTEM_ALERT", "ACCOUNT_SUSPENDED", "SUBSCRIPTION_EXPIRING", "ASSIGNMENT_POSTED", "SUBMISSION_GRADED", "LOW_ATTENDANCE_ALERT", "APPLICATION_STATUS_CHANGED", "MERIT_LIST_PUBLISHED", "PAYMENT_RECEIVED", "GATEWAY_PAYMENT_FAILED", "ACCOUNT_LINKED", "LEAVE_REQUESTED", "LEAVE_APPROVED", "LEAVE_REJECTED", "DISCIPLINE_INCIDENT_RECORDED", "BOOK_OVERDUE", "EVENT_REGISTRATION_CONFIRMED", "FEE_DEFAULT_RISK", "APPROVAL_REQUESTED", "APPROVAL_APPROVED", "APPROVAL_REJECTED" ]
+            "type" : "string"
           },
           "enabledChannels" : {
             "type" : "array",
@@ -62298,6 +62815,9 @@
           "studentPublicId" : {
             "type" : "string"
           },
+          "student" : {
+            "$ref" : "#/components/schemas/ReferenceSummary"
+          },
           "bloodGroup" : {
             "type" : "string"
           },
@@ -62308,6 +62828,21 @@
             "type" : "string"
           },
           "immunizations" : {
+            "type" : "string"
+          }
+        },
+        "required" : [ "publicId" ]
+      },
+      "ReferenceSummary" : {
+        "type" : "object",
+        "properties" : {
+          "publicId" : {
+            "type" : "string"
+          },
+          "name" : {
+            "type" : "string"
+          },
+          "code" : {
             "type" : "string"
           }
         },
@@ -62717,8 +63252,7 @@
           },
           "notificationType" : {
             "type" : "string",
-            "description" : "Notification type sent when the rule fires",
-            "enum" : [ "GRADE_PUBLISHED", "ATTENDANCE_MARKED", "FEE_DUE", "FEE_OVERDUE", "EXAM_SCHEDULED", "ANNOUNCEMENT", "SYSTEM_ALERT", "ACCOUNT_SUSPENDED", "SUBSCRIPTION_EXPIRING", "ASSIGNMENT_POSTED", "SUBMISSION_GRADED", "LOW_ATTENDANCE_ALERT", "APPLICATION_STATUS_CHANGED", "MERIT_LIST_PUBLISHED", "PAYMENT_RECEIVED", "GATEWAY_PAYMENT_FAILED", "ACCOUNT_LINKED", "LEAVE_REQUESTED", "LEAVE_APPROVED", "LEAVE_REJECTED", "DISCIPLINE_INCIDENT_RECORDED", "BOOK_OVERDUE", "EVENT_REGISTRATION_CONFIRMED", "FEE_DEFAULT_RISK", "APPROVAL_REQUESTED", "APPROVAL_APPROVED", "APPROVAL_REJECTED" ]
+            "description" : "Notification type sent when the rule fires"
           },
           "configJson" : {
             "type" : "string",
@@ -62984,6 +63518,51 @@
           }
         }
       },
+      "UpdatePlanLimitRequest" : {
+        "type" : "object",
+        "properties" : {
+          "hourlyApiLimit" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        },
+        "required" : [ "hourlyApiLimit" ]
+      },
+      "ApiResponsePlanLimitResponse" : {
+        "type" : "object",
+        "properties" : {
+          "success" : {
+            "type" : "boolean"
+          },
+          "data" : {
+            "$ref" : "#/components/schemas/PlanLimitResponse"
+          },
+          "error" : {
+            "$ref" : "#/components/schemas/ApiErrorDetail"
+          },
+          "meta" : {
+            "$ref" : "#/components/schemas/ApiResponseMeta"
+          }
+        },
+        "required" : [ "success" ]
+      },
+      "PlanLimitResponse" : {
+        "type" : "object",
+        "properties" : {
+          "id" : {
+            "type" : "string",
+            "format" : "uuid"
+          },
+          "name" : {
+            "type" : "string"
+          },
+          "hourlyApiLimit" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        },
+        "required" : [ "hourlyApiLimit", "id" ]
+      },
       "UpdateSettingRequest" : {
         "type" : "object",
         "properties" : {
@@ -63120,6 +63699,9 @@
           "hostEmployeePublicId" : {
             "type" : "string"
           },
+          "hostEmployee" : {
+            "$ref" : "#/components/schemas/ReferenceSummary"
+          },
           "visitDate" : {
             "type" : "string",
             "format" : "date"
@@ -63135,6 +63717,9 @@
           },
           "decidedByUserPublicId" : {
             "type" : "string"
+          },
+          "decidedByUser" : {
+            "$ref" : "#/components/schemas/ReferenceSummary"
           },
           "decidedAt" : {
             "type" : "string",
@@ -63198,6 +63783,9 @@
           },
           "hostEmployeePublicId" : {
             "type" : "string"
+          },
+          "hostEmployee" : {
+            "$ref" : "#/components/schemas/ReferenceSummary"
           },
           "photoFilePublicId" : {
             "type" : "string"
@@ -63416,17 +64004,14 @@
         },
         "required" : [ "email", "role" ]
       },
-      "ApiResponseMapStringString" : {
+      "ApiResponseInvitationResponse" : {
         "type" : "object",
         "properties" : {
           "success" : {
             "type" : "boolean"
           },
           "data" : {
-            "type" : "object",
-            "additionalProperties" : {
-              "type" : "string"
-            }
+            "$ref" : "#/components/schemas/InvitationResponse"
           },
           "error" : {
             "$ref" : "#/components/schemas/ApiErrorDetail"
@@ -63436,6 +64021,17 @@
           }
         },
         "required" : [ "success" ]
+      },
+      "InvitationResponse" : {
+        "type" : "object",
+        "properties" : {
+          "email" : {
+            "type" : "string"
+          },
+          "token" : {
+            "type" : "string"
+          }
+        }
       },
       "BulkRoleRequest" : {
         "type" : "object",
@@ -63474,7 +64070,7 @@
         },
         "required" : [ "emails", "role" ]
       },
-      "ApiResponseListMapStringString" : {
+      "ApiResponseListInvitationResponse" : {
         "type" : "object",
         "properties" : {
           "success" : {
@@ -63483,10 +64079,7 @@
           "data" : {
             "type" : "array",
             "items" : {
-              "type" : "object",
-              "additionalProperties" : {
-                "type" : "string"
-              }
+              "$ref" : "#/components/schemas/InvitationResponse"
             }
           },
           "error" : {
@@ -63635,14 +64228,26 @@
           "studentPublicId" : {
             "type" : "string"
           },
+          "student" : {
+            "$ref" : "#/components/schemas/ReferenceSummary"
+          },
           "routePublicId" : {
             "type" : "string"
+          },
+          "route" : {
+            "$ref" : "#/components/schemas/ReferenceSummary"
           },
           "vehiclePublicId" : {
             "type" : "string"
           },
+          "vehicle" : {
+            "$ref" : "#/components/schemas/ReferenceSummary"
+          },
           "routeStopPublicId" : {
             "type" : "string"
+          },
+          "routeStop" : {
+            "$ref" : "#/components/schemas/ReferenceSummary"
           },
           "effectiveFrom" : {
             "type" : "string",
@@ -63718,11 +64323,20 @@
           "periodPublicId" : {
             "type" : "string"
           },
+          "period" : {
+            "$ref" : "#/components/schemas/ReferenceSummary"
+          },
           "classroomPublicId" : {
             "type" : "string"
           },
+          "classroom" : {
+            "$ref" : "#/components/schemas/ReferenceSummary"
+          },
           "subjectPublicId" : {
             "type" : "string"
+          },
+          "subject" : {
+            "$ref" : "#/components/schemas/ReferenceSummary"
           },
           "regularTeacherPublicId" : {
             "type" : "string"
@@ -63812,17 +64426,32 @@
           "periodPublicId" : {
             "type" : "string"
           },
+          "period" : {
+            "$ref" : "#/components/schemas/ReferenceSummary"
+          },
           "classroomPublicId" : {
             "type" : "string"
+          },
+          "classroom" : {
+            "$ref" : "#/components/schemas/ReferenceSummary"
           },
           "subjectPublicId" : {
             "type" : "string"
           },
+          "subject" : {
+            "$ref" : "#/components/schemas/ReferenceSummary"
+          },
           "teacherPublicId" : {
             "type" : "string"
           },
+          "teacher" : {
+            "$ref" : "#/components/schemas/ReferenceSummary"
+          },
           "venuePublicId" : {
             "type" : "string"
+          },
+          "venue" : {
+            "$ref" : "#/components/schemas/ReferenceSummary"
           }
         },
         "required" : [ "publicId" ]
@@ -63878,6 +64507,9 @@
           "raisedByUserPublicId" : {
             "type" : "string"
           },
+          "raisedByUser" : {
+            "$ref" : "#/components/schemas/ReferenceSummary"
+          },
           "category" : {
             "type" : "string",
             "enum" : [ "ACADEMIC", "FEE", "TECHNICAL", "FACILITIES", "OTHER" ]
@@ -63894,6 +64526,9 @@
           },
           "assignedToUserPublicId" : {
             "type" : "string"
+          },
+          "assignedToUser" : {
+            "$ref" : "#/components/schemas/ReferenceSummary"
           },
           "resolution" : {
             "type" : "string"
@@ -63965,6 +64600,9 @@
           },
           "academicYearPublicId" : {
             "type" : "string"
+          },
+          "academicYear" : {
+            "$ref" : "#/components/schemas/ReferenceSummary"
           },
           "current" : {
             "type" : "boolean"
@@ -64536,6 +65174,9 @@
           "departmentPublicId" : {
             "type" : "string"
           },
+          "department" : {
+            "$ref" : "#/components/schemas/ReferenceSummary"
+          },
           "designation" : {
             "type" : "string"
           },
@@ -64560,6 +65201,55 @@
           }
         },
         "required" : [ "publicId" ]
+      },
+      "CreateAccountRequest" : {
+        "type" : "object",
+        "properties" : {
+          "userPublicId" : {
+            "type" : "string"
+          },
+          "email" : {
+            "type" : "string",
+            "format" : "email"
+          },
+          "password" : {
+            "type" : "string",
+            "writeOnly" : true
+          },
+          "role" : {
+            "type" : "string",
+            "description" : "Role for a new staff login; a teacher's or student's role is fixed"
+          }
+        }
+      },
+      "AccountResponse" : {
+        "type" : "object",
+        "properties" : {
+          "userPublicId" : {
+            "type" : "string"
+          },
+          "email" : {
+            "type" : "string"
+          }
+        }
+      },
+      "ApiResponseAccountResponse" : {
+        "type" : "object",
+        "properties" : {
+          "success" : {
+            "type" : "boolean"
+          },
+          "data" : {
+            "$ref" : "#/components/schemas/AccountResponse"
+          },
+          "error" : {
+            "$ref" : "#/components/schemas/ApiErrorDetail"
+          },
+          "meta" : {
+            "$ref" : "#/components/schemas/ApiResponseMeta"
+          }
+        },
+        "required" : [ "success" ]
       },
       "LoginRequest" : {
         "type" : "object",
@@ -65067,6 +65757,9 @@
           },
           "curriculumPublicId" : {
             "type" : "string"
+          },
+          "curriculum" : {
+            "$ref" : "#/components/schemas/ReferenceSummary"
           }
         },
         "required" : [ "active", "publicId" ]
@@ -65359,6 +66052,9 @@
           "feeStructurePublicId" : {
             "type" : "string"
           },
+          "feeStructure" : {
+            "$ref" : "#/components/schemas/ReferenceSummary"
+          },
           "discountType" : {
             "type" : "string"
           },
@@ -65380,6 +66076,9 @@
           },
           "grantedByUserPublicId" : {
             "type" : "string"
+          },
+          "grantedByUser" : {
+            "$ref" : "#/components/schemas/ReferenceSummary"
           },
           "revokedAt" : {
             "type" : "string",
@@ -65513,6 +66212,9 @@
           },
           "termPublicId" : {
             "type" : "string"
+          },
+          "term" : {
+            "$ref" : "#/components/schemas/ReferenceSummary"
           },
           "generatedAt" : {
             "type" : "string",
@@ -65669,6 +66371,9 @@
           "employeePublicId" : {
             "type" : "string"
           },
+          "employee" : {
+            "$ref" : "#/components/schemas/ReferenceSummary"
+          },
           "components" : {
             "type" : "array",
             "items" : {
@@ -65803,6 +66508,9 @@
           "routePublicId" : {
             "type" : "string"
           },
+          "route" : {
+            "$ref" : "#/components/schemas/ReferenceSummary"
+          },
           "stopName" : {
             "type" : "string"
           },
@@ -65866,6 +66574,9 @@
           "hostelBuildingPublicId" : {
             "type" : "string"
           },
+          "hostelBuilding" : {
+            "$ref" : "#/components/schemas/ReferenceSummary"
+          },
           "roomNumber" : {
             "type" : "string"
           },
@@ -65928,8 +66639,14 @@
           "studentPublicId" : {
             "type" : "string"
           },
+          "student" : {
+            "$ref" : "#/components/schemas/ReferenceSummary"
+          },
           "roomPublicId" : {
             "type" : "string"
+          },
+          "room" : {
+            "$ref" : "#/components/schemas/ReferenceSummary"
           },
           "allocatedFrom" : {
             "type" : "string",
@@ -66376,8 +67093,14 @@
           "studentPublicId" : {
             "type" : "string"
           },
+          "student" : {
+            "$ref" : "#/components/schemas/ReferenceSummary"
+          },
           "classroomPublicId" : {
             "type" : "string"
+          },
+          "classroom" : {
+            "$ref" : "#/components/schemas/ReferenceSummary"
           },
           "timetableEntryPublicId" : {
             "type" : "string"
@@ -66600,8 +67323,7 @@
           },
           "type" : {
             "type" : "string",
-            "description" : "Notification type",
-            "enum" : [ "GRADE_PUBLISHED", "ATTENDANCE_MARKED", "FEE_DUE", "FEE_OVERDUE", "EXAM_SCHEDULED", "ANNOUNCEMENT", "SYSTEM_ALERT", "ACCOUNT_SUSPENDED", "SUBSCRIPTION_EXPIRING", "ASSIGNMENT_POSTED", "SUBMISSION_GRADED", "LOW_ATTENDANCE_ALERT", "APPLICATION_STATUS_CHANGED", "MERIT_LIST_PUBLISHED", "PAYMENT_RECEIVED", "GATEWAY_PAYMENT_FAILED", "ACCOUNT_LINKED", "LEAVE_REQUESTED", "LEAVE_APPROVED", "LEAVE_REJECTED", "DISCIPLINE_INCIDENT_RECORDED", "BOOK_OVERDUE", "EVENT_REGISTRATION_CONFIRMED", "FEE_DEFAULT_RISK", "APPROVAL_REQUESTED", "APPROVAL_APPROVED", "APPROVAL_REJECTED" ]
+            "description" : "Notification type"
           },
           "title" : {
             "type" : "string",
@@ -66677,8 +67399,7 @@
             "type" : "string"
           },
           "type" : {
-            "type" : "string",
-            "enum" : [ "GRADE_PUBLISHED", "ATTENDANCE_MARKED", "FEE_DUE", "FEE_OVERDUE", "EXAM_SCHEDULED", "ANNOUNCEMENT", "SYSTEM_ALERT", "ACCOUNT_SUSPENDED", "SUBSCRIPTION_EXPIRING", "ASSIGNMENT_POSTED", "SUBMISSION_GRADED", "LOW_ATTENDANCE_ALERT", "APPLICATION_STATUS_CHANGED", "MERIT_LIST_PUBLISHED", "PAYMENT_RECEIVED", "GATEWAY_PAYMENT_FAILED", "ACCOUNT_LINKED", "LEAVE_REQUESTED", "LEAVE_APPROVED", "LEAVE_REJECTED", "DISCIPLINE_INCIDENT_RECORDED", "BOOK_OVERDUE", "EVENT_REGISTRATION_CONFIRMED", "FEE_DEFAULT_RISK", "APPROVAL_REQUESTED", "APPROVAL_APPROVED", "APPROVAL_REJECTED" ]
+            "type" : "string"
           },
           "title" : {
             "type" : "string"
@@ -66728,8 +67449,7 @@
         "type" : "object",
         "properties" : {
           "type" : {
-            "type" : "string",
-            "enum" : [ "GRADE_PUBLISHED", "ATTENDANCE_MARKED", "FEE_DUE", "FEE_OVERDUE", "EXAM_SCHEDULED", "ANNOUNCEMENT", "SYSTEM_ALERT", "ACCOUNT_SUSPENDED", "SUBSCRIPTION_EXPIRING", "ASSIGNMENT_POSTED", "SUBMISSION_GRADED", "LOW_ATTENDANCE_ALERT", "APPLICATION_STATUS_CHANGED", "MERIT_LIST_PUBLISHED", "PAYMENT_RECEIVED", "GATEWAY_PAYMENT_FAILED", "ACCOUNT_LINKED", "LEAVE_REQUESTED", "LEAVE_APPROVED", "LEAVE_REJECTED", "DISCIPLINE_INCIDENT_RECORDED", "BOOK_OVERDUE", "EVENT_REGISTRATION_CONFIRMED", "FEE_DEFAULT_RISK", "APPROVAL_REQUESTED", "APPROVAL_APPROVED", "APPROVAL_REJECTED" ]
+            "type" : "string"
           },
           "subjectTemplate" : {
             "type" : "string",
@@ -66782,8 +67502,7 @@
             "format" : "uuid"
           },
           "type" : {
-            "type" : "string",
-            "enum" : [ "GRADE_PUBLISHED", "ATTENDANCE_MARKED", "FEE_DUE", "FEE_OVERDUE", "EXAM_SCHEDULED", "ANNOUNCEMENT", "SYSTEM_ALERT", "ACCOUNT_SUSPENDED", "SUBSCRIPTION_EXPIRING", "ASSIGNMENT_POSTED", "SUBMISSION_GRADED", "LOW_ATTENDANCE_ALERT", "APPLICATION_STATUS_CHANGED", "MERIT_LIST_PUBLISHED", "PAYMENT_RECEIVED", "GATEWAY_PAYMENT_FAILED", "ACCOUNT_LINKED", "LEAVE_REQUESTED", "LEAVE_APPROVED", "LEAVE_REJECTED", "DISCIPLINE_INCIDENT_RECORDED", "BOOK_OVERDUE", "EVENT_REGISTRATION_CONFIRMED", "FEE_DEFAULT_RISK", "APPROVAL_REQUESTED", "APPROVAL_APPROVED", "APPROVAL_REJECTED" ]
+            "type" : "string"
           },
           "subjectTemplate" : {
             "type" : "string"
@@ -66867,6 +67586,9 @@
           "studentPublicId" : {
             "type" : "string"
           },
+          "student" : {
+            "$ref" : "#/components/schemas/ReferenceSummary"
+          },
           "occurredAt" : {
             "type" : "string",
             "format" : "date-time"
@@ -66882,6 +67604,9 @@
           },
           "recordedByUserPublicId" : {
             "type" : "string"
+          },
+          "recordedByUser" : {
+            "$ref" : "#/components/schemas/ReferenceSummary"
           }
         },
         "required" : [ "guardianNotified", "publicId" ]
@@ -66944,11 +67669,20 @@
           "classroomPublicId" : {
             "type" : "string"
           },
+          "classroom" : {
+            "$ref" : "#/components/schemas/ReferenceSummary"
+          },
           "subjectPublicId" : {
             "type" : "string"
           },
+          "subject" : {
+            "$ref" : "#/components/schemas/ReferenceSummary"
+          },
           "teacherPublicId" : {
             "type" : "string"
+          },
+          "teacher" : {
+            "$ref" : "#/components/schemas/ReferenceSummary"
           },
           "title" : {
             "type" : "string"
@@ -67095,8 +67829,14 @@
           "employeePublicId" : {
             "type" : "string"
           },
+          "employee" : {
+            "$ref" : "#/components/schemas/ReferenceSummary"
+          },
           "leaveTypePublicId" : {
             "type" : "string"
+          },
+          "leaveType" : {
+            "$ref" : "#/components/schemas/ReferenceSummary"
           },
           "startDate" : {
             "type" : "string",
@@ -67117,6 +67857,9 @@
           },
           "approvedByUserPublicId" : {
             "type" : "string"
+          },
+          "approvedByUser" : {
+            "$ref" : "#/components/schemas/ReferenceSummary"
           },
           "approvedAt" : {
             "type" : "string",
@@ -67381,8 +68124,14 @@
           "studentPublicId" : {
             "type" : "string"
           },
+          "student" : {
+            "$ref" : "#/components/schemas/ReferenceSummary"
+          },
           "guardianPublicId" : {
             "type" : "string"
+          },
+          "guardian" : {
+            "$ref" : "#/components/schemas/ReferenceSummary"
           },
           "relationshipType" : {
             "type" : "string"
@@ -67655,11 +68404,20 @@
           "studentPublicId" : {
             "type" : "string"
           },
+          "student" : {
+            "$ref" : "#/components/schemas/ReferenceSummary"
+          },
           "subjectPublicId" : {
             "type" : "string"
           },
+          "subject" : {
+            "$ref" : "#/components/schemas/ReferenceSummary"
+          },
           "examPublicId" : {
             "type" : "string"
+          },
+          "exam" : {
+            "$ref" : "#/components/schemas/ReferenceSummary"
           },
           "marks" : {
             "type" : "number"
@@ -67672,6 +68430,76 @@
           }
         },
         "required" : [ "publicId" ]
+      },
+      "BulkRecordGradesRequest" : {
+        "type" : "object",
+        "properties" : {
+          "examPublicId" : {
+            "type" : "string",
+            "minLength" : 1
+          },
+          "rows" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/Row"
+            },
+            "maxItems" : 500,
+            "minItems" : 0
+          }
+        },
+        "required" : [ "examPublicId", "rows" ]
+      },
+      "Row" : {
+        "type" : "object",
+        "properties" : {
+          "studentPublicId" : {
+            "type" : "string",
+            "minLength" : 1
+          },
+          "marks" : {
+            "type" : "number",
+            "minimum" : 0.0
+          }
+        },
+        "required" : [ "marks", "studentPublicId" ]
+      },
+      "ApiResponseBulkEntryResult" : {
+        "type" : "object",
+        "properties" : {
+          "success" : {
+            "type" : "boolean"
+          },
+          "data" : {
+            "$ref" : "#/components/schemas/BulkEntryResult"
+          },
+          "error" : {
+            "$ref" : "#/components/schemas/ApiErrorDetail"
+          },
+          "meta" : {
+            "$ref" : "#/components/schemas/ApiResponseMeta"
+          }
+        },
+        "required" : [ "success" ]
+      },
+      "BulkEntryResult" : {
+        "type" : "object",
+        "properties" : {
+          "succeeded" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "failed" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "rows" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/Row"
+            }
+          }
+        },
+        "required" : [ "failed", "succeeded" ]
       },
       "InitiateUploadRequest" : {
         "type" : "object",
@@ -67847,14 +68675,23 @@
           "feeStructurePublicId" : {
             "type" : "string"
           },
+          "feeStructure" : {
+            "$ref" : "#/components/schemas/ReferenceSummary"
+          },
           "scope" : {
             "type" : "string"
           },
           "studentPublicId" : {
             "type" : "string"
           },
+          "student" : {
+            "$ref" : "#/components/schemas/ReferenceSummary"
+          },
           "classroomPublicId" : {
             "type" : "string"
+          },
+          "classroom" : {
+            "$ref" : "#/components/schemas/ReferenceSummary"
           },
           "dueDate" : {
             "type" : "string",
@@ -67928,8 +68765,14 @@
           "studentPublicId" : {
             "type" : "string"
           },
+          "student" : {
+            "$ref" : "#/components/schemas/ReferenceSummary"
+          },
           "feeStructurePublicId" : {
             "type" : "string"
+          },
+          "feeStructure" : {
+            "$ref" : "#/components/schemas/ReferenceSummary"
           },
           "paidAmount" : {
             "type" : "number"
@@ -68021,6 +68864,9 @@
           },
           "refundedByUserPublicId" : {
             "type" : "string"
+          },
+          "refundedByUser" : {
+            "$ref" : "#/components/schemas/ReferenceSummary"
           }
         },
         "required" : [ "publicId" ]
@@ -68158,8 +69004,14 @@
           "subjectPublicId" : {
             "type" : "string"
           },
+          "subject" : {
+            "$ref" : "#/components/schemas/ReferenceSummary"
+          },
           "classroomPublicId" : {
             "type" : "string"
+          },
+          "classroom" : {
+            "$ref" : "#/components/schemas/ReferenceSummary"
           },
           "scheduledAt" : {
             "type" : "string",
@@ -68171,11 +69023,17 @@
           "termPublicId" : {
             "type" : "string"
           },
+          "term" : {
+            "$ref" : "#/components/schemas/ReferenceSummary"
+          },
           "status" : {
             "type" : "string"
           },
           "examTypePublicId" : {
             "type" : "string"
+          },
+          "examType" : {
+            "$ref" : "#/components/schemas/ReferenceSummary"
           },
           "weightage" : {
             "type" : "number"
@@ -68380,8 +69238,14 @@
           "eventPublicId" : {
             "type" : "string"
           },
+          "event" : {
+            "$ref" : "#/components/schemas/ReferenceSummary"
+          },
           "studentPublicId" : {
             "type" : "string"
+          },
+          "student" : {
+            "$ref" : "#/components/schemas/ReferenceSummary"
           },
           "status" : {
             "type" : "string"
@@ -68482,6 +69346,9 @@
           },
           "departmentPublicId" : {
             "type" : "string"
+          },
+          "department" : {
+            "$ref" : "#/components/schemas/ReferenceSummary"
           },
           "designation" : {
             "type" : "string"
@@ -68621,8 +69488,14 @@
           "studentPublicId" : {
             "type" : "string"
           },
+          "student" : {
+            "$ref" : "#/components/schemas/ReferenceSummary"
+          },
           "reportedByTeacherPublicId" : {
             "type" : "string"
+          },
+          "reportedByTeacher" : {
+            "$ref" : "#/components/schemas/ReferenceSummary"
           },
           "incidentDate" : {
             "type" : "string",
@@ -68766,6 +69639,9 @@
           },
           "headEmployeePublicId" : {
             "type" : "string"
+          },
+          "headEmployee" : {
+            "$ref" : "#/components/schemas/ReferenceSummary"
           },
           "active" : {
             "type" : "boolean"
@@ -69054,6 +69930,9 @@
           "boardPublicId" : {
             "type" : "string"
           },
+          "board" : {
+            "$ref" : "#/components/schemas/ReferenceSummary"
+          },
           "name" : {
             "type" : "string"
           },
@@ -69065,6 +69944,9 @@
           },
           "gradingScalePublicId" : {
             "type" : "string"
+          },
+          "gradingScale" : {
+            "$ref" : "#/components/schemas/ReferenceSummary"
           },
           "active" : {
             "type" : "boolean"
@@ -69129,8 +70011,14 @@
           "studentPublicId" : {
             "type" : "string"
           },
+          "student" : {
+            "$ref" : "#/components/schemas/ReferenceSummary"
+          },
           "counselorTeacherPublicId" : {
             "type" : "string"
+          },
+          "counselorTeacher" : {
+            "$ref" : "#/components/schemas/ReferenceSummary"
           },
           "sessionDate" : {
             "type" : "string",
@@ -69191,8 +70079,14 @@
           "studentPublicId" : {
             "type" : "string"
           },
+          "student" : {
+            "$ref" : "#/components/schemas/ReferenceSummary"
+          },
           "referredByUserPublicId" : {
             "type" : "string"
+          },
+          "referredByUser" : {
+            "$ref" : "#/components/schemas/ReferenceSummary"
           },
           "reason" : {
             "type" : "string"
@@ -69282,8 +70176,14 @@
           "classTeacherPublicId" : {
             "type" : "string"
           },
+          "classTeacher" : {
+            "$ref" : "#/components/schemas/ReferenceSummary"
+          },
           "curriculumPublicId" : {
             "type" : "string"
+          },
+          "curriculum" : {
+            "$ref" : "#/components/schemas/ReferenceSummary"
           },
           "capacity" : {
             "type" : "integer",
@@ -69394,8 +70294,14 @@
           "bookCopyPublicId" : {
             "type" : "string"
           },
+          "bookCopy" : {
+            "$ref" : "#/components/schemas/ReferenceSummary"
+          },
           "studentPublicId" : {
             "type" : "string"
+          },
+          "student" : {
+            "$ref" : "#/components/schemas/ReferenceSummary"
           },
           "checkedOutAt" : {
             "type" : "string",
@@ -69611,6 +70517,9 @@
           "bookPublicId" : {
             "type" : "string"
           },
+          "book" : {
+            "$ref" : "#/components/schemas/ReferenceSummary"
+          },
           "copyCode" : {
             "type" : "string"
           },
@@ -69665,8 +70574,14 @@
           "bookPublicId" : {
             "type" : "string"
           },
+          "book" : {
+            "$ref" : "#/components/schemas/ReferenceSummary"
+          },
           "studentPublicId" : {
             "type" : "string"
+          },
+          "student" : {
+            "$ref" : "#/components/schemas/ReferenceSummary"
           },
           "status" : {
             "type" : "string"
@@ -69677,6 +70592,9 @@
           },
           "heldCopyPublicId" : {
             "type" : "string"
+          },
+          "heldCopy" : {
+            "$ref" : "#/components/schemas/ReferenceSummary"
           },
           "holdExpiresOn" : {
             "type" : "string",
@@ -70155,6 +71073,107 @@
         },
         "required" : [ "id" ]
       },
+      "ValidateCouponRequest" : {
+        "type" : "object",
+        "properties" : {
+          "code" : {
+            "type" : "string",
+            "minLength" : 1
+          },
+          "planPublicId" : {
+            "type" : "string",
+            "format" : "uuid"
+          }
+        },
+        "required" : [ "code" ]
+      },
+      "ApiResponseCouponResponse" : {
+        "type" : "object",
+        "properties" : {
+          "success" : {
+            "type" : "boolean"
+          },
+          "data" : {
+            "$ref" : "#/components/schemas/CouponResponse"
+          },
+          "error" : {
+            "$ref" : "#/components/schemas/ApiErrorDetail"
+          },
+          "meta" : {
+            "$ref" : "#/components/schemas/ApiResponseMeta"
+          }
+        },
+        "required" : [ "success" ]
+      },
+      "CouponResponse" : {
+        "type" : "object",
+        "properties" : {
+          "id" : {
+            "type" : "string"
+          },
+          "code" : {
+            "type" : "string"
+          },
+          "name" : {
+            "type" : "string"
+          },
+          "type" : {
+            "type" : "string",
+            "enum" : [ "PERCENTAGE_OFF", "AMOUNT_OFF", "FREE_TRIAL_EXTENSION", "FREE_MONTHS", "REFERRAL" ]
+          },
+          "amountOff" : {
+            "type" : "number"
+          },
+          "percentOff" : {
+            "type" : "number"
+          },
+          "duration" : {
+            "type" : "string",
+            "enum" : [ "ONCE", "REPEATING", "FOREVER" ]
+          },
+          "durationInMonths" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "maxRedemptions" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "timesRedeemed" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "validUntil" : {
+            "type" : "string",
+            "format" : "date-time"
+          },
+          "isActive" : {
+            "type" : "boolean"
+          },
+          "firstTimeOnly" : {
+            "type" : "boolean"
+          },
+          "createdAt" : {
+            "type" : "string",
+            "format" : "date-time"
+          }
+        },
+        "required" : [ "firstTimeOnly", "id", "isActive" ]
+      },
+      "ApplyCouponRequest" : {
+        "type" : "object",
+        "properties" : {
+          "code" : {
+            "type" : "string",
+            "minLength" : 1
+          },
+          "subscriptionId" : {
+            "type" : "string",
+            "format" : "uuid"
+          }
+        },
+        "required" : [ "code", "subscriptionId" ]
+      },
       "BillingContactRequest" : {
         "type" : "object",
         "properties" : {
@@ -70602,8 +71621,14 @@
           "studentPublicId" : {
             "type" : "string"
           },
+          "student" : {
+            "$ref" : "#/components/schemas/ReferenceSummary"
+          },
           "classroomPublicId" : {
             "type" : "string"
+          },
+          "classroom" : {
+            "$ref" : "#/components/schemas/ReferenceSummary"
           },
           "attendanceDate" : {
             "type" : "string",
@@ -70675,6 +71700,28 @@
         },
         "required" : [ "alreadyMarked" ]
       },
+      "BulkMarkAttendanceRequest" : {
+        "type" : "object",
+        "properties" : {
+          "classroomPublicId" : {
+            "type" : "string",
+            "minLength" : 1
+          },
+          "attendanceDate" : {
+            "type" : "string",
+            "format" : "date"
+          },
+          "rows" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/Row"
+            },
+            "maxItems" : 500,
+            "minItems" : 0
+          }
+        },
+        "required" : [ "attendanceDate", "classroomPublicId", "rows" ]
+      },
       "CreateAssignmentRequest" : {
         "type" : "object",
         "properties" : {
@@ -70741,11 +71788,20 @@
           "classroomPublicId" : {
             "type" : "string"
           },
+          "classroom" : {
+            "$ref" : "#/components/schemas/ReferenceSummary"
+          },
           "subjectPublicId" : {
             "type" : "string"
           },
+          "subject" : {
+            "$ref" : "#/components/schemas/ReferenceSummary"
+          },
           "teacherPublicId" : {
             "type" : "string"
+          },
+          "teacher" : {
+            "$ref" : "#/components/schemas/ReferenceSummary"
           },
           "title" : {
             "type" : "string"
@@ -70810,8 +71866,14 @@
           "assignmentPublicId" : {
             "type" : "string"
           },
+          "assignment" : {
+            "$ref" : "#/components/schemas/ReferenceSummary"
+          },
           "studentPublicId" : {
             "type" : "string"
+          },
+          "student" : {
+            "$ref" : "#/components/schemas/ReferenceSummary"
           },
           "submittedAt" : {
             "type" : "string",
@@ -70977,6 +72039,9 @@
           },
           "assetPublicId" : {
             "type" : "string"
+          },
+          "asset" : {
+            "$ref" : "#/components/schemas/ReferenceSummary"
           },
           "assignedToType" : {
             "type" : "string"
@@ -71248,6 +72313,9 @@
           "studentPublicId" : {
             "type" : "string"
           },
+          "student" : {
+            "$ref" : "#/components/schemas/ReferenceSummary"
+          },
           "graduationYear" : {
             "type" : "integer",
             "format" : "int32"
@@ -71313,8 +72381,7 @@
           },
           "notificationType" : {
             "type" : "string",
-            "description" : "Notification type sent when the rule fires",
-            "enum" : [ "GRADE_PUBLISHED", "ATTENDANCE_MARKED", "FEE_DUE", "FEE_OVERDUE", "EXAM_SCHEDULED", "ANNOUNCEMENT", "SYSTEM_ALERT", "ACCOUNT_SUSPENDED", "SUBSCRIPTION_EXPIRING", "ASSIGNMENT_POSTED", "SUBMISSION_GRADED", "LOW_ATTENDANCE_ALERT", "APPLICATION_STATUS_CHANGED", "MERIT_LIST_PUBLISHED", "PAYMENT_RECEIVED", "GATEWAY_PAYMENT_FAILED", "ACCOUNT_LINKED", "LEAVE_REQUESTED", "LEAVE_APPROVED", "LEAVE_REJECTED", "DISCIPLINE_INCIDENT_RECORDED", "BOOK_OVERDUE", "EVENT_REGISTRATION_CONFIRMED", "FEE_DEFAULT_RISK", "APPROVAL_REQUESTED", "APPROVAL_APPROVED", "APPROVAL_REJECTED" ]
+            "description" : "Notification type sent when the rule fires"
           },
           "configJson" : {
             "type" : "string",
@@ -71688,6 +72755,35 @@
         },
         "required" : [ "days" ]
       },
+      "ApiResponseExportJobResponse" : {
+        "type" : "object",
+        "properties" : {
+          "success" : {
+            "type" : "boolean"
+          },
+          "data" : {
+            "$ref" : "#/components/schemas/ExportJobResponse"
+          },
+          "error" : {
+            "$ref" : "#/components/schemas/ApiErrorDetail"
+          },
+          "meta" : {
+            "$ref" : "#/components/schemas/ApiResponseMeta"
+          }
+        },
+        "required" : [ "success" ]
+      },
+      "ExportJobResponse" : {
+        "type" : "object",
+        "properties" : {
+          "jobId" : {
+            "type" : "string"
+          },
+          "status" : {
+            "type" : "string"
+          }
+        }
+      },
       "TaxJurisdictionRequest" : {
         "type" : "object",
         "properties" : {
@@ -71990,205 +73086,6 @@
         },
         "required" : [ "enabled", "id" ]
       },
-      "WarmUpCacheRequest" : {
-        "type" : "object",
-        "description" : "Request to pre-warm the cache for a tenant",
-        "properties" : {
-          "tenantId" : {
-            "type" : "string",
-            "description" : "Tenant slug or identifier",
-            "example" : "acme-corp",
-            "minLength" : 1
-          }
-        },
-        "required" : [ "tenantId" ]
-      },
-      "ApiResponseString" : {
-        "type" : "object",
-        "properties" : {
-          "success" : {
-            "type" : "boolean"
-          },
-          "data" : {
-            "type" : "string"
-          },
-          "error" : {
-            "$ref" : "#/components/schemas/ApiErrorDetail"
-          },
-          "meta" : {
-            "$ref" : "#/components/schemas/ApiResponseMeta"
-          }
-        },
-        "required" : [ "success" ]
-      },
-      "CreateAcademicYearRequest" : {
-        "type" : "object",
-        "properties" : {
-          "name" : {
-            "type" : "string",
-            "maxLength" : 50,
-            "minLength" : 0
-          },
-          "startDate" : {
-            "type" : "string",
-            "format" : "date"
-          },
-          "endDate" : {
-            "type" : "string",
-            "format" : "date"
-          },
-          "current" : {
-            "type" : "boolean"
-          }
-        },
-        "required" : [ "current", "endDate", "name", "startDate" ]
-      },
-      "AcademicYearResponse" : {
-        "type" : "object",
-        "properties" : {
-          "publicId" : {
-            "type" : "string"
-          },
-          "version" : {
-            "type" : "integer",
-            "format" : "int64"
-          },
-          "name" : {
-            "type" : "string"
-          },
-          "startDate" : {
-            "type" : "string",
-            "format" : "date"
-          },
-          "endDate" : {
-            "type" : "string",
-            "format" : "date"
-          },
-          "current" : {
-            "type" : "boolean"
-          }
-        },
-        "required" : [ "current", "publicId" ]
-      },
-      "ApiResponseAcademicYearResponse" : {
-        "type" : "object",
-        "properties" : {
-          "success" : {
-            "type" : "boolean"
-          },
-          "data" : {
-            "$ref" : "#/components/schemas/AcademicYearResponse"
-          },
-          "error" : {
-            "$ref" : "#/components/schemas/ApiErrorDetail"
-          },
-          "meta" : {
-            "$ref" : "#/components/schemas/ApiResponseMeta"
-          }
-        },
-        "required" : [ "success" ]
-      },
-      "ValidateCouponRequest" : {
-        "type" : "object",
-        "properties" : {
-          "code" : {
-            "type" : "string",
-            "minLength" : 1
-          },
-          "planPublicId" : {
-            "type" : "string",
-            "format" : "uuid"
-          }
-        },
-        "required" : [ "code" ]
-      },
-      "ApiResponseCouponResponse" : {
-        "type" : "object",
-        "properties" : {
-          "success" : {
-            "type" : "boolean"
-          },
-          "data" : {
-            "$ref" : "#/components/schemas/CouponResponse"
-          },
-          "error" : {
-            "$ref" : "#/components/schemas/ApiErrorDetail"
-          },
-          "meta" : {
-            "$ref" : "#/components/schemas/ApiResponseMeta"
-          }
-        },
-        "required" : [ "success" ]
-      },
-      "CouponResponse" : {
-        "type" : "object",
-        "properties" : {
-          "id" : {
-            "type" : "string"
-          },
-          "code" : {
-            "type" : "string"
-          },
-          "name" : {
-            "type" : "string"
-          },
-          "type" : {
-            "type" : "string",
-            "enum" : [ "PERCENTAGE_OFF", "AMOUNT_OFF", "FREE_TRIAL_EXTENSION", "FREE_MONTHS", "REFERRAL" ]
-          },
-          "amountOff" : {
-            "type" : "number"
-          },
-          "percentOff" : {
-            "type" : "number"
-          },
-          "duration" : {
-            "type" : "string",
-            "enum" : [ "ONCE", "REPEATING", "FOREVER" ]
-          },
-          "durationInMonths" : {
-            "type" : "integer",
-            "format" : "int32"
-          },
-          "maxRedemptions" : {
-            "type" : "integer",
-            "format" : "int32"
-          },
-          "timesRedeemed" : {
-            "type" : "integer",
-            "format" : "int32"
-          },
-          "validUntil" : {
-            "type" : "string",
-            "format" : "date-time"
-          },
-          "isActive" : {
-            "type" : "boolean"
-          },
-          "firstTimeOnly" : {
-            "type" : "boolean"
-          },
-          "createdAt" : {
-            "type" : "string",
-            "format" : "date-time"
-          }
-        },
-        "required" : [ "firstTimeOnly", "id", "isActive" ]
-      },
-      "ApplyCouponRequest" : {
-        "type" : "object",
-        "properties" : {
-          "code" : {
-            "type" : "string",
-            "minLength" : 1
-          },
-          "subscriptionId" : {
-            "type" : "string",
-            "format" : "uuid"
-          }
-        },
-        "required" : [ "code", "subscriptionId" ]
-      },
       "CreateCouponRequest" : {
         "type" : "object",
         "properties" : {
@@ -72204,6 +73101,11 @@
           },
           "amountOff" : {
             "type" : "number"
+          },
+          "currency" : {
+            "type" : "string",
+            "maxLength" : 3,
+            "minLength" : 3
           },
           "percentOff" : {
             "type" : "number"
@@ -72322,6 +73224,19 @@
         },
         "required" : [ "id" ]
       },
+      "WarmUpCacheRequest" : {
+        "type" : "object",
+        "description" : "Request to pre-warm the cache for a tenant",
+        "properties" : {
+          "tenantId" : {
+            "type" : "string",
+            "description" : "Tenant slug or identifier",
+            "example" : "acme-corp",
+            "minLength" : 1
+          }
+        },
+        "required" : [ "tenantId" ]
+      },
       "ProcessRefundRequest" : {
         "type" : "object",
         "properties" : {
@@ -72385,6 +73300,24 @@
         },
         "required" : [ "id" ]
       },
+      "ApiResponseString" : {
+        "type" : "object",
+        "properties" : {
+          "success" : {
+            "type" : "boolean"
+          },
+          "data" : {
+            "type" : "string"
+          },
+          "error" : {
+            "$ref" : "#/components/schemas/ApiErrorDetail"
+          },
+          "meta" : {
+            "$ref" : "#/components/schemas/ApiResponseMeta"
+          }
+        },
+        "required" : [ "success" ]
+      },
       "AlertConfigurationRequest" : {
         "type" : "object",
         "properties" : {
@@ -72437,6 +73370,73 @@
           },
           "data" : {
             "$ref" : "#/components/schemas/AlertResponse"
+          },
+          "error" : {
+            "$ref" : "#/components/schemas/ApiErrorDetail"
+          },
+          "meta" : {
+            "$ref" : "#/components/schemas/ApiResponseMeta"
+          }
+        },
+        "required" : [ "success" ]
+      },
+      "CreateAcademicYearRequest" : {
+        "type" : "object",
+        "properties" : {
+          "name" : {
+            "type" : "string",
+            "maxLength" : 50,
+            "minLength" : 0
+          },
+          "startDate" : {
+            "type" : "string",
+            "format" : "date"
+          },
+          "endDate" : {
+            "type" : "string",
+            "format" : "date"
+          },
+          "current" : {
+            "type" : "boolean"
+          }
+        },
+        "required" : [ "current", "endDate", "name", "startDate" ]
+      },
+      "AcademicYearResponse" : {
+        "type" : "object",
+        "properties" : {
+          "publicId" : {
+            "type" : "string"
+          },
+          "version" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "name" : {
+            "type" : "string"
+          },
+          "startDate" : {
+            "type" : "string",
+            "format" : "date"
+          },
+          "endDate" : {
+            "type" : "string",
+            "format" : "date"
+          },
+          "current" : {
+            "type" : "boolean"
+          }
+        },
+        "required" : [ "current", "publicId" ]
+      },
+      "ApiResponseAcademicYearResponse" : {
+        "type" : "object",
+        "properties" : {
+          "success" : {
+            "type" : "boolean"
+          },
+          "data" : {
+            "$ref" : "#/components/schemas/AcademicYearResponse"
           },
           "error" : {
             "$ref" : "#/components/schemas/ApiErrorDetail"
@@ -72886,6 +73886,9 @@
             "type" : "integer",
             "format" : "int32"
           },
+          "selfRegistrationEnabled" : {
+            "type" : "boolean"
+          },
           "version" : {
             "type" : "integer",
             "format" : "int64"
@@ -72952,9 +73955,12 @@
           "passwordResetFrequencyDays" : {
             "type" : "integer",
             "format" : "int32"
+          },
+          "selfRegistrationEnabled" : {
+            "type" : "boolean"
           }
         },
-        "required" : [ "accountLockoutDurationMinutes", "enforceMfa", "maxFailedLoginAttempts", "passwordExpirationDays", "passwordMinLength", "passwordResetFrequencyDays", "requireNumbers", "requireSpecialChars", "sessionTimeoutMinutes" ]
+        "required" : [ "accountLockoutDurationMinutes", "enforceMfa", "maxFailedLoginAttempts", "passwordExpirationDays", "passwordMinLength", "passwordResetFrequencyDays", "requireNumbers", "requireSpecialChars", "selfRegistrationEnabled", "sessionTimeoutMinutes" ]
       },
       "AssignSubjectCurriculumRequest" : {
         "type" : "object",
@@ -73222,6 +74228,9 @@
           },
           "employeePublicId" : {
             "type" : "string"
+          },
+          "employee" : {
+            "$ref" : "#/components/schemas/ReferenceSummary"
           },
           "payYear" : {
             "type" : "integer",
@@ -74972,17 +75981,14 @@
         },
         "required" : [ "pageNumber", "pageSize", "totalElements" ]
       },
-      "ApiResponseListSubstitutionResponse" : {
+      "ApiResponsePageSubstitutionResponse" : {
         "type" : "object",
         "properties" : {
           "success" : {
             "type" : "boolean"
           },
           "data" : {
-            "type" : "array",
-            "items" : {
-              "$ref" : "#/components/schemas/SubstitutionResponse"
-            }
+            "$ref" : "#/components/schemas/PageSubstitutionResponse"
           },
           "error" : {
             "$ref" : "#/components/schemas/ApiErrorDetail"
@@ -74992,6 +75998,30 @@
           }
         },
         "required" : [ "success" ]
+      },
+      "PageSubstitutionResponse" : {
+        "type" : "object",
+        "properties" : {
+          "content" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/SubstitutionResponse"
+            }
+          },
+          "pageNumber" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "pageSize" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "totalElements" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        },
+        "required" : [ "pageNumber", "pageSize", "totalElements" ]
       },
       "ApiResponseListTimetableEntryResponse" : {
         "type" : "object",
@@ -75759,6 +76789,9 @@
           "guardianPublicId" : {
             "type" : "string"
           },
+          "guardian" : {
+            "$ref" : "#/components/schemas/ReferenceSummary"
+          },
           "oldAuthorizedForPickup" : {
             "type" : "boolean"
           },
@@ -75776,6 +76809,9 @@
           },
           "changedByUserPublicId" : {
             "type" : "string"
+          },
+          "changedByUser" : {
+            "$ref" : "#/components/schemas/ReferenceSummary"
           },
           "changedAt" : {
             "type" : "string",
@@ -75864,6 +76900,9 @@
           },
           "recordedByUserPublicId" : {
             "type" : "string"
+          },
+          "recordedByUser" : {
+            "$ref" : "#/components/schemas/ReferenceSummary"
           }
         },
         "required" : [ "publicId" ]
@@ -76224,6 +77263,9 @@
         "properties" : {
           "feeStructurePublicId" : {
             "type" : "string"
+          },
+          "feeStructure" : {
+            "$ref" : "#/components/schemas/ReferenceSummary"
           },
           "feeStructureName" : {
             "type" : "string"
@@ -76802,6 +77844,58 @@
         },
         "required" : [ "current", "limit", "percentage" ]
       },
+      "ApiResponsePublicTenantProfile" : {
+        "type" : "object",
+        "properties" : {
+          "success" : {
+            "type" : "boolean"
+          },
+          "data" : {
+            "$ref" : "#/components/schemas/PublicTenantProfile"
+          },
+          "error" : {
+            "$ref" : "#/components/schemas/ApiErrorDetail"
+          },
+          "meta" : {
+            "$ref" : "#/components/schemas/ApiResponseMeta"
+          }
+        },
+        "required" : [ "success" ]
+      },
+      "PublicTenantProfile" : {
+        "type" : "object",
+        "properties" : {
+          "publicId" : {
+            "type" : "string",
+            "format" : "uuid"
+          },
+          "name" : {
+            "type" : "string"
+          },
+          "subdomain" : {
+            "type" : "string"
+          },
+          "logoUrl" : {
+            "type" : "string"
+          },
+          "primaryColor" : {
+            "type" : "string"
+          },
+          "secondaryColor" : {
+            "type" : "string"
+          },
+          "accentColor" : {
+            "type" : "string"
+          },
+          "fontFamily" : {
+            "type" : "string"
+          },
+          "locale" : {
+            "type" : "string"
+          }
+        },
+        "required" : [ "publicId" ]
+      },
       "ApiResponsePrivacyPolicyResponse" : {
         "type" : "object",
         "properties" : {
@@ -76851,17 +77945,14 @@
         },
         "required" : [ "active", "publicId" ]
       },
-      "ApiResponseListDataSubjectRequestResponse" : {
+      "ApiResponsePageDataSubjectRequestResponse" : {
         "type" : "object",
         "properties" : {
           "success" : {
             "type" : "boolean"
           },
           "data" : {
-            "type" : "array",
-            "items" : {
-              "$ref" : "#/components/schemas/DataSubjectRequestResponse"
-            }
+            "$ref" : "#/components/schemas/PageDataSubjectRequestResponse"
           },
           "error" : {
             "$ref" : "#/components/schemas/ApiErrorDetail"
@@ -76871,6 +77962,30 @@
           }
         },
         "required" : [ "success" ]
+      },
+      "PageDataSubjectRequestResponse" : {
+        "type" : "object",
+        "properties" : {
+          "content" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/DataSubjectRequestResponse"
+            }
+          },
+          "pageNumber" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "pageSize" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "totalElements" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        },
+        "required" : [ "pageNumber", "pageSize", "totalElements" ]
       },
       "ApiResponseListConsentRecordResponse" : {
         "type" : "object",
@@ -77254,17 +78369,14 @@
         },
         "required" : [ "success" ]
       },
-      "ApiResponseListOrganizationMembershipResponse" : {
+      "ApiResponsePageOrganizationMembershipResponse" : {
         "type" : "object",
         "properties" : {
           "success" : {
             "type" : "boolean"
           },
           "data" : {
-            "type" : "array",
-            "items" : {
-              "$ref" : "#/components/schemas/OrganizationMembershipResponse"
-            }
+            "$ref" : "#/components/schemas/PageOrganizationMembershipResponse"
           },
           "error" : {
             "$ref" : "#/components/schemas/ApiErrorDetail"
@@ -77274,6 +78386,30 @@
           }
         },
         "required" : [ "success" ]
+      },
+      "PageOrganizationMembershipResponse" : {
+        "type" : "object",
+        "properties" : {
+          "content" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/OrganizationMembershipResponse"
+            }
+          },
+          "pageNumber" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "pageSize" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "totalElements" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        },
+        "required" : [ "pageNumber", "pageSize", "totalElements" ]
       },
       "ApiResponsePageNotificationResponse" : {
         "type" : "object",
@@ -77864,6 +79000,9 @@
           "decidedByUserPublicId" : {
             "type" : "string"
           },
+          "decidedByUser" : {
+            "$ref" : "#/components/schemas/ReferenceSummary"
+          },
           "decidedAt" : {
             "type" : "string",
             "format" : "date-time"
@@ -77908,11 +79047,20 @@
           "employeePublicId" : {
             "type" : "string"
           },
+          "employee" : {
+            "$ref" : "#/components/schemas/ReferenceSummary"
+          },
           "leaveTypePublicId" : {
             "type" : "string"
           },
+          "leaveType" : {
+            "$ref" : "#/components/schemas/ReferenceSummary"
+          },
           "academicYearPublicId" : {
             "type" : "string"
+          },
+          "academicYear" : {
+            "$ref" : "#/components/schemas/ReferenceSummary"
           },
           "allocatedDays" : {
             "type" : "number"
@@ -78944,17 +80092,14 @@
           }
         }
       },
-      "ApiResponseListDocumentTemplateResponse" : {
+      "ApiResponsePageDocumentTemplateResponse" : {
         "type" : "object",
         "properties" : {
           "success" : {
             "type" : "boolean"
           },
           "data" : {
-            "type" : "array",
-            "items" : {
-              "$ref" : "#/components/schemas/DocumentTemplateResponse"
-            }
+            "$ref" : "#/components/schemas/PageDocumentTemplateResponse"
           },
           "error" : {
             "$ref" : "#/components/schemas/ApiErrorDetail"
@@ -78964,6 +80109,30 @@
           }
         },
         "required" : [ "success" ]
+      },
+      "PageDocumentTemplateResponse" : {
+        "type" : "object",
+        "properties" : {
+          "content" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/DocumentTemplateResponse"
+            }
+          },
+          "pageNumber" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "pageSize" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "totalElements" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        },
+        "required" : [ "pageNumber", "pageSize", "totalElements" ]
       },
       "ApiResponsePageDisciplineIncidentResponse" : {
         "type" : "object",
@@ -79070,7 +80239,7 @@
         },
         "required" : [ "success" ]
       },
-      "ApiResponseListMapStringObject" : {
+      "ApiResponseListPrincipalDashboardResponse" : {
         "type" : "object",
         "properties" : {
           "success" : {
@@ -79079,8 +80248,258 @@
           "data" : {
             "type" : "array",
             "items" : {
-              "type" : "object",
-              "additionalProperties" : { }
+              "$ref" : "#/components/schemas/PrincipalDashboardResponse"
+            }
+          },
+          "error" : {
+            "$ref" : "#/components/schemas/ApiErrorDetail"
+          },
+          "meta" : {
+            "$ref" : "#/components/schemas/ApiResponseMeta"
+          }
+        },
+        "required" : [ "success" ]
+      },
+      "PrincipalDashboardResponse" : {
+        "type" : "object",
+        "properties" : {
+          "activeStudentCount" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "attendancePercentageLast30Days" : {
+            "type" : "number"
+          },
+          "upcomingEventCount" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "activeAlertCounts" : {
+            "type" : "object",
+            "additionalProperties" : {
+              "type" : "integer",
+              "format" : "int32"
+            }
+          }
+        },
+        "required" : [ "activeStudentCount", "upcomingEventCount" ]
+      },
+      "ApiResponseListAttendanceTrendPoint" : {
+        "type" : "object",
+        "properties" : {
+          "success" : {
+            "type" : "boolean"
+          },
+          "data" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/AttendanceTrendPoint"
+            }
+          },
+          "error" : {
+            "$ref" : "#/components/schemas/ApiErrorDetail"
+          },
+          "meta" : {
+            "$ref" : "#/components/schemas/ApiResponseMeta"
+          }
+        },
+        "required" : [ "success" ]
+      },
+      "AttendanceTrendPoint" : {
+        "type" : "object",
+        "properties" : {
+          "weekStart" : {
+            "type" : "string"
+          },
+          "weekEnd" : {
+            "type" : "string"
+          },
+          "attendancePercentage" : {
+            "type" : "number"
+          }
+        }
+      },
+      "ApiResponseListHrDashboardResponse" : {
+        "type" : "object",
+        "properties" : {
+          "success" : {
+            "type" : "boolean"
+          },
+          "data" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/HrDashboardResponse"
+            }
+          },
+          "error" : {
+            "$ref" : "#/components/schemas/ApiErrorDetail"
+          },
+          "meta" : {
+            "$ref" : "#/components/schemas/ApiResponseMeta"
+          }
+        },
+        "required" : [ "success" ]
+      },
+      "HrDashboardResponse" : {
+        "type" : "object",
+        "properties" : {
+          "teacherCount" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "employeeCount" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "departmentCount" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "pendingLeaveRequestCount" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        },
+        "required" : [ "departmentCount", "employeeCount", "pendingLeaveRequestCount", "teacherCount" ]
+      },
+      "ApiResponseListLeaveUtilizationTrendPoint" : {
+        "type" : "object",
+        "properties" : {
+          "success" : {
+            "type" : "boolean"
+          },
+          "data" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/LeaveUtilizationTrendPoint"
+            }
+          },
+          "error" : {
+            "$ref" : "#/components/schemas/ApiErrorDetail"
+          },
+          "meta" : {
+            "$ref" : "#/components/schemas/ApiResponseMeta"
+          }
+        },
+        "required" : [ "success" ]
+      },
+      "LeaveUtilizationTrendPoint" : {
+        "type" : "object",
+        "properties" : {
+          "month" : {
+            "type" : "string"
+          },
+          "approvedLeaveDays" : {
+            "type" : "number"
+          }
+        }
+      },
+      "ApiResponseListFinanceDashboardResponse" : {
+        "type" : "object",
+        "properties" : {
+          "success" : {
+            "type" : "boolean"
+          },
+          "data" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/FinanceDashboardResponse"
+            }
+          },
+          "error" : {
+            "$ref" : "#/components/schemas/ApiErrorDetail"
+          },
+          "meta" : {
+            "$ref" : "#/components/schemas/ApiResponseMeta"
+          }
+        },
+        "required" : [ "success" ]
+      },
+      "FinanceDashboardResponse" : {
+        "type" : "object",
+        "properties" : {
+          "totalFeeCollected" : {
+            "type" : "number"
+          },
+          "totalFeeRefunded" : {
+            "type" : "number"
+          },
+          "netFeeCollected" : {
+            "type" : "number"
+          },
+          "feePaymentCount" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "totalLibraryFinesCollected" : {
+            "type" : "number"
+          }
+        },
+        "required" : [ "feePaymentCount" ]
+      },
+      "ApiResponseListFeeCollectionTrendPoint" : {
+        "type" : "object",
+        "properties" : {
+          "success" : {
+            "type" : "boolean"
+          },
+          "data" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/FeeCollectionTrendPoint"
+            }
+          },
+          "error" : {
+            "$ref" : "#/components/schemas/ApiErrorDetail"
+          },
+          "meta" : {
+            "$ref" : "#/components/schemas/ApiResponseMeta"
+          }
+        },
+        "required" : [ "success" ]
+      },
+      "FeeCollectionTrendPoint" : {
+        "type" : "object",
+        "properties" : {
+          "month" : {
+            "type" : "string"
+          },
+          "totalCollected" : {
+            "type" : "number"
+          }
+        }
+      },
+      "AcademicDashboardRow" : {
+        "type" : "object",
+        "properties" : {
+          "gradeLetter" : {
+            "type" : "string"
+          },
+          "count" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "totalGradesRecorded" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "upcomingExamCount" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        },
+        "required" : [ "count", "totalGradesRecorded", "upcomingExamCount" ]
+      },
+      "ApiResponseListAcademicDashboardRow" : {
+        "type" : "object",
+        "properties" : {
+          "success" : {
+            "type" : "boolean"
+          },
+          "data" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/AcademicDashboardRow"
             }
           },
           "error" : {
@@ -79562,17 +80981,14 @@
         },
         "required" : [ "pageNumber", "pageSize", "totalElements" ]
       },
-      "ApiResponseListBookCopyResponse" : {
+      "ApiResponsePageBookCopyResponse" : {
         "type" : "object",
         "properties" : {
           "success" : {
             "type" : "boolean"
           },
           "data" : {
-            "type" : "array",
-            "items" : {
-              "$ref" : "#/components/schemas/BookCopyResponse"
-            }
+            "$ref" : "#/components/schemas/PageBookCopyResponse"
           },
           "error" : {
             "$ref" : "#/components/schemas/ApiErrorDetail"
@@ -79582,6 +80998,30 @@
           }
         },
         "required" : [ "success" ]
+      },
+      "PageBookCopyResponse" : {
+        "type" : "object",
+        "properties" : {
+          "content" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/BookCopyResponse"
+            }
+          },
+          "pageNumber" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "pageSize" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "totalElements" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        },
+        "required" : [ "pageNumber", "pageSize", "totalElements" ]
       },
       "ApiResponsePageBookReservationResponse" : {
         "type" : "object",
@@ -80896,6 +82336,47 @@
         },
         "required" : [ "success" ]
       },
+      "ApiResponseListRunningJobResponse" : {
+        "type" : "object",
+        "properties" : {
+          "success" : {
+            "type" : "boolean"
+          },
+          "data" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/RunningJobResponse"
+            }
+          },
+          "error" : {
+            "$ref" : "#/components/schemas/ApiErrorDetail"
+          },
+          "meta" : {
+            "$ref" : "#/components/schemas/ApiResponseMeta"
+          }
+        },
+        "required" : [ "success" ]
+      },
+      "RunningJobResponse" : {
+        "type" : "object",
+        "properties" : {
+          "executionId" : {
+            "type" : "string",
+            "format" : "uuid"
+          },
+          "tenantId" : {
+            "type" : "string",
+            "format" : "uuid"
+          },
+          "jobName" : {
+            "type" : "string"
+          },
+          "startTime" : {
+            "type" : "string",
+            "format" : "date-time"
+          }
+        }
+      },
       "ApiResponseListJobDefinitionResponse" : {
         "type" : "object",
         "properties" : {
@@ -81547,6 +83028,27 @@
         },
         "required" : [ "success" ]
       },
+      "ApiResponseMapStringString" : {
+        "type" : "object",
+        "properties" : {
+          "success" : {
+            "type" : "boolean"
+          },
+          "data" : {
+            "type" : "object",
+            "additionalProperties" : {
+              "type" : "string"
+            }
+          },
+          "error" : {
+            "$ref" : "#/components/schemas/ApiErrorDetail"
+          },
+          "meta" : {
+            "$ref" : "#/components/schemas/ApiResponseMeta"
+          }
+        },
+        "required" : [ "success" ]
+      },
       "ApiResponseListFeatureFlagResponse" : {
         "type" : "object",
         "properties" : {
@@ -81609,6 +83111,182 @@
           }
         },
         "required" : [ "pageNumber", "pageSize", "totalElements" ]
+      },
+      "ApiResponseSearchSyncStatus" : {
+        "type" : "object",
+        "properties" : {
+          "success" : {
+            "type" : "boolean"
+          },
+          "data" : {
+            "$ref" : "#/components/schemas/SearchSyncStatus"
+          },
+          "error" : {
+            "$ref" : "#/components/schemas/ApiErrorDetail"
+          },
+          "meta" : {
+            "$ref" : "#/components/schemas/ApiResponseMeta"
+          }
+        },
+        "required" : [ "success" ]
+      },
+      "SearchSyncStatus" : {
+        "type" : "object",
+        "properties" : {
+          "failedDocuments" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "status" : {
+            "type" : "string"
+          }
+        },
+        "required" : [ "failedDocuments" ]
+      },
+      "ApiResponseSearchClusterHealth" : {
+        "type" : "object",
+        "properties" : {
+          "success" : {
+            "type" : "boolean"
+          },
+          "data" : {
+            "$ref" : "#/components/schemas/SearchClusterHealth"
+          },
+          "error" : {
+            "$ref" : "#/components/schemas/ApiErrorDetail"
+          },
+          "meta" : {
+            "$ref" : "#/components/schemas/ApiResponseMeta"
+          }
+        },
+        "required" : [ "success" ]
+      },
+      "SearchClusterHealth" : {
+        "type" : "object",
+        "properties" : {
+          "clusterName" : {
+            "type" : "string"
+          },
+          "status" : {
+            "type" : "string"
+          },
+          "activeShards" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "unassignedShards" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "numberOfNodes" : {
+            "type" : "integer",
+            "format" : "int32"
+          }
+        },
+        "required" : [ "activeShards", "numberOfNodes", "unassignedShards" ]
+      },
+      "ApiResponseListCouponResponse" : {
+        "type" : "object",
+        "properties" : {
+          "success" : {
+            "type" : "boolean"
+          },
+          "data" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/CouponResponse"
+            }
+          },
+          "error" : {
+            "$ref" : "#/components/schemas/ApiErrorDetail"
+          },
+          "meta" : {
+            "$ref" : "#/components/schemas/ApiResponseMeta"
+          }
+        },
+        "required" : [ "success" ]
+      },
+      "ApiResponsePageCampaignResponse" : {
+        "type" : "object",
+        "properties" : {
+          "success" : {
+            "type" : "boolean"
+          },
+          "data" : {
+            "$ref" : "#/components/schemas/PageCampaignResponse"
+          },
+          "error" : {
+            "$ref" : "#/components/schemas/ApiErrorDetail"
+          },
+          "meta" : {
+            "$ref" : "#/components/schemas/ApiResponseMeta"
+          }
+        },
+        "required" : [ "success" ]
+      },
+      "PageCampaignResponse" : {
+        "type" : "object",
+        "properties" : {
+          "content" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/CampaignResponse"
+            }
+          },
+          "pageNumber" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "pageSize" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "totalElements" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        },
+        "required" : [ "pageNumber", "pageSize", "totalElements" ]
+      },
+      "ApiResponseCampaignPerformanceResponse" : {
+        "type" : "object",
+        "properties" : {
+          "success" : {
+            "type" : "boolean"
+          },
+          "data" : {
+            "$ref" : "#/components/schemas/CampaignPerformanceResponse"
+          },
+          "error" : {
+            "$ref" : "#/components/schemas/ApiErrorDetail"
+          },
+          "meta" : {
+            "$ref" : "#/components/schemas/ApiResponseMeta"
+          }
+        },
+        "required" : [ "success" ]
+      },
+      "CampaignPerformanceResponse" : {
+        "type" : "object",
+        "properties" : {
+          "campaignId" : {
+            "type" : "string"
+          },
+          "campaignName" : {
+            "type" : "string"
+          },
+          "totalRedemptions" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "totalDiscountAmount" : {
+            "type" : "number"
+          },
+          "totalRevenueImpact" : {
+            "type" : "number"
+          }
+        },
+        "required" : [ "totalRedemptions" ]
       },
       "ApiResponsePageSystemAuditLogResponse" : {
         "type" : "object",
@@ -81704,6 +83382,78 @@
           }
         },
         "required" : [ "publicId" ]
+      },
+      "ApiResponseListAtRiskSubscriptionResponse" : {
+        "type" : "object",
+        "properties" : {
+          "success" : {
+            "type" : "boolean"
+          },
+          "data" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/AtRiskSubscriptionResponse"
+            }
+          },
+          "error" : {
+            "$ref" : "#/components/schemas/ApiErrorDetail"
+          },
+          "meta" : {
+            "$ref" : "#/components/schemas/ApiResponseMeta"
+          }
+        },
+        "required" : [ "success" ]
+      },
+      "AtRiskSubscriptionResponse" : {
+        "type" : "object",
+        "description" : "A subscription identified as at risk of churn",
+        "properties" : {
+          "publicId" : {
+            "type" : "string",
+            "format" : "uuid",
+            "description" : "Public identifier"
+          },
+          "subscriptionId" : {
+            "type" : "string",
+            "description" : "Identifier of the subscription this risk assessment covers"
+          },
+          "riskScore" : {
+            "type" : "integer",
+            "format" : "int32",
+            "description" : "Churn risk score (0-100)"
+          },
+          "riskFactorsJson" : {
+            "type" : "string",
+            "description" : "JSON-encoded list of contributing risk factors"
+          },
+          "identifiedAt" : {
+            "type" : "string",
+            "format" : "date-time",
+            "description" : "When this subscription was flagged as at risk"
+          }
+        },
+        "required" : [ "publicId" ]
+      },
+      "ApiResponseListAlertResponse" : {
+        "type" : "object",
+        "properties" : {
+          "success" : {
+            "type" : "boolean"
+          },
+          "data" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/AlertResponse"
+            }
+          },
+          "error" : {
+            "$ref" : "#/components/schemas/ApiErrorDetail"
+          },
+          "meta" : {
+            "$ref" : "#/components/schemas/ApiResponseMeta"
+          }
+        },
+        "required" : [ "success" ]
       },
       "ApiResponsePageAuditLogResponse" : {
         "type" : "object",
@@ -81878,181 +83628,6 @@
         },
         "required" : [ "pageNumber", "pageSize", "totalElements" ]
       },
-      "ApiResponseListCouponResponse" : {
-        "type" : "object",
-        "properties" : {
-          "success" : {
-            "type" : "boolean"
-          },
-          "data" : {
-            "type" : "array",
-            "items" : {
-              "$ref" : "#/components/schemas/CouponResponse"
-            }
-          },
-          "error" : {
-            "$ref" : "#/components/schemas/ApiErrorDetail"
-          },
-          "meta" : {
-            "$ref" : "#/components/schemas/ApiResponseMeta"
-          }
-        },
-        "required" : [ "success" ]
-      },
-      "ApiResponsePageCampaignResponse" : {
-        "type" : "object",
-        "properties" : {
-          "success" : {
-            "type" : "boolean"
-          },
-          "data" : {
-            "$ref" : "#/components/schemas/PageCampaignResponse"
-          },
-          "error" : {
-            "$ref" : "#/components/schemas/ApiErrorDetail"
-          },
-          "meta" : {
-            "$ref" : "#/components/schemas/ApiResponseMeta"
-          }
-        },
-        "required" : [ "success" ]
-      },
-      "PageCampaignResponse" : {
-        "type" : "object",
-        "properties" : {
-          "content" : {
-            "type" : "array",
-            "items" : {
-              "$ref" : "#/components/schemas/CampaignResponse"
-            }
-          },
-          "pageNumber" : {
-            "type" : "integer",
-            "format" : "int32"
-          },
-          "pageSize" : {
-            "type" : "integer",
-            "format" : "int32"
-          },
-          "totalElements" : {
-            "type" : "integer",
-            "format" : "int64"
-          }
-        },
-        "required" : [ "pageNumber", "pageSize", "totalElements" ]
-      },
-      "ApiResponseCampaignPerformanceResponse" : {
-        "type" : "object",
-        "properties" : {
-          "success" : {
-            "type" : "boolean"
-          },
-          "data" : {
-            "$ref" : "#/components/schemas/CampaignPerformanceResponse"
-          },
-          "error" : {
-            "$ref" : "#/components/schemas/ApiErrorDetail"
-          },
-          "meta" : {
-            "$ref" : "#/components/schemas/ApiResponseMeta"
-          }
-        },
-        "required" : [ "success" ]
-      },
-      "CampaignPerformanceResponse" : {
-        "type" : "object",
-        "properties" : {
-          "campaignId" : {
-            "type" : "string"
-          },
-          "campaignName" : {
-            "type" : "string"
-          },
-          "totalRedemptions" : {
-            "type" : "integer",
-            "format" : "int64"
-          },
-          "totalDiscountAmount" : {
-            "type" : "number"
-          },
-          "totalRevenueImpact" : {
-            "type" : "number"
-          }
-        },
-        "required" : [ "totalRedemptions" ]
-      },
-      "ApiResponseListAtRiskSubscriptionResponse" : {
-        "type" : "object",
-        "properties" : {
-          "success" : {
-            "type" : "boolean"
-          },
-          "data" : {
-            "type" : "array",
-            "items" : {
-              "$ref" : "#/components/schemas/AtRiskSubscriptionResponse"
-            }
-          },
-          "error" : {
-            "$ref" : "#/components/schemas/ApiErrorDetail"
-          },
-          "meta" : {
-            "$ref" : "#/components/schemas/ApiResponseMeta"
-          }
-        },
-        "required" : [ "success" ]
-      },
-      "AtRiskSubscriptionResponse" : {
-        "type" : "object",
-        "description" : "A subscription identified as at risk of churn",
-        "properties" : {
-          "publicId" : {
-            "type" : "string",
-            "format" : "uuid",
-            "description" : "Public identifier"
-          },
-          "subscriptionId" : {
-            "type" : "string",
-            "description" : "Identifier of the subscription this risk assessment covers"
-          },
-          "riskScore" : {
-            "type" : "integer",
-            "format" : "int32",
-            "description" : "Churn risk score (0-100)"
-          },
-          "riskFactorsJson" : {
-            "type" : "string",
-            "description" : "JSON-encoded list of contributing risk factors"
-          },
-          "identifiedAt" : {
-            "type" : "string",
-            "format" : "date-time",
-            "description" : "When this subscription was flagged as at risk"
-          }
-        },
-        "required" : [ "publicId" ]
-      },
-      "ApiResponseListAlertResponse" : {
-        "type" : "object",
-        "properties" : {
-          "success" : {
-            "type" : "boolean"
-          },
-          "data" : {
-            "type" : "array",
-            "items" : {
-              "$ref" : "#/components/schemas/AlertResponse"
-            }
-          },
-          "error" : {
-            "$ref" : "#/components/schemas/ApiErrorDetail"
-          },
-          "meta" : {
-            "$ref" : "#/components/schemas/ApiResponseMeta"
-          }
-        },
-        "required" : [ "success" ]
-      },
       "DeregisterDevicePushTokenRequest" : {
         "type" : "object",
         "properties" : {
@@ -82063,25 +83638,6 @@
           }
         },
         "required" : [ "deviceToken" ]
-      },
-      "ApiResponseInteger" : {
-        "type" : "object",
-        "properties" : {
-          "success" : {
-            "type" : "boolean"
-          },
-          "data" : {
-            "type" : "integer",
-            "format" : "int32"
-          },
-          "error" : {
-            "$ref" : "#/components/schemas/ApiErrorDetail"
-          },
-          "meta" : {
-            "$ref" : "#/components/schemas/ApiResponseMeta"
-          }
-        },
-        "required" : [ "success" ]
       },
       "RemoveCouponRequest" : {
         "type" : "object",

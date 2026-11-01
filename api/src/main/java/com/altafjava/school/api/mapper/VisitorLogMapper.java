@@ -13,5 +13,6 @@ public interface VisitorLogMapper {
 	@Mapping(target = "photoFilePublicId", expression = "java(visitorLog.getPhotoFilePublicId() != null ? visitorLog.getPhotoFilePublicId().toString() : null)")
 	@Mapping(target = "badgeIssued", expression = "java(visitorLog.getBadgeIssuanceId() != null)")
 	@Mapping(target = "hostEmployeePublicId", source = "hostEmployeeId", qualifiedByName = "employee")
+	@Mapping(target = "hostEmployee", source = "hostEmployeeId", qualifiedByName = "employeeSummary")
 	VisitorLogResponse toResponse(VisitorLog visitorLog);
 }

@@ -4,7 +4,9 @@ import java.time.Duration;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.OptionalInt;
 import java.util.Set;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import com.altafjava.platform.core.PlatformConfigurer;
 import com.altafjava.platform.core.cache.CacheRegion;
@@ -18,6 +20,7 @@ import com.altafjava.school.application.service.GradingScaleService;
 import com.altafjava.school.application.sync.AttendanceOfflineSyncHandler;
 import com.altafjava.school.domain.curriculum.model.GradeBand;
 import com.altafjava.school.domain.metrics.SchoolMetricTypes;
+import com.altafjava.school.domain.notification.SchoolNotificationTypes;
 import com.altafjava.school.domain.security.permission.SchoolPermissions;
 
 /**
@@ -27,7 +30,11 @@ import com.altafjava.school.domain.security.permission.SchoolPermissions;
 @Component
 public class SchoolPlatformConfigurer implements PlatformConfigurer {
 
-	private static final Duration GRADING_SCALE_CACHE_TTL = Duration.ofHours(1);
+	// Ten years: the longest period a school may keep a former student's records, whatever a setting says.
+	private static final int STUDENT_RETENTION_MAX_DAYS = 3650;
+
+	@Value("${school.cache.ttl.grading-scale:1h}")
+	private Duration gradingScaleCacheTtl = Duration.ofHours(1);
 
 	// Built once from the constructor-injected singleton handler bean, not inside
 	// offlineSyncEntityHandlers() itself — that method is called on every sync operation, and a
@@ -71,16 +78,6 @@ public class SchoolPlatformConfigurer implements PlatformConfigurer {
 	}
 
 	@Override
-	public Duration accessTokenExpiry() {
-		return Duration.ofHours(8);
-	}
-
-	@Override
-	public Duration refreshTokenExpiry() {
-		return Duration.ofDays(7);
-	}
-
-	@Override
 	public Set<String> enabledNotificationChannels() {
 		return Set.of("EMAIL", "IN_APP", "SMS");
 	}
@@ -98,7 +95,23 @@ public class SchoolPlatformConfigurer implements PlatformConfigurer {
 	@Override
 	public List<CacheRegion> domainCacheRegions() {
 		return List.of(CacheRegion.listOf(GradingScaleService.CACHE_GRADING_SCALE_THRESHOLDS, GradeBand.class,
-				GRADING_SCALE_CACHE_TTL));
+				gradingScaleCacheTtl));
+	}
+
+	// A prospective guardian or applicant has no account yet.
+	@Override
+	public Set<String> domainPublicPaths() {
+		return Set.of("/api/v1/admissions/apply", "/api/v1/guardians/self-register");
+	}
+
+	@Override
+	public OptionalInt maxRetentionDays(String entityType) {
+		return "STUDENT".equals(entityType) ? OptionalInt.of(STUDENT_RETENTION_MAX_DAYS) : OptionalInt.empty();
+	}
+
+	@Override
+	public Set<String> domainNotificationTypes() {
+		return SchoolNotificationTypes.ALL;
 	}
 
 	@Override

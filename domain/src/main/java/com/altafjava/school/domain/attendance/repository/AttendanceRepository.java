@@ -53,11 +53,11 @@ public interface AttendanceRepository extends JpaRepository<Attendance, Long> {
 			SELECT a FROM Attendance a
 			WHERE a.tenantId = :tenantId
 			  AND (:allClassrooms = true OR a.classroomId IN :classroomIds OR a.studentId IN :studentIds)
-			  AND (:classroomId IS NULL OR a.classroomId = :classroomId)
-			  AND (:studentId IS NULL OR a.studentId = :studentId)
-			  AND (:from IS NULL OR a.attendanceDate >= :from)
-			  AND (:to IS NULL OR a.attendanceDate <= :to)
-			  AND (:status IS NULL OR a.status = :status)
+			  AND (:#{#classroomId == null} = TRUE OR a.classroomId = :classroomId)
+			  AND (:#{#studentId == null} = TRUE OR a.studentId = :studentId)
+			  AND (:#{#from == null} = TRUE OR a.attendanceDate >= :from)
+			  AND (:#{#to == null} = TRUE OR a.attendanceDate <= :to)
+			  AND (:#{#status == null} = TRUE OR a.status = :status)
 			""")
 	Page<Attendance> search(@Param("tenantId") Long tenantId, @Param("allClassrooms") boolean allClassrooms,
 			@Param("classroomIds") Collection<Long> classroomIds, @Param("studentIds") Collection<Long> studentIds,

@@ -12,6 +12,8 @@ public interface RoomAllocationMapper {
 	@Mapping(target = "publicId", expression = "java(allocation.getPublicId().toString())")
 	@Mapping(target = "active", expression = "java(allocation.isActive())")
 	@Mapping(target = "studentPublicId", source = "studentId", qualifiedByName = "student")
+	@Mapping(target = "student", source = "studentId", qualifiedByName = "studentSummary")
 	@Mapping(target = "roomPublicId", source = "roomId", qualifiedByName = "room")
+	@Mapping(target = "room", source = "roomId", qualifiedByName = "roomSummary")
 	RoomAllocationResponse toResponse(RoomAllocation allocation);
 }

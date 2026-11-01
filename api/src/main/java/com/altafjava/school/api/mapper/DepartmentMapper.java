@@ -11,5 +11,6 @@ public interface DepartmentMapper {
 
 	@Mapping(target = "publicId", expression = "java(department.getPublicId().toString())")
 	@Mapping(target = "headEmployeePublicId", source = "headEmployeeId", qualifiedByName = "employee")
+	@Mapping(target = "headEmployee", source = "headEmployeeId", qualifiedByName = "employeeSummary")
 	DepartmentResponse toResponse(Department department);
 }

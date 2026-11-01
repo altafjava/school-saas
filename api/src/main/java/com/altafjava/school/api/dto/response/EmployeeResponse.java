@@ -1,6 +1,8 @@
 package com.altafjava.school.api.dto.response;
 
 import java.time.LocalDate;
+import com.altafjava.school.api.support.NoLabel;
+import com.altafjava.school.application.reference.ReferenceSummary;
 import com.altafjava.school.domain.common.model.Gender;
 
 public record EmployeeResponse(
@@ -14,6 +16,7 @@ public record EmployeeResponse(
 		String phone,
 		LocalDate joinDate,
 		String departmentPublicId,
+		ReferenceSummary department,
 		String designation,
 		String qualification,
 		String employmentType,
@@ -23,5 +26,5 @@ public record EmployeeResponse(
 		LocalDate probationEndDate,
 		LocalDate exitDate,
 		String exitReason,
-		String photoFilePublicId) {
+		@NoLabel("Has no human name") String photoFilePublicId) {
 }

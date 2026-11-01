@@ -12,5 +12,6 @@ public interface TermMapper {
 	@Mapping(target = "publicId", expression = "java(term.getPublicId().toString())")
 	@Mapping(target = "current", source = "current")
 	@Mapping(target = "academicYearPublicId", source = "academicYearId", qualifiedByName = "academicYear")
+	@Mapping(target = "academicYear", source = "academicYearId", qualifiedByName = "academicYearSummary")
 	TermResponse toResponse(Term term);
 }

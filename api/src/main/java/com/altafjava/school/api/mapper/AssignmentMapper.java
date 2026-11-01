@@ -11,7 +11,10 @@ public interface AssignmentMapper {
 
 	@Mapping(target = "publicId", expression = "java(assignment.getPublicId().toString())")
 	@Mapping(target = "classroomPublicId", source = "classroomId", qualifiedByName = "classroom")
+	@Mapping(target = "classroom", source = "classroomId", qualifiedByName = "classroomSummary")
 	@Mapping(target = "subjectPublicId", source = "subjectId", qualifiedByName = "subject")
+	@Mapping(target = "subject", source = "subjectId", qualifiedByName = "subjectSummary")
 	@Mapping(target = "teacherPublicId", source = "teacherId", qualifiedByName = "employee")
+	@Mapping(target = "teacher", source = "teacherId", qualifiedByName = "employeeSummary")
 	AssignmentResponse toResponse(Assignment assignment);
 }

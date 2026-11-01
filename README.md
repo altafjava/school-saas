@@ -155,15 +155,24 @@ For all 5 simulations, token acquisition, report reading, and resilience scenari
 
 ---
 
+## Supported Databases
+
+| Engine | Status |
+|---|---|
+| MariaDB | Supported; the full suite runs on every build |
+| PostgreSQL | Supported; the full suite runs in CI |
+
+An engine counts as supported only when the full suite passes on it in CI. `DB_URL` chooses the engine. Run the suite on PostgreSQL with `./gradlew test -Dtest.database=postgresql`.
+
+Report templates hold tenant-written SQL, so a template must suit the engine it runs on.
+
 ## Environment Variables
 
 All values below have safe local defaults. Override via environment variables or a `.env` file in the project root when you need different values.
 
 | Variable | Default | Description |
 |----------|---------|-------------|
-| `DB_HOST` | `localhost` | MariaDB host |
-| `DB_PORT` | `3306` | MariaDB port |
-| `DB_NAME` | `school_saas` | Database name |
+| `DB_URL` | none outside dev | JDBC URL; it chooses the database engine |
 | `DB_USERNAME` | `root` | Database username |
 | `DB_PASSWORD` | `mysql` | Database password |
 | `REDIS_HOST` | `localhost` | Redis host |

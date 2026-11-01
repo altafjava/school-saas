@@ -10,7 +10,7 @@
             <column name="id" type="BIGINT" autoIncrement="true">
                 <constraints primaryKey="true" nullable="false"/>
             </column>
-            <column name="public_id" type="VARCHAR(36)">
+            <column name="public_id" type="UUID">
                 <constraints nullable="false" unique="true"/>
             </column>
             <column name="tenant_id" type="BIGINT">
@@ -41,15 +41,13 @@
             </column>
             <column name="deleted_at" type="TIMESTAMP"/>
             <column name="deleted_by" type="VARCHAR(100)"/>
+            <column name="deleted_token" type="BIGINT" defaultValueNumeric="0">
+                <constraints nullable="false"/>
+            </column>
             <column name="version" type="BIGINT" defaultValueNumeric="0">
                 <constraints nullable="false"/>
             </column>
         </createTable>
-        <sql>
-            ALTER TABLE alumni_profiles
-                ADD COLUMN active_student_id BIGINT
-                GENERATED ALWAYS AS (CASE WHEN deleted = FALSE THEN student_id ELSE NULL END) STORED;
-        </sql>
         <createIndex indexName="idx_alumni_profiles_tenant_id" tableName="alumni_profiles">
             <column name="tenant_id"/>
         </createIndex>
@@ -61,7 +59,8 @@
         </createIndex>
         <createIndex indexName="uq_alumni_profiles_active_student" tableName="alumni_profiles" unique="true">
             <column name="tenant_id"/>
-            <column name="active_student_id"/>
+            <column name="student_id"/>
+            <column name="deleted_token"/>
         </createIndex>
         <addForeignKeyConstraint
                 constraintName="fk_alumni_profiles_tenant_id"

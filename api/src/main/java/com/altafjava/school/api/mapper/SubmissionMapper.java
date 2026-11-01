@@ -12,6 +12,8 @@ public interface SubmissionMapper {
 	@Mapping(target = "publicId", expression = "java(submission.getPublicId().toString())")
 	@Mapping(target = "status", expression = "java(submission.getStatus().name())")
 	@Mapping(target = "assignmentPublicId", source = "assignmentId", qualifiedByName = "assignment")
+	@Mapping(target = "assignment", source = "assignmentId", qualifiedByName = "assignmentSummary")
 	@Mapping(target = "studentPublicId", source = "studentId", qualifiedByName = "student")
+	@Mapping(target = "student", source = "studentId", qualifiedByName = "studentSummary")
 	SubmissionResponse toResponse(Submission submission);
 }

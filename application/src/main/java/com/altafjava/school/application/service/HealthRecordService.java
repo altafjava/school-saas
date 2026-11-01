@@ -35,7 +35,8 @@ public class HealthRecordService {
 		this.activityLogService = activityLogService;
 	}
 
-	@Transactional(readOnly = true)
+	// Not read-only: every read of a health record writes an access audit row.
+	@Transactional
 	public HealthRecord getByStudent(String studentPublicId) {
 		Long tenantId = TenantContext.getCurrentTenantId();
 		Student student = resolveStudent(studentPublicId, tenantId);

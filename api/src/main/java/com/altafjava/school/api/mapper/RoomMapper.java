@@ -11,5 +11,6 @@ public interface RoomMapper {
 
 	@Mapping(target = "publicId", expression = "java(room.getPublicId().toString())")
 	@Mapping(target = "hostelBuildingPublicId", source = "hostelBuildingId", qualifiedByName = "hostelBuilding")
+	@Mapping(target = "hostelBuilding", source = "hostelBuildingId", qualifiedByName = "hostelBuildingSummary")
 	RoomResponse toResponse(Room room);
 }

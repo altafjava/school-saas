@@ -17,9 +17,9 @@ public interface MedicalIncidentRepository extends JpaRepository<MedicalIncident
 	@Query("""
 			SELECT m FROM MedicalIncident m
 			WHERE m.tenantId = :tenantId
-			  AND (:studentId IS NULL OR m.studentId = :studentId)
-			  AND (:from IS NULL OR m.occurredAt >= :from)
-			  AND (:before IS NULL OR m.occurredAt < :before)
+			  AND (:#{#studentId == null} = TRUE OR m.studentId = :studentId)
+			  AND (:#{#from == null} = TRUE OR m.occurredAt >= :from)
+			  AND (:#{#before == null} = TRUE OR m.occurredAt < :before)
 			""")
 	Page<MedicalIncident> search(@Param("tenantId") Long tenantId, @Param("studentId") Long studentId,
 			@Param("from") LocalDateTime from, @Param("before") LocalDateTime before, Pageable pageable);

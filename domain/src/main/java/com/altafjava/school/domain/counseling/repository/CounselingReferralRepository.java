@@ -17,10 +17,10 @@ public interface CounselingReferralRepository extends JpaRepository<CounselingRe
 	@Query("""
 			SELECT c FROM CounselingReferral c
 			WHERE c.tenantId = :tenantId
-			  AND (:studentId IS NULL OR c.studentId = :studentId)
-			  AND (:status IS NULL OR c.status = :status)
-			  AND (:from IS NULL OR c.referredAt >= :from)
-			  AND (:before IS NULL OR c.referredAt < :before)
+			  AND (:#{#studentId == null} = TRUE OR c.studentId = :studentId)
+			  AND (:#{#status == null} = TRUE OR c.status = :status)
+			  AND (:#{#from == null} = TRUE OR c.referredAt >= :from)
+			  AND (:#{#before == null} = TRUE OR c.referredAt < :before)
 			""")
 	Page<CounselingReferral> search(@Param("tenantId") Long tenantId, @Param("studentId") Long studentId,
 			@Param("status") CounselingReferralStatus status, @Param("from") LocalDateTime from,

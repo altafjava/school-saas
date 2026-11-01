@@ -4,6 +4,8 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.PrePersist;
+import jakarta.persistence.PreUpdate;
 import jakarta.persistence.Table;
 import org.hibernate.annotations.SQLRestriction;
 import com.altafjava.platform.core.exception.BusinessException;
@@ -45,6 +47,14 @@ public class Circulation extends SoftDeletableEntity {
 
 	@Column(name = "last_renewed_at")
 	private LocalDate lastRenewedAt;
+
+	@PrePersist
+	@PreUpdate
+	private void assertConsistent() {
+		if (renewalCount < 0) {
+			throw new BusinessException("The renewal count cannot be negative");
+		}
+	}
 
 	public static Circulation checkout(Long bookCopyId, Long studentId, LocalDate checkedOutAt, LocalDate dueDate) {
 		return Circulation.builder()

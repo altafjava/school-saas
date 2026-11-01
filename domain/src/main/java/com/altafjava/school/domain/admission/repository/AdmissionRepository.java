@@ -17,8 +17,8 @@ public interface AdmissionRepository extends JpaRepository<Admission, Long> {
 	@Query("""
 			SELECT a FROM Admission a
 			WHERE a.tenantId = :tenantId
-			  AND (:status IS NULL OR a.status = :status)
-			  AND (:pattern IS NULL
+			  AND (:#{#status == null} = TRUE OR a.status = :status)
+			  AND (:#{#pattern == null} = TRUE
 			       OR LOWER(CONCAT(a.applicantFirstName, ' ', a.applicantLastName)) LIKE :pattern ESCAPE '!'
 			       OR LOWER(CONCAT(a.guardianFirstName, ' ', a.guardianLastName)) LIKE :pattern ESCAPE '!'
 			       OR LOWER(a.guardianEmail) LIKE :pattern ESCAPE '!'

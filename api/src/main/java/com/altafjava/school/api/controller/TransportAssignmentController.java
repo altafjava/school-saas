@@ -21,6 +21,7 @@ import com.altafjava.school.api.dto.response.TransportAssignmentResponse;
 import com.altafjava.school.api.mapper.TransportAssignmentMapper;
 import com.altafjava.school.api.support.PlatformPageMapper;
 import com.altafjava.school.api.support.SpringDataPageableResolver;
+import com.altafjava.school.application.reference.ReferenceSummaries;
 import com.altafjava.school.application.service.TransportAssignmentService;
 
 @RestController
@@ -32,8 +33,12 @@ public class TransportAssignmentController implements TransportAssignmentApi {
 
 	private final SpringDataPageableResolver pageableResolver;
 
+	private final ReferenceSummaries referenceSummaries;
+
 	public TransportAssignmentController(TransportAssignmentService transportAssignmentService,
-			TransportAssignmentMapper transportAssignmentMapper, SpringDataPageableResolver pageableResolver) {
+			TransportAssignmentMapper transportAssignmentMapper, SpringDataPageableResolver pageableResolver,
+			ReferenceSummaries referenceSummaries) {
+		this.referenceSummaries = referenceSummaries;
 		this.transportAssignmentService = transportAssignmentService;
 		this.transportAssignmentMapper = transportAssignmentMapper;
 		this.pageableResolver = pageableResolver;
@@ -46,9 +51,9 @@ public class TransportAssignmentController implements TransportAssignmentApi {
 			@RequestParam String routePublicId,
 			@RequestParam(defaultValue = "0") int page,
 			@RequestParam(defaultValue = "20") int size) {
-		return ApiResponse.success(PlatformPageMapper.toPlatformPage(
-				transportAssignmentService.listForRoute(routePublicId, pageableResolver.resolve(page, size))
-						.map(transportAssignmentMapper::toResponse)));
+		return ApiResponse.success(PlatformPageMapper.toPlatformPage(referenceSummaries.mapPage(
+				transportAssignmentService.listForRoute(routePublicId, pageableResolver.resolve(page, size)),
+				transportAssignmentMapper::toResponse)));
 	}
 
 	@Override

@@ -23,11 +23,11 @@ public interface FeePaymentRepository extends JpaRepository<FeePayment, Long> {
 	@Query("""
 			SELECT fp FROM FeePayment fp
 			WHERE fp.tenantId = :tenantId
-			  AND (:studentId IS NULL OR fp.studentId = :studentId)
-			  AND (:feeStructureId IS NULL OR fp.feeStructureId = :feeStructureId)
-			  AND (:paidFrom IS NULL OR fp.paidAt >= :paidFrom)
-			  AND (:paidBefore IS NULL OR fp.paidAt < :paidBefore)
-			  AND (:paymentSource IS NULL OR fp.paymentSource = :paymentSource)
+			  AND (:#{#studentId == null} = TRUE OR fp.studentId = :studentId)
+			  AND (:#{#feeStructureId == null} = TRUE OR fp.feeStructureId = :feeStructureId)
+			  AND (:#{#paidFrom == null} = TRUE OR fp.paidAt >= :paidFrom)
+			  AND (:#{#paidBefore == null} = TRUE OR fp.paidAt < :paidBefore)
+			  AND (:#{#paymentSource == null} = TRUE OR fp.paymentSource = :paymentSource)
 			""")
 	Page<FeePayment> search(@Param("tenantId") Long tenantId, @Param("studentId") Long studentId,
 			@Param("feeStructureId") Long feeStructureId, @Param("paidFrom") LocalDateTime paidFrom,

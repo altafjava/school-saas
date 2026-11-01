@@ -8,13 +8,13 @@ import org.springframework.stereotype.Component;
 import com.altafjava.platform.application.dto.notification.SendNotificationCommand;
 import com.altafjava.platform.application.service.NotificationService;
 import com.altafjava.platform.domain.notification.model.NotificationPriority;
-import com.altafjava.platform.domain.notification.model.NotificationType;
 import com.altafjava.school.application.scheduler.support.StudentNotificationRecipientResolver;
 import com.altafjava.school.domain.exam.event.ExamResultsPublishedEvent;
 import com.altafjava.school.domain.exam.model.Exam;
 import com.altafjava.school.domain.exam.repository.ExamRepository;
 import com.altafjava.school.domain.grade.model.Grade;
 import com.altafjava.school.domain.grade.repository.GradeRepository;
+import com.altafjava.school.domain.notification.SchoolNotificationTypes;
 import com.altafjava.school.domain.student.model.Student;
 import com.altafjava.school.domain.student.repository.StudentRepository;
 import lombok.RequiredArgsConstructor;
@@ -56,7 +56,7 @@ public class ExamResultsPublishedListener {
 			notificationService.send(SendNotificationCommand.builder()
 					.tenantId(tenantId)
 					.userId(userId)
-					.type(NotificationType.GRADE_PUBLISHED)
+					.type(SchoolNotificationTypes.GRADE_PUBLISHED)
 					.title("Results published: " + exam.getTitle())
 					.message("The results of " + exam.getTitle() + " are now available for "
 							+ student.getFirstName() + " " + student.getLastName() + ".")

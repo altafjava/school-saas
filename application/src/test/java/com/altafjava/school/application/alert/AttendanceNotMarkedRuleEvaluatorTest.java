@@ -11,7 +11,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import com.altafjava.platform.application.alert.AlertTrigger;
 import com.altafjava.platform.domain.alert.model.AlertRule;
-import com.altafjava.platform.domain.notification.model.NotificationType;
+import com.altafjava.platform.domain.notification.model.NotificationTypes;
 import com.altafjava.school.domain.attendance.repository.AttendanceRepository;
 import com.altafjava.school.domain.classroom.model.Classroom;
 import com.altafjava.school.domain.classroom.repository.ClassroomRepository;
@@ -37,7 +37,7 @@ class AttendanceNotMarkedRuleEvaluatorTest {
 
 	private AlertRule rule() {
 		AlertRule rule = AlertRule.create(AttendanceNotMarkedRuleEvaluator.RULE_TYPE, "Attendance reminder", true,
-				null, NotificationType.ANNOUNCEMENT, null);
+				null, NotificationTypes.ANNOUNCEMENT, null);
 		rule.setTenantId(1L);
 		return rule;
 	}

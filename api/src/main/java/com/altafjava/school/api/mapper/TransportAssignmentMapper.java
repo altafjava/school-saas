@@ -11,8 +11,12 @@ public interface TransportAssignmentMapper {
 
 	@Mapping(target = "publicId", expression = "java(assignment.getPublicId().toString())")
 	@Mapping(target = "studentPublicId", source = "studentId", qualifiedByName = "student")
+	@Mapping(target = "student", source = "studentId", qualifiedByName = "studentSummary")
 	@Mapping(target = "routePublicId", source = "routeId", qualifiedByName = "route")
+	@Mapping(target = "route", source = "routeId", qualifiedByName = "routeSummary")
 	@Mapping(target = "vehiclePublicId", source = "vehicleId", qualifiedByName = "vehicle")
+	@Mapping(target = "vehicle", source = "vehicleId", qualifiedByName = "vehicleSummary")
 	@Mapping(target = "routeStopPublicId", source = "routeStopId", qualifiedByName = "routeStop")
+	@Mapping(target = "routeStop", source = "routeStopId", qualifiedByName = "routeStopSummary")
 	TransportAssignmentResponse toResponse(TransportAssignment assignment);
 }

@@ -1,5 +1,7 @@
 package com.altafjava.school.api.dto.response;
 
+import com.altafjava.school.api.support.NoLabel;
+
 public record GuardianResponse(
 		String publicId,
 		Long version,
@@ -8,5 +10,5 @@ public record GuardianResponse(
 		String email,
 		String phone,
 		AddressResponse address,
-		String photoFilePublicId) {
+		@NoLabel("Has no human name") String photoFilePublicId) {
 }

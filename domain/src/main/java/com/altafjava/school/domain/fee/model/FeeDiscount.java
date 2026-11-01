@@ -7,6 +7,8 @@ import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
+import jakarta.persistence.PrePersist;
+import jakarta.persistence.PreUpdate;
 import jakarta.persistence.Table;
 import org.hibernate.annotations.SQLRestriction;
 import com.altafjava.platform.core.exception.BusinessException;
@@ -30,6 +32,14 @@ import lombok.experimental.SuperBuilder;
 @SuperBuilder
 @NoArgsConstructor
 public class FeeDiscount extends SoftDeletableEntity {
+
+	@PrePersist
+	@PreUpdate
+	private void assertConsistent() {
+		if (discountValue.signum() <= 0) {
+			throw new BusinessException("A discount must be positive");
+		}
+	}
 
 	private static final BigDecimal ONE_HUNDRED = BigDecimal.valueOf(100);
 

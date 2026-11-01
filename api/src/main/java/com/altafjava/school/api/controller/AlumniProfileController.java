@@ -21,6 +21,7 @@ import com.altafjava.school.api.mapper.AlumniProfileMapper;
 import com.altafjava.school.api.support.PlatformPageMapper;
 import com.altafjava.school.api.support.SpringDataPageableResolver;
 import com.altafjava.school.application.filter.AlumniProfileFilter;
+import com.altafjava.school.application.reference.ReferenceSummaries;
 import com.altafjava.school.application.service.AlumniProfileService;
 
 /**
@@ -39,8 +40,12 @@ public class AlumniProfileController implements AlumniProfileApi {
 
 	private final SpringDataPageableResolver pageableResolver;
 
+	private final ReferenceSummaries referenceSummaries;
+
 	public AlumniProfileController(AlumniProfileService alumniProfileService, AlumniProfileMapper alumniProfileMapper,
-			SpringDataPageableResolver pageableResolver) {
+			SpringDataPageableResolver pageableResolver,
+			ReferenceSummaries referenceSummaries) {
+		this.referenceSummaries = referenceSummaries;
 		this.alumniProfileService = alumniProfileService;
 		this.alumniProfileMapper = alumniProfileMapper;
 		this.pageableResolver = pageableResolver;
@@ -55,10 +60,9 @@ public class AlumniProfileController implements AlumniProfileApi {
 			@RequestParam(required = false) Integer graduationYear,
 			@RequestParam(required = false) Boolean active,
 			@RequestParam(required = false) String q) {
-		return ApiResponse.success(PlatformPageMapper.toPlatformPage(
-				alumniProfileService
-						.list(new AlumniProfileFilter(graduationYear, active, q), pageableResolver.resolve(page, size))
-						.map(alumniProfileMapper::toResponse)));
+		return ApiResponse.success(PlatformPageMapper.toPlatformPage(referenceSummaries.mapPage(alumniProfileService
+				.list(new AlumniProfileFilter(graduationYear, active, q), pageableResolver.resolve(page, size)),
+				alumniProfileMapper::toResponse)));
 	}
 
 	@Override

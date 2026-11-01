@@ -11,7 +11,9 @@ public interface CounselingReferralMapper {
 
 	@Mapping(target = "publicId", expression = "java(referral.getPublicId().toString())")
 	@Mapping(target = "studentPublicId", source = "studentId", qualifiedByName = "student")
+	@Mapping(target = "student", source = "studentId", qualifiedByName = "studentSummary")
 	@Mapping(target = "referredByUserPublicId", source = "referredByUserId", qualifiedByName = "user")
+	@Mapping(target = "referredByUser", source = "referredByUserId", qualifiedByName = "userSummary")
 	@Mapping(target = "counselingSessionPublicId", source = "counselingSessionId", qualifiedByName = "counselingSession")
 	CounselingReferralResponse toResponse(CounselingReferral referral);
 }

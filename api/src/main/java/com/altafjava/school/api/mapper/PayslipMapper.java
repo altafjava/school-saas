@@ -14,6 +14,7 @@ public interface PayslipMapper {
 	@Mapping(target = "publicId", expression = "java(payslip.getPublicId().toString())")
 	@Mapping(target = "status", expression = "java(payslip.getStatus().name())")
 	@Mapping(target = "employeePublicId", source = "employeeId", qualifiedByName = "employee")
+	@Mapping(target = "employee", source = "employeeId", qualifiedByName = "employeeSummary")
 	PayslipResponse toResponse(Payslip payslip);
 
 	PayComponentAmountResponse toResponse(PayComponentAmount component);

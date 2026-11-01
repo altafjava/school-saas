@@ -18,7 +18,6 @@ import com.altafjava.platform.core.exception.ResourceNotFoundException;
 import com.altafjava.platform.core.security.AuthenticatedUser;
 import com.altafjava.platform.core.tenant.TenantContext;
 import com.altafjava.platform.domain.notification.model.NotificationPriority;
-import com.altafjava.platform.domain.notification.model.NotificationType;
 import com.altafjava.school.application.scheduler.support.StudentNotificationRecipientResolver;
 import com.altafjava.school.application.security.AcademicAccessGuard;
 import com.altafjava.school.domain.classroom.repository.StudentClassroomLinkRepository;
@@ -26,6 +25,7 @@ import com.altafjava.school.domain.lms.model.Assignment;
 import com.altafjava.school.domain.lms.model.Submission;
 import com.altafjava.school.domain.lms.repository.AssignmentRepository;
 import com.altafjava.school.domain.lms.repository.SubmissionRepository;
+import com.altafjava.school.domain.notification.SchoolNotificationTypes;
 import com.altafjava.school.domain.student.model.Student;
 import com.altafjava.school.domain.student.repository.StudentRepository;
 
@@ -124,7 +124,7 @@ public class SubmissionService {
 						.ifPresent(userId -> notificationService.send(SendNotificationCommand.builder()
 								.tenantId(tenantId)
 								.userId(userId)
-								.type(NotificationType.SUBMISSION_GRADED)
+								.type(SchoolNotificationTypes.SUBMISSION_GRADED)
 								.title("Submission Graded")
 								.message("Your submission has been graded: " + submission.getMarksObtained()
 										+ " marks.")

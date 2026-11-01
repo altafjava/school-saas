@@ -17,7 +17,7 @@ public interface TeacherRepository extends JpaRepository<Teacher, Long> {
 	@Query("""
 			SELECT t FROM Teacher t
 			WHERE t.tenantId = :tenantId
-			  AND (:pattern IS NULL
+			  AND (:#{#pattern == null} = TRUE
 			       OR LOWER(t.employeeCode) LIKE :pattern ESCAPE '!'
 			       OR LOWER(CONCAT(t.firstName, ' ', t.lastName)) LIKE :pattern ESCAPE '!'
 			       OR LOWER(t.email) LIKE :pattern ESCAPE '!')

@@ -20,6 +20,7 @@ import com.altafjava.school.api.mapper.TeacherMapper;
 import com.altafjava.school.api.support.PlatformPageMapper;
 import com.altafjava.school.api.support.SortableBy;
 import com.altafjava.school.api.support.SpringDataPageableResolver;
+import com.altafjava.school.application.reference.ReferenceSummaries;
 import com.altafjava.school.application.service.TeacherService;
 
 @RestController
@@ -32,8 +33,12 @@ public class TeacherController implements TeacherApi {
 
 	private final SpringDataPageableResolver pageableResolver;
 
+	private final ReferenceSummaries referenceSummaries;
+
 	public TeacherController(TeacherService teacherService, TeacherMapper teacherMapper, AddressMapper addressMapper,
-			SpringDataPageableResolver pageableResolver) {
+			SpringDataPageableResolver pageableResolver,
+			ReferenceSummaries referenceSummaries) {
+		this.referenceSummaries = referenceSummaries;
 		this.teacherService = teacherService;
 		this.teacherMapper = teacherMapper;
 		this.addressMapper = addressMapper;
@@ -49,8 +54,9 @@ public class TeacherController implements TeacherApi {
 			@RequestParam(defaultValue = "20") int size,
 			@RequestParam(required = false) String q) {
 		return ApiResponse.success(
-				PlatformPageMapper.toPlatformPage(teacherService.searchTeachers(pageableResolver.resolve(page, size), q)
-						.map(teacherMapper::toResponse)));
+				PlatformPageMapper.toPlatformPage(referenceSummaries.mapPage(
+						teacherService.searchTeachers(pageableResolver.resolve(page, size), q),
+						teacherMapper::toResponse)));
 	}
 
 	@Override

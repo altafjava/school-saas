@@ -19,10 +19,10 @@ public interface PayslipRepository extends JpaRepository<Payslip, Long> {
 	@Query("""
 			SELECT p FROM Payslip p
 			WHERE p.tenantId = :tenantId
-			  AND (:employeeId IS NULL OR p.employeeId = :employeeId)
-			  AND (:payYear IS NULL OR p.payYear = :payYear)
-			  AND (:payMonth IS NULL OR p.payMonth = :payMonth)
-			  AND (:status IS NULL OR p.status = :status)
+			  AND (:#{#employeeId == null} = TRUE OR p.employeeId = :employeeId)
+			  AND (:#{#payYear == null} = TRUE OR p.payYear = :payYear)
+			  AND (:#{#payMonth == null} = TRUE OR p.payMonth = :payMonth)
+			  AND (:#{#status == null} = TRUE OR p.status = :status)
 			""")
 	Page<Payslip> search(@Param("tenantId") Long tenantId, @Param("employeeId") Long employeeId,
 			@Param("payYear") Integer payYear, @Param("payMonth") Integer payMonth,

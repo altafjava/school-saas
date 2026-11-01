@@ -150,9 +150,15 @@ tasks.named('build') {
     dependsOn 'exportOpenApi'
 }
 
+// The development profile holds fixed keys and passwords, so it never ships in a runnable jar.
+tasks.named('bootJar') {
+    exclude 'application-dev.yml'
+}
+
 // Ensure Testcontainers (Ryuk) mounts the standard socket path inside containers: on Rancher
 // Desktop, Podman and similar, the host socket path differs from the one containers see.
 tasks.withType(Test).configureEach {
+    systemProperty 'test.database', System.getProperty('test.database', 'mariadb')
     environment 'TESTCONTAINERS_DOCKER_SOCKET_OVERRIDE', '/var/run/docker.sock'
 }
 

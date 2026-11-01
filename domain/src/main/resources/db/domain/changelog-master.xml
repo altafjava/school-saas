@@ -51,5 +51,6 @@
     <include file="db/domain/changesets/044-library-renewal-and-reservations.xml"/>
     <include file="db/domain/changesets/045-visitor-approval-workflow.xml"/>
     <include file="db/domain/changesets/046-sibling-groups.xml"/>
+    <include file="db/domain/changesets/047-student-retention-setting.xml"/>
 
 </databaseChangeLog>

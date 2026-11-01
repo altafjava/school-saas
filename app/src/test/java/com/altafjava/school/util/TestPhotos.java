@@ -35,7 +35,7 @@ public class TestPhotos {
 		try {
 			FileMetadata metadata = FileMetadata.builder()
 					.tenantId(tenantId)
-					.userId("1")
+					.userId(1L)
 					.entityType("TEST_PHOTO")
 					.entityId("1")
 					.filename("photo.png")

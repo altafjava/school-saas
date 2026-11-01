@@ -7,7 +7,7 @@ import com.altafjava.platform.application.dto.notification.SendNotificationComma
 import com.altafjava.platform.application.service.NotificationService;
 import com.altafjava.platform.application.service.TenantSettingOverrideService;
 import com.altafjava.platform.domain.notification.model.NotificationPriority;
-import com.altafjava.platform.domain.notification.model.NotificationType;
+import com.altafjava.platform.domain.notification.model.NotificationTypes;
 import com.altafjava.school.application.scheduler.support.StudentNotificationRecipientResolver;
 import com.altafjava.school.domain.library.model.Book;
 import com.altafjava.school.domain.library.model.BookCopy;
@@ -66,7 +66,7 @@ public class ReservationAllocator {
 				.ifPresent(userId -> notificationService.send(SendNotificationCommand.builder()
 						.tenantId(tenantId)
 						.userId(userId)
-						.type(NotificationType.ANNOUNCEMENT)
+						.type(NotificationTypes.ANNOUNCEMENT)
 						.title("Reserved book ready")
 						.message("\"" + title + "\" is ready to collect from the library until "
 								+ reservation.getHoldExpiresOn() + ".")

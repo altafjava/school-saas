@@ -22,6 +22,7 @@ import com.altafjava.school.api.mapper.TimetableEntryMapper;
 import com.altafjava.school.api.support.PlatformPageMapper;
 import com.altafjava.school.api.support.SpringDataPageableResolver;
 import com.altafjava.school.application.filter.TimetableEntryFilter;
+import com.altafjava.school.application.reference.ReferenceSummaries;
 import com.altafjava.school.application.service.TimetableService;
 
 @RestController
@@ -33,8 +34,12 @@ public class TimetableController implements TimetableApi {
 
 	private final SpringDataPageableResolver pageableResolver;
 
+	private final ReferenceSummaries referenceSummaries;
+
 	public TimetableController(TimetableService timetableService, TimetableEntryMapper timetableEntryMapper,
-			SpringDataPageableResolver pageableResolver) {
+			SpringDataPageableResolver pageableResolver,
+			ReferenceSummaries referenceSummaries) {
+		this.referenceSummaries = referenceSummaries;
 		this.timetableService = timetableService;
 		this.timetableEntryMapper = timetableEntryMapper;
 		this.pageableResolver = pageableResolver;
@@ -52,13 +57,12 @@ public class TimetableController implements TimetableApi {
 			@RequestParam(required = false) DayOfWeek dayOfWeek) {
 		return ApiResponse.success(
 				PlatformPageMapper
-						.toPlatformPage(
-								timetableService
-										.listEntries(
-												new TimetableEntryFilter(classroomPublicId, teacherPublicId,
-														subjectPublicId, dayOfWeek),
-												pageableResolver.resolve(page, size))
-										.map(timetableEntryMapper::toResponse)));
+						.toPlatformPage(referenceSummaries.mapPage(timetableService
+								.listEntries(
+										new TimetableEntryFilter(classroomPublicId, teacherPublicId,
+												subjectPublicId, dayOfWeek),
+										pageableResolver.resolve(page, size)),
+								timetableEntryMapper::toResponse)));
 	}
 
 	@Override

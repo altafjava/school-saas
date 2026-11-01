@@ -10,6 +10,7 @@ import com.altafjava.platform.api.dto.response.ApiResponse;
 import com.altafjava.school.api.controller.api.LeaveBalanceApi;
 import com.altafjava.school.api.dto.response.LeaveBalanceResponse;
 import com.altafjava.school.api.mapper.LeaveBalanceMapper;
+import com.altafjava.school.application.reference.ReferenceSummaries;
 import com.altafjava.school.application.service.LeaveBalanceService;
 
 @RestController
@@ -18,7 +19,11 @@ public class LeaveBalanceController implements LeaveBalanceApi {
 	private final LeaveBalanceService leaveBalanceService;
 	private final LeaveBalanceMapper leaveBalanceMapper;
 
-	public LeaveBalanceController(LeaveBalanceService leaveBalanceService, LeaveBalanceMapper leaveBalanceMapper) {
+	private final ReferenceSummaries referenceSummaries;
+
+	public LeaveBalanceController(LeaveBalanceService leaveBalanceService, LeaveBalanceMapper leaveBalanceMapper,
+			ReferenceSummaries referenceSummaries) {
+		this.referenceSummaries = referenceSummaries;
 		this.leaveBalanceService = leaveBalanceService;
 		this.leaveBalanceMapper = leaveBalanceMapper;
 	}
@@ -28,17 +33,15 @@ public class LeaveBalanceController implements LeaveBalanceApi {
 	@PreAuthorize("@permissionAuthorizationService.hasPermission('LEAVE_BALANCE_MANAGE')")
 	public ApiResponse<List<LeaveBalanceResponse>> forEmployee(@PathVariable String publicId,
 			@RequestParam String academicYearPublicId) {
-		return ApiResponse.success(leaveBalanceService.listForEmployee(publicId, academicYearPublicId).stream()
-				.map(leaveBalanceMapper::toResponse)
-				.toList());
+		return ApiResponse.success(referenceSummaries.mapList(
+				leaveBalanceService.listForEmployee(publicId, academicYearPublicId), leaveBalanceMapper::toResponse));
 	}
 
 	@Override
 	@GetMapping("/api/v1/leave-requests/my/balances")
 	@PreAuthorize("@permissionAuthorizationService.hasPermission('LEAVE_SELF_SERVICE')")
 	public ApiResponse<List<LeaveBalanceResponse>> forCurrentEmployee(@RequestParam String academicYearPublicId) {
-		return ApiResponse.success(leaveBalanceService.listForCurrentEmployee(academicYearPublicId).stream()
-				.map(leaveBalanceMapper::toResponse)
-				.toList());
+		return ApiResponse.success(referenceSummaries.mapList(
+				leaveBalanceService.listForCurrentEmployee(academicYearPublicId), leaveBalanceMapper::toResponse));
 	}
 }

@@ -24,6 +24,7 @@ import com.altafjava.school.api.support.PlatformPageMapper;
 import com.altafjava.school.api.support.SpringDataPageableResolver;
 import com.altafjava.school.application.filter.AttendanceFilter;
 import com.altafjava.school.application.filter.DateWindow;
+import com.altafjava.school.application.reference.ReferenceSummaries;
 import com.altafjava.school.application.service.PeriodAttendanceService;
 import com.altafjava.school.domain.attendance.model.AttendanceStatus;
 
@@ -35,8 +36,12 @@ public class PeriodAttendanceController implements PeriodAttendanceApi {
 	private final PeriodAttendanceMapper periodAttendanceMapper;
 	private final SpringDataPageableResolver pageableResolver;
 
+	private final ReferenceSummaries referenceSummaries;
+
 	public PeriodAttendanceController(PeriodAttendanceService periodAttendanceService,
-			PeriodAttendanceMapper periodAttendanceMapper, SpringDataPageableResolver pageableResolver) {
+			PeriodAttendanceMapper periodAttendanceMapper, SpringDataPageableResolver pageableResolver,
+			ReferenceSummaries referenceSummaries) {
+		this.referenceSummaries = referenceSummaries;
 		this.periodAttendanceService = periodAttendanceService;
 		this.periodAttendanceMapper = periodAttendanceMapper;
 		this.pageableResolver = pageableResolver;
@@ -56,8 +61,9 @@ public class PeriodAttendanceController implements PeriodAttendanceApi {
 		AttendanceFilter filter = new AttendanceFilter(classroomPublicId, studentPublicId, new DateWindow(from, to),
 				status);
 		return ApiResponse.success(PlatformPageMapper
-				.toPlatformPage(periodAttendanceService.listAttendance(filter, pageableResolver.resolve(page, size))
-						.map(periodAttendanceMapper::toResponse)));
+				.toPlatformPage(referenceSummaries.mapPage(
+						periodAttendanceService.listAttendance(filter, pageableResolver.resolve(page, size)),
+						periodAttendanceMapper::toResponse)));
 	}
 
 	@Override

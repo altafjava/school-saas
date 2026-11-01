@@ -3,11 +3,13 @@ package com.altafjava.school.api.dto.response;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
+import com.altafjava.school.application.reference.ReferenceSummary;
 
 public record PayslipResponse(
 		String publicId,
 		Long version,
 		String employeePublicId,
+		ReferenceSummary employee,
 		int payYear,
 		int payMonth,
 		List<PayComponentAmountResponse> components,

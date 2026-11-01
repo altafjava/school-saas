@@ -1,6 +1,7 @@
 package com.altafjava.school.api.dto.response;
 
 import java.time.LocalDate;
+import com.altafjava.school.api.support.NoLabel;
 import com.altafjava.school.domain.common.model.Gender;
 
 public record StudentResponse(
@@ -15,7 +16,7 @@ public record StudentResponse(
 		Gender gender,
 		String enrollmentStatus,
 		AddressResponse address,
-		String photoFilePublicId,
+		@NoLabel("Has no human name") String photoFilePublicId,
 		CurrentClassroomResponse currentClassroom) {
 
 	/** The same student, placed in {@code classroom} (null for a student with no place this academic year). */

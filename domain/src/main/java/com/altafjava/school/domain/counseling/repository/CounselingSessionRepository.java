@@ -17,10 +17,10 @@ public interface CounselingSessionRepository extends JpaRepository<CounselingSes
 	@Query("""
 			SELECT c FROM CounselingSession c
 			WHERE c.tenantId = :tenantId
-			  AND (:studentId IS NULL OR c.studentId = :studentId)
-			  AND (:followUpRequired IS NULL OR c.followUpRequired = :followUpRequired)
-			  AND (:from IS NULL OR c.sessionDate >= :from)
-			  AND (:to IS NULL OR c.sessionDate <= :to)
+			  AND (:#{#studentId == null} = TRUE OR c.studentId = :studentId)
+			  AND (:#{#followUpRequired == null} = TRUE OR c.followUpRequired = :followUpRequired)
+			  AND (:#{#from == null} = TRUE OR c.sessionDate >= :from)
+			  AND (:#{#to == null} = TRUE OR c.sessionDate <= :to)
 			""")
 	Page<CounselingSession> search(@Param("tenantId") Long tenantId, @Param("studentId") Long studentId,
 			@Param("followUpRequired") Boolean followUpRequired, @Param("from") LocalDate from,

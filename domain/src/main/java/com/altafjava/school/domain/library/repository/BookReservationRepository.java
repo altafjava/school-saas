@@ -20,9 +20,9 @@ public interface BookReservationRepository extends JpaRepository<BookReservation
 	@Query("""
 			SELECT r FROM BookReservation r
 			WHERE r.tenantId = :tenantId
-			  AND (:bookId IS NULL OR r.bookId = :bookId)
-			  AND (:studentId IS NULL OR r.studentId = :studentId)
-			  AND (:status IS NULL OR r.status = :status)
+			  AND (:#{#bookId == null} = TRUE OR r.bookId = :bookId)
+			  AND (:#{#studentId == null} = TRUE OR r.studentId = :studentId)
+			  AND (:#{#status == null} = TRUE OR r.status = :status)
 			""")
 	Page<BookReservation> search(@Param("tenantId") Long tenantId, @Param("bookId") Long bookId,
 			@Param("studentId") Long studentId, @Param("status") ReservationStatus status, Pageable pageable);

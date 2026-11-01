@@ -16,7 +16,7 @@ public interface SubjectRepository extends JpaRepository<Subject, Long> {
 	@Query("""
 			SELECT s FROM Subject s
 			WHERE s.tenantId = :tenantId
-			  AND (:pattern IS NULL OR LOWER(s.code) LIKE :pattern ESCAPE '!' OR LOWER(s.name) LIKE :pattern ESCAPE '!')
+			  AND (:#{#pattern == null} = TRUE OR LOWER(s.code) LIKE :pattern ESCAPE '!' OR LOWER(s.name) LIKE :pattern ESCAPE '!')
 			""")
 	Page<Subject> search(@Param("tenantId") Long tenantId, @Param("pattern") String pattern, Pageable pageable);
 

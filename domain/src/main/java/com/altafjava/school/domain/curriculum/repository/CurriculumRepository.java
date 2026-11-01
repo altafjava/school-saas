@@ -15,7 +15,7 @@ public interface CurriculumRepository extends JpaRepository<Curriculum, Long> {
 	@Query("""
 			SELECT c FROM Curriculum c
 			WHERE c.tenantId = :tenantId
-			  AND (:pattern IS NULL OR LOWER(c.name) LIKE :pattern ESCAPE '!'
+			  AND (:#{#pattern == null} = TRUE OR LOWER(c.name) LIKE :pattern ESCAPE '!'
 			       OR LOWER(c.code) LIKE :pattern ESCAPE '!')
 			""")
 	Page<Curriculum> search(@Param("tenantId") Long tenantId, @Param("pattern") String pattern, Pageable pageable);

@@ -16,9 +16,9 @@ public interface EventRepository extends JpaRepository<Event, Long> {
 	@Query("""
 			SELECT e FROM Event e
 			WHERE e.tenantId = :tenantId
-			  AND (:from IS NULL OR e.eventDate >= :from)
-			  AND (:before IS NULL OR e.eventDate < :before)
-			  AND (:pattern IS NULL OR LOWER(e.title) LIKE :pattern ESCAPE '!' OR LOWER(e.location) LIKE :pattern ESCAPE '!')
+			  AND (:#{#from == null} = TRUE OR e.eventDate >= :from)
+			  AND (:#{#before == null} = TRUE OR e.eventDate < :before)
+			  AND (:#{#pattern == null} = TRUE OR LOWER(e.title) LIKE :pattern ESCAPE '!' OR LOWER(e.location) LIKE :pattern ESCAPE '!')
 			""")
 	Page<Event> search(@Param("tenantId") Long tenantId, @Param("from") LocalDateTime from,
 			@Param("before") LocalDateTime before, @Param("pattern") String pattern, Pageable pageable);

@@ -7,10 +7,12 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
 import com.altafjava.platform.api.dto.response.ApiResponse;
 import com.altafjava.platform.core.security.AuthenticatedUser;
+import com.altafjava.school.api.dto.request.BulkRecordGradesRequest;
 import com.altafjava.school.api.dto.request.CorrectGradeRequest;
 import com.altafjava.school.api.dto.request.RecordGradeRequest;
 import com.altafjava.school.api.dto.response.GradeCorrectionResponse;
 import com.altafjava.school.api.dto.response.GradeResponse;
+import com.altafjava.school.application.bulk.BulkEntryResult;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -44,4 +46,8 @@ public interface GradeApi {
 			@PathVariable String publicId,
 			@RequestParam(defaultValue = "0") int page,
 			@RequestParam(defaultValue = "20") int size);
+
+	@Operation(summary = "Record an exam's marks", description = "Records a roster in one request and reports each row. Safe to resend.")
+	public ApiResponse<BulkEntryResult> recordBulk(@Valid @RequestBody BulkRecordGradesRequest request,
+			@AuthenticationPrincipal AuthenticatedUser user);
 }

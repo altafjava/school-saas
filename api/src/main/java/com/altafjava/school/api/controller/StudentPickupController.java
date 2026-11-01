@@ -14,6 +14,7 @@ import com.altafjava.school.api.dto.response.PickupAuthorizedGuardianResponse;
 import com.altafjava.school.api.dto.response.PickupCheckResponse;
 import com.altafjava.school.api.mapper.GuardianAuthorizationChangeMapper;
 import com.altafjava.school.api.mapper.PickupAuthorizedGuardianMapper;
+import com.altafjava.school.application.reference.ReferenceSummaries;
 import com.altafjava.school.application.service.GuardianPickupService;
 
 @RestController
@@ -24,9 +25,13 @@ public class StudentPickupController implements StudentPickupApi {
 	private final PickupAuthorizedGuardianMapper pickupAuthorizedGuardianMapper;
 	private final GuardianAuthorizationChangeMapper guardianAuthorizationChangeMapper;
 
+	private final ReferenceSummaries referenceSummaries;
+
 	public StudentPickupController(GuardianPickupService guardianPickupService,
 			PickupAuthorizedGuardianMapper pickupAuthorizedGuardianMapper,
-			GuardianAuthorizationChangeMapper guardianAuthorizationChangeMapper) {
+			GuardianAuthorizationChangeMapper guardianAuthorizationChangeMapper,
+			ReferenceSummaries referenceSummaries) {
+		this.referenceSummaries = referenceSummaries;
 		this.guardianPickupService = guardianPickupService;
 		this.pickupAuthorizedGuardianMapper = pickupAuthorizedGuardianMapper;
 		this.guardianAuthorizationChangeMapper = guardianAuthorizationChangeMapper;
@@ -54,7 +59,7 @@ public class StudentPickupController implements StudentPickupApi {
 	@GetMapping("/history")
 	@PreAuthorize("@permissionAuthorizationService.hasPermission('GUARDIAN_PICKUP_MANAGE')")
 	public ApiResponse<List<GuardianAuthorizationChangeResponse>> history(@PathVariable String studentPublicId) {
-		return ApiResponse.success(guardianPickupService.history(studentPublicId).stream()
-				.map(guardianAuthorizationChangeMapper::toResponse).toList());
+		return ApiResponse.success(referenceSummaries.mapList(guardianPickupService.history(studentPublicId),
+				guardianAuthorizationChangeMapper::toResponse));
 	}
 }

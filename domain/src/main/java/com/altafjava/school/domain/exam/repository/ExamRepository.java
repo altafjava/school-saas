@@ -20,10 +20,10 @@ public interface ExamRepository extends JpaRepository<Exam, Long> {
 	@Query("""
 			SELECT e FROM Exam e
 			WHERE e.tenantId = :tenantId
-			  AND (:classroomId IS NULL OR e.classroomId = :classroomId)
-			  AND (:termId IS NULL OR e.termId = :termId)
-			  AND (:subjectId IS NULL OR e.subjectId = :subjectId)
-			  AND (:status IS NULL OR e.status = :status)
+			  AND (:#{#classroomId == null} = TRUE OR e.classroomId = :classroomId)
+			  AND (:#{#termId == null} = TRUE OR e.termId = :termId)
+			  AND (:#{#subjectId == null} = TRUE OR e.subjectId = :subjectId)
+			  AND (:#{#status == null} = TRUE OR e.status = :status)
 			""")
 	Page<Exam> search(@Param("tenantId") Long tenantId, @Param("classroomId") Long classroomId,
 			@Param("termId") Long termId, @Param("subjectId") Long subjectId, @Param("status") ExamStatus status,

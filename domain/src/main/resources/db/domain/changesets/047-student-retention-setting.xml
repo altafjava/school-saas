@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                            http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-5.0.xsd">
+
+    <changeSet id="school-047-student-retention-setting" author="school">
+        <insert tableName="global_settings">
+            <column name="setting_key" value="school.student-retention-days"/>
+            <column name="setting_value" value="2555"/>
+            <column name="setting_category" value="PLATFORM"/>
+            <column name="description" value="Default days a new school keeps a former student's records"/>
+            <column name="data_type" value="INTEGER"/>
+        </insert>
+    </changeSet>
+</databaseChangeLog>

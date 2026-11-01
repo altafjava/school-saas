@@ -13,7 +13,7 @@
             <column name="id" type="BIGINT" autoIncrement="true">
                 <constraints primaryKey="true" nullable="false"/>
             </column>
-            <column name="public_id" type="VARCHAR(36)">
+            <column name="public_id" type="UUID">
                 <constraints nullable="false" unique="true"/>
             </column>
             <column name="tenant_id" type="BIGINT">
@@ -44,27 +44,22 @@
             </column>
             <column name="deleted_at" type="TIMESTAMP"/>
             <column name="deleted_by" type="VARCHAR(100)"/>
+            <column name="deleted_token" type="BIGINT" defaultValueNumeric="0">
+                <constraints nullable="false"/>
+            </column>
             <column name="version" type="BIGINT" defaultValueNumeric="0">
                 <constraints nullable="false"/>
             </column>
         </createTable>
-        <sql>
-            ALTER TABLE certificate_types
-                ADD COLUMN active_code VARCHAR(50)
-                GENERATED ALWAYS AS (CASE WHEN deleted = FALSE THEN code ELSE NULL END) STORED;
-        </sql>
-        <sql>
-            ALTER TABLE certificate_types
-                ADD COLUMN active_name VARCHAR(150)
-                GENERATED ALWAYS AS (CASE WHEN deleted = FALSE THEN name ELSE NULL END) STORED;
-        </sql>
         <createIndex indexName="uq_certificate_types_tenant_active_code" tableName="certificate_types" unique="true">
             <column name="tenant_id"/>
-            <column name="active_code"/>
+            <column name="code"/>
+            <column name="deleted_token"/>
         </createIndex>
         <createIndex indexName="uq_certificate_types_tenant_active_name" tableName="certificate_types" unique="true">
             <column name="tenant_id"/>
-            <column name="active_name"/>
+            <column name="name"/>
+            <column name="deleted_token"/>
         </createIndex>
         <createIndex indexName="idx_certificate_types_deleted" tableName="certificate_types">
             <column name="deleted"/>

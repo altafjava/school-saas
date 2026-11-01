@@ -17,7 +17,6 @@ import com.altafjava.platform.core.exception.ResourceNotFoundException;
 import com.altafjava.platform.core.security.AuthenticatedUser;
 import com.altafjava.platform.core.tenant.TenantContext;
 import com.altafjava.platform.domain.notification.model.NotificationPriority;
-import com.altafjava.platform.domain.notification.model.NotificationType;
 import com.altafjava.school.application.filter.DisciplineIncidentFilter;
 import com.altafjava.school.application.reference.EntityRef;
 import com.altafjava.school.application.reference.PublicIdLookup;
@@ -26,6 +25,7 @@ import com.altafjava.school.application.security.StudentDataAccessGuard;
 import com.altafjava.school.domain.discipline.model.DisciplineIncident;
 import com.altafjava.school.domain.discipline.model.IncidentSeverity;
 import com.altafjava.school.domain.discipline.repository.DisciplineIncidentRepository;
+import com.altafjava.school.domain.notification.SchoolNotificationTypes;
 import com.altafjava.school.domain.student.model.Student;
 import com.altafjava.school.domain.student.repository.StudentRepository;
 import com.altafjava.school.domain.teacher.model.Teacher;
@@ -117,7 +117,7 @@ public class DisciplineIncidentService {
 			notificationService.send(SendNotificationCommand.builder()
 					.tenantId(tenantId)
 					.userId(userId)
-					.type(NotificationType.DISCIPLINE_INCIDENT_RECORDED)
+					.type(SchoolNotificationTypes.DISCIPLINE_INCIDENT_RECORDED)
 					.title("Discipline Incident Reported")
 					.message("A " + incident.getSeverity().name().toLowerCase() + " discipline incident was recorded.")
 					.templateVariables(Map.of(

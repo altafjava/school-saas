@@ -13,10 +13,10 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import com.altafjava.platform.application.alert.AlertTrigger;
 import com.altafjava.platform.domain.alert.model.AlertRule;
-import com.altafjava.platform.domain.notification.model.NotificationType;
 import com.altafjava.school.application.scheduler.support.StudentNotificationRecipientResolver;
 import com.altafjava.school.application.service.FeePaymentService;
 import com.altafjava.school.domain.fee.model.FeeBalance;
+import com.altafjava.school.domain.notification.SchoolNotificationTypes;
 import com.altafjava.school.domain.student.model.EnrollmentStatus;
 import com.altafjava.school.domain.student.model.Student;
 import com.altafjava.school.domain.student.repository.StudentRepository;
@@ -39,7 +39,7 @@ class FeePaymentReminderRuleEvaluatorTest {
 
 	private AlertRule rule() {
 		AlertRule rule = AlertRule.create(FeePaymentReminderRuleEvaluator.RULE_TYPE, "Fee reminder", true, null,
-				NotificationType.FEE_DUE, null);
+				SchoolNotificationTypes.FEE_DUE, null);
 		rule.setTenantId(1L);
 		return rule;
 	}

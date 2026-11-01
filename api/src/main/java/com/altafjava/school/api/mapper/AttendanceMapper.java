@@ -12,6 +12,8 @@ public interface AttendanceMapper {
 	@Mapping(target = "publicId", expression = "java(attendance.getPublicId().toString())")
 	@Mapping(target = "status", expression = "java(attendance.getStatus().name())")
 	@Mapping(target = "studentPublicId", source = "studentId", qualifiedByName = "student")
+	@Mapping(target = "student", source = "studentId", qualifiedByName = "studentSummary")
 	@Mapping(target = "classroomPublicId", source = "classroomId", qualifiedByName = "classroom")
+	@Mapping(target = "classroom", source = "classroomId", qualifiedByName = "classroomSummary")
 	AttendanceResponse toResponse(Attendance attendance);
 }

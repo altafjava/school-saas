@@ -4,6 +4,8 @@ import org.mapstruct.Named;
 import org.springframework.stereotype.Component;
 import com.altafjava.school.application.reference.EntityRef;
 import com.altafjava.school.application.reference.PublicIdResolver;
+import com.altafjava.school.application.reference.ReferenceSummaries;
+import com.altafjava.school.application.reference.ReferenceSummary;
 import lombok.RequiredArgsConstructor;
 
 /**
@@ -15,6 +17,7 @@ import lombok.RequiredArgsConstructor;
 public class SchoolPublicIdMapping {
 
 	private final PublicIdResolver publicIdResolver;
+	private final ReferenceSummaries referenceSummaries;
 
 	@Named("academicYear")
 	public String academicYear(Long id) {
@@ -164,5 +167,145 @@ public class SchoolPublicIdMapping {
 	@Named("venue")
 	public String venue(Long id) {
 		return publicIdResolver.resolve(EntityRef.VENUE, id);
+	}
+
+	@Named("academicYearSummary")
+	public ReferenceSummary academicYearSummary(Long id) {
+		return referenceSummaries.of(EntityRef.ACADEMIC_YEAR, id);
+	}
+
+	@Named("assetSummary")
+	public ReferenceSummary assetSummary(Long id) {
+		return referenceSummaries.of(EntityRef.ASSET, id);
+	}
+
+	@Named("assignmentSummary")
+	public ReferenceSummary assignmentSummary(Long id) {
+		return referenceSummaries.of(EntityRef.ASSIGNMENT, id);
+	}
+
+	@Named("boardSummary")
+	public ReferenceSummary boardSummary(Long id) {
+		return referenceSummaries.of(EntityRef.BOARD, id);
+	}
+
+	@Named("bookSummary")
+	public ReferenceSummary bookSummary(Long id) {
+		return referenceSummaries.of(EntityRef.BOOK, id);
+	}
+
+	@Named("bookCopySummary")
+	public ReferenceSummary bookCopySummary(Long id) {
+		return referenceSummaries.of(EntityRef.BOOK_COPY, id);
+	}
+
+	@Named("classroomSummary")
+	public ReferenceSummary classroomSummary(Long id) {
+		return referenceSummaries.of(EntityRef.CLASSROOM, id);
+	}
+
+	@Named("curriculumSummary")
+	public ReferenceSummary curriculumSummary(Long id) {
+		return referenceSummaries.of(EntityRef.CURRICULUM, id);
+	}
+
+	@Named("departmentSummary")
+	public ReferenceSummary departmentSummary(Long id) {
+		return referenceSummaries.of(EntityRef.DEPARTMENT, id);
+	}
+
+	@Named("employeeSummary")
+	public ReferenceSummary employeeSummary(Long id) {
+		return referenceSummaries.of(EntityRef.EMPLOYEE, id);
+	}
+
+	@Named("eventSummary")
+	public ReferenceSummary eventSummary(Long id) {
+		return referenceSummaries.of(EntityRef.EVENT, id);
+	}
+
+	@Named("examSummary")
+	public ReferenceSummary examSummary(Long id) {
+		return referenceSummaries.of(EntityRef.EXAM, id);
+	}
+
+	@Named("examTypeSummary")
+	public ReferenceSummary examTypeSummary(Long id) {
+		return referenceSummaries.of(EntityRef.EXAM_TYPE, id);
+	}
+
+	@Named("feeStructureSummary")
+	public ReferenceSummary feeStructureSummary(Long id) {
+		return referenceSummaries.of(EntityRef.FEE_STRUCTURE, id);
+	}
+
+	@Named("gradingScaleSummary")
+	public ReferenceSummary gradingScaleSummary(Long id) {
+		return referenceSummaries.of(EntityRef.GRADING_SCALE, id);
+	}
+
+	@Named("guardianSummary")
+	public ReferenceSummary guardianSummary(Long id) {
+		return referenceSummaries.of(EntityRef.GUARDIAN, id);
+	}
+
+	@Named("hostelBuildingSummary")
+	public ReferenceSummary hostelBuildingSummary(Long id) {
+		return referenceSummaries.of(EntityRef.HOSTEL_BUILDING, id);
+	}
+
+	@Named("leaveTypeSummary")
+	public ReferenceSummary leaveTypeSummary(Long id) {
+		return referenceSummaries.of(EntityRef.LEAVE_TYPE, id);
+	}
+
+	@Named("periodSummary")
+	public ReferenceSummary periodSummary(Long id) {
+		return referenceSummaries.of(EntityRef.PERIOD, id);
+	}
+
+	@Named("roomSummary")
+	public ReferenceSummary roomSummary(Long id) {
+		return referenceSummaries.of(EntityRef.ROOM, id);
+	}
+
+	@Named("routeSummary")
+	public ReferenceSummary routeSummary(Long id) {
+		return referenceSummaries.of(EntityRef.ROUTE, id);
+	}
+
+	@Named("routeStopSummary")
+	public ReferenceSummary routeStopSummary(Long id) {
+		return referenceSummaries.of(EntityRef.ROUTE_STOP, id);
+	}
+
+	@Named("studentSummary")
+	public ReferenceSummary studentSummary(Long id) {
+		return referenceSummaries.of(EntityRef.STUDENT, id);
+	}
+
+	@Named("subjectSummary")
+	public ReferenceSummary subjectSummary(Long id) {
+		return referenceSummaries.of(EntityRef.SUBJECT, id);
+	}
+
+	@Named("termSummary")
+	public ReferenceSummary termSummary(Long id) {
+		return referenceSummaries.of(EntityRef.TERM, id);
+	}
+
+	@Named("userSummary")
+	public ReferenceSummary userSummary(Long id) {
+		return referenceSummaries.of(EntityRef.USER, id);
+	}
+
+	@Named("vehicleSummary")
+	public ReferenceSummary vehicleSummary(Long id) {
+		return referenceSummaries.of(EntityRef.VEHICLE, id);
+	}
+
+	@Named("venueSummary")
+	public ReferenceSummary venueSummary(Long id) {
+		return referenceSummaries.of(EntityRef.VENUE, id);
 	}
 }

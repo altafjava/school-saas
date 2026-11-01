@@ -5,10 +5,12 @@ import java.time.Instant;
 import java.time.LocalDate;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.PreUpdate;
 import jakarta.persistence.Table;
 import org.hibernate.annotations.SQLRestriction;
 import com.altafjava.platform.core.exception.BusinessException;
 import com.altafjava.platform.core.model.SoftDeletableEntity;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
@@ -53,6 +55,16 @@ public class TimetableSubstitution extends SoftDeletableEntity {
 
 	@Column(name = "cancellation_reason", length = 500)
 	private String cancellationReason;
+
+	// Part of the live-row unique keys: 0 while live, the row's id once closed.
+	@Builder.Default
+	@Column(name = "retired_token", nullable = false)
+	private long retiredToken = 0;
+
+	@PreUpdate
+	private void refreshRetiredToken() {
+		this.retiredToken = isActive() ? 0 : getId();
+	}
 
 	public static TimetableSubstitution assign(TimetableEntry entry, LocalDate substitutionDate,
 			Long substituteTeacherId, String reason, Long assignedByUserId, LocalDate today) {

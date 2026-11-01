@@ -13,13 +13,13 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import com.altafjava.platform.application.alert.AlertTrigger;
 import com.altafjava.platform.domain.alert.model.AlertRule;
-import com.altafjava.platform.domain.notification.model.NotificationType;
 import com.altafjava.platform.domain.user.model.Role;
 import com.altafjava.platform.domain.user.model.User;
 import com.altafjava.platform.domain.user.repository.RoleRepository;
 import com.altafjava.platform.domain.user.repository.UserRepository;
 import com.altafjava.school.application.service.FeePaymentService;
 import com.altafjava.school.domain.fee.model.FeeBalance;
+import com.altafjava.school.domain.notification.SchoolNotificationTypes;
 import com.altafjava.school.domain.student.model.EnrollmentStatus;
 import com.altafjava.school.domain.student.model.Student;
 import com.altafjava.school.domain.student.repository.StudentRepository;
@@ -46,7 +46,7 @@ class FeeDefaultRiskRuleEvaluatorTest {
 	private AlertRule ruleWithThreshold(Integer thresholdAmount) {
 		AlertRule rule = AlertRule.create(FeeDefaultRiskRuleEvaluator.RULE_TYPE, "Fee default risk", true,
 				thresholdAmount == null ? null : BigDecimal.valueOf(thresholdAmount),
-				NotificationType.FEE_DEFAULT_RISK, null);
+				SchoolNotificationTypes.FEE_DEFAULT_RISK, null);
 		rule.setTenantId(1L);
 		return rule;
 	}
