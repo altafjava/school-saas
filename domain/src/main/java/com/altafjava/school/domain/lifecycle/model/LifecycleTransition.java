@@ -5,6 +5,8 @@ import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
+import jakarta.persistence.PrePersist;
+import jakarta.persistence.PreUpdate;
 import jakarta.persistence.Table;
 import com.altafjava.platform.core.exception.BusinessException;
 import com.altafjava.platform.core.model.TenantEntity;
@@ -54,6 +56,14 @@ public class LifecycleTransition extends TenantEntity {
 	@Enumerated(EnumType.STRING)
 	@Column(name = "to_stage", nullable = false, length = 20)
 	private LifecycleStage toStage;
+
+	@PrePersist
+	@PreUpdate
+	private void assertConsistent() {
+		if (admissionId == null && studentId == null) {
+			throw new BusinessException("A lifecycle transition needs an admission or a student");
+		}
+	}
 
 	public static LifecycleTransition record(Long admissionId, Long studentId, LifecycleStage fromStage,
 			LifecycleStage toStage, String reason, LocalDate effectiveOn, Long recordedByUserId) {

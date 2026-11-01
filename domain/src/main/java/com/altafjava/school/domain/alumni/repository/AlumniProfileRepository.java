@@ -15,9 +15,9 @@ public interface AlumniProfileRepository extends JpaRepository<AlumniProfile, Lo
 	@Query("""
 			SELECT a FROM AlumniProfile a
 			WHERE a.tenantId = :tenantId
-			  AND (:graduationYear IS NULL OR a.graduationYear = :graduationYear)
-			  AND (:active IS NULL OR a.active = :active)
-			  AND (:pattern IS NULL OR LOWER(a.currentOccupation) LIKE :pattern ESCAPE '!' OR LOWER(a.contactEmail) LIKE :pattern ESCAPE '!')
+			  AND (:#{#graduationYear == null} = TRUE OR a.graduationYear = :graduationYear)
+			  AND (:#{#active == null} = TRUE OR a.active = :active)
+			  AND (:#{#pattern == null} = TRUE OR LOWER(a.currentOccupation) LIKE :pattern ESCAPE '!' OR LOWER(a.contactEmail) LIKE :pattern ESCAPE '!')
 			""")
 	Page<AlumniProfile> search(@Param("tenantId") Long tenantId, @Param("graduationYear") Integer graduationYear,
 			@Param("active") Boolean active, @Param("pattern") String pattern, Pageable pageable);

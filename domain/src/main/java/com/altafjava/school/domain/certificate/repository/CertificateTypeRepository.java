@@ -16,7 +16,7 @@ public interface CertificateTypeRepository extends JpaRepository<CertificateType
 	@Query("""
 			SELECT c FROM CertificateType c
 			WHERE c.tenantId = :tenantId
-			  AND (:pattern IS NULL OR LOWER(c.name) LIKE :pattern ESCAPE '!'
+			  AND (:#{#pattern == null} = TRUE OR LOWER(c.name) LIKE :pattern ESCAPE '!'
 			       OR LOWER(c.code) LIKE :pattern ESCAPE '!')
 			""")
 	Page<CertificateType> search(@Param("tenantId") Long tenantId, @Param("pattern") String pattern, Pageable pageable);

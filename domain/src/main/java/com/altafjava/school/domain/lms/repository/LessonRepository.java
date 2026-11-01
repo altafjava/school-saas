@@ -25,10 +25,10 @@ public interface LessonRepository extends JpaRepository<Lesson, Long> {
 			SELECT l FROM Lesson l
 			WHERE l.tenantId = :tenantId
 			  AND (:everyClassroom = true OR l.classroomId IN :classroomIds)
-			  AND (:classroomId IS NULL OR l.classroomId = :classroomId)
-			  AND (:subjectId IS NULL OR l.subjectId = :subjectId)
-			  AND (:postedFrom IS NULL OR l.postedAt >= :postedFrom)
-			  AND (:postedBefore IS NULL OR l.postedAt < :postedBefore)
+			  AND (:#{#classroomId == null} = TRUE OR l.classroomId = :classroomId)
+			  AND (:#{#subjectId == null} = TRUE OR l.subjectId = :subjectId)
+			  AND (:#{#postedFrom == null} = TRUE OR l.postedAt >= :postedFrom)
+			  AND (:#{#postedBefore == null} = TRUE OR l.postedAt < :postedBefore)
 			""")
 	Page<Lesson> search(@Param("tenantId") Long tenantId, @Param("everyClassroom") boolean everyClassroom,
 			@Param("classroomIds") Collection<Long> classroomIds, @Param("classroomId") Long classroomId,

@@ -19,9 +19,9 @@ public interface HolidayRepository extends JpaRepository<Holiday, Long> {
 	@Query("""
 			SELECT h FROM Holiday h
 			WHERE h.tenantId = :tenantId
-			  AND (:from IS NULL OR h.date >= :from)
-			  AND (:to IS NULL OR h.date <= :to)
-			  AND (:pattern IS NULL OR LOWER(h.name) LIKE :pattern ESCAPE '!')
+			  AND (:#{#from == null} = TRUE OR h.date >= :from)
+			  AND (:#{#to == null} = TRUE OR h.date <= :to)
+			  AND (:#{#pattern == null} = TRUE OR LOWER(h.name) LIKE :pattern ESCAPE '!')
 			""")
 	Page<Holiday> search(@Param("tenantId") Long tenantId, @Param("from") LocalDate from, @Param("to") LocalDate to,
 			@Param("pattern") String pattern, Pageable pageable);

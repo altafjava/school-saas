@@ -10,7 +10,7 @@
             <column name="id" type="BIGINT" autoIncrement="true">
                 <constraints primaryKey="true" nullable="false"/>
             </column>
-            <column name="public_id" type="VARCHAR(36)">
+            <column name="public_id" type="UUID">
                 <constraints nullable="false" unique="true"/>
             </column>
             <column name="tenant_id" type="BIGINT">
@@ -41,20 +41,13 @@
             </column>
             <column name="deleted_at" type="TIMESTAMP"/>
             <column name="deleted_by" type="VARCHAR(100)"/>
+            <column name="deleted_token" type="BIGINT" defaultValueNumeric="0">
+                <constraints nullable="false"/>
+            </column>
             <column name="version" type="BIGINT" defaultValueNumeric="0">
                 <constraints nullable="false"/>
             </column>
         </createTable>
-        <sql>
-            ALTER TABLE fee_assignments
-                ADD COLUMN active_student_id BIGINT
-                GENERATED ALWAYS AS (CASE WHEN deleted = FALSE THEN student_id ELSE NULL END) STORED;
-        </sql>
-        <sql>
-            ALTER TABLE fee_assignments
-                ADD COLUMN active_classroom_id BIGINT
-                GENERATED ALWAYS AS (CASE WHEN deleted = FALSE THEN classroom_id ELSE NULL END) STORED;
-        </sql>
         <createIndex indexName="idx_fa_tenant_id" tableName="fee_assignments">
             <column name="tenant_id"/>
         </createIndex>
@@ -72,11 +65,13 @@
         </createIndex>
         <createIndex indexName="uq_fa_fee_structure_active_student" tableName="fee_assignments" unique="true">
             <column name="fee_structure_id"/>
-            <column name="active_student_id"/>
+            <column name="student_id"/>
+            <column name="deleted_token"/>
         </createIndex>
         <createIndex indexName="uq_fa_fee_structure_active_classroom" tableName="fee_assignments" unique="true">
             <column name="fee_structure_id"/>
-            <column name="active_classroom_id"/>
+            <column name="classroom_id"/>
+            <column name="deleted_token"/>
         </createIndex>
         <addForeignKeyConstraint
                 constraintName="fk_fa_tenant_id"

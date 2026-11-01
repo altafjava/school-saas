@@ -9,6 +9,8 @@ import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import jakarta.persistence.Inheritance;
 import jakarta.persistence.InheritanceType;
+import jakarta.persistence.PrePersist;
+import jakarta.persistence.PreUpdate;
 import jakarta.persistence.Table;
 import org.hibernate.annotations.SQLRestriction;
 import com.altafjava.platform.core.exception.BusinessException;
@@ -112,6 +114,14 @@ public class Employee extends SoftDeletableEntity {
 	private EmployeeStatus status;
 
 	/** Non-teaching staff; teachers are created with {@code Teacher.create}. */
+	@PrePersist
+	@PreUpdate
+	private void assertConsistent() {
+		if ((status == EmployeeStatus.ACTIVE) != (exitDate == null)) {
+			throw new BusinessException("An exit date goes with a former employee, and only then");
+		}
+	}
+
 	public static Employee create(StaffCategory staffCategory, String employeeCode, String firstName,
 			String lastName, String email, LocalDate joinDate) {
 		return create(staffCategory, employeeCode, firstName, lastName, email, Gender.NOT_SPECIFIED, joinDate);

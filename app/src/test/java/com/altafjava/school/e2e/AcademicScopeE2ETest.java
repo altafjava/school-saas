@@ -3,6 +3,7 @@ package com.altafjava.school.e2e;
 import static io.restassured.RestAssured.given;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.everyItem;
+import static org.hamcrest.Matchers.greaterThanOrEqualTo;
 import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.hasItems;
 import static org.hamcrest.Matchers.hasSize;
@@ -287,6 +288,23 @@ class AcademicScopeE2ETest extends SchoolIntegrationTestBase {
 		admin().body("{\"email\":\"" + email("root") + "\",\"password\":\"Password123!\",\"role\":\"TENANT_ADMIN\"}")
 				.post("/api/v1/employees/" + employee + "/account").then()
 				.statusCode(HttpStatus.BAD_REQUEST.value());
+	}
+
+	@Test
+	void softDeletedRow_freesItsUniqueValue_whileALiveDuplicateIsRefused() {
+		String code = "SD" + UUID.randomUUID().toString().substring(0, 6);
+		String body = "{\"code\":\"" + code + "\",\"name\":\"" + code + "\"}";
+		Long subjectId = subjectId(support.createSubject(school, code));
+
+		admin().body(body).post("/api/v1/subjects").then().statusCode(greaterThanOrEqualTo(400));
+
+		support.inTenant(school.tenantId(), () -> {
+			var subject = subjectRepository.findByIdAndTenantId(subjectId, school.tenantId()).orElseThrow();
+			subject.softDelete("test");
+			subjectRepository.save(subject);
+		});
+
+		admin().body(body).post("/api/v1/subjects").then().statusCode(HttpStatus.CREATED.value());
 	}
 
 	// ---- attendance ----

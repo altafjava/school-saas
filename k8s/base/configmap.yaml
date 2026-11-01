@@ -4,17 +4,14 @@ metadata:
   name: school-config
 data:
   SPRING_PROFILES_ACTIVE: "prod"
-  # school-saas resolves DB_HOST/DB_PORT/DB_NAME separately (see application-prod.yml),
-  # unlike platform-saas's single SPRING_DATASOURCE_URL — keep these in sync with that contract.
   # Required choices with no application default. Review each one before deploying.
   TAX_PROVIDER: "none"
   EXCHANGE_RATE_PROVIDER: "none"
   VIRUS_SCAN_ENABLED: "false"
   # CIDRs of the BFF and load balancers. Empty means X-Forwarded-For is never believed.
   TRUSTED_PROXIES: ""
-  DB_HOST: "mariadb-service"
-  DB_PORT: "3306"
-  DB_NAME: "school_saas"
+  # The URL chooses the database engine.
+  DB_URL: "jdbc:mariadb://mariadb-service:3306/school_saas?cachePrepStmts=true&prepStmtCacheSize=250&prepStmtCacheSqlLimit=2048&useServerPrepStmts=true"
   SPRING_DATA_REDIS_HOST: "redis-service"
   SPRING_DATA_REDIS_PORT: "6379"
   SPRING_RABBITMQ_HOST: "rabbitmq-service"

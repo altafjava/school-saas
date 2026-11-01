@@ -10,7 +10,7 @@
             <column name="id" type="BIGINT" autoIncrement="true">
                 <constraints primaryKey="true" nullable="false"/>
             </column>
-            <column name="public_id" type="VARCHAR(36)">
+            <column name="public_id" type="UUID">
                 <constraints nullable="false" unique="true"/>
             </column>
             <column name="tenant_id" type="BIGINT">
@@ -42,20 +42,13 @@
             </column>
             <column name="deleted_at" type="TIMESTAMP"/>
             <column name="deleted_by" type="VARCHAR(100)"/>
+            <column name="deleted_token" type="BIGINT" defaultValueNumeric="0">
+                <constraints nullable="false"/>
+            </column>
             <column name="version" type="BIGINT" defaultValueNumeric="0">
                 <constraints nullable="false"/>
             </column>
         </createTable>
-        <sql>
-            ALTER TABLE student_classroom_links
-                ADD COLUMN active_academic_year_id BIGINT
-                GENERATED ALWAYS AS (CASE WHEN deleted = FALSE THEN academic_year_id ELSE NULL END) VIRTUAL;
-        </sql>
-        <sql>
-            ALTER TABLE student_classroom_links
-                ADD COLUMN active_roll_number VARCHAR(20)
-                GENERATED ALWAYS AS (CASE WHEN deleted = FALSE THEN roll_number ELSE NULL END) VIRTUAL;
-        </sql>
         <createIndex indexName="idx_scl_tenant_id" tableName="student_classroom_links">
             <column name="tenant_id"/>
         </createIndex>
@@ -73,7 +66,8 @@
         </createIndex>
         <createIndex indexName="uq_scl_student_active_academic_year" tableName="student_classroom_links" unique="true">
             <column name="student_id"/>
-            <column name="active_academic_year_id"/>
+            <column name="academic_year_id"/>
+            <column name="deleted_token"/>
         </createIndex>
         <createIndex
                 indexName="uq_scl_classroom_year_active_roll_number"
@@ -81,7 +75,8 @@
                 unique="true">
             <column name="classroom_id"/>
             <column name="academic_year_id"/>
-            <column name="active_roll_number"/>
+            <column name="roll_number"/>
+            <column name="deleted_token"/>
         </createIndex>
         <addForeignKeyConstraint
                 constraintName="fk_scl_tenant_id"

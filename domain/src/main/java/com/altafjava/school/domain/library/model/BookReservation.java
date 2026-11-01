@@ -6,10 +6,12 @@ import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
+import jakarta.persistence.PreUpdate;
 import jakarta.persistence.Table;
 import org.hibernate.annotations.SQLRestriction;
 import com.altafjava.platform.core.exception.BusinessException;
 import com.altafjava.platform.core.model.SoftDeletableEntity;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
@@ -49,6 +51,16 @@ public class BookReservation extends SoftDeletableEntity {
 	@Enumerated(EnumType.STRING)
 	@Column(name = "status", nullable = false, length = 20)
 	private ReservationStatus status;
+
+	// Part of the live-row unique keys: 0 while live, the row's id once closed.
+	@Builder.Default
+	@Column(name = "retired_token", nullable = false)
+	private long retiredToken = 0;
+
+	@PreUpdate
+	private void refreshRetiredToken() {
+		this.retiredToken = isLive() ? 0 : getId();
+	}
 
 	public static BookReservation queue(Long bookId, Long studentId) {
 		return BookReservation.builder()

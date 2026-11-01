@@ -6,6 +6,8 @@ import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
+import jakarta.persistence.PrePersist;
+import jakarta.persistence.PreUpdate;
 import jakarta.persistence.Table;
 import org.hibernate.annotations.SQLRestriction;
 import com.altafjava.platform.core.exception.BusinessException;
@@ -65,6 +67,14 @@ public class StudentDocument extends SoftDeletableEntity {
 	@Enumerated(EnumType.STRING)
 	@Column(name = "verification_status", nullable = false, length = 20)
 	private DocumentVerificationStatus verificationStatus;
+
+	@PrePersist
+	@PreUpdate
+	private void assertConsistent() {
+		if ((studentId == null) == (admissionId == null)) {
+			throw new BusinessException("A document belongs to exactly one student or admission");
+		}
+	}
 
 	public static StudentDocument forStudent(Long studentId, String documentType, UUID filePublicId) {
 		if (studentId == null) {

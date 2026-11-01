@@ -158,6 +158,7 @@ tasks.named('bootJar') {
 // Ensure Testcontainers (Ryuk) mounts the standard socket path inside containers: on Rancher
 // Desktop, Podman and similar, the host socket path differs from the one containers see.
 tasks.withType(Test).configureEach {
+    systemProperty 'test.database', System.getProperty('test.database', 'mariadb')
     environment 'TESTCONTAINERS_DOCKER_SOCKET_OVERRIDE', '/var/run/docker.sock'
 }
 

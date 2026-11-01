@@ -22,12 +22,12 @@ public interface StudentRepository extends JpaRepository<Student, Long> {
 	@Query("""
 			SELECT s FROM Student s
 			WHERE s.tenantId = :tenantId
-			  AND (:status IS NULL OR s.enrollmentStatus = :status)
-			  AND (:gender IS NULL OR s.gender = :gender)
-			  AND (:classroomId IS NULL OR s.id IN (
+			  AND (:#{#status == null} = TRUE OR s.enrollmentStatus = :status)
+			  AND (:#{#gender == null} = TRUE OR s.gender = :gender)
+			  AND (:#{#classroomId == null} = TRUE OR s.id IN (
 			       SELECT l.studentId FROM StudentClassroomLink l
 			       WHERE l.tenantId = :tenantId AND l.classroomId = :classroomId))
-			  AND (:pattern IS NULL
+			  AND (:#{#pattern == null} = TRUE
 			       OR LOWER(s.studentCode) LIKE :pattern ESCAPE '!'
 			       OR LOWER(CONCAT(s.firstName, ' ', s.lastName)) LIKE :pattern ESCAPE '!'
 			       OR LOWER(s.email) LIKE :pattern ESCAPE '!')
@@ -40,15 +40,15 @@ public interface StudentRepository extends JpaRepository<Student, Long> {
 	@Query("""
 			SELECT s FROM Student s
 			WHERE s.tenantId = :tenantId
-			  AND (:status IS NULL OR s.enrollmentStatus = :status)
-			  AND (:gender IS NULL OR s.gender = :gender)
-			  AND (:classroomId IS NULL OR s.id IN (
+			  AND (:#{#status == null} = TRUE OR s.enrollmentStatus = :status)
+			  AND (:#{#gender == null} = TRUE OR s.gender = :gender)
+			  AND (:#{#classroomId == null} = TRUE OR s.id IN (
 			       SELECT l.studentId FROM StudentClassroomLink l
 			       WHERE l.tenantId = :tenantId AND l.classroomId = :classroomId))
 			  AND s.id IN (
 			       SELECT r.studentId FROM StudentClassroomLink r
 			       WHERE r.tenantId = :tenantId AND r.classroomId IN :reachableClassroomIds)
-			  AND (:pattern IS NULL
+			  AND (:#{#pattern == null} = TRUE
 			       OR LOWER(s.studentCode) LIKE :pattern ESCAPE '!'
 			       OR LOWER(CONCAT(s.firstName, ' ', s.lastName)) LIKE :pattern ESCAPE '!'
 			       OR LOWER(s.email) LIKE :pattern ESCAPE '!')

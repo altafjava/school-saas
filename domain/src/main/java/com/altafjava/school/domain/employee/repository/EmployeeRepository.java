@@ -20,10 +20,10 @@ public interface EmployeeRepository extends JpaRepository<Employee, Long> {
 	@Query("""
 			SELECT e FROM Employee e
 			WHERE e.tenantId = :tenantId
-			  AND (:category IS NULL OR e.staffCategory = :category)
-			  AND (:status IS NULL OR e.status = :status)
-			  AND (:departmentId IS NULL OR e.departmentId = :departmentId)
-			  AND (:pattern IS NULL
+			  AND (:#{#category == null} = TRUE OR e.staffCategory = :category)
+			  AND (:#{#status == null} = TRUE OR e.status = :status)
+			  AND (:#{#departmentId == null} = TRUE OR e.departmentId = :departmentId)
+			  AND (:#{#pattern == null} = TRUE
 			       OR LOWER(e.employeeCode) LIKE :pattern ESCAPE '!'
 			       OR LOWER(CONCAT(e.firstName, ' ', e.lastName)) LIKE :pattern ESCAPE '!'
 			       OR LOWER(e.email) LIKE :pattern ESCAPE '!')

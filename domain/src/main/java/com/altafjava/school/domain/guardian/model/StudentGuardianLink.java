@@ -5,6 +5,8 @@ import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
+import jakarta.persistence.PrePersist;
+import jakarta.persistence.PreUpdate;
 import jakarta.persistence.Table;
 import org.hibernate.annotations.SQLRestriction;
 import com.altafjava.platform.core.exception.BusinessException;
@@ -51,6 +53,14 @@ public class StudentGuardianLink extends SoftDeletableEntity {
 	@Enumerated(EnumType.STRING)
 	@Column(name = "relationship_type", nullable = false, length = 30)
 	private RelationshipType relationshipType;
+
+	@PrePersist
+	@PreUpdate
+	private void assertConsistent() {
+		if (custodyRestricted && authorizedForPickup) {
+			throw new BusinessException("A custody-restricted guardian cannot be authorized for pickup");
+		}
+	}
 
 	public static StudentGuardianLink create(Long studentId, Long guardianId, RelationshipType relationshipType,
 			boolean primaryContact) {

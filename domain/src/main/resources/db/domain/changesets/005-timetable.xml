@@ -10,7 +10,7 @@
             <column name="id" type="BIGINT" autoIncrement="true">
                 <constraints primaryKey="true" nullable="false"/>
             </column>
-            <column name="public_id" type="VARCHAR(36)">
+            <column name="public_id" type="UUID">
                 <constraints nullable="false" unique="true"/>
             </column>
             <column name="tenant_id" type="BIGINT">
@@ -41,15 +41,13 @@
             </column>
             <column name="deleted_at" type="TIMESTAMP"/>
             <column name="deleted_by" type="VARCHAR(100)"/>
+            <column name="deleted_token" type="BIGINT" defaultValueNumeric="0">
+                <constraints nullable="false"/>
+            </column>
             <column name="version" type="BIGINT" defaultValueNumeric="0">
                 <constraints nullable="false"/>
             </column>
         </createTable>
-        <sql>
-            ALTER TABLE periods
-                ADD COLUMN active_name VARCHAR(50)
-                GENERATED ALWAYS AS (CASE WHEN deleted = FALSE THEN name ELSE NULL END) STORED;
-        </sql>
         <createIndex indexName="idx_periods_tenant_id" tableName="periods">
             <column name="tenant_id"/>
         </createIndex>
@@ -57,8 +55,9 @@
             <column name="deleted"/>
         </createIndex>
         <createIndex indexName="uq_periods_active_name_tenant" tableName="periods" unique="true">
-            <column name="active_name"/>
+            <column name="name"/>
             <column name="tenant_id"/>
+            <column name="deleted_token"/>
         </createIndex>
         <addForeignKeyConstraint
                 constraintName="fk_periods_tenant_id"
@@ -73,7 +72,7 @@
             <column name="id" type="BIGINT" autoIncrement="true">
                 <constraints primaryKey="true" nullable="false"/>
             </column>
-            <column name="public_id" type="VARCHAR(36)">
+            <column name="public_id" type="UUID">
                 <constraints nullable="false" unique="true"/>
             </column>
             <column name="tenant_id" type="BIGINT">
@@ -108,25 +107,13 @@
             </column>
             <column name="deleted_at" type="TIMESTAMP"/>
             <column name="deleted_by" type="VARCHAR(100)"/>
+            <column name="deleted_token" type="BIGINT" defaultValueNumeric="0">
+                <constraints nullable="false"/>
+            </column>
             <column name="version" type="BIGINT" defaultValueNumeric="0">
                 <constraints nullable="false"/>
             </column>
         </createTable>
-        <sql>
-            ALTER TABLE timetable_entries
-                ADD COLUMN active_classroom_id BIGINT
-                GENERATED ALWAYS AS (CASE WHEN deleted = FALSE THEN classroom_id ELSE NULL END) STORED;
-        </sql>
-        <sql>
-            ALTER TABLE timetable_entries
-                ADD COLUMN active_teacher_id BIGINT
-                GENERATED ALWAYS AS (CASE WHEN deleted = FALSE THEN teacher_id ELSE NULL END) STORED;
-        </sql>
-        <sql>
-            ALTER TABLE timetable_entries
-                ADD COLUMN active_venue_id BIGINT
-                GENERATED ALWAYS AS (CASE WHEN deleted = FALSE THEN venue_id ELSE NULL END) STORED;
-        </sql>
         <createIndex indexName="idx_timetable_entries_tenant_id" tableName="timetable_entries">
             <column name="tenant_id"/>
         </createIndex>
@@ -149,13 +136,15 @@
             <column name="tenant_id"/>
             <column name="day_of_week"/>
             <column name="period_id"/>
-            <column name="active_classroom_id"/>
+            <column name="classroom_id"/>
+            <column name="deleted_token"/>
         </createIndex>
         <createIndex indexName="uq_timetable_active_teacher_period_day" tableName="timetable_entries" unique="true">
             <column name="tenant_id"/>
             <column name="day_of_week"/>
             <column name="period_id"/>
-            <column name="active_teacher_id"/>
+            <column name="teacher_id"/>
+            <column name="deleted_token"/>
         </createIndex>
         <createIndex indexName="idx_timetable_entries_venue_id" tableName="timetable_entries">
             <column name="venue_id"/>
@@ -164,7 +153,8 @@
             <column name="tenant_id"/>
             <column name="day_of_week"/>
             <column name="period_id"/>
-            <column name="active_venue_id"/>
+            <column name="venue_id"/>
+            <column name="deleted_token"/>
         </createIndex>
         <addForeignKeyConstraint
                 constraintName="fk_timetable_entries_tenant_id"

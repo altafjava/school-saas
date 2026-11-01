@@ -50,7 +50,7 @@ public class PublicIdLookup {
 	private Long load(EntityRef ref, Long tenantId, UUID publicId) {
 		List<Long> found = jdbcTemplate.queryForList(
 				"SELECT id FROM " + ref.table() + " WHERE public_id = ? AND tenant_id = ?", Long.class,
-				publicId.toString(), tenantId);
+				publicId, tenantId);
 		return found.isEmpty() ? null : found.get(0);
 	}
 

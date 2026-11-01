@@ -13,7 +13,7 @@
             <column name="id" type="BIGINT" autoIncrement="true">
                 <constraints primaryKey="true" nullable="false"/>
             </column>
-            <column name="public_id" type="VARCHAR(36)">
+            <column name="public_id" type="UUID">
                 <constraints nullable="false" unique="true"/>
             </column>
             <column name="tenant_id" type="BIGINT">
@@ -42,11 +42,6 @@
                 <constraints nullable="false"/>
             </column>
         </createTable>
-        <sql>
-            ALTER TABLE lifecycle_transitions
-                ADD CONSTRAINT chk_lifecycle_transitions_has_subject
-                CHECK (admission_id IS NOT NULL OR student_id IS NOT NULL);
-        </sql>
         <createIndex indexName="idx_lifecycle_transitions_tenant_student" tableName="lifecycle_transitions">
             <column name="tenant_id"/>
             <column name="student_id"/>

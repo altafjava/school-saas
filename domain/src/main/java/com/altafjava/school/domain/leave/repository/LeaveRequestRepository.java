@@ -20,11 +20,11 @@ public interface LeaveRequestRepository extends JpaRepository<LeaveRequest, Long
 	@Query("""
 			SELECT lr FROM LeaveRequest lr
 			WHERE lr.tenantId = :tenantId
-			  AND (:employeeId IS NULL OR lr.employeeId = :employeeId)
-			  AND (:leaveTypeId IS NULL OR lr.leaveTypeId = :leaveTypeId)
-			  AND (:status IS NULL OR lr.status = :status)
-			  AND (:from IS NULL OR lr.endDate >= :from)
-			  AND (:to IS NULL OR lr.startDate <= :to)
+			  AND (:#{#employeeId == null} = TRUE OR lr.employeeId = :employeeId)
+			  AND (:#{#leaveTypeId == null} = TRUE OR lr.leaveTypeId = :leaveTypeId)
+			  AND (:#{#status == null} = TRUE OR lr.status = :status)
+			  AND (:#{#from == null} = TRUE OR lr.endDate >= :from)
+			  AND (:#{#to == null} = TRUE OR lr.startDate <= :to)
 			""")
 	Page<LeaveRequest> search(@Param("tenantId") Long tenantId, @Param("employeeId") Long employeeId,
 			@Param("leaveTypeId") Long leaveTypeId, @Param("status") LeaveRequestStatus status,

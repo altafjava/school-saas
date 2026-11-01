@@ -11,7 +11,7 @@
             <column name="id" type="BIGINT" autoIncrement="true">
                 <constraints primaryKey="true" nullable="false"/>
             </column>
-            <column name="public_id" type="VARCHAR(36)">
+            <column name="public_id" type="UUID">
                 <constraints nullable="false" unique="true"/>
             </column>
             <column name="tenant_id" type="BIGINT">
@@ -51,14 +51,13 @@
             </column>
             <column name="deleted_at" type="TIMESTAMP"/>
             <column name="deleted_by" type="VARCHAR(100)"/>
+            <column name="deleted_token" type="BIGINT" defaultValueNumeric="0">
+                <constraints nullable="false"/>
+            </column>
             <column name="version" type="BIGINT" defaultValueNumeric="0">
                 <constraints nullable="false"/>
             </column>
         </createTable>
-        <sql>
-            ALTER TABLE fee_discounts ADD CONSTRAINT chk_fee_discounts_value_positive
-                CHECK (discount_value &gt; 0);
-        </sql>
         <createIndex indexName="idx_fee_discounts_tenant_student" tableName="fee_discounts">
             <column name="tenant_id"/>
             <column name="student_id"/>
@@ -88,7 +87,7 @@
             <column name="id" type="BIGINT" autoIncrement="true">
                 <constraints primaryKey="true" nullable="false"/>
             </column>
-            <column name="public_id" type="VARCHAR(36)">
+            <column name="public_id" type="UUID">
                 <constraints nullable="false" unique="true"/>
             </column>
             <column name="tenant_id" type="BIGINT">
@@ -122,24 +121,19 @@
             </column>
             <column name="deleted_at" type="TIMESTAMP"/>
             <column name="deleted_by" type="VARCHAR(100)"/>
+            <column name="deleted_token" type="BIGINT" defaultValueNumeric="0">
+                <constraints nullable="false"/>
+            </column>
             <column name="version" type="BIGINT" defaultValueNumeric="0">
                 <constraints nullable="false"/>
             </column>
         </createTable>
-        <sql>
-            ALTER TABLE fee_installments ADD CONSTRAINT chk_fee_installments_share
-                CHECK (share_basis_points BETWEEN 1 AND 10000);
-        </sql>
-        <sql>
-            ALTER TABLE fee_installments
-                ADD COLUMN active_sequence_number INT
-                GENERATED ALWAYS AS (CASE WHEN deleted = FALSE THEN sequence_number ELSE NULL END) STORED;
-        </sql>
         <createIndex indexName="uq_fee_installments_active_position" tableName="fee_installments" unique="true">
             <column name="tenant_id"/>
             <column name="student_id"/>
             <column name="fee_structure_id"/>
-            <column name="active_sequence_number"/>
+            <column name="sequence_number"/>
+            <column name="deleted_token"/>
         </createIndex>
         <addForeignKeyConstraint
                 constraintName="fk_fee_installments_tenant_id"
@@ -166,7 +160,7 @@
             <column name="id" type="BIGINT" autoIncrement="true">
                 <constraints primaryKey="true" nullable="false"/>
             </column>
-            <column name="public_id" type="VARCHAR(36)">
+            <column name="public_id" type="UUID">
                 <constraints nullable="false" unique="true"/>
             </column>
             <column name="tenant_id" type="BIGINT">
@@ -211,9 +205,6 @@
                 <constraints nullable="false"/>
             </column>
         </createTable>
-        <sql>
-            ALTER TABLE fee_refunds ADD CONSTRAINT chk_fee_refunds_amount_positive CHECK (amount &gt; 0);
-        </sql>
         <createIndex indexName="uq_fee_refunds_tenant_credit_note" tableName="fee_refunds" unique="true">
             <column name="tenant_id"/>
             <column name="credit_note_number"/>

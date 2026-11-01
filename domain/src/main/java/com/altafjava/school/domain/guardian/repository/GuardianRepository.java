@@ -19,7 +19,7 @@ public interface GuardianRepository extends JpaRepository<Guardian, Long> {
 	@Query("""
 			SELECT g FROM Guardian g
 			WHERE g.tenantId = :tenantId
-			  AND (:pattern IS NULL
+			  AND (:#{#pattern == null} = TRUE
 			       OR LOWER(CONCAT(g.firstName, ' ', g.lastName)) LIKE :pattern ESCAPE '!'
 			       OR LOWER(g.email) LIKE :pattern ESCAPE '!')
 			""")

@@ -17,10 +17,10 @@ public interface TimetableEntryRepository extends JpaRepository<TimetableEntry, 
 	@Query("""
 			SELECT t FROM TimetableEntry t
 			WHERE t.tenantId = :tenantId
-			  AND (:classroomId IS NULL OR t.classroomId = :classroomId)
-			  AND (:teacherId IS NULL OR t.teacherId = :teacherId)
-			  AND (:subjectId IS NULL OR t.subjectId = :subjectId)
-			  AND (:dayOfWeek IS NULL OR t.dayOfWeek = :dayOfWeek)
+			  AND (:#{#classroomId == null} = TRUE OR t.classroomId = :classroomId)
+			  AND (:#{#teacherId == null} = TRUE OR t.teacherId = :teacherId)
+			  AND (:#{#subjectId == null} = TRUE OR t.subjectId = :subjectId)
+			  AND (:#{#dayOfWeek == null} = TRUE OR t.dayOfWeek = :dayOfWeek)
 			""")
 	Page<TimetableEntry> search(@Param("tenantId") Long tenantId, @Param("classroomId") Long classroomId,
 			@Param("teacherId") Long teacherId, @Param("subjectId") Long subjectId,

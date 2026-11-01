@@ -16,7 +16,7 @@ public interface LeaveTypeRepository extends JpaRepository<LeaveType, Long> {
 	@Query("""
 			SELECT l FROM LeaveType l
 			WHERE l.tenantId = :tenantId
-			  AND (:pattern IS NULL OR LOWER(l.name) LIKE :pattern ESCAPE '!')
+			  AND (:#{#pattern == null} = TRUE OR LOWER(l.name) LIKE :pattern ESCAPE '!')
 			""")
 	Page<LeaveType> search(@Param("tenantId") Long tenantId, @Param("pattern") String pattern, Pageable pageable);
 

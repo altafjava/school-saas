@@ -16,7 +16,7 @@ public interface PeriodRepository extends JpaRepository<Period, Long> {
 	@Query("""
 			SELECT p FROM Period p
 			WHERE p.tenantId = :tenantId
-			  AND (:pattern IS NULL OR LOWER(p.name) LIKE :pattern ESCAPE '!')
+			  AND (:#{#pattern == null} = TRUE OR LOWER(p.name) LIKE :pattern ESCAPE '!')
 			""")
 	Page<Period> search(@Param("tenantId") Long tenantId, @Param("pattern") String pattern, Pageable pageable);
 

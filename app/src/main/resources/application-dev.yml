@@ -6,7 +6,6 @@ spring:
     url: jdbc:mariadb://${DB_HOST:localhost}:${DB_PORT:3306}/${DB_NAME:school_saas}
     username: ${DB_USERNAME:root}
     password: ${DB_PASSWORD:root}
-    driver-class-name: org.mariadb.jdbc.Driver
     hikari:
       pool-name: school-saas-dev-pool
       maximum-pool-size: ${DB_POOL_MAX_SIZE:20}
@@ -23,7 +22,6 @@ scheduler:
     url: jdbc:mariadb://${DB_HOST:localhost}:${DB_PORT:3306}/${DB_NAME:school_saas}
     username: ${DB_USERNAME:root}
     password: ${DB_PASSWORD:root}
-    driver-class-name: org.mariadb.jdbc.Driver
 
 tenant:
   resolution:

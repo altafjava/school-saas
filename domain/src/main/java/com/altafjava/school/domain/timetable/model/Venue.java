@@ -4,6 +4,8 @@ import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
+import jakarta.persistence.PrePersist;
+import jakarta.persistence.PreUpdate;
 import jakarta.persistence.Table;
 import org.hibernate.annotations.SQLRestriction;
 import com.altafjava.platform.core.exception.BusinessException;
@@ -39,6 +41,14 @@ public class Venue extends SoftDeletableEntity {
 
 	@Column(name = "active", nullable = false)
 	private boolean active;
+
+	@PrePersist
+	@PreUpdate
+	private void assertConsistent() {
+		if (capacity != null && capacity <= 0) {
+			throw new BusinessException("A venue capacity must be positive");
+		}
+	}
 
 	public static Venue create(String code, String name, VenueType venueType, Integer capacity) {
 		requireValidCapacity(capacity);

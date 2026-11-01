@@ -15,7 +15,7 @@ public interface BoardRepository extends JpaRepository<Board, Long> {
 	@Query("""
 			SELECT b FROM Board b
 			WHERE b.tenantId = :tenantId
-			  AND (:pattern IS NULL OR LOWER(b.name) LIKE :pattern ESCAPE '!'
+			  AND (:#{#pattern == null} = TRUE OR LOWER(b.name) LIKE :pattern ESCAPE '!'
 			       OR LOWER(b.code) LIKE :pattern ESCAPE '!')
 			""")
 	Page<Board> search(@Param("tenantId") Long tenantId, @Param("pattern") String pattern, Pageable pageable);

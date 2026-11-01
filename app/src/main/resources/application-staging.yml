@@ -1,9 +1,8 @@
 spring:
   datasource:
-    url: jdbc:mariadb://${DB_HOST}:${DB_PORT:3306}/${DB_NAME}
+    url: ${DB_URL}
     username: ${DB_USERNAME}
     password: ${DB_PASSWORD}
-    driver-class-name: org.mariadb.jdbc.Driver
     hikari:
       pool-name: school-saas-staging-pool
       maximum-pool-size: ${DB_POOL_MAX_SIZE:30}
@@ -16,10 +15,9 @@ scheduler:
   datasource:
     # Quartz's job-store pool is independent of the main app datasource (see spring.datasource
     # above); platform-defaults.yml ships no DB_NAME default, so it is required here too.
-    url: jdbc:mariadb://${DB_HOST}:${DB_PORT:3306}/${DB_NAME}
+    url: ${DB_URL}
     username: ${DB_USERNAME}
     password: ${DB_PASSWORD}
-    driver-class-name: org.mariadb.jdbc.Driver
 
 tenant:
   resolution:

@@ -15,7 +15,7 @@ public interface RoomRepository extends JpaRepository<Room, Long> {
 	@Query("""
 			SELECT r FROM Room r
 			WHERE r.tenantId = :tenantId AND r.hostelBuildingId = :hostelBuildingId
-			  AND (:pattern IS NULL OR LOWER(r.roomNumber) LIKE :pattern ESCAPE '!')
+			  AND (:#{#pattern == null} = TRUE OR LOWER(r.roomNumber) LIKE :pattern ESCAPE '!')
 			""")
 	Page<Room> search(@Param("tenantId") Long tenantId, @Param("hostelBuildingId") Long hostelBuildingId,
 			@Param("pattern") String pattern, Pageable pageable);

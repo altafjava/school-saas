@@ -15,7 +15,7 @@ public interface RouteRepository extends JpaRepository<Route, Long> {
 	@Query("""
 			SELECT r FROM Route r
 			WHERE r.tenantId = :tenantId
-			  AND (:pattern IS NULL OR LOWER(r.name) LIKE :pattern ESCAPE '!'
+			  AND (:#{#pattern == null} = TRUE OR LOWER(r.name) LIKE :pattern ESCAPE '!'
 			       OR LOWER(r.code) LIKE :pattern ESCAPE '!')
 			""")
 	Page<Route> search(@Param("tenantId") Long tenantId, @Param("pattern") String pattern, Pageable pageable);

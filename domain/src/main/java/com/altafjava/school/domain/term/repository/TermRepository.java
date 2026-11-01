@@ -16,8 +16,8 @@ public interface TermRepository extends JpaRepository<Term, Long> {
 	@Query("""
 			SELECT t FROM Term t
 			WHERE t.tenantId = :tenantId
-			  AND (:academicYearId IS NULL OR t.academicYearId = :academicYearId)
-			  AND (:pattern IS NULL OR LOWER(t.name) LIKE :pattern ESCAPE '!')
+			  AND (:#{#academicYearId == null} = TRUE OR t.academicYearId = :academicYearId)
+			  AND (:#{#pattern == null} = TRUE OR LOWER(t.name) LIKE :pattern ESCAPE '!')
 			""")
 	Page<Term> search(@Param("tenantId") Long tenantId, @Param("academicYearId") Long academicYearId,
 			@Param("pattern") String pattern, Pageable pageable);

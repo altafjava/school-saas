@@ -10,7 +10,7 @@
             <column name="id" type="BIGINT" autoIncrement="true">
                 <constraints primaryKey="true" nullable="false"/>
             </column>
-            <column name="public_id" type="VARCHAR(36)">
+            <column name="public_id" type="UUID">
                 <constraints nullable="false" unique="true"/>
             </column>
             <column name="tenant_id" type="BIGINT">
@@ -45,6 +45,9 @@
             </column>
             <column name="deleted_at" type="TIMESTAMP"/>
             <column name="deleted_by" type="VARCHAR(100)"/>
+            <column name="deleted_token" type="BIGINT" defaultValueNumeric="0">
+                <constraints nullable="false"/>
+            </column>
             <column name="version" type="BIGINT" defaultValueNumeric="0">
                 <constraints nullable="false"/>
             </column>
@@ -83,7 +86,7 @@
             <column name="id" type="BIGINT" autoIncrement="true">
                 <constraints primaryKey="true" nullable="false"/>
             </column>
-            <column name="public_id" type="VARCHAR(36)">
+            <column name="public_id" type="UUID">
                 <constraints nullable="false" unique="true"/>
             </column>
             <column name="tenant_id" type="BIGINT">
@@ -122,20 +125,13 @@
             </column>
             <column name="deleted_at" type="TIMESTAMP"/>
             <column name="deleted_by" type="VARCHAR(100)"/>
+            <column name="deleted_token" type="BIGINT" defaultValueNumeric="0">
+                <constraints nullable="false"/>
+            </column>
             <column name="version" type="BIGINT" defaultValueNumeric="0">
                 <constraints nullable="false"/>
             </column>
         </createTable>
-        <sql>
-            ALTER TABLE student_guardian_links
-                ADD COLUMN active_guardian_id BIGINT
-                GENERATED ALWAYS AS (CASE WHEN deleted = FALSE THEN guardian_id ELSE NULL END) STORED;
-        </sql>
-        <sql>
-            ALTER TABLE student_guardian_links
-                ADD CONSTRAINT chk_student_guardian_links_restricted_not_pickup
-                CHECK (NOT (custody_restricted AND authorized_for_pickup));
-        </sql>
         <createIndex indexName="idx_sgl_tenant_id" tableName="student_guardian_links">
             <column name="tenant_id"/>
         </createIndex>
@@ -150,7 +146,8 @@
         </createIndex>
         <createIndex indexName="uq_sgl_student_active_guardian" tableName="student_guardian_links" unique="true">
             <column name="student_id"/>
-            <column name="active_guardian_id"/>
+            <column name="guardian_id"/>
+            <column name="deleted_token"/>
         </createIndex>
         <addForeignKeyConstraint
                 constraintName="fk_sgl_tenant_id"

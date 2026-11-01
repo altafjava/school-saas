@@ -18,10 +18,10 @@ public interface DisciplineIncidentRepository extends JpaRepository<DisciplineIn
 	@Query("""
 			SELECT d FROM DisciplineIncident d
 			WHERE d.tenantId = :tenantId
-			  AND (:studentId IS NULL OR d.studentId = :studentId)
-			  AND (:severity IS NULL OR d.severity = :severity)
-			  AND (:from IS NULL OR d.incidentDate >= :from)
-			  AND (:to IS NULL OR d.incidentDate <= :to)
+			  AND (:#{#studentId == null} = TRUE OR d.studentId = :studentId)
+			  AND (:#{#severity == null} = TRUE OR d.severity = :severity)
+			  AND (:#{#from == null} = TRUE OR d.incidentDate >= :from)
+			  AND (:#{#to == null} = TRUE OR d.incidentDate <= :to)
 			""")
 	Page<DisciplineIncident> search(@Param("tenantId") Long tenantId, @Param("studentId") Long studentId,
 			@Param("severity") IncidentSeverity severity, @Param("from") LocalDate from, @Param("to") LocalDate to,

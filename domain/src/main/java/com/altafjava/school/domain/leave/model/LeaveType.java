@@ -3,6 +3,8 @@ package com.altafjava.school.domain.leave.model;
 import java.math.BigDecimal;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.PrePersist;
+import jakarta.persistence.PreUpdate;
 import jakarta.persistence.Table;
 import org.hibernate.annotations.SQLRestriction;
 import com.altafjava.platform.core.exception.BusinessException;
@@ -62,6 +64,14 @@ public class LeaveType extends SoftDeletableEntity {
 
 	@Column(name = "active", nullable = false)
 	private boolean active;
+
+	@PrePersist
+	@PreUpdate
+	private void assertConsistent() {
+		if (approvalLevels < 1 || approvalLevels > 2) {
+			throw new BusinessException("A leave type needs one or two approval levels");
+		}
+	}
 
 	public static LeaveType create(String name, BigDecimal defaultAnnualDays) {
 		return LeaveType.builder()

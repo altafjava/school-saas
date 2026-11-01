@@ -256,10 +256,11 @@ Never: mock repos in integration tests, `@Disabled` placeholders, OpenAPI assert
 ## Database & Migrations
 
 - All schema changes via Liquibase changeset — no direct DDL.
-- Surrogate PKs: `BIGINT AUTO_INCREMENT`. External IDs: `public_id VARCHAR(36)` (UUID).
+- Surrogate PKs: `BIGINT AUTO_INCREMENT`. External IDs: `public_id` with the Liquibase `UUID` type.
 - **Dev**: edit changesets in-place; drop/recreate DB on checksum conflict.
-- **Column order** in every `createTable` (and the matching entity fields): primary key, `public_id`, `tenant_id`, foreign keys, business fields, status/type fields, `created_at`/`created_by`/`updated_at`/`updated_by`, `deleted`/`deleted_at`/`deleted_by`, `version`. Generated helper columns come last.
-- Soft-delete-safe unique key: a generated `active_*` column (NULL once `deleted = TRUE`) with the unique index on it — add it in the table's own changeset right after `createTable`.
+- **Column order** in every `createTable` (and the matching entity fields): primary key, `public_id`, `tenant_id`, foreign keys, business fields, status/type fields, `created_at`/`created_by`/`updated_at`/`updated_by`, `deleted`/`deleted_at`/`deleted_by`, `version`. `deleted_token` follows the other `deleted_*` columns.
+- Soft-delete-safe unique key: add `deleted_token` to the unique index. It is 0 while live and the row's id once deleted, set by `SoftDeletableEntity`. A row that closes without being deleted uses `retired_token` the same way.
+- Portable tags only: no `<sql>`, `<sqlFile>`, `<createProcedure>` or `<modifySql>`. Rules that would be `CHECK` constraints live on the entity in a `@PrePersist`/`@PreUpdate` method. `PortableChangesetFitnessTest` enforces this.
 - Dev: fold evolution (`addColumn`, renames, backfills) into the table's original `createTable` changeset instead of stacking alter changesets; seed data carries its final values directly.
 - **Prod/staging**: new columns nullable or with default; renames/drops are multi-release; never modify existing changesets.
 

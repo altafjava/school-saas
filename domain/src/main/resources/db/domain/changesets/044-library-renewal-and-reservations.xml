@@ -10,7 +10,7 @@
             <column name="id" type="BIGINT" autoIncrement="true">
                 <constraints primaryKey="true" nullable="false"/>
             </column>
-            <column name="public_id" type="VARCHAR(36)">
+            <column name="public_id" type="UUID">
                 <constraints nullable="false" unique="true"/>
             </column>
             <column name="tenant_id" type="BIGINT">
@@ -44,29 +44,28 @@
             </column>
             <column name="deleted_at" type="TIMESTAMP"/>
             <column name="deleted_by" type="VARCHAR(100)"/>
+            <column name="deleted_token" type="BIGINT" defaultValueNumeric="0">
+                <constraints nullable="false"/>
+            </column>
+            <column name="retired_token" type="BIGINT" defaultValueNumeric="0">
+                <constraints nullable="false"/>
+            </column>
             <column name="version" type="BIGINT" defaultValueNumeric="0">
                 <constraints nullable="false"/>
             </column>
         </createTable>
-        <sql>
-            ALTER TABLE book_reservations
-                ADD COLUMN live_marker TINYINT
-                GENERATED ALWAYS AS (CASE WHEN deleted = FALSE AND status IN ('QUEUED', 'READY') THEN 1 ELSE NULL END) STORED;
-        </sql>
-        <sql>
-            ALTER TABLE book_reservations
-                ADD COLUMN active_held_copy_id BIGINT
-                GENERATED ALWAYS AS (CASE WHEN deleted = FALSE AND status = 'READY' THEN held_copy_id ELSE NULL END) STORED;
-        </sql>
         <createIndex indexName="uq_book_reservations_live_student_book" tableName="book_reservations" unique="true">
             <column name="tenant_id"/>
             <column name="book_id"/>
             <column name="student_id"/>
-            <column name="live_marker"/>
+            <column name="retired_token"/>
+            <column name="deleted_token"/>
         </createIndex>
         <createIndex indexName="uq_book_reservations_active_held_copy" tableName="book_reservations" unique="true">
             <column name="tenant_id"/>
-            <column name="active_held_copy_id"/>
+            <column name="held_copy_id"/>
+            <column name="retired_token"/>
+            <column name="deleted_token"/>
         </createIndex>
         <createIndex indexName="idx_book_reservations_tenant_book_status" tableName="book_reservations">
             <column name="tenant_id"/>

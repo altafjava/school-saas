@@ -19,7 +19,7 @@ public interface FeeStructureRepository extends JpaRepository<FeeStructure, Long
 	@Query("""
 			SELECT f FROM FeeStructure f
 			WHERE f.tenantId = :tenantId
-			  AND (:pattern IS NULL OR LOWER(f.name) LIKE :pattern ESCAPE '!')
+			  AND (:#{#pattern == null} = TRUE OR LOWER(f.name) LIKE :pattern ESCAPE '!')
 			""")
 	Page<FeeStructure> search(@Param("tenantId") Long tenantId, @Param("pattern") String pattern, Pageable pageable);
 

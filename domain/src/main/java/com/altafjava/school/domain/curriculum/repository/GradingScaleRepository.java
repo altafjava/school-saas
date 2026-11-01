@@ -17,7 +17,7 @@ public interface GradingScaleRepository extends JpaRepository<GradingScale, Long
 	@Query("""
 			SELECT g FROM GradingScale g
 			WHERE g.tenantId = :tenantId
-			  AND (:pattern IS NULL OR LOWER(g.name) LIKE :pattern ESCAPE '!')
+			  AND (:#{#pattern == null} = TRUE OR LOWER(g.name) LIKE :pattern ESCAPE '!')
 			""")
 	Page<GradingScale> search(@Param("tenantId") Long tenantId, @Param("pattern") String pattern, Pageable pageable);
 

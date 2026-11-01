@@ -8,6 +8,8 @@ import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
+import jakarta.persistence.PrePersist;
+import jakarta.persistence.PreUpdate;
 import jakarta.persistence.Table;
 import org.hibernate.annotations.SQLRestriction;
 import com.altafjava.platform.core.exception.BusinessException;
@@ -115,6 +117,14 @@ public class Admission extends SoftDeletableEntity {
 	@Column(name = "application_fee_status", nullable = false, length = 20)
 	@Builder.Default
 	private ApplicationFeeStatus applicationFeeStatus = ApplicationFeeStatus.NOT_REQUIRED;
+
+	@PrePersist
+	@PreUpdate
+	private void assertConsistent() {
+		if ((applicationFeeStatus == ApplicationFeeStatus.NOT_REQUIRED) != (applicationFeeAmount == null)) {
+			throw new BusinessException("An application fee amount goes with a required fee, and only then");
+		}
+	}
 
 	public static Admission submit(String applicantFirstName, String applicantLastName,
 			LocalDate applicantDateOfBirth, String guardianFirstName, String guardianLastName,

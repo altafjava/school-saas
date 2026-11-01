@@ -16,8 +16,8 @@ public interface AssetRepository extends JpaRepository<Asset, Long> {
 	@Query("""
 			SELECT a FROM Asset a
 			WHERE a.tenantId = :tenantId
-			  AND (:status IS NULL OR a.status = :status)
-			  AND (:pattern IS NULL OR LOWER(a.name) LIKE :pattern ESCAPE '!' OR LOWER(a.assetCode) LIKE :pattern ESCAPE '!' OR LOWER(a.category) LIKE :pattern ESCAPE '!')
+			  AND (:#{#status == null} = TRUE OR a.status = :status)
+			  AND (:#{#pattern == null} = TRUE OR LOWER(a.name) LIKE :pattern ESCAPE '!' OR LOWER(a.assetCode) LIKE :pattern ESCAPE '!' OR LOWER(a.category) LIKE :pattern ESCAPE '!')
 			""")
 	Page<Asset> search(@Param("tenantId") Long tenantId, @Param("status") AssetStatus status,
 			@Param("pattern") String pattern, Pageable pageable);

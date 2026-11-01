@@ -35,7 +35,8 @@ public class SpringDataPageableResolver {
 
 	public Pageable resolve(int page, int size) {
 		var resolved = pageableParamResolver.resolve(page, size);
-		return PageRequest.of(resolved.page(), resolved.size(), requestedSort());
+		// The id tiebreak keeps pages stable: without it an engine may repeat or skip rows between pages.
+		return PageRequest.of(resolved.page(), resolved.size(), requestedSort().and(Sort.by("id")));
 	}
 
 	private Sort requestedSort() {

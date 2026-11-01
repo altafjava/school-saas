@@ -10,7 +10,7 @@
             <column name="id" type="BIGINT" autoIncrement="true">
                 <constraints primaryKey="true" nullable="false"/>
             </column>
-            <column name="public_id" type="VARCHAR(36)">
+            <column name="public_id" type="UUID">
                 <constraints nullable="false" unique="true"/>
             </column>
             <column name="tenant_id" type="BIGINT">
@@ -41,15 +41,13 @@
             </column>
             <column name="deleted_at" type="TIMESTAMP"/>
             <column name="deleted_by" type="VARCHAR(100)"/>
+            <column name="deleted_token" type="BIGINT" defaultValueNumeric="0">
+                <constraints nullable="false"/>
+            </column>
             <column name="version" type="BIGINT" defaultValueNumeric="0">
                 <constraints nullable="false"/>
             </column>
         </createTable>
-        <sql>
-            ALTER TABLE academic_years
-                ADD COLUMN active_name VARCHAR(50)
-                GENERATED ALWAYS AS (CASE WHEN deleted = FALSE THEN name ELSE NULL END) STORED;
-        </sql>
         <createIndex indexName="idx_academic_years_tenant_id" tableName="academic_years">
             <column name="tenant_id"/>
         </createIndex>
@@ -60,8 +58,9 @@
             <column name="is_current"/>
         </createIndex>
         <createIndex indexName="uq_academic_years_active_name_tenant" tableName="academic_years" unique="true">
-            <column name="active_name"/>
+            <column name="name"/>
             <column name="tenant_id"/>
+            <column name="deleted_token"/>
         </createIndex>
         <addForeignKeyConstraint
                 constraintName="fk_academic_years_tenant_id"
@@ -82,7 +81,7 @@
             <column name="id" type="BIGINT" autoIncrement="true">
                 <constraints primaryKey="true" nullable="false"/>
             </column>
-            <column name="public_id" type="VARCHAR(36)">
+            <column name="public_id" type="UUID">
                 <constraints nullable="false" unique="true"/>
             </column>
             <column name="tenant_id" type="BIGINT">
@@ -112,15 +111,13 @@
             </column>
             <column name="deleted_at" type="TIMESTAMP"/>
             <column name="deleted_by" type="VARCHAR(100)"/>
+            <column name="deleted_token" type="BIGINT" defaultValueNumeric="0">
+                <constraints nullable="false"/>
+            </column>
             <column name="version" type="BIGINT" defaultValueNumeric="0">
                 <constraints nullable="false"/>
             </column>
         </createTable>
-        <sql>
-            ALTER TABLE subjects
-                ADD COLUMN active_code VARCHAR(20)
-                GENERATED ALWAYS AS (CASE WHEN deleted = FALSE THEN code ELSE NULL END) STORED;
-        </sql>
         <createIndex indexName="idx_subjects_tenant_id" tableName="subjects">
             <column name="tenant_id"/>
         </createIndex>
@@ -131,8 +128,9 @@
             <column name="curriculum_id"/>
         </createIndex>
         <createIndex indexName="uq_subjects_active_code_tenant" tableName="subjects" unique="true">
-            <column name="active_code"/>
+            <column name="code"/>
             <column name="tenant_id"/>
+            <column name="deleted_token"/>
         </createIndex>
         <addForeignKeyConstraint
                 constraintName="fk_subjects_tenant_id"
@@ -147,7 +145,7 @@
             <column name="id" type="BIGINT" autoIncrement="true">
                 <constraints primaryKey="true" nullable="false"/>
             </column>
-            <column name="public_id" type="VARCHAR(36)">
+            <column name="public_id" type="UUID">
                 <constraints nullable="false" unique="true"/>
             </column>
             <column name="tenant_id" type="BIGINT">
@@ -192,13 +190,13 @@
             </column>
             <column name="deleted_at" type="TIMESTAMP"/>
             <column name="deleted_by" type="VARCHAR(100)"/>
+            <column name="deleted_token" type="BIGINT" defaultValueNumeric="0">
+                <constraints nullable="false"/>
+            </column>
             <column name="version" type="BIGINT" defaultValueNumeric="0">
                 <constraints nullable="false"/>
             </column>
         </createTable>
-        <sql>
-            ALTER TABLE exams ADD CONSTRAINT chk_exams_weightage CHECK (weightage &gt; 0 AND weightage &lt;= 100);
-        </sql>
         <createIndex indexName="idx_exams_tenant_id" tableName="exams">
             <column name="tenant_id"/>
         </createIndex>
@@ -254,7 +252,7 @@
             <column name="id" type="BIGINT" autoIncrement="true">
                 <constraints primaryKey="true" nullable="false"/>
             </column>
-            <column name="public_id" type="VARCHAR(36)">
+            <column name="public_id" type="UUID">
                 <constraints nullable="false" unique="true"/>
             </column>
             <column name="tenant_id" type="BIGINT">
@@ -286,15 +284,13 @@
             </column>
             <column name="deleted_at" type="TIMESTAMP"/>
             <column name="deleted_by" type="VARCHAR(100)"/>
+            <column name="deleted_token" type="BIGINT" defaultValueNumeric="0">
+                <constraints nullable="false"/>
+            </column>
             <column name="version" type="BIGINT" defaultValueNumeric="0">
                 <constraints nullable="false"/>
             </column>
         </createTable>
-        <sql>
-            ALTER TABLE attendance
-                ADD COLUMN active_attendance_date DATE
-                GENERATED ALWAYS AS (CASE WHEN deleted = FALSE THEN attendance_date ELSE NULL END) STORED;
-        </sql>
         <createIndex indexName="idx_attendance_tenant_id" tableName="attendance">
             <column name="tenant_id"/>
         </createIndex>
@@ -315,8 +311,9 @@
                 unique="true">
             <column name="student_id"/>
             <column name="classroom_id"/>
-            <column name="active_attendance_date"/>
+            <column name="attendance_date"/>
             <column name="tenant_id"/>
+            <column name="deleted_token"/>
         </createIndex>
         <addForeignKeyConstraint
                 constraintName="fk_attendance_tenant_id"
@@ -343,7 +340,7 @@
             <column name="id" type="BIGINT" autoIncrement="true">
                 <constraints primaryKey="true" nullable="false"/>
             </column>
-            <column name="public_id" type="VARCHAR(36)">
+            <column name="public_id" type="UUID">
                 <constraints nullable="false" unique="true"/>
             </column>
             <column name="tenant_id" type="BIGINT">
@@ -378,15 +375,13 @@
             </column>
             <column name="deleted_at" type="TIMESTAMP"/>
             <column name="deleted_by" type="VARCHAR(100)"/>
+            <column name="deleted_token" type="BIGINT" defaultValueNumeric="0">
+                <constraints nullable="false"/>
+            </column>
             <column name="version" type="BIGINT" defaultValueNumeric="0">
                 <constraints nullable="false"/>
             </column>
         </createTable>
-        <sql>
-            ALTER TABLE grades
-                ADD COLUMN active_exam_id BIGINT
-                GENERATED ALWAYS AS (CASE WHEN deleted = FALSE THEN exam_id ELSE NULL END) STORED;
-        </sql>
         <createIndex indexName="idx_grades_tenant_id" tableName="grades">
             <column name="tenant_id"/>
         </createIndex>
@@ -404,8 +399,9 @@
         </createIndex>
         <createIndex indexName="uq_grades_student_active_exam_tenant" tableName="grades" unique="true">
             <column name="student_id"/>
-            <column name="active_exam_id"/>
+            <column name="exam_id"/>
             <column name="tenant_id"/>
+            <column name="deleted_token"/>
         </createIndex>
         <addForeignKeyConstraint
                 constraintName="fk_grades_tenant_id"
@@ -438,7 +434,7 @@
             <column name="id" type="BIGINT" autoIncrement="true">
                 <constraints primaryKey="true" nullable="false"/>
             </column>
-            <column name="public_id" type="VARCHAR(36)">
+            <column name="public_id" type="UUID">
                 <constraints nullable="false" unique="true"/>
             </column>
             <column name="tenant_id" type="BIGINT">
@@ -469,15 +465,13 @@
             </column>
             <column name="deleted_at" type="TIMESTAMP"/>
             <column name="deleted_by" type="VARCHAR(100)"/>
+            <column name="deleted_token" type="BIGINT" defaultValueNumeric="0">
+                <constraints nullable="false"/>
+            </column>
             <column name="version" type="BIGINT" defaultValueNumeric="0">
                 <constraints nullable="false"/>
             </column>
         </createTable>
-        <sql>
-            ALTER TABLE fee_structures
-                ADD COLUMN active_name VARCHAR(200)
-                GENERATED ALWAYS AS (CASE WHEN deleted = FALSE THEN name ELSE NULL END) STORED;
-        </sql>
         <createIndex indexName="idx_fee_structures_tenant_id" tableName="fee_structures">
             <column name="tenant_id"/>
         </createIndex>
@@ -485,8 +479,9 @@
             <column name="deleted"/>
         </createIndex>
         <createIndex indexName="uq_fee_structures_active_name_tenant" tableName="fee_structures" unique="true">
-            <column name="active_name"/>
+            <column name="name"/>
             <column name="tenant_id"/>
+            <column name="deleted_token"/>
         </createIndex>
         <addForeignKeyConstraint
                 constraintName="fk_fee_structures_tenant_id"
@@ -501,7 +496,7 @@
             <column name="id" type="BIGINT" autoIncrement="true">
                 <constraints primaryKey="true" nullable="false"/>
             </column>
-            <column name="public_id" type="VARCHAR(36)">
+            <column name="public_id" type="UUID">
                 <constraints nullable="false" unique="true"/>
             </column>
             <column name="tenant_id" type="BIGINT">
@@ -540,20 +535,13 @@
             </column>
             <column name="deleted_at" type="TIMESTAMP"/>
             <column name="deleted_by" type="VARCHAR(100)"/>
+            <column name="deleted_token" type="BIGINT" defaultValueNumeric="0">
+                <constraints nullable="false"/>
+            </column>
             <column name="version" type="BIGINT" defaultValueNumeric="0">
                 <constraints nullable="false"/>
             </column>
         </createTable>
-        <sql>
-            ALTER TABLE fee_payments
-                ADD COLUMN active_receipt_number VARCHAR(100)
-                GENERATED ALWAYS AS (CASE WHEN deleted = FALSE THEN receipt_number ELSE NULL END) STORED;
-        </sql>
-        <sql>
-            ALTER TABLE fee_payments
-                ADD COLUMN active_gateway_charge_reference VARCHAR(255)
-                GENERATED ALWAYS AS (CASE WHEN deleted = FALSE THEN gateway_charge_reference ELSE NULL END) STORED;
-        </sql>
         <createIndex indexName="idx_fee_payments_tenant_id" tableName="fee_payments">
             <column name="tenant_id"/>
         </createIndex>
@@ -576,12 +564,14 @@
             <column name="gateway_charge_reference"/>
         </createIndex>
         <createIndex indexName="uq_fee_payments_active_receipt_tenant" tableName="fee_payments" unique="true">
-            <column name="active_receipt_number"/>
+            <column name="receipt_number"/>
             <column name="tenant_id"/>
+            <column name="deleted_token"/>
         </createIndex>
         <createIndex indexName="uq_fee_payments_tenant_active_gateway_ref" tableName="fee_payments" unique="true">
             <column name="tenant_id"/>
-            <column name="active_gateway_charge_reference"/>
+            <column name="gateway_charge_reference"/>
+            <column name="deleted_token"/>
         </createIndex>
         <addForeignKeyConstraint
                 constraintName="fk_fee_payments_tenant_id"
