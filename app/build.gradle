@@ -92,6 +92,7 @@ dependencies {
 
     // Real MariaDB, Redis and RabbitMQ containers, shared with platform-saas.
     testImplementation 'com.altafjava.platform:test-support'
+    testImplementation 'com.altafjava.platform:infrastructure'
 
     testRuntimeOnly libs.junit.platform.launcher
     testImplementation libs.archunit.junit5

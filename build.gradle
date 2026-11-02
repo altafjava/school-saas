@@ -24,6 +24,27 @@ dependencyCheck {
     }
 }
 
+ext.coveredModules = ['domain', 'application', 'api', 'app']
+ext.testLayerBudgetsSeconds = ['Unit': 300, 'Integration': 600, 'E2E': 1200, 'Contract and infrastructure': 420]
+// Line coverage floors, measured from the merged report on 2026-11-02. Raise them as coverage grows,
+// and never lower one to make a change pass.
+ext.coverageFloors = [
+    Domain: [classes: ['com/altafjava/school/domain/**'], line: 0.94],
+    Application: [classes: ['com/altafjava/school/application/**'], line: 0.88],
+    Api: [classes: ['com/altafjava/school/api/**'], line: 0.69],
+    // The riskiest code holds the highest floors.
+    Money: [classes: ['com/altafjava/school/domain/fee/**', 'com/altafjava/school/application/service/Fee*',
+                      'com/altafjava/school/domain/payroll/**', 'com/altafjava/school/application/service/Payroll*'], line: 0.94],
+    Attendance: [classes: ['com/altafjava/school/domain/attendance/**', 'com/altafjava/school/application/service/*Attendance*'], line: 0.93],
+    Grades: [classes: ['com/altafjava/school/domain/grade/**', 'com/altafjava/school/domain/exam/**',
+                       'com/altafjava/school/application/service/Grade*', 'com/altafjava/school/application/service/Exam*'], line: 0.91],
+    Privacy: [classes: ['com/altafjava/school/application/privacy/**', 'com/altafjava/school/domain/health/**',
+                        'com/altafjava/school/domain/counseling/**'], line: 0.80],
+]
+
+apply from: 'gradle/test-health.gradle'
+apply from: 'gradle/coverage.gradle'
+
 allprojects {
     group = 'com.altafjava.school'
     version = '0.0.1-SNAPSHOT'

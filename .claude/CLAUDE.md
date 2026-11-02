@@ -261,7 +261,7 @@ Never: mock repos in integration tests, `@Disabled` placeholders, OpenAPI assert
 - **Column order** in every `createTable` (and the matching entity fields): primary key, `public_id`, `tenant_id`, foreign keys, business fields, status/type fields, `created_at`/`created_by`/`updated_at`/`updated_by`, `deleted`/`deleted_at`/`deleted_by`, `version`. `deleted_token` follows the other `deleted_*` columns.
 - Soft-delete-safe unique key: add `deleted_token` to the unique index. It is 0 while live and the row's id once deleted, set by `SoftDeletableEntity`. A row that closes without being deleted uses `retired_token` the same way.
 - Portable tags only: no `<sql>`, `<sqlFile>`, `<createProcedure>` or `<modifySql>`. Rules that would be `CHECK` constraints live on the entity in a `@PrePersist`/`@PreUpdate` method. `PortableChangesetFitnessTest` enforces this.
-- Dev: fold evolution (`addColumn`, renames, backfills) into the table's original `createTable` changeset instead of stacking alter changesets; seed data carries its final values directly.
+- Dev: change the existing changeset that owns the table; add a new file only for a new table or feature. Seed data carries its final values.
 - **Prod/staging**: new columns nullable or with default; renames/drops are multi-release; never modify existing changesets.
 
 ---

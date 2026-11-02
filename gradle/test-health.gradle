@@ -1,0 +1,51 @@
+// Reads every module's test results, so the pyramid and slow tests are reported from what actually
+// ran. A layer over its time budget fails the build instead of quietly slowing everyone down.
+def layerOf = { String testClass ->
+    if (testClass.endsWith('E2ETest') || testClass.contains('.e2e.')) return 'E2E'
+    if (testClass.contains('.realinfrastructure.') || testClass.contains('.architecture.')
+            || testClass.contains('.contract.') || testClass.endsWith('FitnessTest')) return 'Contract and infrastructure'
+    if (testClass.endsWith('IntegrationTest') || testClass.contains('.integration.')) return 'Integration'
+    return 'Unit'
+}
+
+tasks.register('testHealthReport') {
+    group = 'verification'
+    description = 'Reports the test pyramid and the slowest tests, and enforces each layer\'s time budget.'
+    def budgets = project.ext.testLayerBudgetsSeconds
+    def resultFiles = fileTree(rootDir) { include '*/build/test-results/*/TEST-*.xml' }
+    def reportFile = layout.buildDirectory.file('reports/test-health.txt')
+    outputs.upToDateWhen { false }
+    doLast {
+        def counts = [:].withDefault { 0 }
+        def seconds = [:].withDefault { 0d }
+        def classTimes = [:]
+        resultFiles.files.each { file ->
+            def suite = new groovy.xml.XmlSlurper().parse(file)
+            def className = suite.@name.toString()
+            def layer = layerOf(className)
+            counts[layer] += suite.@tests.toInteger()
+            seconds[layer] += suite.@time.toDouble()
+            classTimes[className] = suite.@time.toDouble()
+        }
+        def total = counts.values().sum() ?: 0
+        def lines = ['Layer                          Tests      %     Seconds   Budget']
+        ['Unit', 'Integration', 'E2E', 'Contract and infrastructure'].each { layer ->
+            def share = total ? 100d * counts[layer] / total : 0d
+            lines << String.format('%-28s %7d %5.1f%% %10.1f %8d', layer, counts[layer], share, seconds[layer],
+                    budgets[layer])
+        }
+        lines << ''
+        lines << 'Slowest test classes'
+        classTimes.sort { -it.value }.take(10).each { lines << String.format('%8.1fs  %s', it.value, it.key) }
+        def report = lines.join('\n')
+        reportFile.get().asFile.with {
+            parentFile.mkdirs()
+            text = report
+        }
+        logger.lifecycle(report)
+        def over = budgets.findAll { layer, budget -> seconds[layer] > budget }.keySet()
+        if (over) {
+            throw new GradleException("Test time budget exceeded for: ${over}. See ${reportFile.get().asFile}")
+        }
+    }
+}

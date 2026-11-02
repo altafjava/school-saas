@@ -103,19 +103,22 @@ jobs:
             **/build/test-results/
           retention-days: 7
 
-      # Blocking — floors recorded in each module's build.gradle (TESTING.md §5 step 5).
-      - name: Coverage Ratchet (JaCoCo)
+      # Merged across modules; floors are in the root build.gradle and the riskiest code holds the
+      # highest. Also fails when a test layer exceeds its time budget.
+      - name: Coverage and test health gates
         env:
           GITHUB_ACTOR: ${{ github.actor }}
           PLATFORM_SAAS_TOKEN: ${{ secrets.PLATFORM_SAAS_TOKEN }}
-        run: ./gradlew jacocoTestCoverageVerification --build-cache
+        run: ./gradlew infrastructureTest jacocoMergedReport coverageGates testHealthReport --build-cache
 
       - name: Archive Coverage Reports (JaCoCo)
         uses: actions/upload-artifact@v5
         if: always()
         with:
           name: jacoco-coverage-reports
-          path: '**/build/reports/jacoco/'
+          path: |
+            **/build/reports/jacoco/
+            build/reports/test-health.txt
           retention-days: 7
 
       # Blocking — zero-findings baseline (TESTING.md §5 step 7); config/spotbugs/exclude.xml
@@ -131,7 +134,7 @@ jobs:
           path: '**/build/reports/spotbugs/'
           retention-days: 7
 
-      # Blocking, mutationThreshold/coverageThreshold = 70 (TESTING.md §5 step 6; domain/build.gradle).
+      # Blocking; scope and thresholds are in domain/build.gradle.
       - name: Mutation Testing (PIT)
         env:
           GITHUB_ACTOR: ${{ github.actor }}
