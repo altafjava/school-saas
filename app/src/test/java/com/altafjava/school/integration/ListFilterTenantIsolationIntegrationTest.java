@@ -32,6 +32,7 @@ import com.altafjava.school.application.service.TimetableService;
 import com.altafjava.school.base.SchoolIntegrationTestBase;
 import com.altafjava.school.config.TestPaymentConfig;
 import com.altafjava.school.config.TestRedisConfig;
+import com.altafjava.school.util.TestPrincipals;
 
 /**
  * A public id in a list filter must resolve only within the caller's tenant, including when another tenant
@@ -85,10 +86,12 @@ class ListFilterTenantIsolationIntegrationTest extends SchoolIntegrationTestBase
 
 	@AfterEach
 	void clearContext() {
+		TestPrincipals.clear();
 		TenantContext.ForTesting.clear();
 	}
 
 	private void activate(Tenant tenant) {
+		TestPrincipals.authenticateAsTenantAdmin();
 		TenantContext.ForTesting.setCurrentTenant(tenant.getId(), tenant.getPublicId(), tenant.getSubdomain(),
 				tenant.getType());
 	}

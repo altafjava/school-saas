@@ -83,6 +83,7 @@ public final class SchoolPermissions {
 			def("EVENT_REGISTER", "Register for and cancel event registration", CAT_COMMUNICATION),
 			def("EVENT_STAFF_MANAGE", "View and mark event registration attendance", CAT_COMMUNICATION),
 			def("EXAM_COMPLETE", "Mark an exam complete", CAT_ACADEMIC),
+			def("EXAM_READ", "View the exam schedule within the caller's reach", CAT_ACADEMIC),
 			def("EXAM_RESULT_PUBLISH", "Publish or withdraw exam results", CAT_ACADEMIC),
 			def("EXAM_TYPE_MANAGE", "Manage tenant exam-type definitions", CAT_ACADEMIC),
 			def("EXAM_WRITE", "Schedule, reassign, and cancel exams", CAT_ACADEMIC),

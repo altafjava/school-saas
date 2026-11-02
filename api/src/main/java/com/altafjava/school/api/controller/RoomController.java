@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import com.altafjava.platform.api.dto.response.ApiResponse;
+import com.altafjava.platform.core.feature.annotation.FeatureEnabled;
 import com.altafjava.school.api.controller.api.RoomApi;
 import com.altafjava.school.api.dto.request.CreateRoomRequest;
 import com.altafjava.school.api.dto.request.UpdateRoomRequest;
@@ -21,9 +22,11 @@ import com.altafjava.school.api.mapper.RoomMapper;
 import com.altafjava.school.api.support.PlatformPageMapper;
 import com.altafjava.school.api.support.SpringDataPageableResolver;
 import com.altafjava.school.application.reference.ReferenceSummaries;
+import com.altafjava.school.application.security.SchoolFeatures;
 import com.altafjava.school.application.service.RoomService;
 
 @RestController
+@FeatureEnabled(SchoolFeatures.CAMPUS_OPS)
 @RequestMapping("/api/v1/rooms")
 public class RoomController implements RoomApi {
 

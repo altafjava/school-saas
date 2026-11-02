@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import com.altafjava.platform.api.dto.response.ApiResponse;
+import com.altafjava.platform.core.feature.annotation.FeatureEnabled;
 import com.altafjava.school.api.controller.api.HostelBuildingApi;
 import com.altafjava.school.api.dto.request.CreateHostelBuildingRequest;
 import com.altafjava.school.api.dto.request.UpdateHostelBuildingRequest;
@@ -20,11 +21,13 @@ import com.altafjava.school.api.dto.response.HostelBuildingResponse;
 import com.altafjava.school.api.mapper.HostelBuildingMapper;
 import com.altafjava.school.api.support.PlatformPageMapper;
 import com.altafjava.school.api.support.SpringDataPageableResolver;
+import com.altafjava.school.application.security.SchoolFeatures;
 import com.altafjava.school.application.service.HostelBuildingService;
 
 // No dedicated hostel-warden role exists in the seeded role catalog (mirrors Transport's
 // TENANT_ADMIN-or-TEACHER gate for reads) — a warden-specific role is a follow-up.
 @RestController
+@FeatureEnabled(SchoolFeatures.CAMPUS_OPS)
 @RequestMapping("/api/v1/hostel-buildings")
 public class HostelBuildingController implements HostelBuildingApi {
 

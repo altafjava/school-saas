@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import com.altafjava.platform.api.dto.response.ApiResponse;
 import com.altafjava.platform.core.annotation.Command;
+import com.altafjava.platform.core.feature.annotation.FeatureEnabled;
 import com.altafjava.school.api.controller.api.RoomAllocationApi;
 import com.altafjava.school.api.dto.request.AllocateRoomRequest;
 import com.altafjava.school.api.dto.request.VacateRoomAllocationRequest;
@@ -22,9 +23,11 @@ import com.altafjava.school.api.mapper.RoomAllocationMapper;
 import com.altafjava.school.api.support.PlatformPageMapper;
 import com.altafjava.school.api.support.SpringDataPageableResolver;
 import com.altafjava.school.application.reference.ReferenceSummaries;
+import com.altafjava.school.application.security.SchoolFeatures;
 import com.altafjava.school.application.service.RoomAllocationService;
 
 @RestController
+@FeatureEnabled(SchoolFeatures.CAMPUS_OPS)
 @RequestMapping("/api/v1/room-allocations")
 public class RoomAllocationController implements RoomAllocationApi {
 

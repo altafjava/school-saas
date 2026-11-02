@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import com.altafjava.platform.api.dto.response.ApiResponse;
+import com.altafjava.platform.core.feature.annotation.FeatureEnabled;
 import com.altafjava.school.api.controller.api.HealthRecordApi;
 import com.altafjava.school.api.dto.request.UpsertHealthRecordRequest;
 import com.altafjava.school.api.dto.response.HealthRecordCorrectionResponse;
@@ -18,6 +19,7 @@ import com.altafjava.school.api.mapper.HealthRecordCorrectionMapper;
 import com.altafjava.school.api.mapper.HealthRecordMapper;
 import com.altafjava.school.api.support.PlatformPageMapper;
 import com.altafjava.school.api.support.SpringDataPageableResolver;
+import com.altafjava.school.application.security.SchoolFeatures;
 import com.altafjava.school.application.service.HealthRecordService;
 
 /**
@@ -29,6 +31,7 @@ import com.altafjava.school.application.service.HealthRecordService;
  * health-staff role is a follow-up.
  */
 @RestController
+@FeatureEnabled(SchoolFeatures.CAMPUS_OPS)
 @RequestMapping("/api/v1/health-records")
 public class HealthRecordController implements HealthRecordApi {
 

@@ -19,6 +19,7 @@ import com.altafjava.school.api.dto.response.AttendancePercentageResponse;
 import com.altafjava.school.api.dto.response.AttendanceResponse;
 import com.altafjava.school.api.dto.response.BulkImportResponse;
 import com.altafjava.school.api.dto.response.FeeBalanceResponse;
+import com.altafjava.school.api.dto.response.FeePaymentResponse;
 import com.altafjava.school.api.dto.response.GpaResponse;
 import com.altafjava.school.api.dto.response.GradeResponse;
 import com.altafjava.school.api.dto.response.ReportCardResponse;
@@ -120,6 +121,12 @@ public interface StudentApi {
 
 	@Operation(summary = "Fee balance")
 	public ApiResponse<List<FeeBalanceResponse>> feeBalance(@PathVariable String publicId);
+
+	@Operation(summary = "Fee payments", description = "The student's payment history, for the student and linked guardians.")
+	public ApiResponse<com.altafjava.platform.core.model.Page<FeePaymentResponse>> feePayments(
+			@PathVariable String publicId,
+			@RequestParam(defaultValue = "0") int page,
+			@RequestParam(defaultValue = "20") int size);
 
 	@Operation(summary = "Report cards")
 	public ApiResponse<com.altafjava.platform.core.model.Page<ReportCardResponse>> reportCards(

@@ -149,7 +149,7 @@ public class ClassroomController implements ClassroomApi {
 
 	@Override
 	@GetMapping("/{publicId}/timetable")
-	@PreAuthorize("@permissionAuthorizationService.hasPermission('CLASSROOM_READ')")
+	@PreAuthorize("@permissionAuthorizationService.hasPermission('TIMETABLE_READ')")
 	public ApiResponse<List<TimetableEntryResponse>> timetable(@PathVariable String publicId) {
 		return ApiResponse.success(timetableEntryMapper.toResponseList(timetableService.listForClassroom(publicId)));
 	}

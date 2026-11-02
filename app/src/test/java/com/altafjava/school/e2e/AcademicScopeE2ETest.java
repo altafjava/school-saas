@@ -427,6 +427,76 @@ class AcademicScopeE2ETest extends SchoolIntegrationTestBase {
 				.body("data.content.studentPublicId", everyItem(equalTo(studentA)));
 	}
 
+	// ---- family portal reads ----
+
+	@Test
+	void studentProfile_isReadableByTheStudentAndTheirGuardian_only() {
+		as(studentAUser, "STUDENT").get("/api/v1/students/" + studentA).then().statusCode(HttpStatus.OK.value());
+		as(parentOfAUser, "PARENT").get("/api/v1/students/" + studentA).then().statusCode(HttpStatus.OK.value());
+		as(studentAUser, "STUDENT").get("/api/v1/students/" + studentB).then()
+				.statusCode(HttpStatus.FORBIDDEN.value());
+		as(parentOfAUser, "PARENT").get("/api/v1/students/" + studentB).then()
+				.statusCode(HttpStatus.FORBIDDEN.value());
+	}
+
+	@Test
+	void classroomTimetable_isReadableOnlyForTheFamilysOwnClassroom() {
+		as(parentOfAUser, "PARENT").get("/api/v1/classrooms/" + classroomA + "/timetable").then()
+				.statusCode(HttpStatus.OK.value()).body("data", hasSize(1));
+		as(studentAUser, "STUDENT").get("/api/v1/classrooms/" + classroomA + "/timetable").then()
+				.statusCode(HttpStatus.OK.value());
+		as(parentOfAUser, "PARENT").get("/api/v1/classrooms/" + classroomB + "/timetable").then()
+				.statusCode(HttpStatus.FORBIDDEN.value());
+		as(studentAUser, "STUDENT").get("/api/v1/classrooms/" + classroomB + "/timetable").then()
+				.statusCode(HttpStatus.FORBIDDEN.value());
+	}
+
+	@Test
+	void timetableList_staysInsideTheFamilysOwnClassroom() {
+		as(parentOfAUser, "PARENT").get("/api/v1/timetable-entries?size=100").then()
+				.statusCode(HttpStatus.OK.value())
+				.body("data.content.classroomPublicId", everyItem(equalTo(classroomA)));
+		as(parentOfAUser, "PARENT").get("/api/v1/timetable-entries?classroomPublicId=" + classroomB).then()
+				.statusCode(HttpStatus.FORBIDDEN.value());
+	}
+
+	@Test
+	void examSchedule_staysInsideTheFamilysOwnClassroom() {
+		String examOfA = publicIds.of(Exam.class, mathExamAId);
+		String examOfB = publicIds.of(Exam.class, mathExamBId);
+		as(parentOfAUser, "PARENT").get("/api/v1/exams?size=100").then().statusCode(HttpStatus.OK.value())
+				.body("data.content.publicId", hasItem(examOfA))
+				.body("data.content.publicId", not(hasItem(examOfB)));
+		as(studentAUser, "STUDENT").get("/api/v1/exams/" + examOfA).then().statusCode(HttpStatus.OK.value());
+		as(studentAUser, "STUDENT").get("/api/v1/exams/" + examOfB).then().statusCode(HttpStatus.FORBIDDEN.value());
+	}
+
+	@Test
+	void examSchedule_isLimitedToTheClassroomsATeacherTeaches() {
+		as(unassignedTeacherUser, "TEACHER").get("/api/v1/exams?size=100").then().statusCode(HttpStatus.OK.value())
+				.body("data.content", hasSize(0));
+		admin().get("/api/v1/exams?size=100").then().statusCode(HttpStatus.OK.value())
+				.body("data.content.publicId", hasItem(publicIds.of(Exam.class, mathExamBId)));
+	}
+
+	@Test
+	void subjects_areReadableByFamilies() {
+		as(parentOfAUser, "PARENT").get("/api/v1/subjects").then().statusCode(HttpStatus.OK.value());
+		as(studentAUser, "STUDENT").get("/api/v1/subjects").then().statusCode(HttpStatus.OK.value());
+	}
+
+	@Test
+	void feePaymentHistory_isReadableOnlyForTheFamilysOwnStudent() {
+		as(parentOfAUser, "PARENT").get("/api/v1/students/" + studentA + "/fee-payments").then()
+				.statusCode(HttpStatus.OK.value()).body("data.content", hasSize(0));
+		as(studentAUser, "STUDENT").get("/api/v1/students/" + studentA + "/fee-payments").then()
+				.statusCode(HttpStatus.OK.value());
+		as(parentOfAUser, "PARENT").get("/api/v1/students/" + studentB + "/fee-payments").then()
+				.statusCode(HttpStatus.FORBIDDEN.value());
+		as(classTeacherUser, "TEACHER").get("/api/v1/students/" + studentA + "/fee-payments").then()
+				.statusCode(HttpStatus.FORBIDDEN.value());
+	}
+
 	// ---- roster and coursework ----
 
 	@Test

@@ -5,6 +5,8 @@ import java.time.LocalDateTime;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import com.altafjava.platform.application.paymentgateway.PaymentGatewayCredentialsDecryptor;
@@ -172,6 +174,14 @@ public class FeeOnlinePaymentService {
 	}
 
 	/** Guard-checked receipt read for the student themselves or their linked guardian. */
+	@Transactional(readOnly = true)
+	public Page<FeePayment> listForSelfService(String studentPublicId, Pageable pageable) {
+		Long tenantId = TenantContext.getCurrentTenantId();
+		Student student = resolveStudent(tenantId, studentPublicId);
+		studentDataAccessGuard.assertCanView(tenantId, studentPublicId);
+		return feePaymentRepository.search(tenantId, student.getId(), null, null, null, null, pageable);
+	}
+
 	@Transactional(readOnly = true)
 	public FeePayment findReceiptForSelfService(String publicId) {
 		Long tenantId = TenantContext.getCurrentTenantId();

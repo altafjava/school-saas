@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import com.altafjava.platform.api.dto.response.ApiResponse;
+import com.altafjava.platform.core.feature.annotation.FeatureEnabled;
 import com.altafjava.school.api.controller.api.MedicalIncidentApi;
 import com.altafjava.school.api.dto.request.RecordMedicalIncidentRequest;
 import com.altafjava.school.api.dto.response.MedicalIncidentResponse;
@@ -22,11 +23,13 @@ import com.altafjava.school.api.support.SpringDataPageableResolver;
 import com.altafjava.school.application.filter.DateWindow;
 import com.altafjava.school.application.filter.MedicalIncidentFilter;
 import com.altafjava.school.application.reference.ReferenceSummaries;
+import com.altafjava.school.application.security.SchoolFeatures;
 import com.altafjava.school.application.service.MedicalIncidentService;
 
 // See HealthRecordController for the TENANT_ADMIN-only rationale (PHI-grade data, no dedicated
 // health-staff role in the seeded catalog).
 @RestController
+@FeatureEnabled(SchoolFeatures.CAMPUS_OPS)
 @RequestMapping("/api/v1/medical-incidents")
 public class MedicalIncidentController implements MedicalIncidentApi {
 

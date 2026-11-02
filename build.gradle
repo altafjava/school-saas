@@ -1,5 +1,5 @@
 plugins {
-    id 'org.springframework.boot' version '4.1.0' apply false
+    id 'org.springframework.boot' version '4.1.2' apply false
     id 'io.spring.dependency-management' version '1.1.7' apply false
     id 'org.owasp.dependencycheck' version '12.2.2'
     id 'com.diffplug.spotless' version '6.25.0' apply false
@@ -16,6 +16,8 @@ plugins {
 // analysis" while another succeeds moments earlier.
 dependencyCheck {
     failBuildOnCVSS = 7.0
+    // Scans what ships. Test and load-test tooling (Gatling, sbt, Testcontainers) never reaches production.
+    scanConfigurations = ['runtimeClasspath']
     nvd {
         // Key loaded from ~/.gradle/gradle.properties (nvdApiKey) or NVD_API_KEY env var in CI.
         def key = findProperty('nvdApiKey') ?: System.getenv('NVD_API_KEY')
@@ -118,7 +120,7 @@ subprojects {
 
     dependencyManagement {
         imports {
-            mavenBom "org.springframework.boot:spring-boot-dependencies:4.1.0"
+            mavenBom "org.springframework.boot:spring-boot-dependencies:4.1.2"
             // Platform BOM — aligns all com.altafjava.platform:* versions across every school module.
             // Upgrade the platform by changing this single version string.
             mavenBom "com.altafjava.platform:platform-bom:0.1.0-SNAPSHOT"

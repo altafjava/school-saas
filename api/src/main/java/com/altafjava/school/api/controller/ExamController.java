@@ -51,7 +51,7 @@ public class ExamController implements ExamApi {
 
 	@Override
 	@GetMapping
-	@PreAuthorize("@permissionAuthorizationService.hasPermission('EXAM_COMPLETE')")
+	@PreAuthorize("@permissionAuthorizationService.hasPermission('EXAM_READ')")
 	@SortableBy({ "title", "scheduledAt", "status", "maxMarks" })
 	public ApiResponse<com.altafjava.platform.core.model.Page<ExamResponse>> list(
 			@RequestParam(defaultValue = "0") int page,
@@ -68,7 +68,7 @@ public class ExamController implements ExamApi {
 
 	@Override
 	@GetMapping("/{publicId}")
-	@PreAuthorize("@permissionAuthorizationService.hasPermission('EXAM_COMPLETE')")
+	@PreAuthorize("@permissionAuthorizationService.hasPermission('EXAM_READ')")
 	public ApiResponse<ExamResponse> get(@PathVariable String publicId) {
 		return ApiResponse.success(examMapper.toResponse(examService.findByPublicId(publicId)));
 	}

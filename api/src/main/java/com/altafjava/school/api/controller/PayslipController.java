@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import com.altafjava.platform.api.dto.response.ApiResponse;
+import com.altafjava.platform.core.feature.annotation.FeatureEnabled;
 import com.altafjava.platform.core.idempotency.RequireIdempotencyKey;
 import com.altafjava.school.api.controller.api.PayslipApi;
 import com.altafjava.school.api.dto.response.PayslipResponse;
@@ -17,10 +18,12 @@ import com.altafjava.school.api.support.SortableBy;
 import com.altafjava.school.api.support.SpringDataPageableResolver;
 import com.altafjava.school.application.filter.PayslipFilter;
 import com.altafjava.school.application.reference.ReferenceSummaries;
+import com.altafjava.school.application.security.SchoolFeatures;
 import com.altafjava.school.application.service.PayslipService;
 import com.altafjava.school.domain.payroll.model.PayslipStatus;
 
 @RestController
+@FeatureEnabled(SchoolFeatures.PAYROLL)
 @RequestMapping("/api/v1/payslips")
 public class PayslipController implements PayslipApi {
 

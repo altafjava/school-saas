@@ -89,6 +89,38 @@
         </insert>
         <insert tableName="role_permissions">
             <column name="role_id" valueComputed="(SELECT id FROM roles WHERE name = 'TEACHER' AND tenant_id IS NULL)"/>
+            <column name="permission_code" value="EXAM_READ"/>
+        </insert>
+        <insert tableName="role_permissions">
+            <column name="role_id" valueComputed="(SELECT id FROM roles WHERE name = 'TENANT_ADMIN' AND tenant_id IS NULL)"/>
+            <column name="permission_code" value="EXAM_READ"/>
+        </insert>
+        <insert tableName="role_permissions">
+            <column name="role_id" valueComputed="(SELECT id FROM roles WHERE name = 'STUDENT' AND tenant_id IS NULL)"/>
+            <column name="permission_code" value="EXAM_READ"/>
+        </insert>
+        <insert tableName="role_permissions">
+            <column name="role_id" valueComputed="(SELECT id FROM roles WHERE name = 'STUDENT' AND tenant_id IS NULL)"/>
+            <column name="permission_code" value="SUBJECT_READ"/>
+        </insert>
+        <insert tableName="role_permissions">
+            <column name="role_id" valueComputed="(SELECT id FROM roles WHERE name = 'STUDENT' AND tenant_id IS NULL)"/>
+            <column name="permission_code" value="TIMETABLE_READ"/>
+        </insert>
+        <insert tableName="role_permissions">
+            <column name="role_id" valueComputed="(SELECT id FROM roles WHERE name = 'PARENT' AND tenant_id IS NULL)"/>
+            <column name="permission_code" value="EXAM_READ"/>
+        </insert>
+        <insert tableName="role_permissions">
+            <column name="role_id" valueComputed="(SELECT id FROM roles WHERE name = 'PARENT' AND tenant_id IS NULL)"/>
+            <column name="permission_code" value="SUBJECT_READ"/>
+        </insert>
+        <insert tableName="role_permissions">
+            <column name="role_id" valueComputed="(SELECT id FROM roles WHERE name = 'PARENT' AND tenant_id IS NULL)"/>
+            <column name="permission_code" value="TIMETABLE_READ"/>
+        </insert>
+        <insert tableName="role_permissions">
+            <column name="role_id" valueComputed="(SELECT id FROM roles WHERE name = 'TEACHER' AND tenant_id IS NULL)"/>
             <column name="permission_code" value="GRADING_SCALE_READ"/>
         </insert>
         <insert tableName="role_permissions">

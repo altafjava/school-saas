@@ -19,6 +19,7 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import com.altafjava.platform.api.dto.response.ApiResponse;
 import com.altafjava.platform.core.annotation.Command;
+import com.altafjava.platform.core.feature.annotation.FeatureEnabled;
 import com.altafjava.platform.core.security.AuthenticatedUser;
 import com.altafjava.platform.domain.document.model.DocumentIssuance;
 import com.altafjava.school.api.controller.api.CertificateApi;
@@ -27,11 +28,13 @@ import com.altafjava.school.api.dto.response.IssuedDocumentResponse;
 import com.altafjava.school.api.mapper.IssuedDocumentMapper;
 import com.altafjava.school.api.ratelimit.RateLimited;
 import com.altafjava.school.api.support.SpringDataPageableResolver;
+import com.altafjava.school.application.security.SchoolFeatures;
 import com.altafjava.school.application.service.CertificateService;
 
 // Issuance is admin/registrar-only — unlike report cards, a certificate is never self-service
 // for a parent/student, it is always issued by staff on request.
 @RestController
+@FeatureEnabled(SchoolFeatures.CERTIFICATES)
 @RequestMapping("/api/v1/students/{studentPublicId}/certificates")
 public class CertificateController implements CertificateApi {
 

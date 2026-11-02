@@ -6,6 +6,7 @@ import java.time.Duration;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
@@ -18,6 +19,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.support.TransactionTemplate;
 import com.altafjava.platform.application.dto.RegisterTenantCommand;
+import com.altafjava.platform.application.service.FeatureFlagService;
 import com.altafjava.platform.application.service.TenantOnboardingService;
 import com.altafjava.platform.core.security.AuthenticatedUser;
 import com.altafjava.platform.core.security.PasswordEncoder;
@@ -30,22 +32,27 @@ import com.altafjava.platform.domain.user.model.User;
 import com.altafjava.platform.domain.user.model.UserStatus;
 import com.altafjava.platform.domain.user.repository.RoleRepository;
 import com.altafjava.platform.domain.user.repository.UserRepository;
+import com.altafjava.school.application.security.SchoolFeatures;
 import com.altafjava.school.application.security.SchoolRoles;
 import com.altafjava.school.application.service.AcademicYearService;
 import com.altafjava.school.application.service.AttendanceService;
 import com.altafjava.school.application.service.ClassroomService;
 import com.altafjava.school.application.service.DepartmentService;
 import com.altafjava.school.application.service.EmployeeService;
+import com.altafjava.school.application.service.EventService;
 import com.altafjava.school.application.service.ExamService;
 import com.altafjava.school.application.service.ExamTypeDefinitionService;
 import com.altafjava.school.application.service.FeeAssignmentService;
 import com.altafjava.school.application.service.FeeStructureService;
 import com.altafjava.school.application.service.GradeService;
 import com.altafjava.school.application.service.GuardianService;
+import com.altafjava.school.application.service.PeriodService;
+import com.altafjava.school.application.service.ReportCardService;
 import com.altafjava.school.application.service.StudentService;
 import com.altafjava.school.application.service.SubjectService;
 import com.altafjava.school.application.service.TeacherService;
 import com.altafjava.school.application.service.TermService;
+import com.altafjava.school.application.service.TimetableService;
 import com.altafjava.school.domain.academicyear.model.AcademicYear;
 import com.altafjava.school.domain.attendance.model.AttendanceStatus;
 import com.altafjava.school.domain.classroom.model.Classroom;
@@ -58,12 +65,15 @@ import com.altafjava.school.domain.fee.model.FeeStructure;
 import com.altafjava.school.domain.guardian.model.Guardian;
 import com.altafjava.school.domain.guardian.model.RelationshipType;
 import com.altafjava.school.domain.guardian.repository.GuardianRepository;
+import com.altafjava.school.domain.lms.model.Assignment;
+import com.altafjava.school.domain.lms.repository.AssignmentRepository;
 import com.altafjava.school.domain.student.model.Student;
 import com.altafjava.school.domain.student.repository.StudentRepository;
 import com.altafjava.school.domain.subject.model.Subject;
 import com.altafjava.school.domain.teacher.model.Teacher;
 import com.altafjava.school.domain.teacher.repository.TeacherRepository;
 import com.altafjava.school.domain.term.model.Term;
+import com.altafjava.school.domain.timetable.model.Period;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -96,6 +106,9 @@ public class DemoDataSeeder {
 			{ "SCI", "Science" }, { "SST", "Social Studies" }, { "HIN", "Hindi" }, { "CS", "Computer Science" } };
 	private static final int STUDENTS_PER_CLASS = 6;
 	private static final int ATTENDANCE_DAYS = 5;
+	private static final int PERIODS_PER_DAY = 4;
+	private static final DayOfWeek[] SCHOOL_DAYS = { DayOfWeek.MONDAY, DayOfWeek.TUESDAY, DayOfWeek.WEDNESDAY,
+			DayOfWeek.THURSDAY, DayOfWeek.FRIDAY };
 
 	private final TenantOnboardingService onboardingService;
 	private final TenantRepository tenantRepository;
@@ -114,6 +127,12 @@ public class DemoDataSeeder {
 	private final ExamService examService;
 	private final GradeService gradeService;
 	private final AttendanceService attendanceService;
+	private final FeatureFlagService featureFlagService;
+	private final PeriodService periodService;
+	private final TimetableService timetableService;
+	private final EventService eventService;
+	private final ReportCardService reportCardService;
+	private final AssignmentRepository assignmentRepository;
 	private final UserRepository userRepository;
 	private final RoleRepository roleRepository;
 	private final StudentRepository studentRepository;
@@ -144,7 +163,11 @@ public class DemoDataSeeder {
 						return;
 					}
 					awaitTenantProvisioning();
-					new TransactionTemplate(transactionManager).executeWithoutResult(status -> seedTenant());
+					SchoolFeatures.CATALOG.forEach(feature -> featureFlagService.setTenantOverride(tenant.getId(),
+							feature.key(), true, "demo-seed"));
+					ReportCardSample sample = new TransactionTemplate(transactionManager)
+							.execute(status -> seedTenant());
+					seedReportCards(sample);
 					log.info("action=demo_seed_completed subdomain={} adminEmail={}", subdomain, ADMIN_EMAIL);
 				}));
 		return tenant;
@@ -181,6 +204,9 @@ public class DemoDataSeeder {
 		}
 	}
 
+	private record ReportCardSample(Term term, List<Student> students) {
+	}
+
 	private record SeedOperator(Long tenantId) implements AuthenticatedUser {
 
 		@Override
@@ -199,7 +225,7 @@ public class DemoDataSeeder {
 		}
 	}
 
-	private void seedTenant() {
+	private ReportCardSample seedTenant() {
 		Random random = new Random(42);
 		LocalDate today = LocalDate.now();
 		int startYear = today.getMonthValue() >= 4 ? today.getYear() : today.getYear() - 1;
@@ -255,7 +281,11 @@ public class DemoDataSeeder {
 		seedFees(classrooms);
 		seedExamsAndGrades(random, term1, subjects, classrooms, students);
 		seedAttendance(random, classrooms, students, today);
+		seedTimetable(classrooms, subjects, teachers);
+		seedAssignments(classrooms, subjects, teachers, today);
+		seedEvents(today);
 		seedLogins(teachers.get(0), students.get(0), guardians.get(0));
+		return new ReportCardSample(term1, students.subList(0, STUDENTS_PER_CLASS));
 	}
 
 	// GIVEN alternates male and female names.
@@ -315,6 +345,10 @@ public class DemoDataSeeder {
 				examService.complete(exam.getPublicId().toString());
 				examService.publishResults(exam.getPublicId().toString(), "demo-seed");
 			}
+			Subject next = subjects.get(c % subjects.size());
+			examService.schedule(next.getName() + " term exam", next.getPublicId().toString(),
+					classroom.getPublicId().toString(), LocalDateTime.now().plusDays(10), new BigDecimal("100"),
+					term.getPublicId().toString(), type.getPublicId().toString(), new BigDecimal("80"));
 		}
 	}
 
@@ -336,6 +370,56 @@ public class DemoDataSeeder {
 							day, status, "demo-seed");
 				}
 			}
+		}
+	}
+
+	/** A full week; each slot rotates teachers across classrooms, so no teacher is ever in two rooms. */
+	private void seedTimetable(List<Classroom> classrooms, List<Subject> subjects, List<Teacher> teachers) {
+		for (int p = 0; p < PERIODS_PER_DAY; p++) {
+			LocalTime start = LocalTime.of(9, 0).plusMinutes(p * 45L);
+			Period period = periodService.create("Period " + (p + 1), start, start.plusMinutes(45), p + 1);
+			for (int d = 0; d < SCHOOL_DAYS.length; d++) {
+				for (int c = 0; c < classrooms.size(); c++) {
+					int slot = (c + p + d) % teachers.size();
+					timetableService.schedule(SCHOOL_DAYS[d], period.getPublicId().toString(),
+							classrooms.get(c).getPublicId().toString(),
+							subjects.get(slot % subjects.size()).getPublicId().toString(),
+							teachers.get(slot).getPublicId().toString(), null);
+				}
+			}
+		}
+	}
+
+	// Saved directly: AssignmentService attributes work to the signed-in teacher, and the seed is not one.
+	private void seedAssignments(List<Classroom> classrooms, List<Subject> subjects, List<Teacher> teachers,
+			LocalDate today) {
+		for (int c = 0; c < classrooms.size(); c++) {
+			Subject subject = subjects.get(c % subjects.size());
+			assignmentRepository.save(Assignment.create(classrooms.get(c).getId(), subject.getId(),
+					teachers.get(c % teachers.size()).getId(), subject.getName() + " worksheet",
+					"Complete the worksheet and submit it before the due date.", null, today.plusDays(7),
+					new BigDecimal("20")));
+		}
+	}
+
+	private void seedEvents(LocalDate today) {
+		eventService.create("Annual Sports Day", "Track and field events for all grades.",
+				today.plusDays(14).atTime(9, 0), "School ground", true, 200);
+		eventService.create("Parent-Teacher Meeting", "Term progress review with class teachers.",
+				today.plusDays(21).atTime(10, 0), "Main hall", false, null);
+		eventService.create("Science Fair", "Student projects on display.", today.plusDays(30).atTime(11, 0),
+				"Main hall", true, 100);
+	}
+
+	// Report cards are stored as PDFs, so object storage must be up; the rest of the demo works without it.
+	private void seedReportCards(ReportCardSample sample) {
+		try {
+			for (Student student : sample.students()) {
+				reportCardService.generate(student.getId(), sample.term().getId(), "Steady progress this term.",
+						"Keep up the good work.");
+			}
+		} catch (RuntimeException e) {
+			log.warn("action=demo_report_cards_skipped reason={}", e.getMessage());
 		}
 	}
 

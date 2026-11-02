@@ -1,6 +1,7 @@
 package com.altafjava.school.domain.timetable.repository;
 
 import java.time.DayOfWeek;
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -17,12 +18,14 @@ public interface TimetableEntryRepository extends JpaRepository<TimetableEntry, 
 	@Query("""
 			SELECT t FROM TimetableEntry t
 			WHERE t.tenantId = :tenantId
+			  AND (:everyClassroom = true OR t.classroomId IN :classroomIds)
 			  AND (:#{#classroomId == null} = TRUE OR t.classroomId = :classroomId)
 			  AND (:#{#teacherId == null} = TRUE OR t.teacherId = :teacherId)
 			  AND (:#{#subjectId == null} = TRUE OR t.subjectId = :subjectId)
 			  AND (:#{#dayOfWeek == null} = TRUE OR t.dayOfWeek = :dayOfWeek)
 			""")
-	Page<TimetableEntry> search(@Param("tenantId") Long tenantId, @Param("classroomId") Long classroomId,
+	Page<TimetableEntry> search(@Param("tenantId") Long tenantId, @Param("everyClassroom") boolean everyClassroom,
+			@Param("classroomIds") Collection<Long> classroomIds, @Param("classroomId") Long classroomId,
 			@Param("teacherId") Long teacherId, @Param("subjectId") Long subjectId,
 			@Param("dayOfWeek") DayOfWeek dayOfWeek, Pageable pageable);
 

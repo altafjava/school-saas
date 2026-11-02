@@ -23,6 +23,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 import com.altafjava.platform.api.dto.response.ApiResponse;
 import com.altafjava.platform.core.annotation.Command;
+import com.altafjava.platform.core.feature.annotation.FeatureEnabled;
 import com.altafjava.platform.core.idempotency.RequireIdempotencyKey;
 import com.altafjava.school.api.controller.api.StudentApi;
 import com.altafjava.school.api.dto.request.AddressRequest;
@@ -35,6 +36,7 @@ import com.altafjava.school.api.dto.response.AttendancePercentageResponse;
 import com.altafjava.school.api.dto.response.AttendanceResponse;
 import com.altafjava.school.api.dto.response.BulkImportResponse;
 import com.altafjava.school.api.dto.response.FeeBalanceResponse;
+import com.altafjava.school.api.dto.response.FeePaymentResponse;
 import com.altafjava.school.api.dto.response.GpaResponse;
 import com.altafjava.school.api.dto.response.GradeResponse;
 import com.altafjava.school.api.dto.response.ReportCardResponse;
@@ -45,6 +47,7 @@ import com.altafjava.school.api.mapper.AttendanceMapper;
 import com.altafjava.school.api.mapper.AttendancePercentageMapper;
 import com.altafjava.school.api.mapper.BulkImportMapper;
 import com.altafjava.school.api.mapper.FeeBalanceMapper;
+import com.altafjava.school.api.mapper.FeePaymentMapper;
 import com.altafjava.school.api.mapper.GradeMapper;
 import com.altafjava.school.api.mapper.ReportCardMapper;
 import com.altafjava.school.api.mapper.StudentGuardianMapper;
@@ -56,7 +59,9 @@ import com.altafjava.school.api.support.StudentResponseAssembler;
 import com.altafjava.school.application.filter.StudentFilter;
 import com.altafjava.school.application.lifecycle.LifecycleChange;
 import com.altafjava.school.application.reference.ReferenceSummaries;
+import com.altafjava.school.application.security.SchoolFeatures;
 import com.altafjava.school.application.service.AttendanceService;
+import com.altafjava.school.application.service.FeeOnlinePaymentService;
 import com.altafjava.school.application.service.FeePaymentService;
 import com.altafjava.school.application.service.GpaResult;
 import com.altafjava.school.application.service.GradeService;
@@ -89,6 +94,8 @@ public class StudentController implements StudentApi {
 	private final AttendancePercentageMapper attendancePercentageMapper;
 	private final FeePaymentService feePaymentService;
 	private final FeeBalanceMapper feeBalanceMapper;
+	private final FeeOnlinePaymentService feeOnlinePaymentService;
+	private final FeePaymentMapper feePaymentMapper;
 	private final ReportCardService reportCardService;
 	private final ReportCardMapper reportCardMapper;
 	private final TermService termService;
@@ -110,7 +117,8 @@ public class StudentController implements StudentApi {
 			TermService termService, StudentBulkImportService studentBulkImportService,
 			BulkImportMapper bulkImportMapper, StudentGpaService studentGpaService,
 			SpringDataPageableResolver pageableResolver,
-			ReferenceSummaries referenceSummaries) {
+			ReferenceSummaries referenceSummaries,
+			FeeOnlinePaymentService feeOnlinePaymentService, FeePaymentMapper feePaymentMapper) {
 		this.referenceSummaries = referenceSummaries;
 		this.studentService = studentService;
 		this.studentDirectory = studentDirectory;
@@ -125,6 +133,8 @@ public class StudentController implements StudentApi {
 		this.attendancePercentageMapper = attendancePercentageMapper;
 		this.feePaymentService = feePaymentService;
 		this.feeBalanceMapper = feeBalanceMapper;
+		this.feeOnlinePaymentService = feeOnlinePaymentService;
+		this.feePaymentMapper = feePaymentMapper;
 		this.reportCardService = reportCardService;
 		this.reportCardMapper = reportCardMapper;
 		this.termService = termService;
@@ -152,13 +162,15 @@ public class StudentController implements StudentApi {
 
 	@Override
 	@GetMapping("/{publicId}")
-	@PreAuthorize("@permissionAuthorizationService.hasPermission('STUDENT_READ')")
+	@PreAuthorize("@permissionAuthorizationService.hasPermission('STUDENT_READ') "
+			+ "or @permissionAuthorizationService.hasPermission('STUDENT_SELF_SERVICE_READ')")
 	public ApiResponse<StudentResponse> get(@PathVariable String publicId) {
 		return ApiResponse.success(studentResponseAssembler.toResponse(studentDirectory.get(publicId)));
 	}
 
 	@Override
 	@PostMapping("/bulk-import")
+	@FeatureEnabled(SchoolFeatures.BULK_IMPORT)
 	@PreAuthorize("@permissionAuthorizationService.hasPermission('STUDENT_MANAGE')")
 	@RateLimited(key = "student-bulk-import", capacity = 5, periodMinutes = 60)
 	@RequireIdempotencyKey
@@ -356,6 +368,19 @@ public class StudentController implements StudentApi {
 	@PreAuthorize("@permissionAuthorizationService.hasPermission('STUDENT_FEE_BALANCE_READ')")
 	public ApiResponse<List<FeeBalanceResponse>> feeBalance(@PathVariable String publicId) {
 		return ApiResponse.success(feeBalanceMapper.toResponseList(feePaymentService.calculateBalance(publicId)));
+	}
+
+	@Override
+	@GetMapping("/{publicId}/fee-payments")
+	@PreAuthorize("@permissionAuthorizationService.hasPermission('FEE_PAYMENT_SELF_SERVICE')")
+	@SortableBy({ "paidAt", "paidAmount" })
+	public ApiResponse<com.altafjava.platform.core.model.Page<FeePaymentResponse>> feePayments(
+			@PathVariable String publicId,
+			@RequestParam(defaultValue = "0") int page,
+			@RequestParam(defaultValue = "20") int size) {
+		return ApiResponse.success(PlatformPageMapper.toPlatformPage(referenceSummaries.mapPage(
+				feeOnlinePaymentService.listForSelfService(publicId, pageableResolver.resolve(page, size)),
+				feePaymentMapper::toResponse)));
 	}
 
 	@Override

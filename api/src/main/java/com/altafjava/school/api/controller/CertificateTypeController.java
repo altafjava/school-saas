@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import com.altafjava.platform.api.dto.response.ApiResponse;
+import com.altafjava.platform.core.feature.annotation.FeatureEnabled;
 import com.altafjava.school.api.controller.api.CertificateTypeApi;
 import com.altafjava.school.api.dto.request.CreateCertificateTypeRequest;
 import com.altafjava.school.api.dto.request.UpdateCertificateTypeRequest;
@@ -21,6 +22,7 @@ import com.altafjava.school.api.dto.response.CertificateTypeResponse;
 import com.altafjava.school.api.mapper.CertificateTypeMapper;
 import com.altafjava.school.api.support.PlatformPageMapper;
 import com.altafjava.school.api.support.SpringDataPageableResolver;
+import com.altafjava.school.application.security.SchoolFeatures;
 import com.altafjava.school.application.service.CertificateTypeService;
 
 // Tenant-admin-defined certificate types (e.g. "Bonafide Certificate", "Transfer Certificate").
@@ -28,6 +30,7 @@ import com.altafjava.school.application.service.CertificateTypeService;
 // TENANT_ADMIN (full CRUD) and PRINCIPAL (read-only), the closest existing school-admin role,
 // mirroring how PRINCIPAL is already used for other admin-adjacent read surfaces.
 @RestController
+@FeatureEnabled(SchoolFeatures.CERTIFICATES)
 @RequestMapping("/api/v1/certificate-types")
 public class CertificateTypeController implements CertificateTypeApi {
 

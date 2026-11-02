@@ -13,14 +13,17 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import com.altafjava.platform.api.dto.response.ApiResponse;
+import com.altafjava.platform.core.feature.annotation.FeatureEnabled;
 import com.altafjava.school.api.controller.api.PayComponentDefinitionApi;
 import com.altafjava.school.api.dto.request.CreatePayComponentDefinitionRequest;
 import com.altafjava.school.api.dto.request.UpdatePayComponentDefinitionRequest;
 import com.altafjava.school.api.dto.response.PayComponentDefinitionResponse;
 import com.altafjava.school.api.mapper.PayComponentDefinitionMapper;
+import com.altafjava.school.application.security.SchoolFeatures;
 import com.altafjava.school.application.service.PayComponentDefinitionService;
 
 @RestController
+@FeatureEnabled(SchoolFeatures.PAYROLL)
 @RequestMapping("/api/v1/pay-component-definitions")
 public class PayComponentDefinitionController implements PayComponentDefinitionApi {
 

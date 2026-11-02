@@ -7,12 +7,14 @@ import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import java.time.DayOfWeek;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -22,6 +24,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.security.access.AccessDeniedException;
 import com.altafjava.platform.core.concurrency.ExpectedVersion;
 import com.altafjava.platform.core.exception.BusinessException;
 import com.altafjava.platform.core.exception.ResourceNotFoundException;
@@ -30,6 +33,8 @@ import com.altafjava.platform.core.tenant.TenantType;
 import com.altafjava.school.application.filter.TimetableEntryFilter;
 import com.altafjava.school.application.reference.EntityRef;
 import com.altafjava.school.application.reference.PublicIdLookup;
+import com.altafjava.school.application.security.AcademicAccessGuard;
+import com.altafjava.school.application.security.CourseworkReach;
 import com.altafjava.school.domain.classroom.model.Classroom;
 import com.altafjava.school.domain.classroom.repository.ClassroomRepository;
 import com.altafjava.school.domain.subject.model.Subject;
@@ -62,13 +67,15 @@ class TimetableServiceTest {
 	private VenueRepository venueRepository;
 	@Mock
 	private PublicIdLookup publicIdLookup;
+	@Mock
+	private AcademicAccessGuard academicAccessGuard;
 
 	private TimetableService timetableService;
 
 	@BeforeEach
 	void setUp() {
 		timetableService = new TimetableService(timetableEntryRepository, periodRepository, classroomRepository,
-				subjectRepository, teacherRepository, venueRepository, publicIdLookup);
+				subjectRepository, teacherRepository, venueRepository, publicIdLookup, academicAccessGuard);
 		TenantContext.ForTesting.setCurrentTenant(1L, null, null, TenantType.SHARED);
 	}
 
@@ -275,23 +282,50 @@ class TimetableServiceTest {
 		when(publicIdLookup.idOrNull(EntityRef.CLASSROOM, "classroom-public")).thenReturn(3L);
 		when(publicIdLookup.idOrNull(EntityRef.EMPLOYEE, "teacher-public")).thenReturn(6L);
 		when(publicIdLookup.idOrNull(EntityRef.SUBJECT, "subject-public")).thenReturn(5L);
-		when(timetableEntryRepository.search(1L, 3L, 6L, 5L, DayOfWeek.MONDAY, pageable)).thenReturn(Page.empty());
+		when(academicAccessGuard.courseworkReach(1L, 3L)).thenReturn(CourseworkReach.ALL);
+		when(timetableEntryRepository.search(1L, true, Set.of(), 3L, 6L, 5L, DayOfWeek.MONDAY, pageable))
+				.thenReturn(Page.empty());
 
 		timetableService.listEntries(
 				new TimetableEntryFilter("classroom-public", "teacher-public", "subject-public", DayOfWeek.MONDAY),
 				pageable);
 
-		verify(timetableEntryRepository).search(1L, 3L, 6L, 5L, DayOfWeek.MONDAY, pageable);
+		verify(timetableEntryRepository).search(1L, true, Set.of(), 3L, 6L, 5L, DayOfWeek.MONDAY, pageable);
 	}
 
 	@Test
 	void listEntries_withNoFilter_searchesEveryEntry() {
 		PageRequest pageable = PageRequest.of(0, 20);
 		when(publicIdLookup.idOrNull(any(), any())).thenReturn(null);
-		when(timetableEntryRepository.search(1L, null, null, null, null, pageable)).thenReturn(Page.empty());
+		when(academicAccessGuard.courseworkReach(1L, null)).thenReturn(CourseworkReach.ALL);
+		when(timetableEntryRepository.search(1L, true, Set.of(), null, null, null, null, pageable))
+				.thenReturn(Page.empty());
 
 		timetableService.listEntries(TimetableEntryFilter.NONE, pageable);
 
-		verify(timetableEntryRepository).search(1L, null, null, null, null, pageable);
+		verify(timetableEntryRepository).search(1L, true, Set.of(), null, null, null, null, pageable);
+	}
+
+	@Test
+	void listEntries_forAParent_staysInsideTheChildrensClassrooms() {
+		PageRequest pageable = PageRequest.of(0, 20);
+		when(publicIdLookup.idOrNull(any(), any())).thenReturn(null);
+		when(academicAccessGuard.courseworkReach(1L, null)).thenReturn(new CourseworkReach(false, Set.of(3L)));
+		when(timetableEntryRepository.search(1L, false, Set.of(3L), null, null, null, null, pageable))
+				.thenReturn(Page.empty());
+
+		timetableService.listEntries(TimetableEntryFilter.NONE, pageable);
+
+		verify(timetableEntryRepository).search(1L, false, Set.of(3L), null, null, null, null, pageable);
+	}
+
+	@Test
+	void listForClassroom_outsideTheCallersReach_isRefused() {
+		when(classroomRepository.findByPublicIdAndTenantId(publicId("classroom", 2), 1L))
+				.thenReturn(Optional.of(withId(Classroom.class, 2L)));
+		doThrow(new AccessDeniedException("not yours")).when(academicAccessGuard).assertCanViewCoursework(1L, 2L);
+
+		assertThrows(AccessDeniedException.class,
+				() -> timetableService.listForClassroom(publicId("classroom", 2).toString()));
 	}
 }

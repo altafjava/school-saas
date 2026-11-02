@@ -18,6 +18,7 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import com.altafjava.platform.api.dto.response.ApiResponse;
 import com.altafjava.platform.core.annotation.Command;
+import com.altafjava.platform.core.feature.annotation.FeatureEnabled;
 import com.altafjava.school.api.controller.api.SalaryStructureApi;
 import com.altafjava.school.api.dto.request.CreateSalaryStructureRequest;
 import com.altafjava.school.api.dto.request.PayComponentAmountRequest;
@@ -27,9 +28,11 @@ import com.altafjava.school.api.mapper.SalaryStructureMapper;
 import com.altafjava.school.api.support.PlatformPageMapper;
 import com.altafjava.school.api.support.SpringDataPageableResolver;
 import com.altafjava.school.application.reference.ReferenceSummaries;
+import com.altafjava.school.application.security.SchoolFeatures;
 import com.altafjava.school.application.service.SalaryStructureService;
 
 @RestController
+@FeatureEnabled(SchoolFeatures.PAYROLL)
 @RequestMapping("/api/v1/salary-structures")
 public class SalaryStructureController implements SalaryStructureApi {
 
