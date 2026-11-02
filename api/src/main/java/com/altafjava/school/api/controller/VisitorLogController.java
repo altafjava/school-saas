@@ -8,7 +8,6 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
@@ -20,6 +19,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import com.altafjava.platform.api.dto.response.ApiResponse;
+import com.altafjava.platform.application.security.annotation.RequiresPermission;
 import com.altafjava.platform.core.security.AuthenticatedUser;
 import com.altafjava.school.api.controller.api.VisitorLogApi;
 import com.altafjava.school.api.dto.request.CheckInVisitorRequest;
@@ -30,6 +30,7 @@ import com.altafjava.school.api.support.SortableBy;
 import com.altafjava.school.api.support.SpringDataPageableResolver;
 import com.altafjava.school.application.reference.ReferenceSummaries;
 import com.altafjava.school.application.service.VisitorLogService;
+import com.altafjava.school.domain.security.permission.SchoolPermissions;
 
 /**
  * Gated to the {@code VISITOR_LOG_MANAGE} permission, seeded onto {@code TEACHER} by default —
@@ -60,7 +61,7 @@ public class VisitorLogController implements VisitorLogApi {
 
 	@Override
 	@GetMapping
-	@PreAuthorize("@permissionAuthorizationService.hasPermission('VISITOR_LOG_MANAGE')")
+	@RequiresPermission(SchoolPermissions.VISITOR_LOG_MANAGE)
 	@SortableBy({ "checkInAt", "checkOutAt" })
 	public ApiResponse<com.altafjava.platform.core.model.Page<VisitorLogResponse>> list(
 			@RequestParam(required = false) Boolean stillCheckedIn,
@@ -76,7 +77,7 @@ public class VisitorLogController implements VisitorLogApi {
 
 	@Override
 	@GetMapping("/{publicId}")
-	@PreAuthorize("@permissionAuthorizationService.hasPermission('VISITOR_LOG_MANAGE')")
+	@RequiresPermission(SchoolPermissions.VISITOR_LOG_MANAGE)
 	public ApiResponse<VisitorLogResponse> get(@PathVariable String publicId) {
 		return ApiResponse.success(visitorLogMapper.toResponse(visitorLogService.findByPublicId(publicId)));
 	}
@@ -84,7 +85,7 @@ public class VisitorLogController implements VisitorLogApi {
 	@Override
 	@PostMapping
 	@ResponseStatus(HttpStatus.CREATED)
-	@PreAuthorize("@permissionAuthorizationService.hasPermission('VISITOR_LOG_MANAGE')")
+	@RequiresPermission(SchoolPermissions.VISITOR_LOG_MANAGE)
 	public ApiResponse<VisitorLogResponse> checkIn(@Valid @RequestBody CheckInVisitorRequest request,
 			@AuthenticationPrincipal AuthenticatedUser user) {
 		return ApiResponse.success(visitorLogMapper.toResponse(visitorLogService.checkIn(
@@ -94,7 +95,7 @@ public class VisitorLogController implements VisitorLogApi {
 	// Not ApiResponse-wrapped — a raw PDF download, like the ID card downloads.
 	@Override
 	@GetMapping("/{publicId}/badge")
-	@PreAuthorize("@permissionAuthorizationService.hasPermission('VISITOR_LOG_MANAGE')")
+	@RequiresPermission(SchoolPermissions.VISITOR_LOG_MANAGE)
 	public ResponseEntity<byte[]> downloadBadge(@PathVariable String publicId) {
 		byte[] pdf = visitorLogService.downloadBadgePdf(visitorLogService.findBadge(publicId));
 		return ResponseEntity.ok()
@@ -106,7 +107,7 @@ public class VisitorLogController implements VisitorLogApi {
 
 	@Override
 	@PatchMapping("/{publicId}/check-out")
-	@PreAuthorize("@permissionAuthorizationService.hasPermission('VISITOR_LOG_MANAGE')")
+	@RequiresPermission(SchoolPermissions.VISITOR_LOG_MANAGE)
 	public ApiResponse<VisitorLogResponse> checkOut(@PathVariable String publicId) {
 		return ApiResponse.success(visitorLogMapper.toResponse(visitorLogService.checkOut(publicId)));
 	}

@@ -31,6 +31,7 @@ import com.altafjava.school.config.TestRedisConfig;
 import com.altafjava.school.domain.attendance.model.AttendanceStatus;
 import com.altafjava.school.domain.fee.model.FeeFrequency;
 import com.altafjava.school.domain.fee.model.FeeStructure;
+import com.altafjava.school.domain.fee.model.PaymentInstrument;
 import com.altafjava.school.domain.rollup.model.OrganizationRollupReport;
 import com.altafjava.school.domain.student.model.Student;
 import com.altafjava.school.util.TestPrincipals;
@@ -135,7 +136,8 @@ class OrganizationRollupIntegrationTest extends SchoolIntegrationTestBase {
 			if (paidPerStudent.signum() > 0) {
 				feePaymentService.record(student.getPublicId().toString(), feeStructure.getPublicId().toString(),
 						paidPerStudent,
-						LocalDateTime.of(2026, 1, 15, 9, 0), "RCPT-" + UUID.randomUUID().toString().substring(0, 10));
+						LocalDateTime.of(2026, 1, 15, 9, 0), "RCPT-" + UUID.randomUUID().toString().substring(0, 10),
+						PaymentInstrument.CASH);
 			}
 		}
 		TenantContext.ForTesting.clear();

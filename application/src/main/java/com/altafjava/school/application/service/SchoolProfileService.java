@@ -1,12 +1,14 @@
 package com.altafjava.school.application.service;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import com.altafjava.platform.core.tenant.TenantContext;
+import com.altafjava.school.application.student.StudentPlacement;
 import com.altafjava.school.domain.employee.model.Employee;
 import com.altafjava.school.domain.employee.repository.EmployeeRepository;
 import com.altafjava.school.domain.guardian.model.Guardian;
@@ -31,12 +33,13 @@ public class SchoolProfileService {
 	private final TeacherRepository teacherRepository;
 	private final GuardianRepository guardianRepository;
 	private final StudentGuardianLinkRepository studentGuardianLinkRepository;
+	private final StudentPlacementService studentPlacementService;
 
-	public record LinkedStudent(UUID publicId, String name, String studentCode) {
+	public record LinkedStudent(UUID publicId, String name, String studentCode, StudentPlacement placement) {
 	}
 
-	public record SchoolProfile(UUID studentId, UUID employeeId, boolean teacher, UUID guardianId,
-			List<LinkedStudent> linkedStudents) {
+	public record SchoolProfile(UUID studentId, StudentPlacement studentPlacement, UUID employeeId, boolean teacher,
+			UUID guardianId, List<LinkedStudent> linkedStudents) {
 
 		public SchoolProfile {
 			linkedStudents = List.copyOf(linkedStudents);
@@ -46,13 +49,13 @@ public class SchoolProfileService {
 	@Transactional(readOnly = true)
 	public SchoolProfile forUser(Long userId) {
 		Long tenantId = TenantContext.getCurrentTenantId();
-		UUID studentId = studentRepository.findByUserIdAndTenantId(userId, tenantId).map(Student::getPublicId)
-				.orElse(null);
+		Optional<Student> student = studentRepository.findByUserIdAndTenantId(userId, tenantId);
 		Optional<Employee> employee = employeeRepository.findByUserIdAndTenantId(userId, tenantId);
 		boolean teacher = teacherRepository.findByUserIdAndTenantId(userId, tenantId).isPresent();
 		Optional<Guardian> guardian = guardianRepository.findByUserIdAndTenantId(userId, tenantId);
 		return new SchoolProfile(
-				studentId,
+				student.map(Student::getPublicId).orElse(null),
+				student.map(this::placementOf).orElse(null),
 				employee.map(Employee::getPublicId).orElse(null),
 				teacher,
 				guardian.map(Guardian::getPublicId).orElse(null),
@@ -63,9 +66,15 @@ public class SchoolProfileService {
 		List<Long> studentIds = studentGuardianLinkRepository
 				.findByGuardianId(tenantId, guardian.getId(), PageRequest.of(0, LINKED_STUDENTS_LIMIT)).getContent()
 				.stream().map(StudentGuardianLink::getStudentId).toList();
-		return studentRepository.findAllByIdInAndTenantId(studentIds, tenantId).stream()
+		List<Student> students = studentRepository.findAllByIdInAndTenantId(studentIds, tenantId);
+		Map<Long, StudentPlacement> placements = studentPlacementService.currentPlacements(students);
+		return students.stream()
 				.map(s -> new LinkedStudent(s.getPublicId(), s.getFirstName() + " " + s.getLastName(),
-						s.getStudentCode()))
+						s.getStudentCode(), placements.get(s.getId())))
 				.toList();
+	}
+
+	private StudentPlacement placementOf(Student student) {
+		return studentPlacementService.currentPlacements(List.of(student)).get(student.getId());
 	}
 }

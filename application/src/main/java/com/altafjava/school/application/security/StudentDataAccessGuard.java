@@ -11,6 +11,7 @@ import com.altafjava.school.application.policy.ResourceAction;
 import com.altafjava.school.application.policy.ResourceType;
 import com.altafjava.school.application.reference.EntityRef;
 import com.altafjava.school.application.reference.PublicIdLookup;
+import com.altafjava.school.domain.security.permission.SchoolPermissions;
 
 // Enforces "own child/own record only" on student-scoped reads. STUDENT_READ_ALL bypasses it, and
 // staff pass for the students they teach; a school extends a role's reach by granting that permission.
@@ -33,7 +34,7 @@ public class StudentDataAccessGuard {
 
 	public void assertCanView(Long tenantId, String studentPublicId) {
 		Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-		if (permissionAuthorizationService.hasPermission("STUDENT_READ_ALL")
+		if (permissionAuthorizationService.hasPermission(SchoolPermissions.STUDENT_READ_ALL)
 				|| academicAccessGuard.teachesStudent(tenantId, publicIdLookup.idOrNull(EntityRef.STUDENT,
 						studentPublicId))) {
 			return;

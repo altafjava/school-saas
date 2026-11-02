@@ -2,6 +2,7 @@ package com.altafjava.school.application.security;
 
 import org.springframework.stereotype.Component;
 import com.altafjava.platform.application.security.PermissionAuthorizationService;
+import com.altafjava.school.domain.security.permission.SchoolPermissions;
 import lombok.RequiredArgsConstructor;
 
 /**
@@ -15,7 +16,7 @@ public class ExamResultVisibilityPolicy {
 	private final PermissionAuthorizationService permissionAuthorizationService;
 
 	public boolean canSeeUnpublishedResults() {
-		return permissionAuthorizationService.hasPermission("STUDENT_GRADES_WRITE")
-				|| permissionAuthorizationService.hasPermission("EXAM_RESULT_PUBLISH");
+		return permissionAuthorizationService.hasPermission(SchoolPermissions.STUDENT_GRADES_WRITE)
+				|| permissionAuthorizationService.hasPermission(SchoolPermissions.EXAM_RESULT_PUBLISH);
 	}
 }

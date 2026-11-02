@@ -1,9 +1,9 @@
 package com.altafjava.school.api.controller;
 
 import java.time.LocalDate;
+import java.util.List;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -13,9 +13,12 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import com.altafjava.platform.api.dto.response.ApiResponse;
+import com.altafjava.platform.application.security.annotation.RequiresPermission;
 import com.altafjava.platform.core.idempotency.RequireIdempotencyKey;
 import com.altafjava.school.api.controller.api.FeePaymentApi;
+import com.altafjava.school.api.dto.request.BounceFeePaymentRequest;
 import com.altafjava.school.api.dto.request.RecordFeePaymentRequest;
+import com.altafjava.school.api.dto.response.FeeCollectionRowResponse;
 import com.altafjava.school.api.dto.response.FeePaymentResponse;
 import com.altafjava.school.api.mapper.FeePaymentMapper;
 import com.altafjava.school.api.support.PlatformPageMapper;
@@ -25,7 +28,9 @@ import com.altafjava.school.application.filter.DateWindow;
 import com.altafjava.school.application.filter.FeePaymentFilter;
 import com.altafjava.school.application.reference.ReferenceSummaries;
 import com.altafjava.school.application.service.FeePaymentService;
+import com.altafjava.school.domain.fee.model.PaymentMode;
 import com.altafjava.school.domain.fee.model.PaymentSource;
+import com.altafjava.school.domain.security.permission.SchoolPermissions;
 
 @RestController
 @RequestMapping("/api/v1/fee-payments")
@@ -49,7 +54,7 @@ public class FeePaymentController implements FeePaymentApi {
 
 	@Override
 	@GetMapping
-	@PreAuthorize("@permissionAuthorizationService.hasPermission('FEE_PAYMENT_MANAGE')")
+	@RequiresPermission(SchoolPermissions.FEE_PAYMENT_MANAGE)
 	@SortableBy({ "paidAt", "paidAmount", "receiptNumber" })
 	public ApiResponse<com.altafjava.platform.core.model.Page<FeePaymentResponse>> list(
 			@RequestParam(defaultValue = "0") int page,
@@ -58,9 +63,10 @@ public class FeePaymentController implements FeePaymentApi {
 			@RequestParam(required = false) String feeStructurePublicId,
 			@RequestParam(required = false) LocalDate from,
 			@RequestParam(required = false) LocalDate to,
-			@RequestParam(required = false) PaymentSource paymentSource) {
+			@RequestParam(required = false) PaymentSource paymentSource,
+			@RequestParam(required = false) PaymentMode paymentMode) {
 		FeePaymentFilter filter = new FeePaymentFilter(studentPublicId, feeStructurePublicId,
-				new DateWindow(from, to), paymentSource);
+				new DateWindow(from, to), paymentSource, paymentMode);
 		return ApiResponse.success(PlatformPageMapper
 				.toPlatformPage(referenceSummaries.mapPage(
 						feePaymentService.listFeePayments(filter, pageableResolver.resolve(page, size)),
@@ -69,7 +75,7 @@ public class FeePaymentController implements FeePaymentApi {
 
 	@Override
 	@GetMapping("/{publicId}")
-	@PreAuthorize("@permissionAuthorizationService.hasPermission('FEE_PAYMENT_MANAGE')")
+	@RequiresPermission(SchoolPermissions.FEE_PAYMENT_MANAGE)
 	public ApiResponse<FeePaymentResponse> get(@PathVariable String publicId) {
 		return ApiResponse.success(feePaymentMapper.toResponse(feePaymentService.findByPublicId(publicId)));
 	}
@@ -77,7 +83,7 @@ public class FeePaymentController implements FeePaymentApi {
 	@Override
 	@PostMapping
 	@ResponseStatus(HttpStatus.CREATED)
-	@PreAuthorize("@permissionAuthorizationService.hasPermission('FEE_PAYMENT_MANAGE')")
+	@RequiresPermission(SchoolPermissions.FEE_PAYMENT_MANAGE)
 	@RequireIdempotencyKey
 	public ApiResponse<FeePaymentResponse> record(@Valid @RequestBody RecordFeePaymentRequest request) {
 		return ApiResponse.success(feePaymentMapper.toResponse(feePaymentService.record(
@@ -85,6 +91,28 @@ public class FeePaymentController implements FeePaymentApi {
 				request.feeStructurePublicId(),
 				request.paidAmount(),
 				request.paidAt(),
-				request.receiptNumber())));
+				request.receiptNumber(),
+				request.instrument())));
+	}
+
+	@Override
+	@GetMapping("/collection-report")
+	@RequiresPermission(SchoolPermissions.FEE_PAYMENT_MANAGE)
+	public ApiResponse<List<FeeCollectionRowResponse>> collectionReport(@RequestParam LocalDate from,
+			@RequestParam LocalDate to) {
+		return ApiResponse.success(feePaymentService.collectionReport(from, to).stream()
+				.map(row -> new FeeCollectionRowResponse(row.day(), row.paymentMode(), row.clearedCount(),
+						row.clearedAmount(), row.bouncedCount(), row.bouncedAmount()))
+				.toList());
+	}
+
+	@Override
+	@PostMapping("/{publicId}/bounce")
+	@RequiresPermission(SchoolPermissions.FEE_PAYMENT_MANAGE)
+	@RequireIdempotencyKey
+	public ApiResponse<FeePaymentResponse> bounce(@PathVariable String publicId,
+			@Valid @RequestBody BounceFeePaymentRequest request) {
+		return ApiResponse.success(feePaymentMapper
+				.toResponse(feePaymentService.bounce(publicId, request.reason(), request.bouncedAt())));
 	}
 }

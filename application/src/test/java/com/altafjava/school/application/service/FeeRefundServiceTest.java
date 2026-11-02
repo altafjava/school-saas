@@ -42,6 +42,7 @@ import com.altafjava.platform.domain.paymentgateway.service.PaymentGatewayProvid
 import com.altafjava.platform.domain.paymentgateway.service.RefundResult;
 import com.altafjava.school.domain.fee.model.FeePayment;
 import com.altafjava.school.domain.fee.model.FeeRefund;
+import com.altafjava.school.domain.fee.model.PaymentInstrument;
 import com.altafjava.school.domain.fee.model.RefundMethod;
 import com.altafjava.school.domain.fee.model.RefundStatus;
 import com.altafjava.school.domain.fee.repository.FeePaymentRepository;
@@ -101,7 +102,8 @@ class FeeRefundServiceTest {
 		FeePayment payment = gateway
 				? FeePayment.recordFromGateway(5L, 6L, new BigDecimal("500.00"), LocalDateTime.now(), "RCPT-1",
 						"STRIPE", "ch_1")
-				: FeePayment.create(5L, 6L, new BigDecimal("500.00"), LocalDateTime.now(), "RCPT-1");
+				: FeePayment.create(5L, 6L, new BigDecimal("500.00"), LocalDateTime.now(), "RCPT-1",
+						PaymentInstrument.CASH);
 		payment.setId(7L);
 		payment.setPublicId(PAYMENT_PUBLIC_ID);
 		lenient().when(feePaymentRepository.findByPublicIdAndTenantId(PAYMENT_PUBLIC_ID, 1L))

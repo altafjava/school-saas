@@ -6,7 +6,6 @@ import java.util.Map;
 import java.util.stream.Collectors;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -17,7 +16,9 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import com.altafjava.platform.api.dto.response.ApiResponse;
+import com.altafjava.platform.application.security.annotation.RequiresPermission;
 import com.altafjava.platform.core.annotation.Command;
+import com.altafjava.platform.core.feature.annotation.FeatureEnabled;
 import com.altafjava.school.api.controller.api.SalaryStructureApi;
 import com.altafjava.school.api.dto.request.CreateSalaryStructureRequest;
 import com.altafjava.school.api.dto.request.PayComponentAmountRequest;
@@ -27,9 +28,12 @@ import com.altafjava.school.api.mapper.SalaryStructureMapper;
 import com.altafjava.school.api.support.PlatformPageMapper;
 import com.altafjava.school.api.support.SpringDataPageableResolver;
 import com.altafjava.school.application.reference.ReferenceSummaries;
+import com.altafjava.school.application.security.SchoolFeatures;
 import com.altafjava.school.application.service.SalaryStructureService;
+import com.altafjava.school.domain.security.permission.SchoolPermissions;
 
 @RestController
+@FeatureEnabled(SchoolFeatures.PAYROLL)
 @RequestMapping("/api/v1/salary-structures")
 public class SalaryStructureController implements SalaryStructureApi {
 
@@ -51,7 +55,7 @@ public class SalaryStructureController implements SalaryStructureApi {
 
 	@Override
 	@GetMapping
-	@PreAuthorize("@permissionAuthorizationService.hasPermission('SALARY_STRUCTURE_MANAGE')")
+	@RequiresPermission(SchoolPermissions.SALARY_STRUCTURE_MANAGE)
 	public ApiResponse<com.altafjava.platform.core.model.Page<SalaryStructureResponse>> listForEmployee(
 			@RequestParam String employeePublicId,
 			@RequestParam(defaultValue = "0") int page,
@@ -63,7 +67,7 @@ public class SalaryStructureController implements SalaryStructureApi {
 
 	@Override
 	@GetMapping("/{publicId}")
-	@PreAuthorize("@permissionAuthorizationService.hasPermission('SALARY_STRUCTURE_MANAGE')")
+	@RequiresPermission(SchoolPermissions.SALARY_STRUCTURE_MANAGE)
 	public ApiResponse<SalaryStructureResponse> get(@PathVariable String publicId) {
 		return ApiResponse.success(salaryStructureMapper.toResponse(salaryStructureService.findByPublicId(publicId)));
 	}
@@ -71,7 +75,7 @@ public class SalaryStructureController implements SalaryStructureApi {
 	@Override
 	@PostMapping
 	@ResponseStatus(HttpStatus.CREATED)
-	@PreAuthorize("@permissionAuthorizationService.hasPermission('SALARY_STRUCTURE_MANAGE')")
+	@RequiresPermission(SchoolPermissions.SALARY_STRUCTURE_MANAGE)
 	public ApiResponse<SalaryStructureResponse> create(@Valid @RequestBody CreateSalaryStructureRequest request) {
 		return ApiResponse
 				.success(salaryStructureMapper.toResponse(salaryStructureService.create(request.employeePublicId(),
@@ -83,7 +87,7 @@ public class SalaryStructureController implements SalaryStructureApi {
 	@Override
 	@PatchMapping("/{publicId}/supersede")
 	@Command
-	@PreAuthorize("@permissionAuthorizationService.hasPermission('SALARY_STRUCTURE_MANAGE')")
+	@RequiresPermission(SchoolPermissions.SALARY_STRUCTURE_MANAGE)
 	public ApiResponse<SalaryStructureResponse> supersede(@PathVariable String publicId,
 			@Valid @RequestBody SupersedeSalaryStructureRequest request) {
 		return ApiResponse.success(salaryStructureMapper.toResponse(salaryStructureService.supersede(publicId,

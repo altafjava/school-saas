@@ -2,7 +2,6 @@ package com.altafjava.school.api.controller;
 
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
@@ -14,6 +13,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import com.altafjava.platform.api.dto.response.ApiResponse;
+import com.altafjava.platform.application.security.annotation.RequiresPermission;
 import com.altafjava.platform.core.annotation.Command;
 import com.altafjava.platform.core.security.AuthenticatedUser;
 import com.altafjava.school.api.controller.api.StudentDocumentApi;
@@ -24,6 +24,7 @@ import com.altafjava.school.api.mapper.StudentDocumentMapper;
 import com.altafjava.school.api.support.PlatformPageMapper;
 import com.altafjava.school.api.support.SpringDataPageableResolver;
 import com.altafjava.school.application.service.StudentDocumentService;
+import com.altafjava.school.domain.security.permission.SchoolPermissions;
 
 @RestController
 @RequestMapping("/api/v1/students/{studentPublicId}/documents")
@@ -42,7 +43,7 @@ public class StudentDocumentController implements StudentDocumentApi {
 
 	@Override
 	@GetMapping
-	@PreAuthorize("@permissionAuthorizationService.hasPermission('STUDENT_DOCUMENT_READ')")
+	@RequiresPermission(SchoolPermissions.STUDENT_DOCUMENT_READ)
 	public ApiResponse<com.altafjava.platform.core.model.Page<StudentDocumentResponse>> list(
 			@PathVariable String studentPublicId,
 			@RequestParam(defaultValue = "0") int page,
@@ -55,7 +56,7 @@ public class StudentDocumentController implements StudentDocumentApi {
 	@Override
 	@PostMapping
 	@ResponseStatus(HttpStatus.CREATED)
-	@PreAuthorize("@permissionAuthorizationService.hasPermission('STUDENT_DOCUMENT_MANAGE')")
+	@RequiresPermission(SchoolPermissions.STUDENT_DOCUMENT_MANAGE)
 	public ApiResponse<StudentDocumentResponse> upload(@PathVariable String studentPublicId,
 			@Valid @RequestBody UploadStudentDocumentRequest request) {
 		var document = studentDocumentService.uploadForStudent(studentPublicId, request.documentType(),
@@ -65,7 +66,7 @@ public class StudentDocumentController implements StudentDocumentApi {
 
 	@Override
 	@PatchMapping("/{documentPublicId}/verify")
-	@PreAuthorize("@permissionAuthorizationService.hasPermission('STUDENT_DOCUMENT_MANAGE')")
+	@RequiresPermission(SchoolPermissions.STUDENT_DOCUMENT_MANAGE)
 	public ApiResponse<StudentDocumentResponse> verify(@PathVariable String studentPublicId,
 			@PathVariable String documentPublicId, @AuthenticationPrincipal AuthenticatedUser user) {
 		var document = studentDocumentService.verify(documentPublicId, user.getId());
@@ -75,7 +76,7 @@ public class StudentDocumentController implements StudentDocumentApi {
 	@Override
 	@PatchMapping("/{documentPublicId}/reject")
 	@Command
-	@PreAuthorize("@permissionAuthorizationService.hasPermission('STUDENT_DOCUMENT_MANAGE')")
+	@RequiresPermission(SchoolPermissions.STUDENT_DOCUMENT_MANAGE)
 	public ApiResponse<StudentDocumentResponse> reject(@PathVariable String studentPublicId,
 			@PathVariable String documentPublicId, @Valid @RequestBody RejectDocumentRequest request,
 			@AuthenticationPrincipal AuthenticatedUser user) {

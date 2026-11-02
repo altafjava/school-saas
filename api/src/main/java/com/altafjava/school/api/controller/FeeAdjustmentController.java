@@ -4,7 +4,6 @@ import java.math.BigDecimal;
 import java.util.List;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -17,6 +16,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import com.altafjava.platform.api.dto.response.ApiResponse;
+import com.altafjava.platform.application.security.annotation.RequiresPermission;
 import com.altafjava.platform.core.annotation.Command;
 import com.altafjava.platform.core.annotation.LastWriteWins;
 import com.altafjava.platform.core.security.AuthenticatedUser;
@@ -37,6 +37,7 @@ import com.altafjava.school.application.service.FeeDiscountService;
 import com.altafjava.school.application.service.FeeInstallmentService;
 import com.altafjava.school.application.service.FeeRefundService;
 import com.altafjava.school.domain.fee.service.InstallmentPlanFactory.Slot;
+import com.altafjava.school.domain.security.permission.SchoolPermissions;
 import lombok.RequiredArgsConstructor;
 
 @RestController
@@ -57,7 +58,7 @@ public class FeeAdjustmentController implements FeeAdjustmentApi {
 
 	@Override
 	@GetMapping("/students/{studentPublicId}/fee-discounts")
-	@PreAuthorize("@permissionAuthorizationService.hasPermission('FEE_DISCOUNT_MANAGE')")
+	@RequiresPermission(SchoolPermissions.FEE_DISCOUNT_MANAGE)
 	public ApiResponse<List<FeeDiscountResponse>> listDiscounts(@PathVariable String studentPublicId) {
 		return ApiResponse.success(referenceSummaries.mapList(feeDiscountService.listForStudent(studentPublicId),
 				feeDiscountMapper::toResponse));
@@ -66,7 +67,7 @@ public class FeeAdjustmentController implements FeeAdjustmentApi {
 	@Override
 	@PostMapping("/students/{studentPublicId}/fee-discounts")
 	@ResponseStatus(HttpStatus.CREATED)
-	@PreAuthorize("@permissionAuthorizationService.hasPermission('FEE_DISCOUNT_MANAGE')")
+	@RequiresPermission(SchoolPermissions.FEE_DISCOUNT_MANAGE)
 	public ApiResponse<FeeDiscountResponse> grantDiscount(@PathVariable String studentPublicId,
 			@Valid @RequestBody GrantFeeDiscountRequest request, @AuthenticationPrincipal AuthenticatedUser user) {
 		return ApiResponse.success(feeDiscountMapper.toResponse(feeDiscountService.grant(studentPublicId,
@@ -77,7 +78,7 @@ public class FeeAdjustmentController implements FeeAdjustmentApi {
 	@Override
 	@PatchMapping("/students/{studentPublicId}/fee-discounts/{discountPublicId}/revoke")
 	@Command
-	@PreAuthorize("@permissionAuthorizationService.hasPermission('FEE_DISCOUNT_MANAGE')")
+	@RequiresPermission(SchoolPermissions.FEE_DISCOUNT_MANAGE)
 	public ApiResponse<FeeDiscountResponse> revokeDiscount(@PathVariable String studentPublicId,
 			@PathVariable String discountPublicId, @Valid @RequestBody RevokeFeeDiscountRequest request) {
 		return ApiResponse.success(feeDiscountMapper
@@ -86,7 +87,7 @@ public class FeeAdjustmentController implements FeeAdjustmentApi {
 
 	@Override
 	@GetMapping("/students/{studentPublicId}/fee-installment-plans/{feeStructurePublicId}")
-	@PreAuthorize("@permissionAuthorizationService.hasPermission('FEE_INSTALLMENT_MANAGE')")
+	@RequiresPermission(SchoolPermissions.FEE_INSTALLMENT_MANAGE)
 	public ApiResponse<List<FeeInstallmentResponse>> getPlan(@PathVariable String studentPublicId,
 			@PathVariable String feeStructurePublicId) {
 		return ApiResponse.success(feeInstallmentService.getPlan(studentPublicId, feeStructurePublicId).stream()
@@ -96,7 +97,7 @@ public class FeeAdjustmentController implements FeeAdjustmentApi {
 	@Override
 	@PutMapping("/students/{studentPublicId}/fee-installment-plans/{feeStructurePublicId}")
 	@LastWriteWins("Replaces the whole installment plan, which is a set of rows and not one versioned record")
-	@PreAuthorize("@permissionAuthorizationService.hasPermission('FEE_INSTALLMENT_MANAGE')")
+	@RequiresPermission(SchoolPermissions.FEE_INSTALLMENT_MANAGE)
 	public ApiResponse<List<FeeInstallmentResponse>> setPlan(@PathVariable String studentPublicId,
 			@PathVariable String feeStructurePublicId, @Valid @RequestBody SetFeeInstallmentPlanRequest request) {
 		var plan = request.schedule() != null && !request.schedule().isEmpty()
@@ -112,7 +113,7 @@ public class FeeAdjustmentController implements FeeAdjustmentApi {
 	@Override
 	@DeleteMapping("/students/{studentPublicId}/fee-installment-plans/{feeStructurePublicId}")
 	@ResponseStatus(HttpStatus.NO_CONTENT)
-	@PreAuthorize("@permissionAuthorizationService.hasPermission('FEE_INSTALLMENT_MANAGE')")
+	@RequiresPermission(SchoolPermissions.FEE_INSTALLMENT_MANAGE)
 	public ApiResponse<Void> removePlan(@PathVariable String studentPublicId,
 			@PathVariable String feeStructurePublicId) {
 		feeInstallmentService.removePlan(studentPublicId, feeStructurePublicId);
@@ -122,7 +123,7 @@ public class FeeAdjustmentController implements FeeAdjustmentApi {
 	@Override
 	@PostMapping("/fee-payments/{paymentPublicId}/refunds")
 	@ResponseStatus(HttpStatus.CREATED)
-	@PreAuthorize("@permissionAuthorizationService.hasPermission('FEE_REFUND_MANAGE')")
+	@RequiresPermission(SchoolPermissions.FEE_REFUND_MANAGE)
 	@RateLimited(key = "fee-refund", capacity = 30, periodMinutes = 60)
 	public ApiResponse<FeeRefundResponse> refund(@PathVariable String paymentPublicId,
 			@Valid @RequestBody RefundFeePaymentRequest request, @AuthenticationPrincipal AuthenticatedUser user) {
@@ -132,7 +133,7 @@ public class FeeAdjustmentController implements FeeAdjustmentApi {
 
 	@Override
 	@GetMapping("/fee-payments/{paymentPublicId}/refunds")
-	@PreAuthorize("@permissionAuthorizationService.hasPermission('FEE_REFUND_MANAGE')")
+	@RequiresPermission(SchoolPermissions.FEE_REFUND_MANAGE)
 	public ApiResponse<List<FeeRefundResponse>> listRefundsForPayment(@PathVariable String paymentPublicId) {
 		return ApiResponse.success(referenceSummaries.mapList(feeRefundService.listForPayment(paymentPublicId),
 				feeRefundMapper::toResponse));
@@ -140,7 +141,7 @@ public class FeeAdjustmentController implements FeeAdjustmentApi {
 
 	@Override
 	@GetMapping("/students/{studentPublicId}/fee-refunds")
-	@PreAuthorize("@permissionAuthorizationService.hasPermission('FEE_REFUND_MANAGE')")
+	@RequiresPermission(SchoolPermissions.FEE_REFUND_MANAGE)
 	public ApiResponse<List<FeeRefundResponse>> listRefundsForStudent(@PathVariable String studentPublicId) {
 		return ApiResponse.success(referenceSummaries.mapList(feeRefundService.listForStudent(studentPublicId),
 				feeRefundMapper::toResponse));

@@ -32,6 +32,7 @@ import com.altafjava.school.domain.subject.model.Subject;
 import com.altafjava.school.domain.teacher.model.Teacher;
 import com.altafjava.school.domain.timetable.model.Period;
 import com.altafjava.school.domain.timetable.model.TimetableEntry;
+import com.altafjava.school.util.TestPrincipals;
 
 /**
  * Verifies that timetable entries created under tenant A are not visible to tenant B, and that
@@ -77,12 +78,14 @@ class TimetableTenantIsolationIntegrationTest extends SchoolIntegrationTestBase 
 	}
 
 	private void activateTenant(Tenant tenant) {
+		TestPrincipals.authenticateAsTenantAdmin();
 		TenantContext.ForTesting.setCurrentTenant(tenant.getId(), tenant.getPublicId(), tenant.getSubdomain(),
 				tenant.getType());
 	}
 
 	@AfterEach
 	void clearContext() {
+		TestPrincipals.clear();
 		TenantContext.ForTesting.clear();
 	}
 

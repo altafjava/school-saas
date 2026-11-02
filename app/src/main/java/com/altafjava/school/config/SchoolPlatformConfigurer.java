@@ -10,12 +10,14 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import com.altafjava.platform.core.PlatformConfigurer;
 import com.altafjava.platform.core.cache.CacheRegion;
+import com.altafjava.platform.core.feature.FeatureDefinition;
 import com.altafjava.platform.core.privacy.DomainPiiHandler;
 import com.altafjava.platform.core.privacy.DomainRetentionHandler;
 import com.altafjava.platform.core.security.permission.PermissionDefinition;
 import com.altafjava.platform.core.sync.OfflineSyncEntityHandler;
 import com.altafjava.school.application.privacy.SchoolDataRetentionHandler;
 import com.altafjava.school.application.privacy.StudentGuardianPiiHandler;
+import com.altafjava.school.application.security.SchoolFeatures;
 import com.altafjava.school.application.service.GradingScaleService;
 import com.altafjava.school.application.sync.AttendanceOfflineSyncHandler;
 import com.altafjava.school.domain.curriculum.model.GradeBand;
@@ -117,6 +119,11 @@ public class SchoolPlatformConfigurer implements PlatformConfigurer {
 	@Override
 	public Set<String> additionalMetricTypes() {
 		return SchoolMetricTypes.ALL;
+	}
+
+	@Override
+	public Set<FeatureDefinition> domainFeatures() {
+		return SchoolFeatures.CATALOG;
 	}
 
 	@Override

@@ -135,7 +135,7 @@ class OrganizationRollupServiceTest {
 				.thenReturn(List.of(FeeAssignment.forStudent(2L, 102L)));
 		when(feeAssignmentRepository.findByTenantIdAndClassroomIdIn(eq(1L), any()))
 				.thenReturn(List.of(FeeAssignment.forClassroom(1L, 501L)));
-		when(feePaymentRepository.sumPaidAmountByTenantId(1L)).thenReturn(BigDecimal.valueOf(90));
+		when(feePaymentRepository.sumClearedAmountByTenantId(1L)).thenReturn(BigDecimal.valueOf(90));
 
 		// Campus B: one student, one STUDENT-scoped fee.
 		Student student201 = studentWithId(201L);
@@ -147,7 +147,7 @@ class OrganizationRollupServiceTest {
 		when(feeStructureRepository.findAllByTenantId(2L)).thenReturn(List.of(tuitionB));
 		when(feeAssignmentRepository.findByTenantIdAndStudentIdIn(2L, List.of(201L)))
 				.thenReturn(List.of(FeeAssignment.forStudent(3L, 201L)));
-		when(feePaymentRepository.sumPaidAmountByTenantId(2L)).thenReturn(BigDecimal.valueOf(200));
+		when(feePaymentRepository.sumClearedAmountByTenantId(2L)).thenReturn(BigDecimal.valueOf(200));
 
 		mockAttendance(1L, 90, 5, 3, 2);
 		mockAttendance(2L, 40, 5, 5, 0);

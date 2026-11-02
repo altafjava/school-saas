@@ -81,6 +81,7 @@ import com.altafjava.school.domain.employee.model.EmploymentType;
 import com.altafjava.school.domain.fee.model.FeeFrequency;
 import com.altafjava.school.domain.fee.model.FeePayment;
 import com.altafjava.school.domain.fee.model.FeeStructure;
+import com.altafjava.school.domain.fee.model.PaymentInstrument;
 import com.altafjava.school.domain.fee.model.PaymentSource;
 import com.altafjava.school.domain.fee.repository.FeePaymentRepository;
 import com.altafjava.school.domain.fee.repository.FeeStructureRepository;
@@ -432,24 +433,24 @@ class RecordListFiltersIntegrationTest extends SchoolIntegrationTestBase {
 		FeeStructure bus = feeStructureRepository
 				.save(FeeStructure.create("Bus " + tag, BigDecimal.TEN, FeeFrequency.MONTHLY, null));
 		FeePayment manual = feePaymentRepository.save(FeePayment.create(first.getId(), tuition.getId(),
-				BigDecimal.ONE, LocalDateTime.of(2031, 4, 30, 23, 59), "R-" + tag + "-1"));
+				BigDecimal.ONE, LocalDateTime.of(2031, 4, 30, 23, 59), "R-" + tag + "-1", PaymentInstrument.CASH));
 		FeePayment gateway = feePaymentRepository.save(FeePayment.recordFromGateway(second.getId(), bus.getId(),
 				BigDecimal.ONE, LocalDateTime.of(2031, 5, 1, 0, 0), "R-" + tag + "-2", "STRIPE", "ch_" + tag));
 
 		assertIds(feePaymentService.listFeePayments(new FeePaymentFilter(id(first), null, DateWindow.UNBOUNDED,
-				null), PAGE), FeePayment::getId, manual.getId());
+				null, null), PAGE), FeePayment::getId, manual.getId());
 		assertIds(feePaymentService.listFeePayments(new FeePaymentFilter(null, bus.getPublicId().toString(),
-				DateWindow.UNBOUNDED, null), PAGE), FeePayment::getId, gateway.getId());
+				DateWindow.UNBOUNDED, null, null), PAGE), FeePayment::getId, gateway.getId());
 		assertIds(feePaymentService.listFeePayments(new FeePaymentFilter(id(first), null,
-				DateWindow.UNBOUNDED, PaymentSource.MANUAL), PAGE), FeePayment::getId, manual.getId());
+				DateWindow.UNBOUNDED, PaymentSource.MANUAL, null), PAGE), FeePayment::getId, manual.getId());
 		assertEquals(0, feePaymentService.listFeePayments(new FeePaymentFilter(id(first), null,
-				DateWindow.UNBOUNDED, PaymentSource.GATEWAY), PAGE).getTotalElements());
+				DateWindow.UNBOUNDED, PaymentSource.GATEWAY, null), PAGE).getTotalElements());
 		// A payment at the last minute of a day belongs to that day; midnight belongs to the next.
 		assertIds(feePaymentService.listFeePayments(new FeePaymentFilter(null, null, new DateWindow(
-				LocalDate.of(2031, 4, 30), LocalDate.of(2031, 4, 30)), null), PAGE), FeePayment::getId,
+				LocalDate.of(2031, 4, 30), LocalDate.of(2031, 4, 30)), null, null), PAGE), FeePayment::getId,
 				manual.getId());
 		assertIds(feePaymentService.listFeePayments(new FeePaymentFilter(null, null, new DateWindow(
-				LocalDate.of(2031, 5, 1), null), null), PAGE), FeePayment::getId, gateway.getId());
+				LocalDate.of(2031, 5, 1), null), null, null), PAGE), FeePayment::getId, gateway.getId());
 	}
 
 	@Test

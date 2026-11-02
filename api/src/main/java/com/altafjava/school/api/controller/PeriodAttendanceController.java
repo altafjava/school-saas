@@ -3,7 +3,6 @@ package com.altafjava.school.api.controller;
 import java.time.LocalDate;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -14,6 +13,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import com.altafjava.platform.api.dto.response.ApiResponse;
+import com.altafjava.platform.application.security.annotation.RequiresPermission;
 import com.altafjava.platform.core.idempotency.RequireIdempotencyKey;
 import com.altafjava.platform.core.security.AuthenticatedUser;
 import com.altafjava.school.api.controller.api.PeriodAttendanceApi;
@@ -27,6 +27,7 @@ import com.altafjava.school.application.filter.DateWindow;
 import com.altafjava.school.application.reference.ReferenceSummaries;
 import com.altafjava.school.application.service.PeriodAttendanceService;
 import com.altafjava.school.domain.attendance.model.AttendanceStatus;
+import com.altafjava.school.domain.security.permission.SchoolPermissions;
 
 @RestController
 @RequestMapping("/api/v1/period-attendance")
@@ -49,7 +50,7 @@ public class PeriodAttendanceController implements PeriodAttendanceApi {
 
 	@Override
 	@GetMapping
-	@PreAuthorize("@permissionAuthorizationService.hasPermission('PERIOD_ATTENDANCE_MANAGE')")
+	@RequiresPermission(SchoolPermissions.PERIOD_ATTENDANCE_MANAGE)
 	public ApiResponse<com.altafjava.platform.core.model.Page<PeriodAttendanceResponse>> list(
 			@RequestParam(defaultValue = "0") int page,
 			@RequestParam(defaultValue = "20") int size,
@@ -68,7 +69,7 @@ public class PeriodAttendanceController implements PeriodAttendanceApi {
 
 	@Override
 	@GetMapping("/{publicId}")
-	@PreAuthorize("@permissionAuthorizationService.hasPermission('PERIOD_ATTENDANCE_MANAGE')")
+	@RequiresPermission(SchoolPermissions.PERIOD_ATTENDANCE_MANAGE)
 	public ApiResponse<PeriodAttendanceResponse> get(@PathVariable String publicId) {
 		return ApiResponse.success(periodAttendanceMapper.toResponse(periodAttendanceService.findByPublicId(publicId)));
 	}
@@ -76,7 +77,7 @@ public class PeriodAttendanceController implements PeriodAttendanceApi {
 	@Override
 	@PostMapping
 	@ResponseStatus(HttpStatus.CREATED)
-	@PreAuthorize("@permissionAuthorizationService.hasPermission('PERIOD_ATTENDANCE_MANAGE')")
+	@RequiresPermission(SchoolPermissions.PERIOD_ATTENDANCE_MANAGE)
 	@RequireIdempotencyKey
 	public ApiResponse<PeriodAttendanceResponse> mark(@Valid @RequestBody MarkPeriodAttendanceRequest request,
 			@AuthenticationPrincipal AuthenticatedUser user) {

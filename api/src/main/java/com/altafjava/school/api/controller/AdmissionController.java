@@ -7,7 +7,6 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
@@ -19,6 +18,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import com.altafjava.platform.api.dto.response.ApiResponse;
+import com.altafjava.platform.application.security.annotation.RequiresPermission;
 import com.altafjava.platform.core.annotation.Command;
 import com.altafjava.platform.core.exception.BusinessException;
 import com.altafjava.platform.core.idempotency.RequireIdempotencyKey;
@@ -36,6 +36,7 @@ import com.altafjava.school.api.support.SpringDataPageableResolver;
 import com.altafjava.school.application.service.AdmissionService;
 import com.altafjava.school.domain.admission.model.AdmissionStatus;
 import com.altafjava.school.domain.admission.model.DecisionOutcome;
+import com.altafjava.school.domain.security.permission.SchoolPermissions;
 
 /**
  * All endpoints here require {@code TENANT_ADMIN} except {@link #apply}, which is intended to be
@@ -66,7 +67,7 @@ public class AdmissionController implements AdmissionApi {
 
 	@Override
 	@GetMapping
-	@PreAuthorize("@permissionAuthorizationService.hasPermission('ADMISSION_MANAGE')")
+	@RequiresPermission(SchoolPermissions.ADMISSION_MANAGE)
 	@SortableBy({ "applicantFirstName", "applicantLastName", "appliedGrade", "status", "submittedAt" })
 	public ApiResponse<com.altafjava.platform.core.model.Page<AdmissionResponse>> list(
 			@RequestParam(defaultValue = "0") int page,
@@ -82,7 +83,7 @@ public class AdmissionController implements AdmissionApi {
 
 	@Override
 	@GetMapping("/{publicId}")
-	@PreAuthorize("@permissionAuthorizationService.hasPermission('ADMISSION_MANAGE')")
+	@RequiresPermission(SchoolPermissions.ADMISSION_MANAGE)
 	public ApiResponse<AdmissionResponse> get(@PathVariable String publicId) {
 		return ApiResponse.success(admissionMapper.toResponse(admissionService.findByPublicId(publicId)));
 	}
@@ -90,7 +91,7 @@ public class AdmissionController implements AdmissionApi {
 	@Override
 	@PostMapping
 	@ResponseStatus(HttpStatus.CREATED)
-	@PreAuthorize("@permissionAuthorizationService.hasPermission('ADMISSION_MANAGE')")
+	@RequiresPermission(SchoolPermissions.ADMISSION_MANAGE)
 	@RequireIdempotencyKey
 	public ApiResponse<AdmissionResponse> submit(@Valid @RequestBody SubmitAdmissionRequest request) {
 		return ApiResponse.success(admissionMapper.toResponse(admissionService.submit(
@@ -124,7 +125,7 @@ public class AdmissionController implements AdmissionApi {
 
 	@Override
 	@PatchMapping("/{publicId}/under-review")
-	@PreAuthorize("@permissionAuthorizationService.hasPermission('ADMISSION_MANAGE')")
+	@RequiresPermission(SchoolPermissions.ADMISSION_MANAGE)
 	public ApiResponse<AdmissionResponse> markUnderReview(@PathVariable String publicId) {
 		return ApiResponse.success(admissionMapper.toResponse(admissionService.markUnderReview(publicId)));
 	}
@@ -132,7 +133,7 @@ public class AdmissionController implements AdmissionApi {
 	@Override
 	@PatchMapping("/{publicId}/decision")
 	@Command
-	@PreAuthorize("@permissionAuthorizationService.hasPermission('ADMISSION_MANAGE')")
+	@RequiresPermission(SchoolPermissions.ADMISSION_MANAGE)
 	@RequireIdempotencyKey
 	public ApiResponse<AdmissionResponse> decide(@PathVariable String publicId,
 			@Valid @RequestBody DecideAdmissionRequest request) {
@@ -149,7 +150,7 @@ public class AdmissionController implements AdmissionApi {
 
 	@Override
 	@PostMapping("/{publicId}/entrance-test-score")
-	@PreAuthorize("@permissionAuthorizationService.hasPermission('ADMISSION_MANAGE')")
+	@RequiresPermission(SchoolPermissions.ADMISSION_MANAGE)
 	public ApiResponse<AdmissionResponse> recordEntranceTestScore(@PathVariable String publicId,
 			@Valid @RequestBody RecordEntranceTestScoreRequest request) {
 		return ApiResponse.success(admissionMapper.toResponse(
@@ -158,7 +159,7 @@ public class AdmissionController implements AdmissionApi {
 
 	@Override
 	@PostMapping("/merit-list")
-	@PreAuthorize("@permissionAuthorizationService.hasPermission('ADMISSION_MANAGE')")
+	@RequiresPermission(SchoolPermissions.ADMISSION_MANAGE)
 	public ApiResponse<List<AdmissionResponse>> generateMeritList(
 			@RequestParam String appliedGrade,
 			@RequestParam int availableSeats) {
@@ -169,14 +170,14 @@ public class AdmissionController implements AdmissionApi {
 
 	@Override
 	@PatchMapping("/{publicId}/promote-from-waitlist")
-	@PreAuthorize("@permissionAuthorizationService.hasPermission('ADMISSION_MANAGE')")
+	@RequiresPermission(SchoolPermissions.ADMISSION_MANAGE)
 	public ApiResponse<AdmissionResponse> promoteFromWaitlist(@PathVariable String publicId) {
 		return ApiResponse.success(admissionMapper.toResponse(admissionService.promoteFromWaitlist(publicId)));
 	}
 
 	@Override
 	@PatchMapping("/{publicId}/application-fee/payment")
-	@PreAuthorize("@permissionAuthorizationService.hasPermission('ADMISSION_FEE_MANAGE')")
+	@RequiresPermission(SchoolPermissions.ADMISSION_FEE_MANAGE)
 	@RequireIdempotencyKey
 	public ApiResponse<AdmissionResponse> recordApplicationFee(@PathVariable String publicId) {
 		return ApiResponse.success(admissionMapper.toResponse(admissionService.recordApplicationFeePayment(publicId)));
@@ -185,7 +186,7 @@ public class AdmissionController implements AdmissionApi {
 	@Override
 	@PatchMapping("/{publicId}/application-fee/waive")
 	@Command
-	@PreAuthorize("@permissionAuthorizationService.hasPermission('ADMISSION_FEE_MANAGE')")
+	@RequiresPermission(SchoolPermissions.ADMISSION_FEE_MANAGE)
 	public ApiResponse<AdmissionResponse> waiveApplicationFee(@PathVariable String publicId,
 			@Valid @RequestBody WaiveApplicationFeeRequest request) {
 		return ApiResponse
@@ -194,7 +195,7 @@ public class AdmissionController implements AdmissionApi {
 
 	@Override
 	@PostMapping("/{publicId}/offer-letter")
-	@PreAuthorize("@permissionAuthorizationService.hasPermission('ADMISSION_MANAGE')")
+	@RequiresPermission(SchoolPermissions.ADMISSION_MANAGE)
 	@RequireIdempotencyKey
 	public ApiResponse<AdmissionResponse> issueOfferLetter(@PathVariable String publicId) {
 		return ApiResponse.success(admissionMapper.toResponse(admissionService.issueOfferLetter(publicId)));
@@ -203,7 +204,7 @@ public class AdmissionController implements AdmissionApi {
 	// Not ApiResponse-wrapped: a PDF body with its own Content-Type, like every download endpoint.
 	@Override
 	@GetMapping("/{publicId}/offer-letter/download")
-	@PreAuthorize("@permissionAuthorizationService.hasPermission('ADMISSION_MANAGE')")
+	@RequiresPermission(SchoolPermissions.ADMISSION_MANAGE)
 	public ResponseEntity<byte[]> downloadOfferLetter(@PathVariable String publicId) {
 		return ResponseEntity.ok()
 				.contentType(MediaType.APPLICATION_PDF)

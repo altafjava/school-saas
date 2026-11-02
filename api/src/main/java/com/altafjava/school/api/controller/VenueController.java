@@ -2,7 +2,6 @@ package com.altafjava.school.api.controller;
 
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -13,6 +12,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import com.altafjava.platform.api.dto.response.ApiResponse;
+import com.altafjava.platform.application.security.annotation.RequiresPermission;
 import com.altafjava.school.api.controller.api.VenueApi;
 import com.altafjava.school.api.dto.request.CreateVenueRequest;
 import com.altafjava.school.api.dto.request.UpdateVenueRequest;
@@ -21,6 +21,7 @@ import com.altafjava.school.api.mapper.VenueMapper;
 import com.altafjava.school.api.support.PlatformPageMapper;
 import com.altafjava.school.api.support.SpringDataPageableResolver;
 import com.altafjava.school.application.service.VenueService;
+import com.altafjava.school.domain.security.permission.SchoolPermissions;
 
 @RestController
 @RequestMapping("/api/v1/venues")
@@ -39,7 +40,7 @@ public class VenueController implements VenueApi {
 
 	@Override
 	@GetMapping
-	@PreAuthorize("@permissionAuthorizationService.hasPermission('TIMETABLE_READ')")
+	@RequiresPermission(SchoolPermissions.TIMETABLE_READ)
 	public ApiResponse<com.altafjava.platform.core.model.Page<VenueResponse>> list(
 			@RequestParam(defaultValue = "0") int page,
 			@RequestParam(defaultValue = "20") int size,
@@ -51,7 +52,7 @@ public class VenueController implements VenueApi {
 
 	@Override
 	@GetMapping("/{publicId}")
-	@PreAuthorize("@permissionAuthorizationService.hasPermission('TIMETABLE_READ')")
+	@RequiresPermission(SchoolPermissions.TIMETABLE_READ)
 	public ApiResponse<VenueResponse> get(@PathVariable String publicId) {
 		return ApiResponse.success(venueMapper.toResponse(venueService.findByPublicId(publicId)));
 	}
@@ -59,7 +60,7 @@ public class VenueController implements VenueApi {
 	@Override
 	@PostMapping
 	@ResponseStatus(HttpStatus.CREATED)
-	@PreAuthorize("@permissionAuthorizationService.hasPermission('VENUE_MANAGE')")
+	@RequiresPermission(SchoolPermissions.VENUE_MANAGE)
 	public ApiResponse<VenueResponse> create(@Valid @RequestBody CreateVenueRequest request) {
 		return ApiResponse.success(venueMapper
 				.toResponse(venueService.create(request.code(), request.name(), request.venueType(),
@@ -68,7 +69,7 @@ public class VenueController implements VenueApi {
 
 	@Override
 	@PatchMapping("/{publicId}")
-	@PreAuthorize("@permissionAuthorizationService.hasPermission('VENUE_MANAGE')")
+	@RequiresPermission(SchoolPermissions.VENUE_MANAGE)
 	public ApiResponse<VenueResponse> update(@PathVariable String publicId,
 			@Valid @RequestBody UpdateVenueRequest request) {
 		return ApiResponse.success(venueMapper.toResponse(
@@ -78,14 +79,14 @@ public class VenueController implements VenueApi {
 
 	@Override
 	@PatchMapping("/{publicId}/deactivate")
-	@PreAuthorize("@permissionAuthorizationService.hasPermission('VENUE_MANAGE')")
+	@RequiresPermission(SchoolPermissions.VENUE_MANAGE)
 	public ApiResponse<VenueResponse> deactivate(@PathVariable String publicId) {
 		return ApiResponse.success(venueMapper.toResponse(venueService.deactivate(publicId)));
 	}
 
 	@Override
 	@PatchMapping("/{publicId}/activate")
-	@PreAuthorize("@permissionAuthorizationService.hasPermission('VENUE_MANAGE')")
+	@RequiresPermission(SchoolPermissions.VENUE_MANAGE)
 	public ApiResponse<VenueResponse> activate(@PathVariable String publicId) {
 		return ApiResponse.success(venueMapper.toResponse(venueService.activate(publicId)));
 	}

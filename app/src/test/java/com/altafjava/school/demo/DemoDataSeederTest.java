@@ -22,6 +22,7 @@ import org.mockito.junit.jupiter.MockitoSettings;
 import org.mockito.quality.Strictness;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.TransactionStatus;
+import com.altafjava.platform.application.service.FeatureFlagService;
 import com.altafjava.platform.core.tenant.TenantType;
 import com.altafjava.platform.domain.tenant.model.Tenant;
 import com.altafjava.platform.domain.tenant.repository.TenantRepository;
@@ -45,6 +46,8 @@ class DemoDataSeederTest {
 	private AcademicYearService academicYearService;
 	@Mock
 	private ExamTypeDefinitionService examTypeDefinitionService;
+	@Mock
+	private FeatureFlagService featureFlagService;
 	@Mock
 	private PlatformTransactionManager transactionManager;
 	@Mock

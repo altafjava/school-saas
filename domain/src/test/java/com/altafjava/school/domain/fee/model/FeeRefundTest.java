@@ -12,7 +12,8 @@ import com.altafjava.platform.core.exception.BusinessException;
 class FeeRefundTest {
 
 	private FeePayment payment() {
-		FeePayment payment = FeePayment.create(5L, 6L, new BigDecimal("500.00"), LocalDateTime.now(), "RCPT-1");
+		FeePayment payment = FeePayment.create(5L, 6L, new BigDecimal("500.00"), LocalDateTime.now(), "RCPT-1",
+				PaymentInstrument.CASH);
 		payment.setId(7L);
 		return payment;
 	}

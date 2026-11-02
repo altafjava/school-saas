@@ -38,7 +38,7 @@ class FeeCollectionTrendDataProviderTest {
 
 	@Test
 	void fetchData_defaultPeriods_returnsSixMonthlyRows() {
-		when(feePaymentRepository.sumPaidAmountByTenantIdAndPaidAtBetween(eq(1L), any(), any()))
+		when(feePaymentRepository.sumClearedAmountByTenantIdAndPaidAtBetween(eq(1L), any(), any()))
 				.thenReturn(BigDecimal.valueOf(5000));
 
 		List<Map<String, Object>> rows = provider.fetchData(Map.of());
@@ -49,7 +49,7 @@ class FeeCollectionTrendDataProviderTest {
 
 	@Test
 	void fetchData_explicitPeriods_returnsThatManyRows() {
-		when(feePaymentRepository.sumPaidAmountByTenantIdAndPaidAtBetween(eq(1L), any(), any()))
+		when(feePaymentRepository.sumClearedAmountByTenantIdAndPaidAtBetween(eq(1L), any(), any()))
 				.thenReturn(BigDecimal.ZERO);
 
 		List<Map<String, Object>> rows = provider.fetchData(Map.of("periods", 2));

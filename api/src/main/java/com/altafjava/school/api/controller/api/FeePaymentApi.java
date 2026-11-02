@@ -1,13 +1,17 @@
 package com.altafjava.school.api.controller.api;
 
 import java.time.LocalDate;
+import java.util.List;
 import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
 import com.altafjava.platform.api.dto.response.ApiResponse;
+import com.altafjava.school.api.dto.request.BounceFeePaymentRequest;
 import com.altafjava.school.api.dto.request.RecordFeePaymentRequest;
+import com.altafjava.school.api.dto.response.FeeCollectionRowResponse;
 import com.altafjava.school.api.dto.response.FeePaymentResponse;
+import com.altafjava.school.domain.fee.model.PaymentMode;
 import com.altafjava.school.domain.fee.model.PaymentSource;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
@@ -26,11 +30,20 @@ public interface FeePaymentApi {
 			@RequestParam(required = false) String feeStructurePublicId,
 			@RequestParam(required = false) LocalDate from,
 			@RequestParam(required = false) LocalDate to,
-			@RequestParam(required = false) PaymentSource paymentSource);
+			@RequestParam(required = false) PaymentSource paymentSource,
+			@RequestParam(required = false) PaymentMode paymentMode);
 
 	@Operation(summary = "Get")
 	public ApiResponse<FeePaymentResponse> get(@PathVariable String publicId);
 
 	@Operation(summary = "Record")
 	public ApiResponse<FeePaymentResponse> record(@Valid @RequestBody RecordFeePaymentRequest request);
+
+	@Operation(summary = "Collection report", description = "Payments per day and mode for matching against cash and bank, up to 92 days. Bounced cheques are shown separately and never count as collected.")
+	public ApiResponse<List<FeeCollectionRowResponse>> collectionReport(@RequestParam LocalDate from,
+			@RequestParam LocalDate to);
+
+	@Operation(summary = "Mark a cheque bounced", description = "Keeps the payment as evidence and restores the student's balance. A payment with refunds cannot bounce.")
+	public ApiResponse<FeePaymentResponse> bounce(@PathVariable String publicId,
+			@Valid @RequestBody BounceFeePaymentRequest request);
 }

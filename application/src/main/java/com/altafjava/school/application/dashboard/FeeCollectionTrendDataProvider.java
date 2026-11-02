@@ -47,7 +47,7 @@ public class FeeCollectionTrendDataProvider implements ReportDataProvider {
 	private Map<String, Object> monthRow(Long tenantId, YearMonth month) {
 		LocalDateTime from = month.atDay(1).atStartOfDay();
 		LocalDateTime to = LocalDate.from(month.atEndOfMonth()).atTime(23, 59, 59);
-		BigDecimal totalCollected = feePaymentRepository.sumPaidAmountByTenantIdAndPaidAtBetween(tenantId, from, to);
+		BigDecimal totalCollected = feePaymentRepository.sumClearedAmountByTenantIdAndPaidAtBetween(tenantId, from, to);
 
 		Map<String, Object> row = new LinkedHashMap<>();
 		row.put("month", month.format(MONTH_LABEL_FORMAT));

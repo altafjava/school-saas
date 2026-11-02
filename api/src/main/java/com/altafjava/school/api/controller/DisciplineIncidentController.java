@@ -3,7 +3,6 @@ package com.altafjava.school.api.controller;
 import java.time.LocalDate;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -14,6 +13,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import com.altafjava.platform.api.dto.response.ApiResponse;
+import com.altafjava.platform.application.security.annotation.RequiresPermission;
 import com.altafjava.platform.core.annotation.Command;
 import com.altafjava.school.api.controller.api.DisciplineIncidentApi;
 import com.altafjava.school.api.dto.request.RecordDisciplineActionRequest;
@@ -27,6 +27,7 @@ import com.altafjava.school.application.filter.DisciplineIncidentFilter;
 import com.altafjava.school.application.reference.ReferenceSummaries;
 import com.altafjava.school.application.service.DisciplineIncidentService;
 import com.altafjava.school.domain.discipline.model.IncidentSeverity;
+import com.altafjava.school.domain.security.permission.SchoolPermissions;
 
 @RestController
 @RequestMapping("/api/v1/discipline-incidents")
@@ -50,7 +51,7 @@ public class DisciplineIncidentController implements DisciplineIncidentApi {
 
 	@Override
 	@GetMapping
-	@PreAuthorize("@permissionAuthorizationService.hasPermission('DISCIPLINE_MANAGE')")
+	@RequiresPermission(SchoolPermissions.DISCIPLINE_MANAGE)
 	public ApiResponse<com.altafjava.platform.core.model.Page<DisciplineIncidentResponse>> listAll(
 			@RequestParam(defaultValue = "0") int page,
 			@RequestParam(defaultValue = "20") int size,
@@ -67,7 +68,7 @@ public class DisciplineIncidentController implements DisciplineIncidentApi {
 
 	@Override
 	@GetMapping("/students/{studentPublicId}")
-	@PreAuthorize("@permissionAuthorizationService.hasPermission('DISCIPLINE_READ')")
+	@RequiresPermission(SchoolPermissions.DISCIPLINE_READ)
 	public ApiResponse<com.altafjava.platform.core.model.Page<DisciplineIncidentResponse>> listForStudent(
 			@PathVariable String studentPublicId,
 			@RequestParam(defaultValue = "0") int page,
@@ -80,7 +81,7 @@ public class DisciplineIncidentController implements DisciplineIncidentApi {
 	@Override
 	@PostMapping
 	@ResponseStatus(HttpStatus.CREATED)
-	@PreAuthorize("@permissionAuthorizationService.hasPermission('DISCIPLINE_WRITE')")
+	@RequiresPermission(SchoolPermissions.DISCIPLINE_WRITE)
 	public ApiResponse<DisciplineIncidentResponse> record(@Valid @RequestBody RecordDisciplineIncidentRequest request) {
 		return ApiResponse
 				.success(disciplineIncidentMapper.toResponse(disciplineIncidentService.record(request.studentPublicId(),
@@ -90,7 +91,7 @@ public class DisciplineIncidentController implements DisciplineIncidentApi {
 	@Override
 	@PatchMapping("/{publicId}/action")
 	@Command
-	@PreAuthorize("@permissionAuthorizationService.hasPermission('DISCIPLINE_ACTION')")
+	@RequiresPermission(SchoolPermissions.DISCIPLINE_ACTION)
 	public ApiResponse<DisciplineIncidentResponse> recordAction(@PathVariable String publicId,
 			@Valid @RequestBody RecordDisciplineActionRequest request) {
 		return ApiResponse.success(disciplineIncidentMapper.toResponse(

@@ -3,7 +3,6 @@ package com.altafjava.school.api.controller;
 import java.util.List;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -13,11 +12,13 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import com.altafjava.platform.api.dto.response.ApiResponse;
+import com.altafjava.platform.application.security.annotation.RequiresPermission;
 import com.altafjava.school.api.controller.api.StudentSiblingApi;
 import com.altafjava.school.api.dto.request.LinkSiblingRequest;
 import com.altafjava.school.api.dto.response.SiblingResponse;
 import com.altafjava.school.api.mapper.SiblingMapper;
 import com.altafjava.school.application.service.StudentSiblingService;
+import com.altafjava.school.domain.security.permission.SchoolPermissions;
 
 @RestController
 @RequestMapping("/api/v1/students/{studentPublicId}/siblings")
@@ -33,7 +34,7 @@ public class StudentSiblingController implements StudentSiblingApi {
 
 	@Override
 	@GetMapping
-	@PreAuthorize("@permissionAuthorizationService.hasPermission('STUDENT_READ')")
+	@RequiresPermission(SchoolPermissions.STUDENT_READ)
 	public ApiResponse<List<SiblingResponse>> list(@PathVariable String studentPublicId) {
 		return ApiResponse
 				.success(siblingMapper.toResponseList(studentSiblingService.listSiblings(studentPublicId)));
@@ -41,7 +42,7 @@ public class StudentSiblingController implements StudentSiblingApi {
 
 	@Override
 	@GetMapping("/suggestions")
-	@PreAuthorize("@permissionAuthorizationService.hasPermission('STUDENT_MANAGE')")
+	@RequiresPermission(SchoolPermissions.STUDENT_MANAGE)
 	public ApiResponse<List<SiblingResponse>> suggest(@PathVariable String studentPublicId) {
 		return ApiResponse
 				.success(siblingMapper.toResponseList(studentSiblingService.suggestSiblings(studentPublicId)));
@@ -50,7 +51,7 @@ public class StudentSiblingController implements StudentSiblingApi {
 	@Override
 	@PostMapping
 	@ResponseStatus(HttpStatus.CREATED)
-	@PreAuthorize("@permissionAuthorizationService.hasPermission('STUDENT_MANAGE')")
+	@RequiresPermission(SchoolPermissions.STUDENT_MANAGE)
 	public ApiResponse<List<SiblingResponse>> link(@PathVariable String studentPublicId,
 			@Valid @RequestBody LinkSiblingRequest request) {
 		return ApiResponse.success(
@@ -60,7 +61,7 @@ public class StudentSiblingController implements StudentSiblingApi {
 	@Override
 	@DeleteMapping
 	@ResponseStatus(HttpStatus.NO_CONTENT)
-	@PreAuthorize("@permissionAuthorizationService.hasPermission('STUDENT_MANAGE')")
+	@RequiresPermission(SchoolPermissions.STUDENT_MANAGE)
 	public ApiResponse<Void> leave(@PathVariable String studentPublicId) {
 		studentSiblingService.leave(studentPublicId);
 		return ApiResponse.success(null);

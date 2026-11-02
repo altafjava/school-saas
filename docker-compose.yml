@@ -17,7 +17,6 @@ services:
     environment:
       MARIADB_ROOT_PASSWORD: mysql
       MARIADB_DATABASE: school_saas
-    command: --lower-case-table-names=1
     volumes:
       - mariadb_data:/var/lib/mysql
     healthcheck:

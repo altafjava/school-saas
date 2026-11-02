@@ -115,6 +115,9 @@ public class FeeRefundService {
 		return transactionTemplate.execute(status -> {
 			FeePayment payment = feePaymentRepository.findByPublicIdAndTenantIdForUpdate(paymentPublicId, tenantId)
 					.orElseThrow(() -> new ResourceNotFoundException("FeePayment not found: " + paymentPublicId));
+			if (payment.isBounced()) {
+				throw new BusinessException("This cheque bounced, so there is nothing to refund");
+			}
 			BigDecimal alreadyReserved = feeRefundRepository.sumReservedByPayment(tenantId, payment.getId());
 			BigDecimal refundable = payment.getPaidAmount().subtract(alreadyReserved);
 			if (amount == null || amount.compareTo(refundable) > 0) {

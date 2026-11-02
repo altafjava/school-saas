@@ -182,7 +182,7 @@ Never violate this — cross-layer needs go through an interface in the inner la
 
 ## Security
 
-- Access control: `@PreAuthorize` on controllers. Never manual role checks in services.
+- Access control: `@RequiresPermission(SchoolPermissions.X)` or a role annotation such as `@RequiresTenantAdmin` on controllers, with catalog constants, never codes in strings. Plain `@PreAuthorize` only for rules with real logic, such as record ownership. Never manual role checks in services.
 - Input validation: Bean Validation at API boundary only.
 - Secrets: never hardcoded or raw `${VAR:default}` in YAML — via `SecretProvider` (`EnvironmentSecretProvider` dev/test, `VaultSecretProvider` staging/prod).
 - Passwords: `BCryptPasswordEncoderAdapter` only.

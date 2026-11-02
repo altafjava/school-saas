@@ -35,6 +35,7 @@ import com.altafjava.school.domain.classroom.repository.StudentClassroomLinkRepo
 import com.altafjava.school.domain.fee.model.FeeAssignment;
 import com.altafjava.school.domain.fee.model.FeePayment;
 import com.altafjava.school.domain.fee.model.FeeStructure;
+import com.altafjava.school.domain.fee.model.PaymentInstrument;
 import com.altafjava.school.domain.fee.model.PaymentSource;
 import com.altafjava.school.domain.fee.repository.FeeAssignmentRepository;
 import com.altafjava.school.domain.fee.repository.FeeDiscountRepository;
@@ -92,7 +93,7 @@ class FeePaymentServiceTest {
 		when(studentRepository.findByPublicIdAndTenantId(publicId("student", 99), 1L)).thenReturn(Optional.empty());
 
 		assertThrows(ResourceNotFoundException.class,
-				() -> feePaymentService.record(publicId("student", 99).toString(), publicId("feeStructure", 1).toString(), BigDecimal.valueOf(500), LocalDateTime.now(), "RCPT-001"));
+				() -> feePaymentService.record(publicId("student", 99).toString(), publicId("feeStructure", 1).toString(), BigDecimal.valueOf(500), LocalDateTime.now(), "RCPT-001", PaymentInstrument.CASH));
 
 		verify(feePaymentRepository, never()).save(any());
 	}
@@ -103,7 +104,7 @@ class FeePaymentServiceTest {
 		when(feeStructureRepository.findByPublicIdAndTenantId(publicId("feeStructure", 99), 1L)).thenReturn(Optional.empty());
 
 		assertThrows(ResourceNotFoundException.class,
-				() -> feePaymentService.record(publicId("student", 1).toString(), publicId("feeStructure", 99).toString(), BigDecimal.valueOf(500), LocalDateTime.now(), "RCPT-001"));
+				() -> feePaymentService.record(publicId("student", 1).toString(), publicId("feeStructure", 99).toString(), BigDecimal.valueOf(500), LocalDateTime.now(), "RCPT-001", PaymentInstrument.CASH));
 
 		verify(feePaymentRepository, never()).save(any());
 	}
@@ -115,7 +116,7 @@ class FeePaymentServiceTest {
 		when(feePaymentRepository.existsByReceiptNumberAndTenantId("RCPT-001", 1L)).thenReturn(true);
 
 		assertThrows(IllegalArgumentException.class,
-				() -> feePaymentService.record(publicId("student", 1).toString(), publicId("feeStructure", 2).toString(), BigDecimal.valueOf(500), LocalDateTime.now(), "RCPT-001"));
+				() -> feePaymentService.record(publicId("student", 1).toString(), publicId("feeStructure", 2).toString(), BigDecimal.valueOf(500), LocalDateTime.now(), "RCPT-001", PaymentInstrument.CASH));
 	}
 
 	@Test
@@ -126,7 +127,7 @@ class FeePaymentServiceTest {
 		when(feePaymentRepository.save(any(FeePayment.class))).thenAnswer(inv -> inv.getArgument(0));
 
 		assertDoesNotThrow(() -> feePaymentService.record(publicId("student", 1).toString(), publicId("feeStructure", 2).toString(), BigDecimal.valueOf(500), LocalDateTime.now(),
-				"RCPT-001"));
+				"RCPT-001", PaymentInstrument.CASH));
 	}
 
 	@Test
@@ -138,7 +139,7 @@ class FeePaymentServiceTest {
 		when(feePaymentRepository.existsByReceiptNumberAndTenantId("RCPT-2026-000001", 1L)).thenReturn(false);
 		when(feePaymentRepository.save(any(FeePayment.class))).thenAnswer(inv -> inv.getArgument(0));
 
-		FeePayment payment = feePaymentService.record(publicId("student", 1).toString(), publicId("feeStructure", 2).toString(), BigDecimal.valueOf(500), LocalDateTime.now(), null);
+		FeePayment payment = feePaymentService.record(publicId("student", 1).toString(), publicId("feeStructure", 2).toString(), BigDecimal.valueOf(500), LocalDateTime.now(), null, PaymentInstrument.CASH);
 
 		assertEquals("RCPT-2026-000001", payment.getReceiptNumber());
 	}
@@ -152,7 +153,8 @@ class FeePaymentServiceTest {
 				"Tuition", BigDecimal.valueOf(1000), com.altafjava.school.domain.fee.model.FeeFrequency.MONTHLY,
 				"Standard");
 		feeStructure.setId(2L);
-		var payment = FeePayment.create(1L, 2L, BigDecimal.valueOf(400), LocalDateTime.now(), "RCPT-100");
+		var payment = FeePayment.create(1L, 2L, BigDecimal.valueOf(400), LocalDateTime.now(), "RCPT-100",
+				PaymentInstrument.CASH);
 		var assignment = FeeAssignment.forStudent(2L, student.getId());
 
 		when(studentRepository.findByPublicIdAndTenantId(any(), any())).thenReturn(java.util.Optional.of(student));
@@ -162,7 +164,7 @@ class FeePaymentServiceTest {
 		when(studentClassroomLinkRepository.findByStudentId(1L, student.getId())).thenReturn(java.util.List.of());
 		when(feeStructureRepository.findAllByIdInAndTenantId(java.util.List.of(2L), 1L))
 				.thenReturn(java.util.List.of(feeStructure));
-		when(feePaymentRepository.findByStudentId(1L, student.getId())).thenReturn(java.util.List.of(payment));
+		when(feePaymentRepository.findClearedByStudentId(1L, student.getId())).thenReturn(java.util.List.of(payment));
 
 		var balances = feePaymentService.calculateBalance("11111111-1111-1111-1111-111111111111");
 
@@ -190,7 +192,7 @@ class FeePaymentServiceTest {
 		when(studentClassroomLinkRepository.findByStudentId(1L, student.getId())).thenReturn(java.util.List.of());
 		when(feeStructureRepository.findAllByIdInAndTenantId(java.util.List.of(3L), 1L))
 				.thenReturn(java.util.List.of(feeStructure));
-		when(feePaymentRepository.findByStudentId(1L, student.getId())).thenReturn(java.util.List.of());
+		when(feePaymentRepository.findClearedByStudentId(1L, student.getId())).thenReturn(java.util.List.of());
 
 		var balances = feePaymentService.calculateBalance("11111111-1111-1111-1111-111111111111");
 
@@ -222,7 +224,8 @@ class FeePaymentServiceTest {
 		var classroomAssignment = FeeAssignment.forClassroom(11L, 5L);
 		var link = com.altafjava.school.domain.classroom.model.StudentClassroomLink.create(2L, 5L, 1L,
 				java.time.LocalDate.of(2026, 1, 1));
-		var paymentForA = FeePayment.create(1L, 10L, BigDecimal.valueOf(300), LocalDateTime.now(), "RCPT-A");
+		var paymentForA = FeePayment.create(1L, 10L, BigDecimal.valueOf(300), LocalDateTime.now(), "RCPT-A",
+				PaymentInstrument.CASH);
 
 		when(studentClassroomLinkRepository.findByStudentIdIn(1L, java.util.List.of(1L, 2L)))
 				.thenReturn(java.util.List.of(link));
@@ -233,7 +236,7 @@ class FeePaymentServiceTest {
 		when(feeStructureRepository.findAllByIdInAndTenantId(
 				org.mockito.ArgumentMatchers.argThat(ids -> ids.containsAll(java.util.List.of(10L, 11L))), any()))
 				.thenReturn(java.util.List.of(tuition, transport));
-		when(feePaymentRepository.findByStudentIdIn(1L, java.util.List.of(1L, 2L)))
+		when(feePaymentRepository.findClearedByStudentIdIn(1L, java.util.List.of(1L, 2L)))
 				.thenReturn(java.util.List.of(paymentForA));
 
 		var balancesByStudentId = feePaymentService.calculateBalancesForStudents(1L,
@@ -247,7 +250,7 @@ class FeePaymentServiceTest {
 		verify(studentClassroomLinkRepository).findByStudentIdIn(any(), any());
 		verify(feeAssignmentRepository).findByTenantIdAndStudentIdIn(any(), any());
 		verify(feeAssignmentRepository).findByTenantIdAndClassroomIdIn(any(), any());
-		verify(feePaymentRepository).findByStudentIdIn(any(), any());
+		verify(feePaymentRepository).findClearedByStudentIdIn(any(), any());
 	}
 
 	@Test
@@ -257,23 +260,24 @@ class FeePaymentServiceTest {
 		when(publicIdLookup.idOrNull(EntityRef.FEE_STRUCTURE, "structure-public")).thenReturn(8L);
 		LocalDateTime start = LocalDateTime.of(2026, 3, 1, 0, 0);
 		LocalDateTime end = LocalDateTime.of(2026, 4, 1, 0, 0);
-		when(feePaymentRepository.search(1L, 7L, 8L, start, end, PaymentSource.GATEWAY, pageable))
+		when(feePaymentRepository.search(1L, 7L, 8L, start, end, PaymentSource.GATEWAY, null, pageable))
 				.thenReturn(Page.empty());
 
 		feePaymentService.listFeePayments(new FeePaymentFilter("student-public", "structure-public",
-				new DateWindow(LocalDate.of(2026, 3, 1), LocalDate.of(2026, 3, 31)), PaymentSource.GATEWAY), pageable);
+				new DateWindow(LocalDate.of(2026, 3, 1), LocalDate.of(2026, 3, 31)), PaymentSource.GATEWAY, null),
+				pageable);
 
-		verify(feePaymentRepository).search(1L, 7L, 8L, start, end, PaymentSource.GATEWAY, pageable);
+		verify(feePaymentRepository).search(1L, 7L, 8L, start, end, PaymentSource.GATEWAY, null, pageable);
 	}
 
 	@Test
 	void listFeePayments_withNoFilter_leavesTheTimestampRangeOpen() {
 		PageRequest pageable = PageRequest.of(0, 20);
 		when(publicIdLookup.idOrNull(any(), any())).thenReturn(null);
-		when(feePaymentRepository.search(1L, null, null, null, null, null, pageable)).thenReturn(Page.empty());
+		when(feePaymentRepository.search(1L, null, null, null, null, null, null, pageable)).thenReturn(Page.empty());
 
 		feePaymentService.listFeePayments(FeePaymentFilter.NONE, pageable);
 
-		verify(feePaymentRepository).search(1L, null, null, null, null, null, pageable);
+		verify(feePaymentRepository).search(1L, null, null, null, null, null, null, pageable);
 	}
 }

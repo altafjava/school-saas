@@ -5,7 +5,6 @@ import java.util.List;
 import jakarta.validation.Valid;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
@@ -17,6 +16,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import com.altafjava.platform.api.dto.response.ApiResponse;
+import com.altafjava.platform.application.security.annotation.RequiresPermission;
 import com.altafjava.platform.core.annotation.Command;
 import com.altafjava.platform.core.security.AuthenticatedUser;
 import com.altafjava.school.api.controller.api.SubstitutionApi;
@@ -31,6 +31,7 @@ import com.altafjava.school.api.support.PlatformPageMapper;
 import com.altafjava.school.api.support.SpringDataPageableResolver;
 import com.altafjava.school.application.reference.ReferenceSummaries;
 import com.altafjava.school.application.service.SubstitutionService;
+import com.altafjava.school.domain.security.permission.SchoolPermissions;
 
 @RestController
 @RequestMapping("/api/v1/timetable-substitutions")
@@ -56,7 +57,7 @@ public class SubstitutionController implements SubstitutionApi {
 
 	@Override
 	@GetMapping
-	@PreAuthorize("@permissionAuthorizationService.hasPermission('TIMETABLE_READ')")
+	@RequiresPermission(SchoolPermissions.TIMETABLE_READ)
 	public ApiResponse<com.altafjava.platform.core.model.Page<SubstitutionResponse>> listOn(
 			@RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date,
 			@RequestParam(defaultValue = "0") int page,
@@ -67,7 +68,7 @@ public class SubstitutionController implements SubstitutionApi {
 
 	@Override
 	@GetMapping("/uncovered")
-	@PreAuthorize("@permissionAuthorizationService.hasPermission('SUBSTITUTION_MANAGE')")
+	@RequiresPermission(SchoolPermissions.SUBSTITUTION_MANAGE)
 	public ApiResponse<List<TimetableEntryResponse>> listUncovered(
 			@RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date) {
 		return ApiResponse.success(timetableEntryMapper.toResponseList(substitutionService.uncoveredOn(date)));
@@ -75,7 +76,7 @@ public class SubstitutionController implements SubstitutionApi {
 
 	@Override
 	@GetMapping("/available-teachers")
-	@PreAuthorize("@permissionAuthorizationService.hasPermission('SUBSTITUTION_MANAGE')")
+	@RequiresPermission(SchoolPermissions.SUBSTITUTION_MANAGE)
 	public ApiResponse<List<AvailableTeacherResponse>> listAvailableTeachers(
 			@RequestParam String timetableEntryPublicId,
 			@RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date) {
@@ -87,7 +88,7 @@ public class SubstitutionController implements SubstitutionApi {
 	@Override
 	@PostMapping
 	@ResponseStatus(HttpStatus.CREATED)
-	@PreAuthorize("@permissionAuthorizationService.hasPermission('SUBSTITUTION_MANAGE')")
+	@RequiresPermission(SchoolPermissions.SUBSTITUTION_MANAGE)
 	public ApiResponse<SubstitutionResponse> assign(@Valid @RequestBody AssignSubstituteRequest request,
 			@AuthenticationPrincipal AuthenticatedUser user) {
 		return ApiResponse.success(substitutionMapper.toResponse(substitutionService.assign(
@@ -98,7 +99,7 @@ public class SubstitutionController implements SubstitutionApi {
 	@Override
 	@PatchMapping("/{publicId}/cancel")
 	@Command
-	@PreAuthorize("@permissionAuthorizationService.hasPermission('SUBSTITUTION_MANAGE')")
+	@RequiresPermission(SchoolPermissions.SUBSTITUTION_MANAGE)
 	public ApiResponse<SubstitutionResponse> cancel(@PathVariable String publicId,
 			@Valid @RequestBody CancelSubstitutionRequest request) {
 		return ApiResponse.success(substitutionMapper.toResponse(substitutionService.cancel(publicId,

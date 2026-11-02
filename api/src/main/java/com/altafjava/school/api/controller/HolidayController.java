@@ -3,7 +3,6 @@ package com.altafjava.school.api.controller;
 import java.time.LocalDate;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
@@ -15,6 +14,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import com.altafjava.platform.api.dto.response.ApiResponse;
+import com.altafjava.platform.application.security.annotation.RequiresPermission;
 import com.altafjava.school.api.controller.api.HolidayApi;
 import com.altafjava.school.api.dto.request.CreateHolidayRequest;
 import com.altafjava.school.api.dto.request.UpdateHolidayRequest;
@@ -25,6 +25,7 @@ import com.altafjava.school.api.support.SpringDataPageableResolver;
 import com.altafjava.school.application.filter.DateWindow;
 import com.altafjava.school.application.filter.HolidayFilter;
 import com.altafjava.school.application.service.HolidayService;
+import com.altafjava.school.domain.security.permission.SchoolPermissions;
 
 // The tenant's school-calendar holiday list — feeds attendance-percentage and leave-day
 // calculations (see HolidayService#datesInRange), so read access is broad but writes are
@@ -47,7 +48,7 @@ public class HolidayController implements HolidayApi {
 
 	@Override
 	@GetMapping
-	@PreAuthorize("@permissionAuthorizationService.hasPermission('HOLIDAY_READ')")
+	@RequiresPermission(SchoolPermissions.HOLIDAY_READ)
 	public ApiResponse<com.altafjava.platform.core.model.Page<HolidayResponse>> list(
 			@RequestParam(defaultValue = "0") int page,
 			@RequestParam(defaultValue = "20") int size,
@@ -62,7 +63,7 @@ public class HolidayController implements HolidayApi {
 
 	@Override
 	@GetMapping("/{publicId}")
-	@PreAuthorize("@permissionAuthorizationService.hasPermission('HOLIDAY_READ')")
+	@RequiresPermission(SchoolPermissions.HOLIDAY_READ)
 	public ApiResponse<HolidayResponse> get(@PathVariable String publicId) {
 		return ApiResponse.success(holidayMapper.toResponse(holidayService.findByPublicId(publicId)));
 	}
@@ -70,7 +71,7 @@ public class HolidayController implements HolidayApi {
 	@Override
 	@PostMapping
 	@ResponseStatus(HttpStatus.CREATED)
-	@PreAuthorize("@permissionAuthorizationService.hasPermission('HOLIDAY_WRITE')")
+	@RequiresPermission(SchoolPermissions.HOLIDAY_WRITE)
 	public ApiResponse<HolidayResponse> create(@Valid @RequestBody CreateHolidayRequest request) {
 		return ApiResponse.success(
 				holidayMapper.toResponse(holidayService.create(request.date(), request.name(), request.recurring())));
@@ -78,7 +79,7 @@ public class HolidayController implements HolidayApi {
 
 	@Override
 	@PatchMapping("/{publicId}")
-	@PreAuthorize("@permissionAuthorizationService.hasPermission('HOLIDAY_WRITE')")
+	@RequiresPermission(SchoolPermissions.HOLIDAY_WRITE)
 	public ApiResponse<HolidayResponse> updateDetails(@PathVariable String publicId,
 			@Valid @RequestBody UpdateHolidayRequest request) {
 		return ApiResponse.success(holidayMapper.toResponse(
@@ -89,7 +90,7 @@ public class HolidayController implements HolidayApi {
 	@Override
 	@DeleteMapping("/{publicId}")
 	@ResponseStatus(HttpStatus.NO_CONTENT)
-	@PreAuthorize("@permissionAuthorizationService.hasPermission('HOLIDAY_WRITE')")
+	@RequiresPermission(SchoolPermissions.HOLIDAY_WRITE)
 	public ApiResponse<Void> delete(@PathVariable String publicId) {
 		holidayService.delete(publicId);
 		return ApiResponse.success(null);

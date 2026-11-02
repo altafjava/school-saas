@@ -2,7 +2,6 @@ package com.altafjava.school.api.controller;
 
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -13,7 +12,9 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import com.altafjava.platform.api.dto.response.ApiResponse;
+import com.altafjava.platform.application.security.annotation.RequiresPermission;
 import com.altafjava.platform.core.annotation.Command;
+import com.altafjava.platform.core.feature.annotation.FeatureEnabled;
 import com.altafjava.school.api.controller.api.RoomAllocationApi;
 import com.altafjava.school.api.dto.request.AllocateRoomRequest;
 import com.altafjava.school.api.dto.request.VacateRoomAllocationRequest;
@@ -22,9 +23,12 @@ import com.altafjava.school.api.mapper.RoomAllocationMapper;
 import com.altafjava.school.api.support.PlatformPageMapper;
 import com.altafjava.school.api.support.SpringDataPageableResolver;
 import com.altafjava.school.application.reference.ReferenceSummaries;
+import com.altafjava.school.application.security.SchoolFeatures;
 import com.altafjava.school.application.service.RoomAllocationService;
+import com.altafjava.school.domain.security.permission.SchoolPermissions;
 
 @RestController
+@FeatureEnabled(SchoolFeatures.CAMPUS_OPS)
 @RequestMapping("/api/v1/room-allocations")
 public class RoomAllocationController implements RoomAllocationApi {
 
@@ -46,7 +50,7 @@ public class RoomAllocationController implements RoomAllocationApi {
 
 	@Override
 	@GetMapping
-	@PreAuthorize("@permissionAuthorizationService.hasPermission('ROOM_ALLOCATION_READ')")
+	@RequiresPermission(SchoolPermissions.ROOM_ALLOCATION_READ)
 	public ApiResponse<com.altafjava.platform.core.model.Page<RoomAllocationResponse>> listForRoom(
 			@RequestParam String roomPublicId,
 			@RequestParam(defaultValue = "0") int page,
@@ -60,7 +64,7 @@ public class RoomAllocationController implements RoomAllocationApi {
 	@Override
 	@PostMapping
 	@ResponseStatus(HttpStatus.CREATED)
-	@PreAuthorize("@permissionAuthorizationService.hasPermission('ROOM_ALLOCATION_WRITE')")
+	@RequiresPermission(SchoolPermissions.ROOM_ALLOCATION_WRITE)
 	public ApiResponse<RoomAllocationResponse> allocate(@Valid @RequestBody AllocateRoomRequest request) {
 		return ApiResponse
 				.success(roomAllocationMapper.toResponse(roomAllocationService.allocate(request.studentPublicId(),
@@ -70,7 +74,7 @@ public class RoomAllocationController implements RoomAllocationApi {
 	@Override
 	@PatchMapping("/{publicId}/vacate")
 	@Command
-	@PreAuthorize("@permissionAuthorizationService.hasPermission('ROOM_ALLOCATION_WRITE')")
+	@RequiresPermission(SchoolPermissions.ROOM_ALLOCATION_WRITE)
 	public ApiResponse<RoomAllocationResponse> vacate(@PathVariable String publicId,
 			@Valid @RequestBody VacateRoomAllocationRequest request) {
 		return ApiResponse.success(

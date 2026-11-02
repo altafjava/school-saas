@@ -16,6 +16,7 @@ import static org.mockito.Mockito.when;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -36,6 +37,7 @@ import com.altafjava.school.application.filter.ExamFilter;
 import com.altafjava.school.application.reference.EntityRef;
 import com.altafjava.school.application.reference.PublicIdLookup;
 import com.altafjava.school.application.security.AcademicAccessGuard;
+import com.altafjava.school.application.security.CourseworkReach;
 import com.altafjava.school.domain.classroom.model.Classroom;
 import com.altafjava.school.domain.classroom.repository.ClassroomRepository;
 import com.altafjava.school.domain.exam.event.ExamResultsPublishedEvent;
@@ -400,22 +402,38 @@ class ExamServiceTest {
 		when(publicIdLookup.idOrNull(EntityRef.CLASSROOM, "classroom-public")).thenReturn(3L);
 		when(publicIdLookup.idOrNull(EntityRef.TERM, "term-public")).thenReturn(4L);
 		when(publicIdLookup.idOrNull(EntityRef.SUBJECT, "subject-public")).thenReturn(5L);
-		when(examRepository.search(1L, 3L, 4L, 5L, ExamStatus.SCHEDULED, pageable)).thenReturn(Page.empty());
+		when(academicAccessGuard.courseworkReach(1L, 3L)).thenReturn(CourseworkReach.ALL);
+		when(examRepository.search(1L, true, Set.of(), 3L, 4L, 5L, ExamStatus.SCHEDULED, pageable))
+				.thenReturn(Page.empty());
 
 		examService.listExams(new ExamFilter("classroom-public", "term-public", "subject-public", ExamStatus.SCHEDULED),
 				pageable);
 
-		verify(examRepository).search(1L, 3L, 4L, 5L, ExamStatus.SCHEDULED, pageable);
+		verify(examRepository).search(1L, true, Set.of(), 3L, 4L, 5L, ExamStatus.SCHEDULED, pageable);
 	}
 
 	@Test
 	void listExams_withNoFilter_searchesEveryExam() {
 		PageRequest pageable = PageRequest.of(0, 20);
 		when(publicIdLookup.idOrNull(any(), any())).thenReturn(null);
-		when(examRepository.search(1L, null, null, null, null, pageable)).thenReturn(Page.empty());
+		when(academicAccessGuard.courseworkReach(1L, null)).thenReturn(CourseworkReach.ALL);
+		when(examRepository.search(1L, true, Set.of(), null, null, null, null, pageable)).thenReturn(Page.empty());
 
 		examService.listExams(ExamFilter.NONE, pageable);
 
-		verify(examRepository).search(1L, null, null, null, null, pageable);
+		verify(examRepository).search(1L, true, Set.of(), null, null, null, null, pageable);
+	}
+
+	@Test
+	void listExams_forAParent_staysInsideTheChildrensClassrooms() {
+		PageRequest pageable = PageRequest.of(0, 20);
+		when(publicIdLookup.idOrNull(any(), any())).thenReturn(null);
+		when(academicAccessGuard.courseworkReach(1L, null)).thenReturn(new CourseworkReach(false, Set.of(3L)));
+		when(examRepository.search(1L, false, Set.of(3L), null, null, null, null, pageable))
+				.thenReturn(Page.empty());
+
+		examService.listExams(ExamFilter.NONE, pageable);
+
+		verify(examRepository).search(1L, false, Set.of(3L), null, null, null, null, pageable);
 	}
 }

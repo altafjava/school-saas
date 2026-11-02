@@ -85,6 +85,9 @@
     "name" : "Offline Sync API",
     "description" : "Endpoints for mobile offline sync"
   }, {
+    "name" : "Student Promotion",
+    "description" : "Moves a classroom into the next academic year."
+  }, {
     "name" : "Email Providers (Admin)",
     "description" : "Platform-wide default email provider configuration"
   }, {
@@ -111,6 +114,9 @@
   }, {
     "name" : "Super Admin Tenant Management",
     "description" : "Endpoints for managing tenants by Super Admin"
+  }, {
+    "name" : "Student Leave Request",
+    "description" : "Leave of absence for students, raised by guardians or staff and decided by the class teacher."
   }, {
     "name" : "SSO Login",
     "description" : "OIDC and SAML2 federated login — all endpoints are pre-authentication and therefore public; the tenant for the callback/ACS endpoints is resolved from the server-side state recorded at the initiating request, never from a caller-supplied header."
@@ -1609,7 +1615,8 @@
           "description" : "Provider type",
           "required" : true,
           "schema" : {
-            "type" : "string"
+            "type" : "string",
+            "enum" : [ "CONSOLE", "TWILIO" ]
           }
         } ],
         "requestBody" : {
@@ -1701,7 +1708,8 @@
           "description" : "Provider type",
           "required" : true,
           "schema" : {
-            "type" : "string"
+            "type" : "string",
+            "enum" : [ "CONSOLE", "TWILIO" ]
           }
         } ],
         "responses" : {
@@ -1927,7 +1935,8 @@
           "description" : "Provider type",
           "required" : true,
           "schema" : {
-            "type" : "string"
+            "type" : "string",
+            "enum" : [ "FCM", "APNS" ]
           }
         } ],
         "requestBody" : {
@@ -2019,7 +2028,8 @@
           "description" : "Provider type",
           "required" : true,
           "schema" : {
-            "type" : "string"
+            "type" : "string",
+            "enum" : [ "FCM", "APNS" ]
           }
         } ],
         "responses" : {
@@ -2086,7 +2096,8 @@
           "description" : "Provider type",
           "required" : true,
           "schema" : {
-            "type" : "string"
+            "type" : "string",
+            "enum" : [ "STRIPE" ]
           }
         } ],
         "requestBody" : {
@@ -2178,7 +2189,8 @@
           "description" : "Provider type",
           "required" : true,
           "schema" : {
-            "type" : "string"
+            "type" : "string",
+            "enum" : [ "STRIPE" ]
           }
         } ],
         "responses" : {
@@ -2402,7 +2414,8 @@
           "description" : "Provider type",
           "required" : true,
           "schema" : {
-            "type" : "string"
+            "type" : "string",
+            "enum" : [ "CONSOLE", "SMTP", "SES" ]
           }
         } ],
         "requestBody" : {
@@ -2494,7 +2507,8 @@
           "description" : "Provider type",
           "required" : true,
           "schema" : {
-            "type" : "string"
+            "type" : "string",
+            "enum" : [ "CONSOLE", "SMTP", "SES" ]
           }
         } ],
         "responses" : {
@@ -5896,7 +5910,8 @@
           "description" : "Data residency region",
           "required" : true,
           "schema" : {
-            "type" : "string"
+            "type" : "string",
+            "enum" : [ "IN", "EU", "US", "GLOBAL" ]
           }
         } ],
         "requestBody" : {
@@ -5986,7 +6001,8 @@
           "description" : "Data residency region",
           "required" : true,
           "schema" : {
-            "type" : "string"
+            "type" : "string",
+            "enum" : [ "IN", "EU", "US", "GLOBAL" ]
           }
         } ],
         "responses" : {
@@ -6051,7 +6067,8 @@
           "description" : "Provider type",
           "required" : true,
           "schema" : {
-            "type" : "string"
+            "type" : "string",
+            "enum" : [ "CONSOLE", "TWILIO" ]
           }
         } ],
         "requestBody" : {
@@ -6143,7 +6160,8 @@
           "description" : "Provider type",
           "required" : true,
           "schema" : {
-            "type" : "string"
+            "type" : "string",
+            "enum" : [ "CONSOLE", "TWILIO" ]
           }
         } ],
         "responses" : {
@@ -6425,7 +6443,8 @@
           "description" : "Provider type",
           "required" : true,
           "schema" : {
-            "type" : "string"
+            "type" : "string",
+            "enum" : [ "FCM", "APNS" ]
           }
         } ],
         "requestBody" : {
@@ -6517,7 +6536,8 @@
           "description" : "Provider type",
           "required" : true,
           "schema" : {
-            "type" : "string"
+            "type" : "string",
+            "enum" : [ "FCM", "APNS" ]
           }
         } ],
         "responses" : {
@@ -6672,7 +6692,8 @@
           "description" : "Provider type",
           "required" : true,
           "schema" : {
-            "type" : "string"
+            "type" : "string",
+            "enum" : [ "STRIPE" ]
           }
         } ],
         "requestBody" : {
@@ -6764,7 +6785,8 @@
           "description" : "Provider type",
           "required" : true,
           "schema" : {
-            "type" : "string"
+            "type" : "string",
+            "enum" : [ "STRIPE" ]
           }
         } ],
         "responses" : {
@@ -7144,7 +7166,8 @@
           "description" : "Provider type",
           "required" : true,
           "schema" : {
-            "type" : "string"
+            "type" : "string",
+            "enum" : [ "CONSOLE", "SMTP", "SES" ]
           }
         } ],
         "requestBody" : {
@@ -7236,7 +7259,8 @@
           "description" : "Provider type",
           "required" : true,
           "schema" : {
-            "type" : "string"
+            "type" : "string",
+            "enum" : [ "CONSOLE", "SMTP", "SES" ]
           }
         } ],
         "responses" : {
@@ -10649,7 +10673,8 @@
           "description" : "Token public id",
           "required" : true,
           "schema" : {
-            "type" : "string"
+            "type" : "string",
+            "format" : "uuid"
           }
         } ],
         "responses" : {
@@ -13392,6 +13417,211 @@
               "application/json" : {
                 "schema" : {
                   "$ref" : "#/components/schemas/ApiResponseBulkImportResponse"
+                }
+              }
+            }
+          },
+          "400" : {
+            "description" : "Validation failed or a business rule rejected the request",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "401" : {
+            "description" : "Missing, expired or revoked access token",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "403" : {
+            "description" : "The caller lacks the required permission",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "500" : {
+            "description" : "Unexpected error; quote error.traceId when reporting it",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "security" : [ {
+          "bearerAuth" : [ ]
+        }, {
+          "tenantHeader" : [ ]
+        } ]
+      }
+    },
+    "/api/v1/student-leave-requests" : {
+      "get" : {
+        "tags" : [ "Student Leave Request" ],
+        "summary" : "List",
+        "description" : "Staff see the classrooms they reach, guardians their linked children.",
+        "operationId" : "studentLeaveRequestList",
+        "parameters" : [ {
+          "name" : "page",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int32",
+            "default" : 0
+          }
+        }, {
+          "name" : "size",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int32",
+            "default" : 20
+          }
+        }, {
+          "name" : "studentPublicId",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "name" : "classroomPublicId",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "name" : "status",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "type" : "string",
+            "enum" : [ "PENDING", "APPROVED", "REJECTED", "CANCELLED" ]
+          }
+        }, {
+          "name" : "from",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "type" : "string",
+            "format" : "date"
+          }
+        }, {
+          "name" : "to",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "type" : "string",
+            "format" : "date"
+          }
+        }, {
+          "name" : "sort",
+          "in" : "query",
+          "description" : "Repeatable, `field` or `field,asc|desc`, at most 3 fields. Sortable: createdAt, endDate, startDate, status, updatedAt.",
+          "required" : false,
+          "schema" : {
+            "type" : "array",
+            "items" : {
+              "type" : "string"
+            }
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiResponsePageStudentLeaveRequestResponse"
+                }
+              }
+            }
+          },
+          "400" : {
+            "description" : "Validation failed or a business rule rejected the request",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "401" : {
+            "description" : "Missing, expired or revoked access token",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "403" : {
+            "description" : "The caller lacks the required permission",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "500" : {
+            "description" : "Unexpected error; quote error.traceId when reporting it",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "security" : [ {
+          "bearerAuth" : [ ]
+        }, {
+          "tenantHeader" : [ ]
+        } ]
+      },
+      "post" : {
+        "tags" : [ "Student Leave Request" ],
+        "summary" : "Submit",
+        "operationId" : "studentLeaveRequestSubmit",
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/SubmitStudentLeaveRequest"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "201" : {
+            "description" : "Created",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiResponseStudentLeaveRequestResponse"
                 }
               }
             }
@@ -19180,6 +19410,14 @@
             "enum" : [ "MANUAL", "GATEWAY" ]
           }
         }, {
+          "name" : "paymentMode",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "type" : "string",
+            "enum" : [ "CASH", "CHEQUE", "UPI", "BANK_TRANSFER", "CARD", "GATEWAY" ]
+          }
+        }, {
           "name" : "sort",
           "in" : "query",
           "description" : "Repeatable, `field` or `field,asc|desc`, at most 3 fields. Sortable: createdAt, paidAmount, paidAt, receiptNumber, updatedAt.",
@@ -19305,6 +19543,107 @@
           },
           "403" : {
             "description" : "The caller lacks the required permission",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "500" : {
+            "description" : "Unexpected error; quote error.traceId when reporting it",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "security" : [ {
+          "bearerAuth" : [ ]
+        }, {
+          "tenantHeader" : [ ]
+        } ]
+      }
+    },
+    "/api/v1/fee-payments/{publicId}/bounce" : {
+      "post" : {
+        "tags" : [ "Fee Payment" ],
+        "summary" : "Mark a cheque bounced",
+        "description" : "Keeps the payment as evidence and restores the student's balance. A payment with refunds cannot bounce.",
+        "operationId" : "feePaymentBounce",
+        "parameters" : [ {
+          "name" : "publicId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "name" : "Idempotency-Key",
+          "in" : "header",
+          "description" : "Unique per logical request; a retry carrying the same key is applied once",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/BounceFeePaymentRequest"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiResponseFeePaymentResponse"
+                }
+              }
+            }
+          },
+          "400" : {
+            "description" : "Validation failed or a business rule rejected the request",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "401" : {
+            "description" : "Missing, expired or revoked access token",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "403" : {
+            "description" : "The caller lacks the required permission",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "404" : {
+            "description" : "The resource does not exist in the caller's tenant",
             "content" : {
               "application/json" : {
                 "schema" : {
@@ -22921,6 +23260,107 @@
               "application/json" : {
                 "schema" : {
                   "$ref" : "#/components/schemas/ApiResponseStudentClassroomLinkResponse"
+                }
+              }
+            }
+          },
+          "400" : {
+            "description" : "Validation failed or a business rule rejected the request",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "401" : {
+            "description" : "Missing, expired or revoked access token",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "403" : {
+            "description" : "The caller lacks the required permission",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "404" : {
+            "description" : "The resource does not exist in the caller's tenant",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "500" : {
+            "description" : "Unexpected error; quote error.traceId when reporting it",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "security" : [ {
+          "bearerAuth" : [ ]
+        }, {
+          "tenantHeader" : [ ]
+        } ]
+      }
+    },
+    "/api/v1/classrooms/{classroomPublicId}/promotions" : {
+      "post" : {
+        "tags" : [ "Student Promotion" ],
+        "summary" : "Promote",
+        "description" : "Applies each student's outcome as one step: if any fails, none is applied. A retained student needs their own target classroom.",
+        "operationId" : "studentPromotionPromote",
+        "parameters" : [ {
+          "name" : "classroomPublicId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "name" : "Idempotency-Key",
+          "in" : "header",
+          "description" : "Unique per logical request; a retry carrying the same key is applied once",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/PromoteStudentsRequest"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiResponseListPromotionResultResponse"
                 }
               }
             }
@@ -30675,7 +31115,8 @@
           "description" : "Tenant ID",
           "required" : true,
           "schema" : {
-            "type" : "string"
+            "type" : "string",
+            "format" : "uuid"
           }
         }, {
           "name" : "enabled",
@@ -30683,7 +31124,7 @@
           "description" : "Enabled status",
           "required" : true,
           "schema" : {
-            "type" : "string"
+            "type" : "boolean"
           }
         } ],
         "responses" : {
@@ -30759,7 +31200,8 @@
           "description" : "Tenant ID",
           "required" : true,
           "schema" : {
-            "type" : "string"
+            "type" : "string",
+            "format" : "uuid"
           }
         } ],
         "responses" : {
@@ -33481,7 +33923,8 @@
           "description" : "Tenant ID",
           "required" : true,
           "schema" : {
-            "type" : "string"
+            "type" : "string",
+            "format" : "uuid"
           }
         } ],
         "responses" : {
@@ -33553,7 +33996,8 @@
           "description" : "Tenant ID",
           "required" : true,
           "schema" : {
-            "type" : "string"
+            "type" : "string",
+            "format" : "uuid"
           }
         } ],
         "requestBody" : {
@@ -33775,7 +34219,8 @@
           "description" : "Provider type",
           "required" : true,
           "schema" : {
-            "type" : "string"
+            "type" : "string",
+            "enum" : [ "CONSOLE", "TWILIO" ]
           }
         } ],
         "responses" : {
@@ -33977,7 +34422,8 @@
           "description" : "Provider type",
           "required" : true,
           "schema" : {
-            "type" : "string"
+            "type" : "string",
+            "enum" : [ "FCM", "APNS" ]
           }
         } ],
         "responses" : {
@@ -34051,7 +34497,8 @@
           "description" : "Provider type",
           "required" : true,
           "schema" : {
-            "type" : "string"
+            "type" : "string",
+            "enum" : [ "STRIPE" ]
           }
         } ],
         "responses" : {
@@ -34198,7 +34645,8 @@
           "description" : "Provider type",
           "required" : true,
           "schema" : {
-            "type" : "string"
+            "type" : "string",
+            "enum" : [ "CONSOLE", "SMTP", "SES" ]
           }
         } ],
         "responses" : {
@@ -35571,6 +36019,244 @@
               "application/json" : {
                 "schema" : {
                   "$ref" : "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "401" : {
+            "description" : "Missing, expired or revoked access token",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "403" : {
+            "description" : "The caller lacks the required permission",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "404" : {
+            "description" : "The resource does not exist in the caller's tenant",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "500" : {
+            "description" : "Unexpected error; quote error.traceId when reporting it",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "security" : [ {
+          "bearerAuth" : [ ]
+        }, {
+          "tenantHeader" : [ ]
+        } ]
+      }
+    },
+    "/api/v1/student-leave-requests/{publicId}/reject" : {
+      "patch" : {
+        "tags" : [ "Student Leave Request" ],
+        "summary" : "Reject",
+        "operationId" : "studentLeaveRequestReject",
+        "parameters" : [ {
+          "name" : "publicId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/RejectLeaveRequestRequest"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiResponseStudentLeaveRequestResponse"
+                }
+              }
+            }
+          },
+          "400" : {
+            "description" : "Validation failed or a business rule rejected the request",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "401" : {
+            "description" : "Missing, expired or revoked access token",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "403" : {
+            "description" : "The caller lacks the required permission",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "404" : {
+            "description" : "The resource does not exist in the caller's tenant",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "500" : {
+            "description" : "Unexpected error; quote error.traceId when reporting it",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "security" : [ {
+          "bearerAuth" : [ ]
+        }, {
+          "tenantHeader" : [ ]
+        } ]
+      }
+    },
+    "/api/v1/student-leave-requests/{publicId}/cancel" : {
+      "patch" : {
+        "tags" : [ "Student Leave Request" ],
+        "summary" : "Cancel",
+        "description" : "Only a pending request can be cancelled, by its requester or a leave administrator.",
+        "operationId" : "studentLeaveRequestCancel",
+        "parameters" : [ {
+          "name" : "publicId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiResponseStudentLeaveRequestResponse"
+                }
+              }
+            }
+          },
+          "401" : {
+            "description" : "Missing, expired or revoked access token",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "403" : {
+            "description" : "The caller lacks the required permission",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "404" : {
+            "description" : "The resource does not exist in the caller's tenant",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "500" : {
+            "description" : "Unexpected error; quote error.traceId when reporting it",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "security" : [ {
+          "bearerAuth" : [ ]
+        }, {
+          "tenantHeader" : [ ]
+        } ]
+      }
+    },
+    "/api/v1/student-leave-requests/{publicId}/approve" : {
+      "patch" : {
+        "tags" : [ "Student Leave Request" ],
+        "summary" : "Approve",
+        "description" : "Marks the school days of the leave as excused. Present and late marks are kept.",
+        "operationId" : "studentLeaveRequestApprove",
+        "parameters" : [ {
+          "name" : "publicId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiResponseStudentLeaveRequestResponse"
                 }
               }
             }
@@ -45594,7 +46280,8 @@
           "description" : "Provider type",
           "required" : true,
           "schema" : {
-            "type" : "string"
+            "type" : "string",
+            "enum" : [ "CONSOLE", "TWILIO" ]
           }
         } ],
         "responses" : {
@@ -45796,7 +46483,8 @@
           "description" : "Provider type",
           "required" : true,
           "schema" : {
-            "type" : "string"
+            "type" : "string",
+            "enum" : [ "FCM", "APNS" ]
           }
         } ],
         "responses" : {
@@ -45870,7 +46558,8 @@
           "description" : "Provider type",
           "required" : true,
           "schema" : {
-            "type" : "string"
+            "type" : "string",
+            "enum" : [ "STRIPE" ]
           }
         } ],
         "responses" : {
@@ -46086,7 +46775,8 @@
           "description" : "Feature Flag ID",
           "required" : true,
           "schema" : {
-            "type" : "string"
+            "type" : "string",
+            "format" : "uuid"
           }
         } ],
         "responses" : {
@@ -46158,7 +46848,8 @@
           "description" : "Feature Flag ID",
           "required" : true,
           "schema" : {
-            "type" : "string"
+            "type" : "string",
+            "format" : "uuid"
           }
         } ],
         "responses" : {
@@ -46216,7 +46907,8 @@
           "description" : "Feature Flag ID",
           "required" : true,
           "schema" : {
-            "type" : "string"
+            "type" : "string",
+            "format" : "uuid"
           }
         } ],
         "requestBody" : {
@@ -46400,7 +47092,8 @@
           "description" : "Provider type",
           "required" : true,
           "schema" : {
-            "type" : "string"
+            "type" : "string",
+            "enum" : [ "CONSOLE", "SMTP", "SES" ]
           }
         } ],
         "responses" : {
@@ -50231,6 +50924,118 @@
         } ]
       }
     },
+    "/api/v1/students/{publicId}/fee-payments" : {
+      "get" : {
+        "tags" : [ "Student" ],
+        "summary" : "Fee payments",
+        "description" : "The student's payment history, for the student and linked guardians.",
+        "operationId" : "studentFeePayments",
+        "parameters" : [ {
+          "name" : "publicId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "name" : "page",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int32",
+            "default" : 0
+          }
+        }, {
+          "name" : "size",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int32",
+            "default" : 20
+          }
+        }, {
+          "name" : "sort",
+          "in" : "query",
+          "description" : "Repeatable, `field` or `field,asc|desc`, at most 3 fields. Sortable: createdAt, paidAmount, paidAt, updatedAt.",
+          "required" : false,
+          "schema" : {
+            "type" : "array",
+            "items" : {
+              "type" : "string"
+            }
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiResponsePageFeePaymentResponse"
+                }
+              }
+            }
+          },
+          "400" : {
+            "description" : "Validation failed or a business rule rejected the request",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "401" : {
+            "description" : "Missing, expired or revoked access token",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "403" : {
+            "description" : "The caller lacks the required permission",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "404" : {
+            "description" : "The resource does not exist in the caller's tenant",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "500" : {
+            "description" : "Unexpected error; quote error.traceId when reporting it",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "security" : [ {
+          "bearerAuth" : [ ]
+        }, {
+          "tenantHeader" : [ ]
+        } ]
+      }
+    },
     "/api/v1/students/{publicId}/fee-balance" : {
       "get" : {
         "tags" : [ "Student" ],
@@ -50460,6 +51265,78 @@
               "application/json" : {
                 "schema" : {
                   "$ref" : "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "401" : {
+            "description" : "Missing, expired or revoked access token",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "403" : {
+            "description" : "The caller lacks the required permission",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "404" : {
+            "description" : "The resource does not exist in the caller's tenant",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "500" : {
+            "description" : "Unexpected error; quote error.traceId when reporting it",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "security" : [ {
+          "bearerAuth" : [ ]
+        }, {
+          "tenantHeader" : [ ]
+        } ]
+      }
+    },
+    "/api/v1/student-leave-requests/{publicId}" : {
+      "get" : {
+        "tags" : [ "Student Leave Request" ],
+        "summary" : "Get",
+        "operationId" : "studentLeaveRequestGet",
+        "parameters" : [ {
+          "name" : "publicId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiResponseStudentLeaveRequestResponse"
                 }
               }
             }
@@ -53872,6 +54749,88 @@
         } ]
       }
     },
+    "/api/v1/fee-payments/collection-report" : {
+      "get" : {
+        "tags" : [ "Fee Payment" ],
+        "summary" : "Collection report",
+        "description" : "Payments per day and mode for matching against cash and bank, up to 92 days. Bounced cheques are shown separately and never count as collected.",
+        "operationId" : "feePaymentCollectionReport",
+        "parameters" : [ {
+          "name" : "from",
+          "in" : "query",
+          "required" : true,
+          "schema" : {
+            "type" : "string",
+            "format" : "date"
+          }
+        }, {
+          "name" : "to",
+          "in" : "query",
+          "required" : true,
+          "schema" : {
+            "type" : "string",
+            "format" : "date"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiResponseListFeeCollectionRowResponse"
+                }
+              }
+            }
+          },
+          "400" : {
+            "description" : "Validation failed or a business rule rejected the request",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "401" : {
+            "description" : "Missing, expired or revoked access token",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "403" : {
+            "description" : "The caller lacks the required permission",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "500" : {
+            "description" : "Unexpected error; quote error.traceId when reporting it",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "security" : [ {
+          "bearerAuth" : [ ]
+        }, {
+          "tenantHeader" : [ ]
+        } ]
+      }
+    },
     "/api/v1/exams/{publicId}" : {
       "get" : {
         "tags" : [ "Exam" ],
@@ -55808,6 +56767,96 @@
               "application/json" : {
                 "schema" : {
                   "$ref" : "#/components/schemas/ApiResponseListTimetableEntryResponse"
+                }
+              }
+            }
+          },
+          "401" : {
+            "description" : "Missing, expired or revoked access token",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "403" : {
+            "description" : "The caller lacks the required permission",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "404" : {
+            "description" : "The resource does not exist in the caller's tenant",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "500" : {
+            "description" : "Unexpected error; quote error.traceId when reporting it",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "security" : [ {
+          "bearerAuth" : [ ]
+        }, {
+          "tenantHeader" : [ ]
+        } ]
+      }
+    },
+    "/api/v1/classrooms/{classroomPublicId}/promotions/preview" : {
+      "get" : {
+        "tags" : [ "Student Promotion" ],
+        "summary" : "Preview",
+        "description" : "Lists the roster and why any student cannot move. Changes nothing.",
+        "operationId" : "studentPromotionPreview",
+        "parameters" : [ {
+          "name" : "classroomPublicId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "name" : "targetClassroomPublicId",
+          "in" : "query",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiResponsePromotionPreviewResponse"
+                }
+              }
+            }
+          },
+          "400" : {
+            "description" : "Validation failed or a business rule rejected the request",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiErrorResponse"
                 }
               }
             }
@@ -61180,7 +62229,8 @@
           "description" : "Token public id",
           "required" : true,
           "schema" : {
-            "type" : "string"
+            "type" : "string",
+            "format" : "uuid"
           }
         } ],
         "responses" : {
@@ -62492,7 +63542,7 @@
             "minLength" : 0
           }
         },
-        "required" : [ "id", "id" ]
+        "required" : [ "id" ]
       },
       "ApiResponseListUserResponse" : {
         "type" : "object",
@@ -63583,10 +64633,12 @@
         "type" : "object",
         "properties" : {
           "quietHoursStart" : {
-            "type" : "string"
+            "type" : "string",
+            "format" : "time-local"
           },
           "quietHoursEnd" : {
-            "type" : "string"
+            "type" : "string",
+            "format" : "time-local"
           },
           "timeZone" : {
             "type" : "string"
@@ -63618,10 +64670,12 @@
             "type" : "string"
           },
           "quietHoursStart" : {
-            "type" : "string"
+            "type" : "string",
+            "format" : "time-local"
           },
           "quietHoursEnd" : {
-            "type" : "string"
+            "type" : "string",
+            "format" : "time-local"
           },
           "timeZone" : {
             "type" : "string"
@@ -63810,7 +64864,6 @@
           },
           "active" : {
             "type" : "boolean",
-            "default" : false,
             "description" : "Whether this is the currently active template for its documentType"
           },
           "createdAt" : {
@@ -63924,7 +64977,6 @@
           },
           "active" : {
             "type" : "boolean",
-            "default" : false,
             "description" : "Whether the policy is enforced by the daily retention sweep"
           },
           "description" : {
@@ -63950,7 +65002,6 @@
         "properties" : {
           "active" : {
             "type" : "boolean",
-            "default" : false,
             "description" : "Whether the policy is enforced by the daily retention sweep"
           }
         },
@@ -64120,7 +65171,6 @@
           },
           "enabled" : {
             "type" : "boolean",
-            "default" : false,
             "description" : "Whether the rule is active"
           },
           "thresholdValue" : {
@@ -64172,7 +65222,6 @@
         "properties" : {
           "enabled" : {
             "type" : "boolean",
-            "default" : false,
             "description" : "Whether the rule should be active"
           }
         },
@@ -64384,10 +65433,12 @@
             "format" : "int32"
           },
           "executionWindowStart" : {
-            "type" : "string"
+            "type" : "string",
+            "format" : "time-local"
           },
           "executionWindowEnd" : {
-            "type" : "string"
+            "type" : "string",
+            "format" : "time-local"
           },
           "jobDataJson" : {
             "type" : "object",
@@ -64400,7 +65451,8 @@
         "properties" : {
           "hourlyApiLimit" : {
             "type" : "integer",
-            "format" : "int64"
+            "format" : "int64",
+            "exclusiveMinimum" : 0
           }
         },
         "required" : [ "hourlyApiLimit" ]
@@ -64700,7 +65752,8 @@
           },
           "capacity" : {
             "type" : "integer",
-            "format" : "int32"
+            "format" : "int32",
+            "exclusiveMinimum" : 0
           }
         },
         "required" : [ "code", "name", "venueType" ]
@@ -65821,7 +66874,6 @@
           },
           "allComplete" : {
             "type" : "boolean",
-            "default" : false,
             "description" : "Whether all steps have been completed"
           },
           "steps" : {
@@ -65859,7 +66911,6 @@
           },
           "completed" : {
             "type" : "boolean",
-            "default" : false,
             "description" : "Whether this step has been completed"
           },
           "completedAt" : {
@@ -66184,7 +67235,6 @@
           },
           "mfaRequired" : {
             "type" : "boolean",
-            "default" : false,
             "description" : "True when credentials were valid but the user must submit an existing MFA code via /auth/mfa/verify before any session is issued — accessToken/refreshToken are null in this case"
           },
           "mfaToken" : {
@@ -66193,12 +67243,10 @@
           },
           "mfaSetupRequired" : {
             "type" : "boolean",
-            "default" : false,
             "description" : "True when a session WAS issued but the tenant enforces MFA and this user has not enrolled yet — the session can only reach /auth/mfa/enroll/* until enrollment is completed"
           },
           "otpRequired" : {
             "type" : "boolean",
-            "default" : false,
             "description" : "True when an OTP was sent and the caller must submit it via /auth/otp/verify before any session is issued — accessToken/refreshToken are null in this case"
           },
           "otpToken" : {
@@ -66367,7 +67415,6 @@
           },
           "immediate" : {
             "type" : "boolean",
-            "default" : false,
             "description" : "Whether to apply the change immediately",
             "example" : false
           }
@@ -66452,7 +67499,6 @@
           },
           "autoRenewal" : {
             "type" : "boolean",
-            "default" : false,
             "description" : "Whether the subscription renews automatically",
             "example" : true
           },
@@ -67164,6 +68210,105 @@
         },
         "required" : [ "rowNumber" ]
       },
+      "SubmitStudentLeaveRequest" : {
+        "type" : "object",
+        "properties" : {
+          "studentPublicId" : {
+            "type" : "string",
+            "minLength" : 1
+          },
+          "startDate" : {
+            "type" : "string",
+            "format" : "date"
+          },
+          "endDate" : {
+            "type" : "string",
+            "format" : "date"
+          },
+          "reason" : {
+            "type" : "string",
+            "maxLength" : 500,
+            "minLength" : 0
+          },
+          "attachmentFilePublicId" : {
+            "type" : "string"
+          }
+        },
+        "required" : [ "endDate", "reason", "startDate", "studentPublicId" ]
+      },
+      "ApiResponseStudentLeaveRequestResponse" : {
+        "type" : "object",
+        "properties" : {
+          "success" : {
+            "type" : "boolean"
+          },
+          "data" : {
+            "$ref" : "#/components/schemas/StudentLeaveRequestResponse"
+          },
+          "error" : {
+            "$ref" : "#/components/schemas/ApiErrorDetail"
+          },
+          "meta" : {
+            "$ref" : "#/components/schemas/ApiResponseMeta"
+          }
+        },
+        "required" : [ "success" ]
+      },
+      "StudentLeaveRequestResponse" : {
+        "type" : "object",
+        "properties" : {
+          "publicId" : {
+            "type" : "string"
+          },
+          "version" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "studentPublicId" : {
+            "type" : "string"
+          },
+          "student" : {
+            "$ref" : "#/components/schemas/ReferenceSummary"
+          },
+          "classroomPublicId" : {
+            "type" : "string"
+          },
+          "classroom" : {
+            "$ref" : "#/components/schemas/ReferenceSummary"
+          },
+          "startDate" : {
+            "type" : "string",
+            "format" : "date"
+          },
+          "endDate" : {
+            "type" : "string",
+            "format" : "date"
+          },
+          "reason" : {
+            "type" : "string"
+          },
+          "attachmentFilePublicId" : {
+            "type" : "string"
+          },
+          "status" : {
+            "type" : "string"
+          },
+          "decidedByUserPublicId" : {
+            "type" : "string"
+          },
+          "decidedByUser" : {
+            "$ref" : "#/components/schemas/ReferenceSummary"
+          },
+          "decidedAt" : {
+            "type" : "string",
+            "format" : "date-time"
+          },
+          "rejectionReason" : {
+            "type" : "string"
+          }
+        },
+        "required" : [ "publicId" ]
+      },
       "CreateSalaryStructureRequest" : {
         "type" : "object",
         "properties" : {
@@ -67346,10 +68491,12 @@
             "format" : "int32"
           },
           "pickupTime" : {
-            "type" : "string"
+            "type" : "string",
+            "format" : "time-local"
           },
           "dropTime" : {
-            "type" : "string"
+            "type" : "string",
+            "format" : "time-local"
           }
         },
         "required" : [ "sequenceOrder", "stopName" ]
@@ -67396,10 +68543,12 @@
             "format" : "int32"
           },
           "pickupTime" : {
-            "type" : "string"
+            "type" : "string",
+            "format" : "time-local"
           },
           "dropTime" : {
-            "type" : "string"
+            "type" : "string",
+            "format" : "time-local"
           }
         },
         "required" : [ "publicId", "sequenceOrder" ]
@@ -67768,7 +68917,6 @@
           },
           "granted" : {
             "type" : "boolean",
-            "default" : false,
             "description" : "Whether consent was granted"
           },
           "grantedAt" : {
@@ -67861,14 +69009,17 @@
             "minLength" : 0
           },
           "startTime" : {
-            "type" : "string"
+            "type" : "string",
+            "format" : "time-local"
           },
           "endTime" : {
-            "type" : "string"
+            "type" : "string",
+            "format" : "time-local"
           },
           "displayOrder" : {
             "type" : "integer",
-            "format" : "int32"
+            "format" : "int32",
+            "minimum" : 0
           }
         },
         "required" : [ "displayOrder", "endTime", "name", "startTime" ]
@@ -67905,10 +69056,12 @@
             "type" : "string"
           },
           "startTime" : {
-            "type" : "string"
+            "type" : "string",
+            "format" : "time-local"
           },
           "endTime" : {
-            "type" : "string"
+            "type" : "string",
+            "format" : "time-local"
           },
           "displayOrder" : {
             "type" : "integer",
@@ -68587,7 +69740,7 @@
           },
           "defaultAnnualDays" : {
             "type" : "number",
-            "minimum" : 0.0
+            "exclusiveMinimum" : 0.0
           }
         },
         "required" : [ "defaultAnnualDays", "name" ]
@@ -69113,7 +70266,6 @@
           },
           "granted" : {
             "type" : "boolean",
-            "default" : false,
             "description" : "Whether consent is currently granted"
           },
           "grantedAt" : {
@@ -69395,7 +70547,8 @@
           },
           "size" : {
             "type" : "integer",
-            "format" : "int64"
+            "format" : "int64",
+            "exclusiveMinimum" : 0
           },
           "mimeType" : {
             "type" : "string",
@@ -69607,9 +70760,32 @@
             "type" : "string",
             "maxLength" : 100,
             "minLength" : 0
+          },
+          "paymentMode" : {
+            "type" : "string",
+            "enum" : [ "CASH", "CHEQUE", "UPI", "BANK_TRANSFER", "CARD", "GATEWAY" ]
+          },
+          "transactionReference" : {
+            "type" : "string",
+            "maxLength" : 100,
+            "minLength" : 0
+          },
+          "chequeNumber" : {
+            "type" : "string",
+            "maxLength" : 50,
+            "minLength" : 0
+          },
+          "chequeDate" : {
+            "type" : "string",
+            "format" : "date"
+          },
+          "chequeBank" : {
+            "type" : "string",
+            "maxLength" : 100,
+            "minLength" : 0
           }
         },
-        "required" : [ "feeStructurePublicId", "paidAmount", "paidAt", "studentPublicId" ]
+        "required" : [ "feeStructurePublicId", "paidAmount", "paidAt", "paymentMode", "studentPublicId" ]
       },
       "ApiResponseFeePaymentResponse" : {
         "type" : "object",
@@ -69667,9 +70843,52 @@
           },
           "gatewayProviderType" : {
             "type" : "string"
+          },
+          "paymentMode" : {
+            "type" : "string",
+            "enum" : [ "CASH", "CHEQUE", "UPI", "BANK_TRANSFER", "CARD", "GATEWAY" ]
+          },
+          "transactionReference" : {
+            "type" : "string"
+          },
+          "chequeNumber" : {
+            "type" : "string"
+          },
+          "chequeDate" : {
+            "type" : "string",
+            "format" : "date"
+          },
+          "chequeBank" : {
+            "type" : "string"
+          },
+          "status" : {
+            "type" : "string",
+            "enum" : [ "CLEARED", "BOUNCED" ]
+          },
+          "bouncedAt" : {
+            "type" : "string",
+            "format" : "date-time"
+          },
+          "bounceReason" : {
+            "type" : "string"
           }
         },
         "required" : [ "publicId" ]
+      },
+      "BounceFeePaymentRequest" : {
+        "type" : "object",
+        "properties" : {
+          "reason" : {
+            "type" : "string",
+            "maxLength" : 500,
+            "minLength" : 0
+          },
+          "bouncedAt" : {
+            "type" : "string",
+            "format" : "date-time"
+          }
+        },
+        "required" : [ "bouncedAt", "reason" ]
       },
       "RefundFeePaymentRequest" : {
         "type" : "object",
@@ -71125,6 +72344,87 @@
           }
         },
         "required" : [ "publicId" ]
+      },
+      "PromoteStudentsRequest" : {
+        "type" : "object",
+        "properties" : {
+          "targetClassroomPublicId" : {
+            "type" : "string"
+          },
+          "entries" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/PromotionEntry"
+            },
+            "maxItems" : 500,
+            "minItems" : 0
+          }
+        },
+        "required" : [ "entries" ]
+      },
+      "PromotionEntry" : {
+        "type" : "object",
+        "properties" : {
+          "studentPublicId" : {
+            "type" : "string",
+            "minLength" : 1
+          },
+          "outcome" : {
+            "type" : "string",
+            "enum" : [ "PROMOTE", "RETAIN", "GRADUATE", "WITHDRAW" ]
+          },
+          "targetClassroomPublicId" : {
+            "type" : "string"
+          },
+          "reason" : {
+            "type" : "string",
+            "maxLength" : 500,
+            "minLength" : 0
+          }
+        },
+        "required" : [ "outcome", "studentPublicId" ]
+      },
+      "ApiResponseListPromotionResultResponse" : {
+        "type" : "object",
+        "properties" : {
+          "success" : {
+            "type" : "boolean"
+          },
+          "data" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/PromotionResultResponse"
+            }
+          },
+          "error" : {
+            "$ref" : "#/components/schemas/ApiErrorDetail"
+          },
+          "meta" : {
+            "$ref" : "#/components/schemas/ApiResponseMeta"
+          }
+        },
+        "required" : [ "success" ]
+      },
+      "PromotionResultResponse" : {
+        "type" : "object",
+        "properties" : {
+          "studentPublicId" : {
+            "type" : "string"
+          },
+          "student" : {
+            "$ref" : "#/components/schemas/ReferenceSummary"
+          },
+          "outcome" : {
+            "type" : "string",
+            "enum" : [ "PROMOTE", "RETAIN", "GRADUATE", "WITHDRAW" ]
+          },
+          "classroomPublicId" : {
+            "type" : "string"
+          },
+          "classroom" : {
+            "$ref" : "#/components/schemas/ReferenceSummary"
+          }
+        }
       },
       "CheckoutBookRequest" : {
         "type" : "object",
@@ -73059,17 +74359,14 @@
           },
           "notifyOnSubmit" : {
             "type" : "boolean",
-            "default" : false,
             "description" : "Whether to notify approvers on submission/stage-advance"
           },
           "notifyOnApprove" : {
             "type" : "boolean",
-            "default" : false,
             "description" : "Whether to notify the submitter on final approval"
           },
           "notifyOnReject" : {
             "type" : "boolean",
-            "default" : false,
             "description" : "Whether to notify the submitter on rejection"
           }
         },
@@ -73106,7 +74403,6 @@
           },
           "autoApproveSameRole" : {
             "type" : "boolean",
-            "default" : false,
             "description" : "Whether a request auto-approves if submitted by an eligible approver"
           }
         },
@@ -73165,22 +74461,18 @@
           },
           "notifyOnSubmit" : {
             "type" : "boolean",
-            "default" : false,
             "description" : "Whether to notify approvers on submission/stage-advance"
           },
           "notifyOnApprove" : {
             "type" : "boolean",
-            "default" : false,
             "description" : "Whether to notify the submitter on final approval"
           },
           "notifyOnReject" : {
             "type" : "boolean",
-            "default" : false,
             "description" : "Whether to notify the submitter on rejection"
           },
           "active" : {
             "type" : "boolean",
-            "default" : false,
             "description" : "Whether this workflow definition is currently active"
           }
         },
@@ -73218,7 +74510,6 @@
           },
           "autoApproveSameRole" : {
             "type" : "boolean",
-            "default" : false,
             "description" : "Whether a request auto-approves if submitted by an eligible approver"
           }
         },
@@ -73327,7 +74618,6 @@
           },
           "enabled" : {
             "type" : "boolean",
-            "default" : false,
             "description" : "Whether the rule is active"
           },
           "thresholdValue" : {
@@ -73495,10 +74785,12 @@
         "type" : "object",
         "properties" : {
           "score" : {
-            "type" : "number"
+            "type" : "number",
+            "minimum" : 0
           },
           "maxScore" : {
-            "type" : "number"
+            "type" : "number",
+            "minimum" : 0
           }
         },
         "required" : [ "maxScore", "score" ]
@@ -73809,10 +75101,12 @@
             }
           },
           "executionWindowStart" : {
-            "type" : "string"
+            "type" : "string",
+            "format" : "time-local"
           },
           "executionWindowEnd" : {
-            "type" : "string"
+            "type" : "string",
+            "format" : "time-local"
           },
           "misfirePolicy" : {
             "type" : "string",
@@ -73931,7 +75225,6 @@
           },
           "enabled" : {
             "type" : "boolean",
-            "default" : false,
             "description" : "Whether the flag is enabled globally",
             "example" : false
           },
@@ -73992,7 +75285,6 @@
           },
           "enabled" : {
             "type" : "boolean",
-            "default" : false,
             "description" : "Enabled status",
             "example" : false
           },
@@ -74283,7 +75575,6 @@
           },
           "enabled" : {
             "type" : "boolean",
-            "default" : false,
             "description" : "Whether the alert is currently active"
           }
         },
@@ -74438,7 +75729,8 @@
           },
           "capacity" : {
             "type" : "integer",
-            "format" : "int32"
+            "format" : "int32",
+            "exclusiveMinimum" : 0
           },
           "version" : {
             "type" : "integer",
@@ -75053,6 +76345,17 @@
         },
         "required" : [ "version" ]
       },
+      "RejectLeaveRequestRequest" : {
+        "type" : "object",
+        "properties" : {
+          "rejectionReason" : {
+            "type" : "string",
+            "maxLength" : 500,
+            "minLength" : 0
+          }
+        },
+        "required" : [ "rejectionReason" ]
+      },
       "SupersedeSalaryStructureRequest" : {
         "type" : "object",
         "properties" : {
@@ -75230,7 +76533,7 @@
           },
           "defaultAnnualDays" : {
             "type" : "number",
-            "minimum" : 0.0
+            "exclusiveMinimum" : 0.0
           },
           "version" : {
             "type" : "integer",
@@ -75276,17 +76579,6 @@
           }
         },
         "required" : [ "approvalLevels", "version" ]
-      },
-      "RejectLeaveRequestRequest" : {
-        "type" : "object",
-        "properties" : {
-          "rejectionReason" : {
-            "type" : "string",
-            "maxLength" : 500,
-            "minLength" : 0
-          }
-        },
-        "required" : [ "rejectionReason" ]
       },
       "UpdateHostelBuildingRequest" : {
         "type" : "object",
@@ -76086,7 +77378,6 @@
           },
           "enabled" : {
             "type" : "boolean",
-            "default" : false,
             "description" : "Whether the flag is enabled globally",
             "example" : true
           },
@@ -76182,7 +77473,6 @@
           },
           "resolved" : {
             "type" : "boolean",
-            "default" : false,
             "description" : "Whether this error has been reviewed and resolved"
           },
           "resolvedAt" : {
@@ -78219,6 +79509,48 @@
         },
         "required" : [ "gradeCount" ]
       },
+      "ApiResponsePageFeePaymentResponse" : {
+        "type" : "object",
+        "properties" : {
+          "success" : {
+            "type" : "boolean"
+          },
+          "data" : {
+            "$ref" : "#/components/schemas/PageFeePaymentResponse"
+          },
+          "error" : {
+            "$ref" : "#/components/schemas/ApiErrorDetail"
+          },
+          "meta" : {
+            "$ref" : "#/components/schemas/ApiResponseMeta"
+          }
+        },
+        "required" : [ "success" ]
+      },
+      "PageFeePaymentResponse" : {
+        "type" : "object",
+        "properties" : {
+          "content" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/FeePaymentResponse"
+            }
+          },
+          "pageNumber" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "pageSize" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "totalElements" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        },
+        "required" : [ "pageNumber", "pageSize", "totalElements" ]
+      },
       "ApiResponseListFeeBalanceResponse" : {
         "type" : "object",
         "properties" : {
@@ -78390,6 +79722,48 @@
           }
         },
         "required" : [ "presentDays", "totalMarkedDays" ]
+      },
+      "ApiResponsePageStudentLeaveRequestResponse" : {
+        "type" : "object",
+        "properties" : {
+          "success" : {
+            "type" : "boolean"
+          },
+          "data" : {
+            "$ref" : "#/components/schemas/PageStudentLeaveRequestResponse"
+          },
+          "error" : {
+            "$ref" : "#/components/schemas/ApiErrorDetail"
+          },
+          "meta" : {
+            "$ref" : "#/components/schemas/ApiResponseMeta"
+          }
+        },
+        "required" : [ "success" ]
+      },
+      "PageStudentLeaveRequestResponse" : {
+        "type" : "object",
+        "properties" : {
+          "content" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/StudentLeaveRequestResponse"
+            }
+          },
+          "pageNumber" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "pageSize" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "totalElements" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        },
+        "required" : [ "pageNumber", "pageSize", "totalElements" ]
       },
       "ApiResponseSearchResultMapStringObject" : {
         "type" : "object",
@@ -78921,7 +80295,6 @@
           },
           "active" : {
             "type" : "boolean",
-            "default" : false,
             "description" : "Whether this is the currently active policy version"
           }
         },
@@ -79589,7 +80962,6 @@
           },
           "superAdmin" : {
             "type" : "boolean",
-            "default" : false,
             "description" : "True for the platform operator, who holds every permission"
           },
           "permissions" : {
@@ -79610,7 +80982,6 @@
           },
           "mfaSetupRequired" : {
             "type" : "boolean",
-            "default" : false,
             "description" : "True when the tenant enforces MFA and the user has not enrolled: only /auth/mfa/enroll/** and /me work"
           }
         },
@@ -79637,6 +81008,15 @@
           "logoUrl" : {
             "type" : "string",
             "description" : "Short-lived signed URL of the tenant logo; absent when none is set"
+          },
+          "status" : {
+            "type" : "string",
+            "description" : "Tenant status; SUSPENDED limits the session to billing once the grace period ends"
+          },
+          "gracePeriodEndsAt" : {
+            "type" : "string",
+            "format" : "date-time",
+            "description" : "When a suspended tenant loses access; absent otherwise"
           }
         },
         "required" : [ "id" ]
@@ -79700,6 +81080,9 @@
           },
           "studentCode" : {
             "type" : "string"
+          },
+          "currentClassroom" : {
+            "$ref" : "#/components/schemas/CurrentClassroomResponse"
           }
         },
         "required" : [ "id" ]
@@ -79712,13 +81095,16 @@
             "type" : "string",
             "description" : "The user's own student record"
           },
+          "studentClassroom" : {
+            "$ref" : "#/components/schemas/CurrentClassroomResponse",
+            "description" : "The classroom of the user's own student record this academic year"
+          },
           "employeeId" : {
             "type" : "string",
             "description" : "The user's staff record (teachers are staff too)"
           },
           "teacher" : {
             "type" : "boolean",
-            "default" : false,
             "description" : "True when the user is also a teacher"
           },
           "guardianId" : {
@@ -80692,14 +82078,17 @@
         },
         "required" : [ "pageNumber", "pageSize", "totalElements" ]
       },
-      "ApiResponsePageFeePaymentResponse" : {
+      "ApiResponseListFeeCollectionRowResponse" : {
         "type" : "object",
         "properties" : {
           "success" : {
             "type" : "boolean"
           },
           "data" : {
-            "$ref" : "#/components/schemas/PageFeePaymentResponse"
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/FeeCollectionRowResponse"
+            }
           },
           "error" : {
             "$ref" : "#/components/schemas/ApiErrorDetail"
@@ -80710,29 +82099,33 @@
         },
         "required" : [ "success" ]
       },
-      "PageFeePaymentResponse" : {
+      "FeeCollectionRowResponse" : {
         "type" : "object",
         "properties" : {
-          "content" : {
-            "type" : "array",
-            "items" : {
-              "$ref" : "#/components/schemas/FeePaymentResponse"
-            }
+          "day" : {
+            "type" : "string",
+            "format" : "date"
           },
-          "pageNumber" : {
-            "type" : "integer",
-            "format" : "int32"
+          "paymentMode" : {
+            "type" : "string",
+            "enum" : [ "CASH", "CHEQUE", "UPI", "BANK_TRANSFER", "CARD", "GATEWAY" ]
           },
-          "pageSize" : {
-            "type" : "integer",
-            "format" : "int32"
-          },
-          "totalElements" : {
+          "clearedCount" : {
             "type" : "integer",
             "format" : "int64"
+          },
+          "clearedAmount" : {
+            "type" : "number"
+          },
+          "bouncedCount" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "bouncedAmount" : {
+            "type" : "number"
           }
         },
-        "required" : [ "pageNumber", "pageSize", "totalElements" ]
+        "required" : [ "bouncedCount", "clearedCount" ]
       },
       "ApiResponsePageExamResponse" : {
         "type" : "object",
@@ -81685,7 +83078,6 @@
           },
           "isActive" : {
             "type" : "boolean",
-            "default" : false,
             "description" : "Whether the currency is currently offered"
           }
         }
@@ -81815,6 +83207,73 @@
           }
         },
         "required" : [ "pageNumber", "pageSize", "totalElements" ]
+      },
+      "ApiResponsePromotionPreviewResponse" : {
+        "type" : "object",
+        "properties" : {
+          "success" : {
+            "type" : "boolean"
+          },
+          "data" : {
+            "$ref" : "#/components/schemas/PromotionPreviewResponse"
+          },
+          "error" : {
+            "$ref" : "#/components/schemas/ApiErrorDetail"
+          },
+          "meta" : {
+            "$ref" : "#/components/schemas/ApiResponseMeta"
+          }
+        },
+        "required" : [ "success" ]
+      },
+      "PromotionPreviewResponse" : {
+        "type" : "object",
+        "properties" : {
+          "sourceClassroomPublicId" : {
+            "type" : "string"
+          },
+          "sourceClassroom" : {
+            "$ref" : "#/components/schemas/ReferenceSummary"
+          },
+          "targetClassroomPublicId" : {
+            "type" : "string"
+          },
+          "targetClassroom" : {
+            "$ref" : "#/components/schemas/ReferenceSummary"
+          },
+          "seatsLeft" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "students" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/PromotionPreviewRow"
+            }
+          }
+        }
+      },
+      "PromotionPreviewRow" : {
+        "type" : "object",
+        "properties" : {
+          "studentPublicId" : {
+            "type" : "string"
+          },
+          "student" : {
+            "$ref" : "#/components/schemas/ReferenceSummary"
+          },
+          "enrollmentStatus" : {
+            "type" : "string",
+            "enum" : [ "ACTIVE", "SUSPENDED", "GRADUATED", "WITHDRAWN", "TRANSFERRED" ]
+          },
+          "alreadyPlaced" : {
+            "type" : "boolean"
+          },
+          "blockedReason" : {
+            "type" : "string"
+          }
+        },
+        "required" : [ "alreadyPlaced" ]
       },
       "ApiResponsePageCirculationResponse" : {
         "type" : "object",
@@ -83510,10 +84969,12 @@
             }
           },
           "executionWindowStart" : {
-            "type" : "string"
+            "type" : "string",
+            "format" : "time-local"
           },
           "executionWindowEnd" : {
-            "type" : "string"
+            "type" : "string",
+            "format" : "time-local"
           },
           "misfirePolicy" : {
             "type" : "string",

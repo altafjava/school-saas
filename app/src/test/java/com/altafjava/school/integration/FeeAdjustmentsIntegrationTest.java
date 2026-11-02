@@ -41,6 +41,7 @@ import com.altafjava.school.domain.fee.model.FeePayment;
 import com.altafjava.school.domain.fee.model.FeeRefund;
 import com.altafjava.school.domain.fee.model.FeeStructure;
 import com.altafjava.school.domain.fee.model.InstallmentStatus.State;
+import com.altafjava.school.domain.fee.model.PaymentInstrument;
 import com.altafjava.school.domain.fee.model.RefundStatus;
 import com.altafjava.school.domain.student.model.Student;
 
@@ -103,7 +104,7 @@ class FeeAdjustmentsIntegrationTest extends SchoolIntegrationTestBase {
 	private FeePayment pay(String amount) {
 		return feePaymentService.record(student.getPublicId().toString(), structure.getPublicId().toString(),
 				new BigDecimal(amount),
-				LocalDateTime.now(), "RCPT-" + UUID.randomUUID().toString().substring(0, 8));
+				LocalDateTime.now(), "RCPT-" + UUID.randomUUID().toString().substring(0, 8), PaymentInstrument.CASH);
 	}
 
 	private static void assertMoney(String expected, BigDecimal actual) {

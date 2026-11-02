@@ -3,7 +3,6 @@ package com.altafjava.school.api.controller;
 import java.time.LocalDate;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -16,6 +15,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import com.altafjava.platform.api.dto.response.ApiResponse;
+import com.altafjava.platform.application.security.annotation.RequiresPermission;
 import com.altafjava.platform.core.idempotency.RequireIdempotencyKey;
 import com.altafjava.platform.core.security.AuthenticatedUser;
 import com.altafjava.school.api.controller.api.AttendanceApi;
@@ -36,6 +36,7 @@ import com.altafjava.school.application.reference.ReferenceSummaries;
 import com.altafjava.school.application.service.AttendanceBulkService;
 import com.altafjava.school.application.service.AttendanceService;
 import com.altafjava.school.domain.attendance.model.AttendanceStatus;
+import com.altafjava.school.domain.security.permission.SchoolPermissions;
 
 @RestController
 @RequestMapping("/api/v1/attendance")
@@ -64,7 +65,7 @@ public class AttendanceController implements AttendanceApi {
 
 	@Override
 	@GetMapping
-	@PreAuthorize("@permissionAuthorizationService.hasPermission('STUDENT_ATTENDANCE_READ')")
+	@RequiresPermission(SchoolPermissions.STUDENT_ATTENDANCE_READ)
 	@SortableBy({ "attendanceDate", "status" })
 	public ApiResponse<com.altafjava.platform.core.model.Page<AttendanceResponse>> list(
 			@RequestParam(defaultValue = "0") int page,
@@ -84,7 +85,7 @@ public class AttendanceController implements AttendanceApi {
 
 	@Override
 	@GetMapping("/{publicId}")
-	@PreAuthorize("@permissionAuthorizationService.hasPermission('STUDENT_ATTENDANCE_READ')")
+	@RequiresPermission(SchoolPermissions.STUDENT_ATTENDANCE_READ)
 	public ApiResponse<AttendanceResponse> get(@PathVariable String publicId) {
 		return ApiResponse.success(attendanceMapper.toResponse(attendanceService.findByPublicId(publicId)));
 	}
@@ -92,7 +93,7 @@ public class AttendanceController implements AttendanceApi {
 	@Override
 	@PostMapping
 	@ResponseStatus(HttpStatus.CREATED)
-	@PreAuthorize("@permissionAuthorizationService.hasPermission('STUDENT_ATTENDANCE_WRITE')")
+	@RequiresPermission(SchoolPermissions.STUDENT_ATTENDANCE_WRITE)
 	@RequireIdempotencyKey
 	public ApiResponse<AttendanceResponse> mark(@Valid @RequestBody MarkAttendanceRequest request,
 			@AuthenticationPrincipal AuthenticatedUser user) {
@@ -106,7 +107,7 @@ public class AttendanceController implements AttendanceApi {
 
 	@Override
 	@PatchMapping("/{publicId}/status")
-	@PreAuthorize("@permissionAuthorizationService.hasPermission('STUDENT_ATTENDANCE_WRITE')")
+	@RequiresPermission(SchoolPermissions.STUDENT_ATTENDANCE_WRITE)
 	public ApiResponse<AttendanceResponse> updateStatus(@PathVariable String publicId,
 			@Valid @RequestBody UpdateAttendanceStatusRequest request) {
 		return ApiResponse
@@ -116,7 +117,7 @@ public class AttendanceController implements AttendanceApi {
 
 	@Override
 	@GetMapping("/{publicId}/corrections")
-	@PreAuthorize("@permissionAuthorizationService.hasPermission('STUDENT_ATTENDANCE_READ')")
+	@RequiresPermission(SchoolPermissions.STUDENT_ATTENDANCE_READ)
 	public ApiResponse<com.altafjava.platform.core.model.Page<AttendanceCorrectionResponse>> listCorrections(
 			@PathVariable String publicId,
 			@RequestParam(defaultValue = "0") int page,
@@ -129,7 +130,7 @@ public class AttendanceController implements AttendanceApi {
 	@Override
 	@DeleteMapping("/{publicId}")
 	@ResponseStatus(HttpStatus.NO_CONTENT)
-	@PreAuthorize("@permissionAuthorizationService.hasPermission('STUDENT_ATTENDANCE_WRITE')")
+	@RequiresPermission(SchoolPermissions.STUDENT_ATTENDANCE_WRITE)
 	public ApiResponse<Void> delete(@PathVariable String publicId) {
 		attendanceService.delete(publicId);
 		return ApiResponse.success(null);
@@ -137,7 +138,7 @@ public class AttendanceController implements AttendanceApi {
 
 	@Override
 	@PostMapping("/bulk")
-	@PreAuthorize("@permissionAuthorizationService.hasPermission('STUDENT_ATTENDANCE_WRITE')")
+	@RequiresPermission(SchoolPermissions.STUDENT_ATTENDANCE_WRITE)
 	public ApiResponse<BulkEntryResult> markBulk(@Valid @RequestBody BulkMarkAttendanceRequest request,
 			@AuthenticationPrincipal AuthenticatedUser user) {
 		return ApiResponse.success(attendanceBulkService.mark(request.classroomPublicId(), request.attendanceDate(),

@@ -3,7 +3,6 @@ package com.altafjava.school.api.controller;
 import java.util.List;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -14,6 +13,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import com.altafjava.platform.api.dto.response.ApiResponse;
+import com.altafjava.platform.application.security.annotation.RequiresPermission;
 import com.altafjava.school.api.controller.api.RouteApi;
 import com.altafjava.school.api.dto.request.AddRouteStopRequest;
 import com.altafjava.school.api.dto.request.CreateRouteRequest;
@@ -26,6 +26,7 @@ import com.altafjava.school.api.support.PlatformPageMapper;
 import com.altafjava.school.api.support.SpringDataPageableResolver;
 import com.altafjava.school.application.reference.ReferenceSummaries;
 import com.altafjava.school.application.service.RouteService;
+import com.altafjava.school.domain.security.permission.SchoolPermissions;
 
 @RestController
 @RequestMapping("/api/v1/routes")
@@ -51,7 +52,7 @@ public class RouteController implements RouteApi {
 
 	@Override
 	@GetMapping
-	@PreAuthorize("@permissionAuthorizationService.hasPermission('TRANSPORT_ROUTE_READ')")
+	@RequiresPermission(SchoolPermissions.TRANSPORT_ROUTE_READ)
 	public ApiResponse<com.altafjava.platform.core.model.Page<RouteResponse>> list(
 			@RequestParam(defaultValue = "0") int page,
 			@RequestParam(defaultValue = "20") int size,
@@ -63,7 +64,7 @@ public class RouteController implements RouteApi {
 
 	@Override
 	@GetMapping("/{publicId}")
-	@PreAuthorize("@permissionAuthorizationService.hasPermission('TRANSPORT_ROUTE_READ')")
+	@RequiresPermission(SchoolPermissions.TRANSPORT_ROUTE_READ)
 	public ApiResponse<RouteResponse> get(@PathVariable String publicId) {
 		return ApiResponse.success(routeMapper.toResponse(routeService.findByPublicId(publicId)));
 	}
@@ -71,7 +72,7 @@ public class RouteController implements RouteApi {
 	@Override
 	@PostMapping
 	@ResponseStatus(HttpStatus.CREATED)
-	@PreAuthorize("@permissionAuthorizationService.hasPermission('TRANSPORT_ROUTE_WRITE')")
+	@RequiresPermission(SchoolPermissions.TRANSPORT_ROUTE_WRITE)
 	public ApiResponse<RouteResponse> create(@Valid @RequestBody CreateRouteRequest request) {
 		return ApiResponse.success(
 				routeMapper.toResponse(routeService.create(request.name(), request.code(), request.description())));
@@ -79,7 +80,7 @@ public class RouteController implements RouteApi {
 
 	@Override
 	@PatchMapping("/{publicId}")
-	@PreAuthorize("@permissionAuthorizationService.hasPermission('TRANSPORT_ROUTE_WRITE')")
+	@RequiresPermission(SchoolPermissions.TRANSPORT_ROUTE_WRITE)
 	public ApiResponse<RouteResponse> updateDetails(@PathVariable String publicId,
 			@Valid @RequestBody UpdateRouteRequest request) {
 		return ApiResponse.success(routeMapper.toResponse(
@@ -89,14 +90,14 @@ public class RouteController implements RouteApi {
 
 	@Override
 	@PatchMapping("/{publicId}/deactivate")
-	@PreAuthorize("@permissionAuthorizationService.hasPermission('TRANSPORT_ROUTE_WRITE')")
+	@RequiresPermission(SchoolPermissions.TRANSPORT_ROUTE_WRITE)
 	public ApiResponse<RouteResponse> deactivate(@PathVariable String publicId) {
 		return ApiResponse.success(routeMapper.toResponse(routeService.deactivate(publicId)));
 	}
 
 	@Override
 	@GetMapping("/{publicId}/stops")
-	@PreAuthorize("@permissionAuthorizationService.hasPermission('TRANSPORT_ROUTE_READ')")
+	@RequiresPermission(SchoolPermissions.TRANSPORT_ROUTE_READ)
 	public ApiResponse<List<RouteStopResponse>> listStops(@PathVariable String publicId) {
 		return ApiResponse
 				.success(referenceSummaries.mapList(routeService.listStops(publicId), routeStopMapper::toResponse));
@@ -105,7 +106,7 @@ public class RouteController implements RouteApi {
 	@Override
 	@PostMapping("/{publicId}/stops")
 	@ResponseStatus(HttpStatus.CREATED)
-	@PreAuthorize("@permissionAuthorizationService.hasPermission('TRANSPORT_ROUTE_WRITE')")
+	@RequiresPermission(SchoolPermissions.TRANSPORT_ROUTE_WRITE)
 	public ApiResponse<RouteStopResponse> addStop(@PathVariable String publicId,
 			@Valid @RequestBody AddRouteStopRequest request) {
 		return ApiResponse.success(

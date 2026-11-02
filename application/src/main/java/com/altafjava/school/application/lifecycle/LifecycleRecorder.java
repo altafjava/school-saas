@@ -41,6 +41,14 @@ public class LifecycleRecorder {
 		save(null, studentId, from == null ? null : LifecycleStage.of(from), LifecycleStage.of(to), change);
 	}
 
+	public void promoted(Long studentId, LifecycleChange change) {
+		save(null, studentId, LifecycleStage.ENROLLED, LifecycleStage.PROMOTED, change);
+	}
+
+	public void retained(Long studentId, LifecycleChange change) {
+		save(null, studentId, LifecycleStage.ENROLLED, LifecycleStage.RETAINED, change);
+	}
+
 	public void alumnus(Long studentId, LifecycleChange change) {
 		save(null, studentId, LifecycleStage.GRADUATED, LifecycleStage.ALUMNI, change);
 	}

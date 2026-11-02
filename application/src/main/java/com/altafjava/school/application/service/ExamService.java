@@ -18,6 +18,7 @@ import com.altafjava.school.application.filter.ExamFilter;
 import com.altafjava.school.application.reference.EntityRef;
 import com.altafjava.school.application.reference.PublicIdLookup;
 import com.altafjava.school.application.security.AcademicAccessGuard;
+import com.altafjava.school.application.security.CourseworkReach;
 import com.altafjava.school.domain.classroom.repository.ClassroomRepository;
 import com.altafjava.school.domain.exam.event.ExamResultsPublishedEvent;
 import com.altafjava.school.domain.exam.model.Exam;
@@ -61,8 +62,10 @@ public class ExamService {
 
 	@Transactional(readOnly = true)
 	public Page<Exam> listExams(ExamFilter filter, Pageable pageable) {
-		return examRepository.search(TenantContext.getCurrentTenantId(),
-				publicIdLookup.idOrNull(EntityRef.CLASSROOM, filter.classroomPublicId()),
+		Long tenantId = TenantContext.getCurrentTenantId();
+		Long classroomId = publicIdLookup.idOrNull(EntityRef.CLASSROOM, filter.classroomPublicId());
+		CourseworkReach reach = academicAccessGuard.courseworkReach(tenantId, classroomId);
+		return examRepository.search(tenantId, reach.everyClassroom(), reach.classroomIds(), classroomId,
 				publicIdLookup.idOrNull(EntityRef.TERM, filter.termPublicId()),
 				publicIdLookup.idOrNull(EntityRef.SUBJECT, filter.subjectPublicId()), filter.status(), pageable);
 	}
@@ -70,8 +73,10 @@ public class ExamService {
 	@Transactional(readOnly = true)
 	public Exam findByPublicId(String publicId) {
 		Long tenantId = TenantContext.getCurrentTenantId();
-		return examRepository.findByPublicIdAndTenantId(UUID.fromString(publicId), tenantId)
+		Exam exam = examRepository.findByPublicIdAndTenantId(UUID.fromString(publicId), tenantId)
 				.orElseThrow(() -> new ResourceNotFoundException("Exam not found: " + publicId));
+		academicAccessGuard.assertCanViewCoursework(tenantId, exam.getClassroomId());
+		return exam;
 	}
 
 	@Transactional

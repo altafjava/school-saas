@@ -3,7 +3,6 @@ package com.altafjava.school.api.controller;
 import java.time.LocalDate;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -14,6 +13,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import com.altafjava.platform.api.dto.response.ApiResponse;
+import com.altafjava.platform.application.security.annotation.RequiresPermission;
 import com.altafjava.school.api.controller.api.EventApi;
 import com.altafjava.school.api.dto.request.CreateEventRequest;
 import com.altafjava.school.api.dto.request.RegisterForEventRequest;
@@ -30,6 +30,7 @@ import com.altafjava.school.application.filter.EventFilter;
 import com.altafjava.school.application.reference.ReferenceSummaries;
 import com.altafjava.school.application.service.EventRegistrationService;
 import com.altafjava.school.application.service.EventService;
+import com.altafjava.school.domain.security.permission.SchoolPermissions;
 
 @RestController
 @RequestMapping("/api/v1/events")
@@ -58,7 +59,7 @@ public class EventController implements EventApi {
 
 	@Override
 	@GetMapping
-	@PreAuthorize("@permissionAuthorizationService.hasPermission('EVENT_READ')")
+	@RequiresPermission(SchoolPermissions.EVENT_READ)
 	@SortableBy({ "title", "eventDate" })
 	public ApiResponse<com.altafjava.platform.core.model.Page<EventResponse>> list(
 			@RequestParam(defaultValue = "0") int page,
@@ -74,7 +75,7 @@ public class EventController implements EventApi {
 
 	@Override
 	@GetMapping("/{publicId}")
-	@PreAuthorize("@permissionAuthorizationService.hasPermission('EVENT_READ')")
+	@RequiresPermission(SchoolPermissions.EVENT_READ)
 	public ApiResponse<EventResponse> get(@PathVariable String publicId) {
 		return ApiResponse.success(eventMapper.toResponse(eventService.findByPublicId(publicId)));
 	}
@@ -82,7 +83,7 @@ public class EventController implements EventApi {
 	@Override
 	@PostMapping
 	@ResponseStatus(HttpStatus.CREATED)
-	@PreAuthorize("@permissionAuthorizationService.hasPermission('EVENT_MANAGE')")
+	@RequiresPermission(SchoolPermissions.EVENT_MANAGE)
 	public ApiResponse<EventResponse> create(@Valid @RequestBody CreateEventRequest request) {
 		return ApiResponse.success(eventMapper.toResponse(eventService.create(request.title(), request.description(),
 				request.eventDate(), request.location(), request.registrationRequired(), request.capacity())));
@@ -90,7 +91,7 @@ public class EventController implements EventApi {
 
 	@Override
 	@PatchMapping("/{publicId}")
-	@PreAuthorize("@permissionAuthorizationService.hasPermission('EVENT_MANAGE')")
+	@RequiresPermission(SchoolPermissions.EVENT_MANAGE)
 	public ApiResponse<EventResponse> updateDetails(@PathVariable String publicId,
 			@Valid @RequestBody UpdateEventRequest request) {
 		return ApiResponse.success(
@@ -100,14 +101,14 @@ public class EventController implements EventApi {
 
 	@Override
 	@PatchMapping("/{publicId}/cancel")
-	@PreAuthorize("@permissionAuthorizationService.hasPermission('EVENT_MANAGE')")
+	@RequiresPermission(SchoolPermissions.EVENT_MANAGE)
 	public ApiResponse<EventResponse> cancel(@PathVariable String publicId) {
 		return ApiResponse.success(eventMapper.toResponse(eventService.cancel(publicId)));
 	}
 
 	@Override
 	@GetMapping("/{publicId}/registrations")
-	@PreAuthorize("@permissionAuthorizationService.hasPermission('EVENT_STAFF_MANAGE')")
+	@RequiresPermission(SchoolPermissions.EVENT_STAFF_MANAGE)
 	public ApiResponse<com.altafjava.platform.core.model.Page<EventRegistrationResponse>> listRegistrations(
 			@PathVariable String publicId,
 			@RequestParam(defaultValue = "0") int page,
@@ -121,7 +122,7 @@ public class EventController implements EventApi {
 	@Override
 	@PostMapping("/{publicId}/registrations")
 	@ResponseStatus(HttpStatus.CREATED)
-	@PreAuthorize("@permissionAuthorizationService.hasPermission('EVENT_REGISTER')")
+	@RequiresPermission(SchoolPermissions.EVENT_REGISTER)
 	public ApiResponse<EventRegistrationResponse> register(@PathVariable String publicId,
 			@Valid @RequestBody RegisterForEventRequest request) {
 		return ApiResponse.success(eventRegistrationMapper.toResponse(
@@ -130,7 +131,7 @@ public class EventController implements EventApi {
 
 	@Override
 	@PatchMapping("/registrations/{registrationPublicId}/cancel")
-	@PreAuthorize("@permissionAuthorizationService.hasPermission('EVENT_REGISTER')")
+	@RequiresPermission(SchoolPermissions.EVENT_REGISTER)
 	public ApiResponse<EventRegistrationResponse> cancelRegistration(@PathVariable String registrationPublicId) {
 		return ApiResponse
 				.success(eventRegistrationMapper.toResponse(eventRegistrationService.cancel(registrationPublicId)));
@@ -138,7 +139,7 @@ public class EventController implements EventApi {
 
 	@Override
 	@PatchMapping("/registrations/{registrationPublicId}/attended")
-	@PreAuthorize("@permissionAuthorizationService.hasPermission('EVENT_STAFF_MANAGE')")
+	@RequiresPermission(SchoolPermissions.EVENT_STAFF_MANAGE)
 	public ApiResponse<EventRegistrationResponse> markAttended(@PathVariable String registrationPublicId) {
 		return ApiResponse.success(
 				eventRegistrationMapper.toResponse(eventRegistrationService.markAttended(registrationPublicId)));

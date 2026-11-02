@@ -3,7 +3,6 @@ package com.altafjava.school.api.controller;
 import java.time.LocalDate;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -14,6 +13,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import com.altafjava.platform.api.dto.response.ApiResponse;
+import com.altafjava.platform.application.security.annotation.RequiresPermission;
 import com.altafjava.platform.core.annotation.Command;
 import com.altafjava.platform.core.idempotency.RequireIdempotencyKey;
 import com.altafjava.school.api.controller.api.CirculationApi;
@@ -28,6 +28,7 @@ import com.altafjava.school.application.filter.CirculationFilter;
 import com.altafjava.school.application.filter.DateWindow;
 import com.altafjava.school.application.reference.ReferenceSummaries;
 import com.altafjava.school.application.service.CirculationService;
+import com.altafjava.school.domain.security.permission.SchoolPermissions;
 
 @RestController
 @RequestMapping("/api/v1/circulations")
@@ -51,7 +52,7 @@ public class CirculationController implements CirculationApi {
 
 	@Override
 	@GetMapping
-	@PreAuthorize("@permissionAuthorizationService.hasPermission('CIRCULATION_MANAGE')")
+	@RequiresPermission(SchoolPermissions.CIRCULATION_MANAGE)
 	@SortableBy({ "checkedOutAt", "dueDate", "returnedAt" })
 	public ApiResponse<com.altafjava.platform.core.model.Page<CirculationResponse>> list(
 			@RequestParam(defaultValue = "0") int page,
@@ -70,7 +71,7 @@ public class CirculationController implements CirculationApi {
 	@Override
 	@PostMapping("/checkout")
 	@ResponseStatus(HttpStatus.CREATED)
-	@PreAuthorize("@permissionAuthorizationService.hasPermission('CIRCULATION_MANAGE')")
+	@RequiresPermission(SchoolPermissions.CIRCULATION_MANAGE)
 	@RequireIdempotencyKey
 	public ApiResponse<CirculationResponse> checkout(@Valid @RequestBody CheckoutBookRequest request) {
 		return ApiResponse.success(circulationMapper.toResponse(
@@ -80,7 +81,7 @@ public class CirculationController implements CirculationApi {
 	@Override
 	@PatchMapping("/{publicId}/return")
 	@Command
-	@PreAuthorize("@permissionAuthorizationService.hasPermission('CIRCULATION_MANAGE')")
+	@RequiresPermission(SchoolPermissions.CIRCULATION_MANAGE)
 	@RequireIdempotencyKey
 	public ApiResponse<CirculationResponse> returnBook(@PathVariable String publicId,
 			@Valid @RequestBody ReturnBookRequest request) {
@@ -90,7 +91,7 @@ public class CirculationController implements CirculationApi {
 
 	@Override
 	@PatchMapping("/{publicId}/renew")
-	@PreAuthorize("@permissionAuthorizationService.hasPermission('CIRCULATION_MANAGE')")
+	@RequiresPermission(SchoolPermissions.CIRCULATION_MANAGE)
 	@RequireIdempotencyKey
 	public ApiResponse<CirculationResponse> renew(@PathVariable String publicId) {
 		return ApiResponse.success(circulationMapper.toResponse(circulationService.renew(publicId)));

@@ -9,6 +9,7 @@ import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Component;
 import com.altafjava.platform.application.security.PermissionAuthorizationService;
 import com.altafjava.school.domain.classroom.repository.StudentClassroomLinkRepository;
+import com.altafjava.school.domain.security.permission.SchoolPermissions;
 import com.altafjava.school.domain.timetable.model.TimetableEntry;
 import com.altafjava.school.domain.timetable.repository.TimetableSubstitutionRepository;
 import lombok.RequiredArgsConstructor;
@@ -21,7 +22,7 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class AcademicAccessGuard {
 
-	private static final String STUDENT_READ_ALL = "STUDENT_READ_ALL";
+	private static final String STUDENT_READ_ALL = SchoolPermissions.STUDENT_READ_ALL;
 
 	private final AcademicScopeResolver academicScopeResolver;
 	private final PermissionAuthorizationService permissionAuthorizationService;

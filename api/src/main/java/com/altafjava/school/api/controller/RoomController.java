@@ -2,7 +2,6 @@ package com.altafjava.school.api.controller;
 
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -13,6 +12,8 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import com.altafjava.platform.api.dto.response.ApiResponse;
+import com.altafjava.platform.application.security.annotation.RequiresPermission;
+import com.altafjava.platform.core.feature.annotation.FeatureEnabled;
 import com.altafjava.school.api.controller.api.RoomApi;
 import com.altafjava.school.api.dto.request.CreateRoomRequest;
 import com.altafjava.school.api.dto.request.UpdateRoomRequest;
@@ -21,9 +22,12 @@ import com.altafjava.school.api.mapper.RoomMapper;
 import com.altafjava.school.api.support.PlatformPageMapper;
 import com.altafjava.school.api.support.SpringDataPageableResolver;
 import com.altafjava.school.application.reference.ReferenceSummaries;
+import com.altafjava.school.application.security.SchoolFeatures;
 import com.altafjava.school.application.service.RoomService;
+import com.altafjava.school.domain.security.permission.SchoolPermissions;
 
 @RestController
+@FeatureEnabled(SchoolFeatures.CAMPUS_OPS)
 @RequestMapping("/api/v1/rooms")
 public class RoomController implements RoomApi {
 
@@ -45,7 +49,7 @@ public class RoomController implements RoomApi {
 
 	@Override
 	@GetMapping
-	@PreAuthorize("@permissionAuthorizationService.hasPermission('ROOM_READ')")
+	@RequiresPermission(SchoolPermissions.ROOM_READ)
 	public ApiResponse<com.altafjava.platform.core.model.Page<RoomResponse>> listForBuilding(
 			@RequestParam String hostelBuildingPublicId,
 			@RequestParam(defaultValue = "0") int page,
@@ -58,7 +62,7 @@ public class RoomController implements RoomApi {
 
 	@Override
 	@GetMapping("/{publicId}")
-	@PreAuthorize("@permissionAuthorizationService.hasPermission('ROOM_READ')")
+	@RequiresPermission(SchoolPermissions.ROOM_READ)
 	public ApiResponse<RoomResponse> get(@PathVariable String publicId) {
 		return ApiResponse.success(roomMapper.toResponse(roomService.findByPublicId(publicId)));
 	}
@@ -66,7 +70,7 @@ public class RoomController implements RoomApi {
 	@Override
 	@PostMapping
 	@ResponseStatus(HttpStatus.CREATED)
-	@PreAuthorize("@permissionAuthorizationService.hasPermission('ROOM_WRITE')")
+	@RequiresPermission(SchoolPermissions.ROOM_WRITE)
 	public ApiResponse<RoomResponse> create(
 			@RequestParam String hostelBuildingPublicId,
 			@Valid @RequestBody CreateRoomRequest request) {
@@ -76,7 +80,7 @@ public class RoomController implements RoomApi {
 
 	@Override
 	@PatchMapping("/{publicId}")
-	@PreAuthorize("@permissionAuthorizationService.hasPermission('ROOM_WRITE')")
+	@RequiresPermission(SchoolPermissions.ROOM_WRITE)
 	public ApiResponse<RoomResponse> updateDetails(@PathVariable String publicId,
 			@Valid @RequestBody UpdateRoomRequest request) {
 		return ApiResponse.success(
@@ -86,7 +90,7 @@ public class RoomController implements RoomApi {
 
 	@Override
 	@PatchMapping("/{publicId}/deactivate")
-	@PreAuthorize("@permissionAuthorizationService.hasPermission('ROOM_WRITE')")
+	@RequiresPermission(SchoolPermissions.ROOM_WRITE)
 	public ApiResponse<RoomResponse> deactivate(@PathVariable String publicId) {
 		return ApiResponse.success(roomMapper.toResponse(roomService.deactivate(publicId)));
 	}

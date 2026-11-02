@@ -6,7 +6,6 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
@@ -18,7 +17,9 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import com.altafjava.platform.api.dto.response.ApiResponse;
+import com.altafjava.platform.application.security.annotation.RequiresPermission;
 import com.altafjava.platform.core.annotation.Command;
+import com.altafjava.platform.core.feature.annotation.FeatureEnabled;
 import com.altafjava.platform.core.security.AuthenticatedUser;
 import com.altafjava.platform.domain.document.model.DocumentIssuance;
 import com.altafjava.school.api.controller.api.CertificateApi;
@@ -27,11 +28,14 @@ import com.altafjava.school.api.dto.response.IssuedDocumentResponse;
 import com.altafjava.school.api.mapper.IssuedDocumentMapper;
 import com.altafjava.school.api.ratelimit.RateLimited;
 import com.altafjava.school.api.support.SpringDataPageableResolver;
+import com.altafjava.school.application.security.SchoolFeatures;
 import com.altafjava.school.application.service.CertificateService;
+import com.altafjava.school.domain.security.permission.SchoolPermissions;
 
 // Issuance is admin/registrar-only — unlike report cards, a certificate is never self-service
 // for a parent/student, it is always issued by staff on request.
 @RestController
+@FeatureEnabled(SchoolFeatures.CERTIFICATES)
 @RequestMapping("/api/v1/students/{studentPublicId}/certificates")
 public class CertificateController implements CertificateApi {
 
@@ -49,7 +53,7 @@ public class CertificateController implements CertificateApi {
 
 	@Override
 	@GetMapping
-	@PreAuthorize("@permissionAuthorizationService.hasPermission('CERTIFICATE_MANAGE')")
+	@RequiresPermission(SchoolPermissions.CERTIFICATE_MANAGE)
 	public ApiResponse<com.altafjava.platform.core.model.Page<IssuedDocumentResponse>> list(
 			@PathVariable String studentPublicId,
 			@RequestParam(defaultValue = "0") int page,
@@ -62,7 +66,7 @@ public class CertificateController implements CertificateApi {
 	@Override
 	@PostMapping
 	@ResponseStatus(HttpStatus.CREATED)
-	@PreAuthorize("@permissionAuthorizationService.hasPermission('CERTIFICATE_MANAGE')")
+	@RequiresPermission(SchoolPermissions.CERTIFICATE_MANAGE)
 	@RateLimited(key = "certificate-issue", capacity = 60, periodMinutes = 60)
 	public ApiResponse<IssuedDocumentResponse> issue(@PathVariable String studentPublicId,
 			@RequestParam String certificateTypePublicId,
@@ -75,7 +79,7 @@ public class CertificateController implements CertificateApi {
 	@Override
 	@PatchMapping("/{certificatePublicId}/revoke")
 	@Command
-	@PreAuthorize("@permissionAuthorizationService.hasPermission('CERTIFICATE_MANAGE')")
+	@RequiresPermission(SchoolPermissions.CERTIFICATE_MANAGE)
 	public ApiResponse<IssuedDocumentResponse> revoke(@PathVariable String studentPublicId,
 			@PathVariable String certificatePublicId, @Valid @RequestBody RevokeDocumentRequest request) {
 		return ApiResponse.success(issuedDocumentMapper
@@ -86,7 +90,7 @@ public class CertificateController implements CertificateApi {
 	// needs its own Content-Type/Content-Disposition headers and binary body, not a JSON envelope.
 	@Override
 	@GetMapping("/{certificatePublicId}/download")
-	@PreAuthorize("@permissionAuthorizationService.hasPermission('CERTIFICATE_MANAGE')")
+	@RequiresPermission(SchoolPermissions.CERTIFICATE_MANAGE)
 	public ResponseEntity<byte[]> download(@PathVariable String studentPublicId,
 			@PathVariable String certificatePublicId) {
 		DocumentIssuance issuance = certificateService.findByPublicId(studentPublicId, certificatePublicId);

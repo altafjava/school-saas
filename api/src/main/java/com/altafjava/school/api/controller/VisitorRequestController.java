@@ -4,7 +4,6 @@ import java.time.LocalDate;
 import jakarta.validation.Valid;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
@@ -16,6 +15,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import com.altafjava.platform.api.dto.response.ApiResponse;
+import com.altafjava.platform.application.security.annotation.RequiresPermission;
 import com.altafjava.platform.core.annotation.Command;
 import com.altafjava.platform.core.security.AuthenticatedUser;
 import com.altafjava.school.api.controller.api.VisitorRequestApi;
@@ -29,6 +29,7 @@ import com.altafjava.school.api.support.SortableBy;
 import com.altafjava.school.api.support.SpringDataPageableResolver;
 import com.altafjava.school.application.reference.ReferenceSummaries;
 import com.altafjava.school.application.service.VisitorRequestService;
+import com.altafjava.school.domain.security.permission.SchoolPermissions;
 import com.altafjava.school.domain.visitor.model.VisitorRequestStatus;
 
 /**
@@ -39,13 +40,6 @@ import com.altafjava.school.domain.visitor.model.VisitorRequestStatus;
 @RestController
 @RequestMapping("/api/v1/visitor-requests")
 public class VisitorRequestController implements VisitorRequestApi {
-
-	private static final String DESK_OR_APPROVER = "@permissionAuthorizationService.hasPermission('VISITOR_LOG_MANAGE') "
-			+ "or @permissionAuthorizationService.hasPermission('VISITOR_REQUEST_APPROVE')";
-	private static final String ANY_PARTICIPANT = DESK_OR_APPROVER
-			+ " or @permissionAuthorizationService.hasPermission('VISITOR_REQUEST_SELF_SERVICE')";
-	private static final String HOST_OR_APPROVER = "@permissionAuthorizationService.hasPermission('VISITOR_REQUEST_APPROVE') "
-			+ "or @permissionAuthorizationService.hasPermission('VISITOR_REQUEST_SELF_SERVICE')";
 
 	private final VisitorRequestService visitorRequestService;
 	private final VisitorRequestMapper visitorRequestMapper;
@@ -64,7 +58,7 @@ public class VisitorRequestController implements VisitorRequestApi {
 
 	@Override
 	@GetMapping
-	@PreAuthorize(DESK_OR_APPROVER)
+	@RequiresPermission({ SchoolPermissions.VISITOR_LOG_MANAGE, SchoolPermissions.VISITOR_REQUEST_APPROVE })
 	@SortableBy({ "visitDate", "status", "source" })
 	public ApiResponse<com.altafjava.platform.core.model.Page<VisitorRequestResponse>> list(
 			@RequestParam(required = false) VisitorRequestStatus status,
@@ -79,7 +73,7 @@ public class VisitorRequestController implements VisitorRequestApi {
 
 	@Override
 	@GetMapping("/hosted-by-me")
-	@PreAuthorize("@permissionAuthorizationService.hasPermission('VISITOR_REQUEST_SELF_SERVICE')")
+	@RequiresPermission(SchoolPermissions.VISITOR_REQUEST_SELF_SERVICE)
 	@SortableBy({ "visitDate", "status", "source" })
 	public ApiResponse<com.altafjava.platform.core.model.Page<VisitorRequestResponse>> listHostedByMe(
 			@RequestParam(required = false) VisitorRequestStatus status,
@@ -95,7 +89,8 @@ public class VisitorRequestController implements VisitorRequestApi {
 
 	@Override
 	@GetMapping("/{publicId}")
-	@PreAuthorize(ANY_PARTICIPANT)
+	@RequiresPermission({ SchoolPermissions.VISITOR_LOG_MANAGE, SchoolPermissions.VISITOR_REQUEST_APPROVE,
+			SchoolPermissions.VISITOR_REQUEST_SELF_SERVICE })
 	public ApiResponse<VisitorRequestResponse> get(@PathVariable String publicId,
 			@AuthenticationPrincipal AuthenticatedUser user) {
 		return ApiResponse
@@ -105,8 +100,7 @@ public class VisitorRequestController implements VisitorRequestApi {
 	@Override
 	@PostMapping
 	@ResponseStatus(HttpStatus.CREATED)
-	@PreAuthorize("@permissionAuthorizationService.hasPermission('VISITOR_LOG_MANAGE') "
-			+ "or @permissionAuthorizationService.hasPermission('VISITOR_REQUEST_SELF_SERVICE')")
+	@RequiresPermission({ SchoolPermissions.VISITOR_LOG_MANAGE, SchoolPermissions.VISITOR_REQUEST_SELF_SERVICE })
 	public ApiResponse<VisitorRequestResponse> raise(@Valid @RequestBody RaiseVisitorRequestRequest request,
 			@AuthenticationPrincipal AuthenticatedUser user) {
 		return ApiResponse.success(visitorRequestMapper.toResponse(visitorRequestService.raise(request.visitorName(),
@@ -116,7 +110,7 @@ public class VisitorRequestController implements VisitorRequestApi {
 
 	@Override
 	@PatchMapping("/{publicId}/approve")
-	@PreAuthorize(HOST_OR_APPROVER)
+	@RequiresPermission({ SchoolPermissions.VISITOR_REQUEST_APPROVE, SchoolPermissions.VISITOR_REQUEST_SELF_SERVICE })
 	public ApiResponse<VisitorRequestResponse> approve(@PathVariable String publicId,
 			@AuthenticationPrincipal AuthenticatedUser user) {
 		return ApiResponse
@@ -126,7 +120,7 @@ public class VisitorRequestController implements VisitorRequestApi {
 	@Override
 	@PatchMapping("/{publicId}/reject")
 	@Command
-	@PreAuthorize(HOST_OR_APPROVER)
+	@RequiresPermission({ SchoolPermissions.VISITOR_REQUEST_APPROVE, SchoolPermissions.VISITOR_REQUEST_SELF_SERVICE })
 	public ApiResponse<VisitorRequestResponse> reject(@PathVariable String publicId,
 			@Valid @RequestBody RejectVisitorRequestRequest request, @AuthenticationPrincipal AuthenticatedUser user) {
 		return ApiResponse.success(visitorRequestMapper
@@ -135,7 +129,8 @@ public class VisitorRequestController implements VisitorRequestApi {
 
 	@Override
 	@PatchMapping("/{publicId}/cancel")
-	@PreAuthorize(ANY_PARTICIPANT)
+	@RequiresPermission({ SchoolPermissions.VISITOR_LOG_MANAGE, SchoolPermissions.VISITOR_REQUEST_APPROVE,
+			SchoolPermissions.VISITOR_REQUEST_SELF_SERVICE })
 	public ApiResponse<VisitorRequestResponse> cancel(@PathVariable String publicId,
 			@AuthenticationPrincipal AuthenticatedUser user) {
 		return ApiResponse
@@ -145,7 +140,8 @@ public class VisitorRequestController implements VisitorRequestApi {
 	@Override
 	@PatchMapping("/{publicId}/photo")
 	@Command
-	@PreAuthorize(ANY_PARTICIPANT)
+	@RequiresPermission({ SchoolPermissions.VISITOR_LOG_MANAGE, SchoolPermissions.VISITOR_REQUEST_APPROVE,
+			SchoolPermissions.VISITOR_REQUEST_SELF_SERVICE })
 	public ApiResponse<VisitorRequestResponse> attachPhoto(@PathVariable String publicId,
 			@Valid @RequestBody AttachVisitorPhotoRequest request, @AuthenticationPrincipal AuthenticatedUser user) {
 		return ApiResponse.success(visitorRequestMapper

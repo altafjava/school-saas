@@ -2,7 +2,6 @@ package com.altafjava.school.api.controller;
 
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -13,6 +12,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import com.altafjava.platform.api.dto.response.ApiResponse;
+import com.altafjava.platform.application.security.annotation.RequiresPermission;
 import com.altafjava.school.api.controller.api.BookReservationApi;
 import com.altafjava.school.api.dto.request.ReserveBookRequest;
 import com.altafjava.school.api.dto.response.BookReservationResponse;
@@ -24,6 +24,7 @@ import com.altafjava.school.application.filter.BookReservationFilter;
 import com.altafjava.school.application.reference.ReferenceSummaries;
 import com.altafjava.school.application.service.BookReservationService;
 import com.altafjava.school.domain.library.model.ReservationStatus;
+import com.altafjava.school.domain.security.permission.SchoolPermissions;
 
 @RestController
 @RequestMapping("/api/v1/book-reservations")
@@ -46,7 +47,7 @@ public class BookReservationController implements BookReservationApi {
 
 	@Override
 	@GetMapping
-	@PreAuthorize("@permissionAuthorizationService.hasPermission('CIRCULATION_MANAGE')")
+	@RequiresPermission(SchoolPermissions.CIRCULATION_MANAGE)
 	@SortableBy({ "reservedAt", "status" })
 	public ApiResponse<com.altafjava.platform.core.model.Page<BookReservationResponse>> list(
 			@RequestParam(required = false) String bookPublicId,
@@ -69,7 +70,7 @@ public class BookReservationController implements BookReservationApi {
 	@Override
 	@PostMapping
 	@ResponseStatus(HttpStatus.CREATED)
-	@PreAuthorize("@permissionAuthorizationService.hasPermission('CIRCULATION_MANAGE')")
+	@RequiresPermission(SchoolPermissions.CIRCULATION_MANAGE)
 	public ApiResponse<BookReservationResponse> reserve(@Valid @RequestBody ReserveBookRequest request) {
 		return ApiResponse.success(bookReservationMapper
 				.toResponse(bookReservationService.reserve(request.bookPublicId(), request.studentPublicId())));
@@ -77,7 +78,7 @@ public class BookReservationController implements BookReservationApi {
 
 	@Override
 	@PatchMapping("/{publicId}/cancel")
-	@PreAuthorize("@permissionAuthorizationService.hasPermission('CIRCULATION_MANAGE')")
+	@RequiresPermission(SchoolPermissions.CIRCULATION_MANAGE)
 	public ApiResponse<BookReservationResponse> cancel(@PathVariable String publicId) {
 		return ApiResponse.success(bookReservationMapper.toResponse(bookReservationService.cancel(publicId)));
 	}

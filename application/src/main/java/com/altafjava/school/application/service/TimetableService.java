@@ -14,6 +14,8 @@ import com.altafjava.platform.core.tenant.TenantContext;
 import com.altafjava.school.application.filter.TimetableEntryFilter;
 import com.altafjava.school.application.reference.EntityRef;
 import com.altafjava.school.application.reference.PublicIdLookup;
+import com.altafjava.school.application.security.AcademicAccessGuard;
+import com.altafjava.school.application.security.CourseworkReach;
 import com.altafjava.school.domain.classroom.repository.ClassroomRepository;
 import com.altafjava.school.domain.employee.model.EmployeeStatus;
 import com.altafjava.school.domain.subject.repository.SubjectRepository;
@@ -34,11 +36,14 @@ public class TimetableService {
 	private final TeacherRepository teacherRepository;
 	private final VenueRepository venueRepository;
 	private final PublicIdLookup publicIdLookup;
+	private final AcademicAccessGuard academicAccessGuard;
 
 	public TimetableService(TimetableEntryRepository timetableEntryRepository, PeriodRepository periodRepository,
 			ClassroomRepository classroomRepository, SubjectRepository subjectRepository,
-			TeacherRepository teacherRepository, VenueRepository venueRepository, PublicIdLookup publicIdLookup) {
+			TeacherRepository teacherRepository, VenueRepository venueRepository, PublicIdLookup publicIdLookup,
+			AcademicAccessGuard academicAccessGuard) {
 		this.publicIdLookup = publicIdLookup;
+		this.academicAccessGuard = academicAccessGuard;
 		this.timetableEntryRepository = timetableEntryRepository;
 		this.periodRepository = periodRepository;
 		this.classroomRepository = classroomRepository;
@@ -49,8 +54,10 @@ public class TimetableService {
 
 	@Transactional(readOnly = true)
 	public Page<TimetableEntry> listEntries(TimetableEntryFilter filter, Pageable pageable) {
-		return timetableEntryRepository.search(TenantContext.getCurrentTenantId(),
-				publicIdLookup.idOrNull(EntityRef.CLASSROOM, filter.classroomPublicId()),
+		Long tenantId = TenantContext.getCurrentTenantId();
+		Long classroomId = publicIdLookup.idOrNull(EntityRef.CLASSROOM, filter.classroomPublicId());
+		CourseworkReach reach = academicAccessGuard.courseworkReach(tenantId, classroomId);
+		return timetableEntryRepository.search(tenantId, reach.everyClassroom(), reach.classroomIds(), classroomId,
 				publicIdLookup.idOrNull(EntityRef.EMPLOYEE, filter.teacherPublicId()),
 				publicIdLookup.idOrNull(EntityRef.SUBJECT, filter.subjectPublicId()), filter.dayOfWeek(), pageable);
 	}
@@ -61,14 +68,17 @@ public class TimetableService {
 		Long classroomId = classroomRepository.findByPublicIdAndTenantId(UUID.fromString(classroomPublicId), tenantId)
 				.orElseThrow(() -> new ResourceNotFoundException("Classroom not found: " + classroomPublicId))
 				.getId();
+		academicAccessGuard.assertCanViewCoursework(tenantId, classroomId);
 		return timetableEntryRepository.findAllByTenantIdAndClassroomId(tenantId, classroomId);
 	}
 
 	@Transactional(readOnly = true)
 	public TimetableEntry findByPublicId(String publicId) {
 		Long tenantId = TenantContext.getCurrentTenantId();
-		return timetableEntryRepository.findByPublicIdAndTenantId(UUID.fromString(publicId), tenantId)
+		TimetableEntry entry = timetableEntryRepository.findByPublicIdAndTenantId(UUID.fromString(publicId), tenantId)
 				.orElseThrow(() -> new ResourceNotFoundException("Timetable entry not found: " + publicId));
+		academicAccessGuard.assertCanViewCoursework(tenantId, entry.getClassroomId());
+		return entry;
 	}
 
 	@Transactional

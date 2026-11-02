@@ -11,6 +11,7 @@ import jakarta.validation.Validator;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import com.altafjava.school.api.dto.request.RecordFeePaymentRequest;
+import com.altafjava.school.domain.fee.model.PaymentMode;
 
 class RecordFeePaymentRequestValidationTest {
 
@@ -27,7 +28,7 @@ class RecordFeePaymentRequestValidationTest {
 
 	private RecordFeePaymentRequest valid() {
 		return new RecordFeePaymentRequest("id-1", "id-5", new BigDecimal("5000.00"),
-				LocalDateTime.of(2024, 9, 1, 10, 0), "REC-2024-001");
+				LocalDateTime.of(2024, 9, 1, 10, 0), "REC-2024-001", PaymentMode.CASH, null, null, null, null);
 	}
 
 	@Test
@@ -38,48 +39,49 @@ class RecordFeePaymentRequestValidationTest {
 	@Test
 	void studentId_null_failsValidation() {
 		var req = new RecordFeePaymentRequest(null, "id-5", new BigDecimal("5000.00"),
-				LocalDateTime.of(2024, 9, 1, 10, 0), "REC-2024-001");
+				LocalDateTime.of(2024, 9, 1, 10, 0), "REC-2024-001", PaymentMode.CASH, null, null, null, null);
 		assertFalse(violationsFor(req).isEmpty());
 	}
 
 	@Test
 	void feeStructureId_null_failsValidation() {
 		var req = new RecordFeePaymentRequest("id-1", null, new BigDecimal("5000.00"),
-				LocalDateTime.of(2024, 9, 1, 10, 0), "REC-2024-001");
+				LocalDateTime.of(2024, 9, 1, 10, 0), "REC-2024-001", PaymentMode.CASH, null, null, null, null);
 		assertFalse(violationsFor(req).isEmpty());
 	}
 
 	@Test
 	void paidAmount_null_failsValidation() {
 		var req = new RecordFeePaymentRequest("id-1", "id-5", null, LocalDateTime.of(2024, 9, 1, 10, 0),
-				"REC-2024-001");
+				"REC-2024-001", PaymentMode.CASH, null, null, null, null);
 		assertFalse(violationsFor(req).isEmpty());
 	}
 
 	@Test
 	void paidAmount_zero_failsDecimalMinValidation() {
 		var req = new RecordFeePaymentRequest("id-1", "id-5", BigDecimal.ZERO,
-				LocalDateTime.of(2024, 9, 1, 10, 0), "REC-2024-001");
+				LocalDateTime.of(2024, 9, 1, 10, 0), "REC-2024-001", PaymentMode.CASH, null, null, null, null);
 		assertFalse(violationsFor(req).isEmpty());
 	}
 
 	@Test
 	void paidAmount_negative_failsDecimalMinValidation() {
 		var req = new RecordFeePaymentRequest("id-1", "id-5", new BigDecimal("-100.00"),
-				LocalDateTime.of(2024, 9, 1, 10, 0), "REC-2024-001");
+				LocalDateTime.of(2024, 9, 1, 10, 0), "REC-2024-001", PaymentMode.CASH, null, null, null, null);
 		assertFalse(violationsFor(req).isEmpty());
 	}
 
 	@Test
 	void paidAmount_minimumPositive_passesValidation() {
 		var req = new RecordFeePaymentRequest("id-1", "id-5", new BigDecimal("0.01"),
-				LocalDateTime.of(2024, 9, 1, 10, 0), "REC-2024-001");
+				LocalDateTime.of(2024, 9, 1, 10, 0), "REC-2024-001", PaymentMode.CASH, null, null, null, null);
 		assertTrue(violationsFor(req).isEmpty());
 	}
 
 	@Test
 	void paidAt_null_failsValidation() {
-		var req = new RecordFeePaymentRequest("id-1", "id-5", new BigDecimal("5000.00"), null, "REC-2024-001");
+		var req = new RecordFeePaymentRequest("id-1", "id-5", new BigDecimal("5000.00"), null, "REC-2024-001",
+				PaymentMode.CASH, null, null, null, null);
 		assertFalse(violationsFor(req).isEmpty());
 	}
 
@@ -88,21 +90,21 @@ class RecordFeePaymentRequestValidationTest {
 		// receiptNumber is an explicit-override path — blank/omitted defers to the tenant's
 		// configured numbering sequence, see FeePaymentService#record.
 		var req = new RecordFeePaymentRequest("id-1", "id-5", new BigDecimal("5000.00"),
-				LocalDateTime.of(2024, 9, 1, 10, 0), "");
+				LocalDateTime.of(2024, 9, 1, 10, 0), "", PaymentMode.CASH, null, null, null, null);
 		assertTrue(violationsFor(req).isEmpty());
 	}
 
 	@Test
 	void receiptNumber_null_passesValidation() {
 		var req = new RecordFeePaymentRequest("id-1", "id-5", new BigDecimal("5000.00"),
-				LocalDateTime.of(2024, 9, 1, 10, 0), null);
+				LocalDateTime.of(2024, 9, 1, 10, 0), null, PaymentMode.CASH, null, null, null, null);
 		assertTrue(violationsFor(req).isEmpty());
 	}
 
 	@Test
 	void receiptNumber_tooLong_failsValidation() {
 		var req = new RecordFeePaymentRequest("id-1", "id-5", new BigDecimal("5000.00"),
-				LocalDateTime.of(2024, 9, 1, 10, 0), "R".repeat(101));
+				LocalDateTime.of(2024, 9, 1, 10, 0), "R".repeat(101), PaymentMode.CASH, null, null, null, null);
 		assertFalse(violationsFor(req).isEmpty());
 	}
 }

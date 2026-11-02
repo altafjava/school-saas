@@ -522,6 +522,18 @@
             </column>
             <column name="gateway_charge_reference" type="VARCHAR(255)"/>
             <column name="gateway_provider_type" type="VARCHAR(50)"/>
+            <column name="payment_mode" type="VARCHAR(20)" defaultValue="CASH">
+                <constraints nullable="false"/>
+            </column>
+            <column name="transaction_reference" type="VARCHAR(100)"/>
+            <column name="cheque_number" type="VARCHAR(50)"/>
+            <column name="cheque_date" type="DATE"/>
+            <column name="cheque_bank" type="VARCHAR(100)"/>
+            <column name="status" type="VARCHAR(20)" defaultValue="CLEARED">
+                <constraints nullable="false"/>
+            </column>
+            <column name="bounced_at" type="TIMESTAMP"/>
+            <column name="bounce_reason" type="VARCHAR(500)"/>
             <column name="created_at" type="TIMESTAMP">
                 <constraints nullable="false"/>
             </column>

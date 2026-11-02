@@ -2,7 +2,6 @@ package com.altafjava.school.api.controller;
 
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -13,6 +12,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import com.altafjava.platform.api.dto.response.ApiResponse;
+import com.altafjava.platform.application.security.annotation.RequiresPermission;
 import com.altafjava.school.api.controller.api.BoardApi;
 import com.altafjava.school.api.dto.request.CreateBoardRequest;
 import com.altafjava.school.api.dto.request.UpdateBoardRequest;
@@ -21,6 +21,7 @@ import com.altafjava.school.api.mapper.BoardMapper;
 import com.altafjava.school.api.support.PlatformPageMapper;
 import com.altafjava.school.api.support.SpringDataPageableResolver;
 import com.altafjava.school.application.service.BoardService;
+import com.altafjava.school.domain.security.permission.SchoolPermissions;
 
 @RestController
 @RequestMapping("/api/v1/boards")
@@ -40,7 +41,7 @@ public class BoardController implements BoardApi {
 
 	@Override
 	@GetMapping
-	@PreAuthorize("@permissionAuthorizationService.hasPermission('BOARD_READ')")
+	@RequiresPermission(SchoolPermissions.BOARD_READ)
 	public ApiResponse<com.altafjava.platform.core.model.Page<BoardResponse>> list(
 			@RequestParam(defaultValue = "0") int page,
 			@RequestParam(defaultValue = "20") int size,
@@ -52,7 +53,7 @@ public class BoardController implements BoardApi {
 
 	@Override
 	@GetMapping("/{publicId}")
-	@PreAuthorize("@permissionAuthorizationService.hasPermission('BOARD_READ')")
+	@RequiresPermission(SchoolPermissions.BOARD_READ)
 	public ApiResponse<BoardResponse> get(@PathVariable String publicId) {
 		return ApiResponse.success(boardMapper.toResponse(boardService.findByPublicId(publicId)));
 	}
@@ -60,7 +61,7 @@ public class BoardController implements BoardApi {
 	@Override
 	@PostMapping
 	@ResponseStatus(HttpStatus.CREATED)
-	@PreAuthorize("@permissionAuthorizationService.hasPermission('BOARD_WRITE')")
+	@RequiresPermission(SchoolPermissions.BOARD_WRITE)
 	public ApiResponse<BoardResponse> create(@Valid @RequestBody CreateBoardRequest request) {
 		return ApiResponse.success(
 				boardMapper.toResponse(boardService.create(request.name(), request.code(), request.description())));
@@ -68,7 +69,7 @@ public class BoardController implements BoardApi {
 
 	@Override
 	@PatchMapping("/{publicId}")
-	@PreAuthorize("@permissionAuthorizationService.hasPermission('BOARD_WRITE')")
+	@RequiresPermission(SchoolPermissions.BOARD_WRITE)
 	public ApiResponse<BoardResponse> updateDetails(@PathVariable String publicId,
 			@Valid @RequestBody UpdateBoardRequest request) {
 		return ApiResponse.success(boardMapper.toResponse(
@@ -78,7 +79,7 @@ public class BoardController implements BoardApi {
 
 	@Override
 	@PatchMapping("/{publicId}/deactivate")
-	@PreAuthorize("@permissionAuthorizationService.hasPermission('BOARD_WRITE')")
+	@RequiresPermission(SchoolPermissions.BOARD_WRITE)
 	public ApiResponse<BoardResponse> deactivate(@PathVariable String publicId) {
 		return ApiResponse.success(boardMapper.toResponse(boardService.deactivate(publicId)));
 	}
