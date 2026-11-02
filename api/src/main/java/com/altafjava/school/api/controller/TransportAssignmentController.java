@@ -2,7 +2,6 @@ package com.altafjava.school.api.controller;
 
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -13,6 +12,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import com.altafjava.platform.api.dto.response.ApiResponse;
+import com.altafjava.platform.application.security.annotation.RequiresPermission;
 import com.altafjava.platform.core.annotation.Command;
 import com.altafjava.school.api.controller.api.TransportAssignmentApi;
 import com.altafjava.school.api.dto.request.AssignTransportRequest;
@@ -23,6 +23,7 @@ import com.altafjava.school.api.support.PlatformPageMapper;
 import com.altafjava.school.api.support.SpringDataPageableResolver;
 import com.altafjava.school.application.reference.ReferenceSummaries;
 import com.altafjava.school.application.service.TransportAssignmentService;
+import com.altafjava.school.domain.security.permission.SchoolPermissions;
 
 @RestController
 @RequestMapping("/api/v1/transport-assignments")
@@ -46,7 +47,7 @@ public class TransportAssignmentController implements TransportAssignmentApi {
 
 	@Override
 	@GetMapping
-	@PreAuthorize("@permissionAuthorizationService.hasPermission('TRANSPORT_ASSIGNMENT_READ')")
+	@RequiresPermission(SchoolPermissions.TRANSPORT_ASSIGNMENT_READ)
 	public ApiResponse<com.altafjava.platform.core.model.Page<TransportAssignmentResponse>> listForRoute(
 			@RequestParam String routePublicId,
 			@RequestParam(defaultValue = "0") int page,
@@ -59,7 +60,7 @@ public class TransportAssignmentController implements TransportAssignmentApi {
 	@Override
 	@PostMapping
 	@ResponseStatus(HttpStatus.CREATED)
-	@PreAuthorize("@permissionAuthorizationService.hasPermission('TRANSPORT_ASSIGNMENT_WRITE')")
+	@RequiresPermission(SchoolPermissions.TRANSPORT_ASSIGNMENT_WRITE)
 	public ApiResponse<TransportAssignmentResponse> assign(@Valid @RequestBody AssignTransportRequest request) {
 		return ApiResponse.success(
 				transportAssignmentMapper.toResponse(transportAssignmentService.assign(request.studentPublicId(),
@@ -70,7 +71,7 @@ public class TransportAssignmentController implements TransportAssignmentApi {
 	@Override
 	@PatchMapping("/{publicId}/end")
 	@Command
-	@PreAuthorize("@permissionAuthorizationService.hasPermission('TRANSPORT_ASSIGNMENT_WRITE')")
+	@RequiresPermission(SchoolPermissions.TRANSPORT_ASSIGNMENT_WRITE)
 	public ApiResponse<TransportAssignmentResponse> end(@PathVariable String publicId,
 			@Valid @RequestBody EndTransportAssignmentRequest request) {
 		return ApiResponse.success(

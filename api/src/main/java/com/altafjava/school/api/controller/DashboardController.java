@@ -2,12 +2,12 @@ package com.altafjava.school.api.controller;
 
 import java.util.List;
 import java.util.Map;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import com.altafjava.platform.api.dto.response.ApiResponse;
+import com.altafjava.platform.application.security.annotation.RequiresPermission;
 import com.altafjava.school.api.controller.api.DashboardApi;
 import com.altafjava.school.api.dto.response.dashboard.AcademicDashboardRow;
 import com.altafjava.school.api.dto.response.dashboard.AttendanceTrendPoint;
@@ -23,6 +23,7 @@ import com.altafjava.school.application.dashboard.FinanceDashboardDataProvider;
 import com.altafjava.school.application.dashboard.HrDashboardDataProvider;
 import com.altafjava.school.application.dashboard.LeaveUtilizationTrendDataProvider;
 import com.altafjava.school.application.dashboard.PrincipalDashboardDataProvider;
+import com.altafjava.school.domain.security.permission.SchoolPermissions;
 import tools.jackson.databind.ObjectMapper;
 
 /**
@@ -72,7 +73,7 @@ public class DashboardController implements DashboardApi {
 
 	@Override
 	@GetMapping("/principal")
-	@PreAuthorize("@permissionAuthorizationService.hasPermission('DASHBOARD_PRINCIPAL_READ')")
+	@RequiresPermission(SchoolPermissions.DASHBOARD_PRINCIPAL_READ)
 	public ApiResponse<List<PrincipalDashboardResponse>> principal() {
 		return ApiResponse
 				.success(typed(principalDashboardDataProvider.fetchData(Map.of()), PrincipalDashboardResponse.class));
@@ -80,7 +81,7 @@ public class DashboardController implements DashboardApi {
 
 	@Override
 	@GetMapping("/finance")
-	@PreAuthorize("@permissionAuthorizationService.hasPermission('DASHBOARD_FINANCE_READ')")
+	@RequiresPermission(SchoolPermissions.DASHBOARD_FINANCE_READ)
 	public ApiResponse<List<FinanceDashboardResponse>> finance() {
 		return ApiResponse
 				.success(typed(financeDashboardDataProvider.fetchData(Map.of()), FinanceDashboardResponse.class));
@@ -88,14 +89,14 @@ public class DashboardController implements DashboardApi {
 
 	@Override
 	@GetMapping("/hr")
-	@PreAuthorize("@permissionAuthorizationService.hasPermission('DASHBOARD_HR_READ')")
+	@RequiresPermission(SchoolPermissions.DASHBOARD_HR_READ)
 	public ApiResponse<List<HrDashboardResponse>> hr() {
 		return ApiResponse.success(typed(hrDashboardDataProvider.fetchData(Map.of()), HrDashboardResponse.class));
 	}
 
 	@Override
 	@GetMapping("/academic")
-	@PreAuthorize("@permissionAuthorizationService.hasPermission('DASHBOARD_ACADEMIC_READ')")
+	@RequiresPermission(SchoolPermissions.DASHBOARD_ACADEMIC_READ)
 	public ApiResponse<List<AcademicDashboardRow>> academic() {
 		return ApiResponse
 				.success(typed(academicDashboardDataProvider.fetchData(Map.of()), AcademicDashboardRow.class));
@@ -103,7 +104,7 @@ public class DashboardController implements DashboardApi {
 
 	@Override
 	@GetMapping("/principal/trends")
-	@PreAuthorize("@permissionAuthorizationService.hasPermission('DASHBOARD_PRINCIPAL_READ')")
+	@RequiresPermission(SchoolPermissions.DASHBOARD_PRINCIPAL_READ)
 	public ApiResponse<List<AttendanceTrendPoint>> principalTrends(@RequestParam(required = false) Integer periods) {
 		return ApiResponse.success(
 				typed(attendanceTrendDataProvider.fetchData(trendParameters(periods)), AttendanceTrendPoint.class));
@@ -111,7 +112,7 @@ public class DashboardController implements DashboardApi {
 
 	@Override
 	@GetMapping("/academic/trends")
-	@PreAuthorize("@permissionAuthorizationService.hasPermission('DASHBOARD_ACADEMIC_READ')")
+	@RequiresPermission(SchoolPermissions.DASHBOARD_ACADEMIC_READ)
 	public ApiResponse<List<AttendanceTrendPoint>> academicTrends(@RequestParam(required = false) Integer periods) {
 		return ApiResponse.success(
 				typed(attendanceTrendDataProvider.fetchData(trendParameters(periods)), AttendanceTrendPoint.class));
@@ -119,7 +120,7 @@ public class DashboardController implements DashboardApi {
 
 	@Override
 	@GetMapping("/finance/trends")
-	@PreAuthorize("@permissionAuthorizationService.hasPermission('DASHBOARD_FINANCE_READ')")
+	@RequiresPermission(SchoolPermissions.DASHBOARD_FINANCE_READ)
 	public ApiResponse<List<FeeCollectionTrendPoint>> financeTrends(@RequestParam(required = false) Integer periods) {
 		return ApiResponse.success(typed(feeCollectionTrendDataProvider.fetchData(trendParameters(periods)),
 				FeeCollectionTrendPoint.class));
@@ -127,7 +128,7 @@ public class DashboardController implements DashboardApi {
 
 	@Override
 	@GetMapping("/hr/trends")
-	@PreAuthorize("@permissionAuthorizationService.hasPermission('DASHBOARD_HR_READ')")
+	@RequiresPermission(SchoolPermissions.DASHBOARD_HR_READ)
 	public ApiResponse<List<LeaveUtilizationTrendPoint>> hrTrends(@RequestParam(required = false) Integer periods) {
 		return ApiResponse.success(typed(leaveUtilizationTrendDataProvider.fetchData(trendParameters(periods)),
 				LeaveUtilizationTrendPoint.class));

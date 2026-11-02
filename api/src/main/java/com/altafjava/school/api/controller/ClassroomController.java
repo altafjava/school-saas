@@ -3,7 +3,6 @@ package com.altafjava.school.api.controller;
 import java.util.List;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -14,6 +13,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import com.altafjava.platform.api.dto.response.ApiResponse;
+import com.altafjava.platform.application.security.annotation.RequiresPermission;
 import com.altafjava.platform.core.annotation.Command;
 import com.altafjava.school.api.controller.api.ClassroomApi;
 import com.altafjava.school.api.dto.request.AssignClassroomCurriculumRequest;
@@ -38,6 +38,7 @@ import com.altafjava.school.api.support.StudentResponseAssembler;
 import com.altafjava.school.application.reference.ReferenceSummaries;
 import com.altafjava.school.application.service.ClassroomService;
 import com.altafjava.school.application.service.TimetableService;
+import com.altafjava.school.domain.security.permission.SchoolPermissions;
 
 @RestController
 @RequestMapping("/api/v1/classrooms")
@@ -71,7 +72,7 @@ public class ClassroomController implements ClassroomApi {
 
 	@Override
 	@GetMapping
-	@PreAuthorize("@permissionAuthorizationService.hasPermission('CLASSROOM_READ')")
+	@RequiresPermission(SchoolPermissions.CLASSROOM_READ)
 	@SortableBy({ "classCode", "grade", "section" })
 	public ApiResponse<com.altafjava.platform.core.model.Page<ClassroomResponse>> list(
 			@RequestParam(defaultValue = "0") int page,
@@ -88,7 +89,7 @@ public class ClassroomController implements ClassroomApi {
 
 	@Override
 	@GetMapping("/{publicId}")
-	@PreAuthorize("@permissionAuthorizationService.hasPermission('CLASSROOM_READ')")
+	@RequiresPermission(SchoolPermissions.CLASSROOM_READ)
 	public ApiResponse<ClassroomResponse> get(@PathVariable String publicId) {
 		return ApiResponse.success(classroomMapper.toResponse(classroomService.findByPublicId(publicId)));
 	}
@@ -96,7 +97,7 @@ public class ClassroomController implements ClassroomApi {
 	@Override
 	@PostMapping
 	@ResponseStatus(HttpStatus.CREATED)
-	@PreAuthorize("@permissionAuthorizationService.hasPermission('CLASSROOM_WRITE')")
+	@RequiresPermission(SchoolPermissions.CLASSROOM_WRITE)
 	public ApiResponse<ClassroomResponse> create(@Valid @RequestBody CreateClassroomRequest request) {
 		return ApiResponse.success(classroomMapper.toResponse(classroomService.create(
 				request.classCode(),
@@ -108,7 +109,7 @@ public class ClassroomController implements ClassroomApi {
 
 	@Override
 	@PatchMapping("/{publicId}/teacher")
-	@PreAuthorize("@permissionAuthorizationService.hasPermission('CLASSROOM_WRITE')")
+	@RequiresPermission(SchoolPermissions.CLASSROOM_WRITE)
 	public ApiResponse<ClassroomResponse> reassignTeacher(@PathVariable String publicId,
 			@Valid @RequestBody ReassignClassTeacherRequest request) {
 		return ApiResponse
@@ -119,7 +120,7 @@ public class ClassroomController implements ClassroomApi {
 
 	@Override
 	@PatchMapping("/{publicId}/academic-year")
-	@PreAuthorize("@permissionAuthorizationService.hasPermission('CLASSROOM_WRITE')")
+	@RequiresPermission(SchoolPermissions.CLASSROOM_WRITE)
 	public ApiResponse<ClassroomResponse> moveToAcademicYear(@PathVariable String publicId,
 			@Valid @RequestBody MoveClassroomAcademicYearRequest request) {
 		return ApiResponse.success(classroomMapper.toResponse(
@@ -129,7 +130,7 @@ public class ClassroomController implements ClassroomApi {
 
 	@Override
 	@PatchMapping("/{publicId}/capacity")
-	@PreAuthorize("@permissionAuthorizationService.hasPermission('CLASSROOM_WRITE')")
+	@RequiresPermission(SchoolPermissions.CLASSROOM_WRITE)
 	public ApiResponse<ClassroomResponse> updateCapacity(@PathVariable String publicId,
 			@Valid @RequestBody UpdateClassroomCapacityRequest request) {
 		return ApiResponse
@@ -139,7 +140,7 @@ public class ClassroomController implements ClassroomApi {
 
 	@Override
 	@PatchMapping("/{publicId}/curriculum")
-	@PreAuthorize("@permissionAuthorizationService.hasPermission('CLASSROOM_WRITE')")
+	@RequiresPermission(SchoolPermissions.CLASSROOM_WRITE)
 	public ApiResponse<ClassroomResponse> assignCurriculum(@PathVariable String publicId,
 			@Valid @RequestBody AssignClassroomCurriculumRequest request) {
 		return ApiResponse.success(
@@ -149,7 +150,7 @@ public class ClassroomController implements ClassroomApi {
 
 	@Override
 	@GetMapping("/{publicId}/timetable")
-	@PreAuthorize("@permissionAuthorizationService.hasPermission('TIMETABLE_READ')")
+	@RequiresPermission(SchoolPermissions.TIMETABLE_READ)
 	public ApiResponse<List<TimetableEntryResponse>> timetable(@PathVariable String publicId) {
 		return ApiResponse.success(timetableEntryMapper.toResponseList(timetableService.listForClassroom(publicId)));
 	}
@@ -157,7 +158,7 @@ public class ClassroomController implements ClassroomApi {
 	@Override
 	@PostMapping("/{publicId}/students")
 	@ResponseStatus(HttpStatus.CREATED)
-	@PreAuthorize("@permissionAuthorizationService.hasPermission('CLASSROOM_WRITE')")
+	@RequiresPermission(SchoolPermissions.CLASSROOM_WRITE)
 	public ApiResponse<StudentClassroomLinkResponse> enrollStudent(@PathVariable String publicId,
 			@Valid @RequestBody EnrollStudentInClassroomRequest request) {
 		return ApiResponse.success(studentClassroomLinkMapper.toResponse(
@@ -167,7 +168,7 @@ public class ClassroomController implements ClassroomApi {
 
 	@Override
 	@GetMapping("/{publicId}/students")
-	@PreAuthorize("@permissionAuthorizationService.hasPermission('CLASSROOM_READ')")
+	@RequiresPermission(SchoolPermissions.CLASSROOM_READ)
 	public ApiResponse<com.altafjava.platform.core.model.Page<StudentResponse>> roster(@PathVariable String publicId,
 			@RequestParam(defaultValue = "0") int page,
 			@RequestParam(defaultValue = "20") int size) {
@@ -178,7 +179,7 @@ public class ClassroomController implements ClassroomApi {
 
 	@Override
 	@PatchMapping("/{publicId}/students/{studentPublicId}/withdraw")
-	@PreAuthorize("@permissionAuthorizationService.hasPermission('CLASSROOM_WRITE')")
+	@RequiresPermission(SchoolPermissions.CLASSROOM_WRITE)
 	public ApiResponse<Void> withdrawStudent(@PathVariable String publicId, @PathVariable String studentPublicId) {
 		classroomService.withdrawStudentFromClassroom(publicId, studentPublicId);
 		return ApiResponse.success(null);
@@ -187,7 +188,7 @@ public class ClassroomController implements ClassroomApi {
 	@Override
 	@PatchMapping("/{publicId}/students/{studentPublicId}/roll-number")
 	@Command
-	@PreAuthorize("@permissionAuthorizationService.hasPermission('CLASSROOM_WRITE')")
+	@RequiresPermission(SchoolPermissions.CLASSROOM_WRITE)
 	public ApiResponse<RollNumberResponse> assignRollNumber(@PathVariable String publicId,
 			@PathVariable String studentPublicId, @Valid @RequestBody AssignRollNumberRequest request) {
 		var link = classroomService.assignRollNumber(publicId, studentPublicId, request.rollNumber());

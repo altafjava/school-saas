@@ -2,7 +2,6 @@ package com.altafjava.school.api.controller;
 
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -12,6 +11,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import com.altafjava.platform.api.dto.response.ApiResponse;
+import com.altafjava.platform.application.security.annotation.RequiresPermission;
 import com.altafjava.school.api.controller.api.TeacherApi;
 import com.altafjava.school.api.dto.request.CreateTeacherRequest;
 import com.altafjava.school.api.dto.response.TeacherResponse;
@@ -22,6 +22,7 @@ import com.altafjava.school.api.support.SortableBy;
 import com.altafjava.school.api.support.SpringDataPageableResolver;
 import com.altafjava.school.application.reference.ReferenceSummaries;
 import com.altafjava.school.application.service.TeacherService;
+import com.altafjava.school.domain.security.permission.SchoolPermissions;
 
 @RestController
 @RequestMapping("/api/v1/teachers")
@@ -47,7 +48,7 @@ public class TeacherController implements TeacherApi {
 
 	@Override
 	@GetMapping
-	@PreAuthorize("@permissionAuthorizationService.hasPermission('TEACHER_MANAGE')")
+	@RequiresPermission(SchoolPermissions.TEACHER_MANAGE)
 	@SortableBy({ "employeeCode", "firstName", "lastName", "joinDate", "status" })
 	public ApiResponse<com.altafjava.platform.core.model.Page<TeacherResponse>> list(
 			@RequestParam(defaultValue = "0") int page,
@@ -61,7 +62,7 @@ public class TeacherController implements TeacherApi {
 
 	@Override
 	@GetMapping("/{publicId}")
-	@PreAuthorize("@permissionAuthorizationService.hasPermission('TEACHER_MANAGE')")
+	@RequiresPermission(SchoolPermissions.TEACHER_MANAGE)
 	public ApiResponse<TeacherResponse> get(@PathVariable String publicId) {
 		return ApiResponse.success(teacherMapper.toResponse(teacherService.findByPublicId(publicId)));
 	}
@@ -69,7 +70,7 @@ public class TeacherController implements TeacherApi {
 	@Override
 	@PostMapping
 	@ResponseStatus(HttpStatus.CREATED)
-	@PreAuthorize("@permissionAuthorizationService.hasPermission('TEACHER_MANAGE')")
+	@RequiresPermission(SchoolPermissions.TEACHER_MANAGE)
 	public ApiResponse<TeacherResponse> hire(@Valid @RequestBody CreateTeacherRequest request) {
 		return ApiResponse.success(teacherMapper.toResponse(teacherService.hire(
 				request.employeeCode(),

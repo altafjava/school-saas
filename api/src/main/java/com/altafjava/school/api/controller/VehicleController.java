@@ -2,7 +2,6 @@ package com.altafjava.school.api.controller;
 
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -13,6 +12,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import com.altafjava.platform.api.dto.response.ApiResponse;
+import com.altafjava.platform.application.security.annotation.RequiresPermission;
 import com.altafjava.school.api.controller.api.VehicleApi;
 import com.altafjava.school.api.dto.request.CreateVehicleRequest;
 import com.altafjava.school.api.dto.request.UpdateVehicleRequest;
@@ -21,6 +21,7 @@ import com.altafjava.school.api.mapper.VehicleMapper;
 import com.altafjava.school.api.support.PlatformPageMapper;
 import com.altafjava.school.api.support.SpringDataPageableResolver;
 import com.altafjava.school.application.service.VehicleService;
+import com.altafjava.school.domain.security.permission.SchoolPermissions;
 
 @RestController
 @RequestMapping("/api/v1/vehicles")
@@ -40,7 +41,7 @@ public class VehicleController implements VehicleApi {
 
 	@Override
 	@GetMapping
-	@PreAuthorize("@permissionAuthorizationService.hasPermission('VEHICLE_READ')")
+	@RequiresPermission(SchoolPermissions.VEHICLE_READ)
 	public ApiResponse<com.altafjava.platform.core.model.Page<VehicleResponse>> list(
 			@RequestParam(defaultValue = "0") int page,
 			@RequestParam(defaultValue = "20") int size,
@@ -51,7 +52,7 @@ public class VehicleController implements VehicleApi {
 
 	@Override
 	@GetMapping("/{publicId}")
-	@PreAuthorize("@permissionAuthorizationService.hasPermission('VEHICLE_READ')")
+	@RequiresPermission(SchoolPermissions.VEHICLE_READ)
 	public ApiResponse<VehicleResponse> get(@PathVariable String publicId) {
 		return ApiResponse.success(vehicleMapper.toResponse(vehicleService.findByPublicId(publicId)));
 	}
@@ -59,7 +60,7 @@ public class VehicleController implements VehicleApi {
 	@Override
 	@PostMapping
 	@ResponseStatus(HttpStatus.CREATED)
-	@PreAuthorize("@permissionAuthorizationService.hasPermission('VEHICLE_WRITE')")
+	@RequiresPermission(SchoolPermissions.VEHICLE_WRITE)
 	public ApiResponse<VehicleResponse> create(@Valid @RequestBody CreateVehicleRequest request) {
 		return ApiResponse.success(
 				vehicleMapper.toResponse(vehicleService.create(request.registrationNumber(), request.capacity(),
@@ -68,7 +69,7 @@ public class VehicleController implements VehicleApi {
 
 	@Override
 	@PatchMapping("/{publicId}")
-	@PreAuthorize("@permissionAuthorizationService.hasPermission('VEHICLE_WRITE')")
+	@RequiresPermission(SchoolPermissions.VEHICLE_WRITE)
 	public ApiResponse<VehicleResponse> updateDetails(@PathVariable String publicId,
 			@Valid @RequestBody UpdateVehicleRequest request) {
 		return ApiResponse.success(vehicleMapper.toResponse(vehicleService.updateDetails(publicId, request.capacity(),
@@ -77,7 +78,7 @@ public class VehicleController implements VehicleApi {
 
 	@Override
 	@PatchMapping("/{publicId}/deactivate")
-	@PreAuthorize("@permissionAuthorizationService.hasPermission('VEHICLE_WRITE')")
+	@RequiresPermission(SchoolPermissions.VEHICLE_WRITE)
 	public ApiResponse<VehicleResponse> deactivate(@PathVariable String publicId) {
 		return ApiResponse.success(vehicleMapper.toResponse(vehicleService.deactivate(publicId)));
 	}

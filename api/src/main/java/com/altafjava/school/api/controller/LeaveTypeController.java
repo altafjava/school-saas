@@ -3,7 +3,6 @@ package com.altafjava.school.api.controller;
 import java.util.List;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -14,6 +13,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import com.altafjava.platform.api.dto.response.ApiResponse;
+import com.altafjava.platform.application.security.annotation.RequiresPermission;
 import com.altafjava.school.api.controller.api.LeaveTypeApi;
 import com.altafjava.school.api.dto.request.ConfigureLeaveApprovalRequest;
 import com.altafjava.school.api.dto.request.ConfigureLeaveCarryForwardRequest;
@@ -24,6 +24,7 @@ import com.altafjava.school.api.mapper.LeaveTypeMapper;
 import com.altafjava.school.api.support.PlatformPageMapper;
 import com.altafjava.school.api.support.SpringDataPageableResolver;
 import com.altafjava.school.application.service.LeaveTypeService;
+import com.altafjava.school.domain.security.permission.SchoolPermissions;
 
 @RestController
 @RequestMapping("/api/v1/leave-types")
@@ -43,7 +44,7 @@ public class LeaveTypeController implements LeaveTypeApi {
 
 	@Override
 	@GetMapping
-	@PreAuthorize("@permissionAuthorizationService.hasPermission('LEAVE_TYPE_READ')")
+	@RequiresPermission(SchoolPermissions.LEAVE_TYPE_READ)
 	public ApiResponse<com.altafjava.platform.core.model.Page<LeaveTypeResponse>> list(
 			@RequestParam(defaultValue = "0") int page,
 			@RequestParam(defaultValue = "20") int size,
@@ -54,14 +55,14 @@ public class LeaveTypeController implements LeaveTypeApi {
 
 	@Override
 	@GetMapping("/active")
-	@PreAuthorize("@permissionAuthorizationService.hasPermission('LEAVE_TYPE_READ')")
+	@RequiresPermission(SchoolPermissions.LEAVE_TYPE_READ)
 	public ApiResponse<List<LeaveTypeResponse>> listActive() {
 		return ApiResponse.success(leaveTypeService.listActive().stream().map(leaveTypeMapper::toResponse).toList());
 	}
 
 	@Override
 	@GetMapping("/{publicId}")
-	@PreAuthorize("@permissionAuthorizationService.hasPermission('LEAVE_TYPE_READ')")
+	@RequiresPermission(SchoolPermissions.LEAVE_TYPE_READ)
 	public ApiResponse<LeaveTypeResponse> get(@PathVariable String publicId) {
 		return ApiResponse.success(leaveTypeMapper.toResponse(leaveTypeService.findByPublicId(publicId)));
 	}
@@ -69,7 +70,7 @@ public class LeaveTypeController implements LeaveTypeApi {
 	@Override
 	@PostMapping
 	@ResponseStatus(HttpStatus.CREATED)
-	@PreAuthorize("@permissionAuthorizationService.hasPermission('LEAVE_TYPE_WRITE')")
+	@RequiresPermission(SchoolPermissions.LEAVE_TYPE_WRITE)
 	public ApiResponse<LeaveTypeResponse> create(@Valid @RequestBody CreateLeaveTypeRequest request) {
 		return ApiResponse.success(
 				leaveTypeMapper.toResponse(leaveTypeService.create(request.name(), request.defaultAnnualDays())));
@@ -77,7 +78,7 @@ public class LeaveTypeController implements LeaveTypeApi {
 
 	@Override
 	@PatchMapping("/{publicId}")
-	@PreAuthorize("@permissionAuthorizationService.hasPermission('LEAVE_TYPE_WRITE')")
+	@RequiresPermission(SchoolPermissions.LEAVE_TYPE_WRITE)
 	public ApiResponse<LeaveTypeResponse> updateDetails(@PathVariable String publicId,
 			@Valid @RequestBody UpdateLeaveTypeRequest request) {
 		return ApiResponse.success(leaveTypeMapper
@@ -87,7 +88,7 @@ public class LeaveTypeController implements LeaveTypeApi {
 
 	@Override
 	@PatchMapping("/{publicId}/deactivate")
-	@PreAuthorize("@permissionAuthorizationService.hasPermission('LEAVE_TYPE_WRITE')")
+	@RequiresPermission(SchoolPermissions.LEAVE_TYPE_WRITE)
 	public ApiResponse<LeaveTypeResponse> deactivate(@PathVariable String publicId) {
 		return ApiResponse.success(leaveTypeMapper.toResponse(leaveTypeService.deactivate(publicId)));
 	}
@@ -96,35 +97,35 @@ public class LeaveTypeController implements LeaveTypeApi {
 	// category excluded from pay mark it here rather than payroll inventing its own catalog.
 	@Override
 	@PatchMapping("/{publicId}/mark-unpaid")
-	@PreAuthorize("@permissionAuthorizationService.hasPermission('LEAVE_TYPE_WRITE')")
+	@RequiresPermission(SchoolPermissions.LEAVE_TYPE_WRITE)
 	public ApiResponse<LeaveTypeResponse> markUnpaid(@PathVariable String publicId) {
 		return ApiResponse.success(leaveTypeMapper.toResponse(leaveTypeService.markUnpaid(publicId)));
 	}
 
 	@Override
 	@PatchMapping("/{publicId}/mark-paid")
-	@PreAuthorize("@permissionAuthorizationService.hasPermission('LEAVE_TYPE_WRITE')")
+	@RequiresPermission(SchoolPermissions.LEAVE_TYPE_WRITE)
 	public ApiResponse<LeaveTypeResponse> markPaid(@PathVariable String publicId) {
 		return ApiResponse.success(leaveTypeMapper.toResponse(leaveTypeService.markPaid(publicId)));
 	}
 
 	@Override
 	@PatchMapping("/{publicId}/restrict-during-probation")
-	@PreAuthorize("@permissionAuthorizationService.hasPermission('LEAVE_TYPE_WRITE')")
+	@RequiresPermission(SchoolPermissions.LEAVE_TYPE_WRITE)
 	public ApiResponse<LeaveTypeResponse> restrictDuringProbation(@PathVariable String publicId) {
 		return ApiResponse.success(leaveTypeMapper.toResponse(leaveTypeService.restrictDuringProbation(publicId)));
 	}
 
 	@Override
 	@PatchMapping("/{publicId}/allow-during-probation")
-	@PreAuthorize("@permissionAuthorizationService.hasPermission('LEAVE_TYPE_WRITE')")
+	@RequiresPermission(SchoolPermissions.LEAVE_TYPE_WRITE)
 	public ApiResponse<LeaveTypeResponse> allowDuringProbation(@PathVariable String publicId) {
 		return ApiResponse.success(leaveTypeMapper.toResponse(leaveTypeService.allowDuringProbation(publicId)));
 	}
 
 	@Override
 	@PatchMapping("/{publicId}/carry-forward")
-	@PreAuthorize("@permissionAuthorizationService.hasPermission('LEAVE_TYPE_WRITE')")
+	@RequiresPermission(SchoolPermissions.LEAVE_TYPE_WRITE)
 	public ApiResponse<LeaveTypeResponse> configureCarryForward(@PathVariable String publicId,
 			@Valid @RequestBody ConfigureLeaveCarryForwardRequest request) {
 		return ApiResponse
@@ -134,7 +135,7 @@ public class LeaveTypeController implements LeaveTypeApi {
 
 	@Override
 	@PatchMapping("/{publicId}/approval-levels")
-	@PreAuthorize("@permissionAuthorizationService.hasPermission('LEAVE_TYPE_WRITE')")
+	@RequiresPermission(SchoolPermissions.LEAVE_TYPE_WRITE)
 	public ApiResponse<LeaveTypeResponse> configureApprovalLevels(@PathVariable String publicId,
 			@Valid @RequestBody ConfigureLeaveApprovalRequest request) {
 		return ApiResponse.success(leaveTypeMapper

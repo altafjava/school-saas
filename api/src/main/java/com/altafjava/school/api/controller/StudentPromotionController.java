@@ -2,7 +2,6 @@ package com.altafjava.school.api.controller;
 
 import java.util.List;
 import jakarta.validation.Valid;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -11,6 +10,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import com.altafjava.platform.api.dto.response.ApiResponse;
+import com.altafjava.platform.application.security.annotation.RequiresPermission;
 import com.altafjava.platform.core.idempotency.RequireIdempotencyKey;
 import com.altafjava.school.api.controller.api.StudentPromotionApi;
 import com.altafjava.school.api.dto.request.PromoteStudentsRequest;
@@ -22,6 +22,7 @@ import com.altafjava.school.application.service.StudentPromotionService;
 import com.altafjava.school.application.service.StudentPromotionService.Decision;
 import com.altafjava.school.application.service.StudentPromotionService.Preview;
 import com.altafjava.school.application.service.StudentPromotionService.ResultRow;
+import com.altafjava.school.domain.security.permission.SchoolPermissions;
 import lombok.RequiredArgsConstructor;
 
 @RestController
@@ -34,7 +35,7 @@ public class StudentPromotionController implements StudentPromotionApi {
 
 	@Override
 	@GetMapping("/preview")
-	@PreAuthorize("@permissionAuthorizationService.hasPermission('STUDENT_PROMOTE')")
+	@RequiresPermission(SchoolPermissions.STUDENT_PROMOTE)
 	public ApiResponse<PromotionPreviewResponse> preview(@PathVariable String classroomPublicId,
 			@RequestParam String targetClassroomPublicId) {
 		Preview preview = studentPromotionService.preview(classroomPublicId, targetClassroomPublicId);
@@ -50,7 +51,7 @@ public class StudentPromotionController implements StudentPromotionApi {
 
 	@Override
 	@PostMapping
-	@PreAuthorize("@permissionAuthorizationService.hasPermission('STUDENT_PROMOTE')")
+	@RequiresPermission(SchoolPermissions.STUDENT_PROMOTE)
 	@RequireIdempotencyKey
 	public ApiResponse<List<PromotionResultResponse>> promote(@PathVariable String classroomPublicId,
 			@Valid @RequestBody PromoteStudentsRequest request) {

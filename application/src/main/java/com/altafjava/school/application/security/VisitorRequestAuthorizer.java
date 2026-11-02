@@ -5,6 +5,7 @@ import org.springframework.stereotype.Component;
 import com.altafjava.platform.application.security.PermissionAuthorizationService;
 import com.altafjava.school.domain.employee.model.Employee;
 import com.altafjava.school.domain.employee.repository.EmployeeRepository;
+import com.altafjava.school.domain.security.permission.SchoolPermissions;
 import com.altafjava.school.domain.visitor.model.VisitorRequest;
 import lombok.RequiredArgsConstructor;
 
@@ -20,7 +21,7 @@ public class VisitorRequestAuthorizer {
 	private final PermissionAuthorizationService permissionAuthorizationService;
 
 	public void assertMayRaiseFor(Long tenantId, Employee host, Long actorUserId) {
-		if (permissionAuthorizationService.hasPermission("VISITOR_LOG_MANAGE")
+		if (permissionAuthorizationService.hasPermission(SchoolPermissions.VISITOR_LOG_MANAGE)
 				|| isHost(tenantId, host.getId(), actorUserId)) {
 			return;
 		}
@@ -28,7 +29,7 @@ public class VisitorRequestAuthorizer {
 	}
 
 	public void assertMayDecide(Long tenantId, VisitorRequest request, Long actorUserId) {
-		if (permissionAuthorizationService.hasPermission("VISITOR_REQUEST_APPROVE")
+		if (permissionAuthorizationService.hasPermission(SchoolPermissions.VISITOR_REQUEST_APPROVE)
 				|| isHost(tenantId, request.getHostEmployeeId(), actorUserId)) {
 			return;
 		}
@@ -37,8 +38,8 @@ public class VisitorRequestAuthorizer {
 
 	public void assertMayManage(Long tenantId, VisitorRequest request, Long actorUserId) {
 		boolean requester = actorUserId.equals(request.getRequestedByUserId());
-		if (requester || permissionAuthorizationService.hasPermission("VISITOR_LOG_MANAGE")
-				|| permissionAuthorizationService.hasPermission("VISITOR_REQUEST_APPROVE")
+		if (requester || permissionAuthorizationService.hasPermission(SchoolPermissions.VISITOR_LOG_MANAGE)
+				|| permissionAuthorizationService.hasPermission(SchoolPermissions.VISITOR_REQUEST_APPROVE)
 				|| isHost(tenantId, request.getHostEmployeeId(), actorUserId)) {
 			return;
 		}

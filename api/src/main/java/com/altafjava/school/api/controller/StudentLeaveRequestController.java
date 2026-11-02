@@ -3,7 +3,6 @@ package com.altafjava.school.api.controller;
 import java.time.LocalDate;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
@@ -15,6 +14,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import com.altafjava.platform.api.dto.response.ApiResponse;
+import com.altafjava.platform.application.security.annotation.RequiresPermission;
 import com.altafjava.platform.core.annotation.Command;
 import com.altafjava.platform.core.security.AuthenticatedUser;
 import com.altafjava.school.api.controller.api.StudentLeaveRequestApi;
@@ -30,19 +30,13 @@ import com.altafjava.school.application.filter.StudentLeaveRequestFilter;
 import com.altafjava.school.application.reference.ReferenceSummaries;
 import com.altafjava.school.application.service.StudentLeaveRequestService;
 import com.altafjava.school.domain.leave.model.LeaveRequestStatus;
+import com.altafjava.school.domain.security.permission.SchoolPermissions;
 import lombok.RequiredArgsConstructor;
 
 @RestController
 @RequestMapping("/api/v1/student-leave-requests")
 @RequiredArgsConstructor
 public class StudentLeaveRequestController implements StudentLeaveRequestApi {
-
-	// Any of these opens the endpoint; the service then checks the caller's reach over this student.
-	private static final String RAISE_OR_READ = "@permissionAuthorizationService.hasPermission('STUDENT_LEAVE_SELF_SERVICE') "
-			+ "or @permissionAuthorizationService.hasPermission('STUDENT_LEAVE_REVIEW') "
-			+ "or @permissionAuthorizationService.hasPermission('STUDENT_LEAVE_MANAGE')";
-	private static final String DECIDE = "@permissionAuthorizationService.hasPermission('STUDENT_LEAVE_REVIEW') "
-			+ "or @permissionAuthorizationService.hasPermission('STUDENT_LEAVE_MANAGE')";
 
 	private final StudentLeaveRequestService studentLeaveRequestService;
 	private final StudentLeaveRequestMapper studentLeaveRequestMapper;
@@ -51,7 +45,8 @@ public class StudentLeaveRequestController implements StudentLeaveRequestApi {
 
 	@Override
 	@GetMapping
-	@PreAuthorize(RAISE_OR_READ)
+	@RequiresPermission({ SchoolPermissions.STUDENT_LEAVE_SELF_SERVICE, SchoolPermissions.STUDENT_LEAVE_REVIEW,
+			SchoolPermissions.STUDENT_LEAVE_MANAGE })
 	@SortableBy({ "startDate", "endDate", "status" })
 	public ApiResponse<com.altafjava.platform.core.model.Page<StudentLeaveRequestResponse>> list(
 			@RequestParam(defaultValue = "0") int page,
@@ -70,7 +65,8 @@ public class StudentLeaveRequestController implements StudentLeaveRequestApi {
 
 	@Override
 	@GetMapping("/{publicId}")
-	@PreAuthorize(RAISE_OR_READ)
+	@RequiresPermission({ SchoolPermissions.STUDENT_LEAVE_SELF_SERVICE, SchoolPermissions.STUDENT_LEAVE_REVIEW,
+			SchoolPermissions.STUDENT_LEAVE_MANAGE })
 	public ApiResponse<StudentLeaveRequestResponse> get(@PathVariable String publicId) {
 		return ApiResponse
 				.success(studentLeaveRequestMapper.toResponse(studentLeaveRequestService.findByPublicId(publicId)));
@@ -79,7 +75,8 @@ public class StudentLeaveRequestController implements StudentLeaveRequestApi {
 	@Override
 	@PostMapping
 	@ResponseStatus(HttpStatus.CREATED)
-	@PreAuthorize(RAISE_OR_READ)
+	@RequiresPermission({ SchoolPermissions.STUDENT_LEAVE_SELF_SERVICE, SchoolPermissions.STUDENT_LEAVE_REVIEW,
+			SchoolPermissions.STUDENT_LEAVE_MANAGE })
 	public ApiResponse<StudentLeaveRequestResponse> submit(@Valid @RequestBody SubmitStudentLeaveRequest request,
 			@AuthenticationPrincipal AuthenticatedUser user) {
 		return ApiResponse.success(studentLeaveRequestMapper.toResponse(studentLeaveRequestService.submit(
@@ -90,7 +87,7 @@ public class StudentLeaveRequestController implements StudentLeaveRequestApi {
 	@Override
 	@PatchMapping("/{publicId}/approve")
 	@Command
-	@PreAuthorize(DECIDE)
+	@RequiresPermission({ SchoolPermissions.STUDENT_LEAVE_REVIEW, SchoolPermissions.STUDENT_LEAVE_MANAGE })
 	public ApiResponse<StudentLeaveRequestResponse> approve(@PathVariable String publicId,
 			@AuthenticationPrincipal AuthenticatedUser user) {
 		return ApiResponse.success(
@@ -100,7 +97,7 @@ public class StudentLeaveRequestController implements StudentLeaveRequestApi {
 	@Override
 	@PatchMapping("/{publicId}/reject")
 	@Command
-	@PreAuthorize(DECIDE)
+	@RequiresPermission({ SchoolPermissions.STUDENT_LEAVE_REVIEW, SchoolPermissions.STUDENT_LEAVE_MANAGE })
 	public ApiResponse<StudentLeaveRequestResponse> reject(@PathVariable String publicId,
 			@Valid @RequestBody RejectLeaveRequestRequest request, @AuthenticationPrincipal AuthenticatedUser user) {
 		return ApiResponse.success(studentLeaveRequestMapper.toResponse(
@@ -110,7 +107,8 @@ public class StudentLeaveRequestController implements StudentLeaveRequestApi {
 	@Override
 	@PatchMapping("/{publicId}/cancel")
 	@Command
-	@PreAuthorize(RAISE_OR_READ)
+	@RequiresPermission({ SchoolPermissions.STUDENT_LEAVE_SELF_SERVICE, SchoolPermissions.STUDENT_LEAVE_REVIEW,
+			SchoolPermissions.STUDENT_LEAVE_MANAGE })
 	public ApiResponse<StudentLeaveRequestResponse> cancel(@PathVariable String publicId,
 			@AuthenticationPrincipal AuthenticatedUser user) {
 		return ApiResponse.success(

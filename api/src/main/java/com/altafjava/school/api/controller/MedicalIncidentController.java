@@ -3,7 +3,6 @@ package com.altafjava.school.api.controller;
 import java.time.LocalDate;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -13,6 +12,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import com.altafjava.platform.api.dto.response.ApiResponse;
+import com.altafjava.platform.application.security.annotation.RequiresPermission;
 import com.altafjava.platform.core.feature.annotation.FeatureEnabled;
 import com.altafjava.school.api.controller.api.MedicalIncidentApi;
 import com.altafjava.school.api.dto.request.RecordMedicalIncidentRequest;
@@ -25,6 +25,7 @@ import com.altafjava.school.application.filter.MedicalIncidentFilter;
 import com.altafjava.school.application.reference.ReferenceSummaries;
 import com.altafjava.school.application.security.SchoolFeatures;
 import com.altafjava.school.application.service.MedicalIncidentService;
+import com.altafjava.school.domain.security.permission.SchoolPermissions;
 
 // See HealthRecordController for the TENANT_ADMIN-only rationale (PHI-grade data, no dedicated
 // health-staff role in the seeded catalog).
@@ -51,7 +52,7 @@ public class MedicalIncidentController implements MedicalIncidentApi {
 
 	@Override
 	@GetMapping
-	@PreAuthorize("@permissionAuthorizationService.hasPermission('MEDICAL_INCIDENT_MANAGE')")
+	@RequiresPermission(SchoolPermissions.MEDICAL_INCIDENT_MANAGE)
 	public ApiResponse<com.altafjava.platform.core.model.Page<MedicalIncidentResponse>> listAll(
 			@RequestParam(defaultValue = "0") int page,
 			@RequestParam(defaultValue = "20") int size,
@@ -67,7 +68,7 @@ public class MedicalIncidentController implements MedicalIncidentApi {
 
 	@Override
 	@GetMapping("/students/{studentPublicId}")
-	@PreAuthorize("@permissionAuthorizationService.hasPermission('MEDICAL_INCIDENT_MANAGE')")
+	@RequiresPermission(SchoolPermissions.MEDICAL_INCIDENT_MANAGE)
 	public ApiResponse<com.altafjava.platform.core.model.Page<MedicalIncidentResponse>> listForStudent(
 			@PathVariable String studentPublicId,
 			@RequestParam(defaultValue = "0") int page,
@@ -80,7 +81,7 @@ public class MedicalIncidentController implements MedicalIncidentApi {
 	@Override
 	@PostMapping
 	@ResponseStatus(HttpStatus.CREATED)
-	@PreAuthorize("@permissionAuthorizationService.hasPermission('MEDICAL_INCIDENT_MANAGE')")
+	@RequiresPermission(SchoolPermissions.MEDICAL_INCIDENT_MANAGE)
 	public ApiResponse<MedicalIncidentResponse> record(@Valid @RequestBody RecordMedicalIncidentRequest request) {
 		return ApiResponse
 				.success(medicalIncidentMapper.toResponse(medicalIncidentService.record(request.studentPublicId(),

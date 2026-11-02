@@ -2,7 +2,6 @@ package com.altafjava.school.api.controller;
 
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -13,6 +12,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import com.altafjava.platform.api.dto.response.ApiResponse;
+import com.altafjava.platform.application.security.annotation.RequiresPermission;
 import com.altafjava.school.api.controller.api.AlumniProfileApi;
 import com.altafjava.school.api.dto.request.CreateAlumniProfileRequest;
 import com.altafjava.school.api.dto.request.UpdateAlumniContactInfoRequest;
@@ -23,6 +23,7 @@ import com.altafjava.school.api.support.SpringDataPageableResolver;
 import com.altafjava.school.application.filter.AlumniProfileFilter;
 import com.altafjava.school.application.reference.ReferenceSummaries;
 import com.altafjava.school.application.service.AlumniProfileService;
+import com.altafjava.school.domain.security.permission.SchoolPermissions;
 
 /**
  * Gated to {@code Roles.HAS_TENANT_ADMIN} on every endpoint — alumni directory data carries
@@ -53,7 +54,7 @@ public class AlumniProfileController implements AlumniProfileApi {
 
 	@Override
 	@GetMapping
-	@PreAuthorize("@permissionAuthorizationService.hasPermission('ALUMNI_MANAGE')")
+	@RequiresPermission(SchoolPermissions.ALUMNI_MANAGE)
 	public ApiResponse<com.altafjava.platform.core.model.Page<AlumniProfileResponse>> list(
 			@RequestParam(defaultValue = "0") int page,
 			@RequestParam(defaultValue = "20") int size,
@@ -67,7 +68,7 @@ public class AlumniProfileController implements AlumniProfileApi {
 
 	@Override
 	@GetMapping("/{publicId}")
-	@PreAuthorize("@permissionAuthorizationService.hasPermission('ALUMNI_MANAGE')")
+	@RequiresPermission(SchoolPermissions.ALUMNI_MANAGE)
 	public ApiResponse<AlumniProfileResponse> get(@PathVariable String publicId) {
 		return ApiResponse.success(alumniProfileMapper.toResponse(alumniProfileService.findByPublicId(publicId)));
 	}
@@ -75,7 +76,7 @@ public class AlumniProfileController implements AlumniProfileApi {
 	@Override
 	@PostMapping
 	@ResponseStatus(HttpStatus.CREATED)
-	@PreAuthorize("@permissionAuthorizationService.hasPermission('ALUMNI_MANAGE')")
+	@RequiresPermission(SchoolPermissions.ALUMNI_MANAGE)
 	public ApiResponse<AlumniProfileResponse> create(@Valid @RequestBody CreateAlumniProfileRequest request) {
 		return ApiResponse.success(alumniProfileMapper.toResponse(alumniProfileService.create(request.studentPublicId(),
 				request.graduationYear(), request.currentOccupation(), request.contactEmail(),
@@ -84,7 +85,7 @@ public class AlumniProfileController implements AlumniProfileApi {
 
 	@Override
 	@PatchMapping("/{publicId}/contact-info")
-	@PreAuthorize("@permissionAuthorizationService.hasPermission('ALUMNI_MANAGE')")
+	@RequiresPermission(SchoolPermissions.ALUMNI_MANAGE)
 	public ApiResponse<AlumniProfileResponse> updateContactInfo(@PathVariable String publicId,
 			@Valid @RequestBody UpdateAlumniContactInfoRequest request) {
 		return ApiResponse.success(alumniProfileMapper.toResponse(alumniProfileService.updateContactInfo(publicId,
@@ -94,14 +95,14 @@ public class AlumniProfileController implements AlumniProfileApi {
 
 	@Override
 	@PatchMapping("/{publicId}/activate")
-	@PreAuthorize("@permissionAuthorizationService.hasPermission('ALUMNI_MANAGE')")
+	@RequiresPermission(SchoolPermissions.ALUMNI_MANAGE)
 	public ApiResponse<AlumniProfileResponse> activate(@PathVariable String publicId) {
 		return ApiResponse.success(alumniProfileMapper.toResponse(alumniProfileService.activate(publicId)));
 	}
 
 	@Override
 	@PatchMapping("/{publicId}/deactivate")
-	@PreAuthorize("@permissionAuthorizationService.hasPermission('ALUMNI_MANAGE')")
+	@RequiresPermission(SchoolPermissions.ALUMNI_MANAGE)
 	public ApiResponse<AlumniProfileResponse> deactivate(@PathVariable String publicId) {
 		return ApiResponse.success(alumniProfileMapper.toResponse(alumniProfileService.deactivate(publicId)));
 	}

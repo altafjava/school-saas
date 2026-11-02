@@ -3,12 +3,12 @@ package com.altafjava.school.api.controller;
 import org.springframework.http.CacheControl;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.AccessDeniedException;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import com.altafjava.platform.api.dto.response.ApiResponse;
+import com.altafjava.platform.application.security.annotation.RequiresAuthentication;
 import com.altafjava.platform.core.security.AuthenticatedUser;
 import com.altafjava.school.api.dto.response.CurrentClassroomResponse;
 import com.altafjava.school.api.dto.response.SchoolProfileResponse;
@@ -32,7 +32,7 @@ public class MeSchoolProfileController {
 	private final StudentMapper studentMapper;
 
 	@GetMapping
-	@PreAuthorize("isAuthenticated()")
+	@RequiresAuthentication
 	@Operation(summary = "School profile", description = "Which student, staff, teacher and guardian records the caller is, and the students linked to a guardian. Complements GET /api/v1/me.")
 	public ResponseEntity<ApiResponse<SchoolProfileResponse>> get(Authentication authentication) {
 		if (!(authentication.getPrincipal() instanceof AuthenticatedUser user) || user.getId() == null

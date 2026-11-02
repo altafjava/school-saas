@@ -68,6 +68,13 @@ jobs:
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
 
+      # The runner shares ~/.m2 with local builds, and a publish there mid-run corrupts the jars under test.
+      - name: Take a private copy of the platform jars
+        run: |
+          mkdir -p "$RUNNER_TEMP/m2/com/altafjava"
+          cp -R ~/.m2/repository/com/altafjava/platform "$RUNNER_TEMP/m2/com/altafjava/"
+          echo "GRADLE_OPTS=${GRADLE_OPTS:-} -Dmaven.repo.local=$RUNNER_TEMP/m2" >> "$GITHUB_ENV"
+
       - name: Compile
         env:
           GITHUB_ACTOR: ${{ github.actor }}
@@ -175,6 +182,13 @@ jobs:
 
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
+
+      # The runner shares ~/.m2 with local builds, and a publish there mid-run corrupts the jars under test.
+      - name: Take a private copy of the platform jars
+        run: |
+          mkdir -p "$RUNNER_TEMP/m2/com/altafjava"
+          cp -R ~/.m2/repository/com/altafjava/platform "$RUNNER_TEMP/m2/com/altafjava/"
+          echo "GRADLE_OPTS=${GRADLE_OPTS:-} -Dmaven.repo.local=$RUNNER_TEMP/m2" >> "$GITHUB_ENV"
       - name: Run the test suite on PostgreSQL
         env:
           GITHUB_ACTOR: ${{ github.actor }}
@@ -207,6 +221,13 @@ jobs:
 
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
+
+      # The runner shares ~/.m2 with local builds, and a publish there mid-run corrupts the jars under test.
+      - name: Take a private copy of the platform jars
+        run: |
+          mkdir -p "$RUNNER_TEMP/m2/com/altafjava"
+          cp -R ~/.m2/repository/com/altafjava/platform "$RUNNER_TEMP/m2/com/altafjava/"
+          echo "GRADLE_OPTS=${GRADLE_OPTS:-} -Dmaven.repo.local=$RUNNER_TEMP/m2" >> "$GITHUB_ENV"
 
       # Boots the real application with demo seed on real Redis and RabbitMQ, with no doubles.
       - name: Run real-infrastructure tests

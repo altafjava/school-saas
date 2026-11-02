@@ -2,7 +2,6 @@ package com.altafjava.school.api.controller;
 
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -13,6 +12,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import com.altafjava.platform.api.dto.response.ApiResponse;
+import com.altafjava.platform.application.security.annotation.RequiresPermission;
 import com.altafjava.school.api.controller.api.BookApi;
 import com.altafjava.school.api.dto.request.AddBookCopyRequest;
 import com.altafjava.school.api.dto.request.CreateBookRequest;
@@ -25,6 +25,7 @@ import com.altafjava.school.api.support.SortableBy;
 import com.altafjava.school.api.support.SpringDataPageableResolver;
 import com.altafjava.school.application.reference.ReferenceSummaries;
 import com.altafjava.school.application.service.BookCatalogService;
+import com.altafjava.school.domain.security.permission.SchoolPermissions;
 
 @RestController
 @RequestMapping("/api/v1/books")
@@ -50,7 +51,7 @@ public class BookController implements BookApi {
 
 	@Override
 	@GetMapping
-	@PreAuthorize("@permissionAuthorizationService.hasPermission('BOOK_READ')")
+	@RequiresPermission(SchoolPermissions.BOOK_READ)
 	@SortableBy({ "title", "author", "category" })
 	public ApiResponse<com.altafjava.platform.core.model.Page<BookResponse>> list(
 			@RequestParam(defaultValue = "0") int page,
@@ -62,7 +63,7 @@ public class BookController implements BookApi {
 
 	@Override
 	@GetMapping("/{publicId}")
-	@PreAuthorize("@permissionAuthorizationService.hasPermission('BOOK_READ')")
+	@RequiresPermission(SchoolPermissions.BOOK_READ)
 	public ApiResponse<BookResponse> get(@PathVariable String publicId) {
 		return ApiResponse.success(bookMapper.toResponse(bookCatalogService.findByPublicId(publicId)));
 	}
@@ -70,7 +71,7 @@ public class BookController implements BookApi {
 	@Override
 	@PostMapping
 	@ResponseStatus(HttpStatus.CREATED)
-	@PreAuthorize("@permissionAuthorizationService.hasPermission('BOOK_MANAGE')")
+	@RequiresPermission(SchoolPermissions.BOOK_MANAGE)
 	public ApiResponse<BookResponse> create(@Valid @RequestBody CreateBookRequest request) {
 		return ApiResponse.success(
 				bookMapper.toResponse(bookCatalogService.createBook(request.isbn(), request.title(), request.author(),
@@ -79,14 +80,14 @@ public class BookController implements BookApi {
 
 	@Override
 	@PatchMapping("/{publicId}/deactivate")
-	@PreAuthorize("@permissionAuthorizationService.hasPermission('BOOK_MANAGE')")
+	@RequiresPermission(SchoolPermissions.BOOK_MANAGE)
 	public ApiResponse<BookResponse> deactivate(@PathVariable String publicId) {
 		return ApiResponse.success(bookMapper.toResponse(bookCatalogService.deactivateBook(publicId)));
 	}
 
 	@Override
 	@GetMapping("/{publicId}/copies")
-	@PreAuthorize("@permissionAuthorizationService.hasPermission('BOOK_READ')")
+	@RequiresPermission(SchoolPermissions.BOOK_READ)
 	public ApiResponse<com.altafjava.platform.core.model.Page<BookCopyResponse>> listCopies(
 			@PathVariable String publicId,
 			@RequestParam(defaultValue = "0") int page,
@@ -98,7 +99,7 @@ public class BookController implements BookApi {
 	@Override
 	@PostMapping("/{publicId}/copies")
 	@ResponseStatus(HttpStatus.CREATED)
-	@PreAuthorize("@permissionAuthorizationService.hasPermission('BOOK_MANAGE')")
+	@RequiresPermission(SchoolPermissions.BOOK_MANAGE)
 	public ApiResponse<BookCopyResponse> addCopy(@PathVariable String publicId,
 			@Valid @RequestBody AddBookCopyRequest request) {
 		return ApiResponse.success(bookCopyMapper.toResponse(bookCatalogService.addCopy(publicId, request.copyCode())));
@@ -106,14 +107,14 @@ public class BookController implements BookApi {
 
 	@Override
 	@PatchMapping("/copies/{copyPublicId}/lost")
-	@PreAuthorize("@permissionAuthorizationService.hasPermission('BOOK_MANAGE')")
+	@RequiresPermission(SchoolPermissions.BOOK_MANAGE)
 	public ApiResponse<BookCopyResponse> markCopyLost(@PathVariable String copyPublicId) {
 		return ApiResponse.success(bookCopyMapper.toResponse(bookCatalogService.markCopyLost(copyPublicId)));
 	}
 
 	@Override
 	@PatchMapping("/copies/{copyPublicId}/damaged")
-	@PreAuthorize("@permissionAuthorizationService.hasPermission('BOOK_MANAGE')")
+	@RequiresPermission(SchoolPermissions.BOOK_MANAGE)
 	public ApiResponse<BookCopyResponse> markCopyDamaged(@PathVariable String copyPublicId) {
 		return ApiResponse.success(bookCopyMapper.toResponse(bookCatalogService.markCopyDamaged(copyPublicId)));
 	}

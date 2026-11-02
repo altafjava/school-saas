@@ -3,7 +3,6 @@ package com.altafjava.school.api.controller;
 import java.time.LocalDate;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -14,6 +13,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import com.altafjava.platform.api.dto.response.ApiResponse;
+import com.altafjava.platform.application.security.annotation.RequiresPermission;
 import com.altafjava.platform.core.annotation.Command;
 import com.altafjava.school.api.controller.api.CounselingReferralApi;
 import com.altafjava.school.api.dto.request.ReferForCounselingRequest;
@@ -27,6 +27,7 @@ import com.altafjava.school.application.filter.DateWindow;
 import com.altafjava.school.application.reference.ReferenceSummaries;
 import com.altafjava.school.application.service.CounselingReferralService;
 import com.altafjava.school.domain.counseling.model.CounselingReferralStatus;
+import com.altafjava.school.domain.security.permission.SchoolPermissions;
 
 // See CounselingSessionController for the TENANT_ADMIN-only rationale (PHI-grade data, no
 // dedicated counselor role in the seeded catalog).
@@ -52,7 +53,7 @@ public class CounselingReferralController implements CounselingReferralApi {
 
 	@Override
 	@GetMapping
-	@PreAuthorize("@permissionAuthorizationService.hasPermission('COUNSELING_MANAGE')")
+	@RequiresPermission(SchoolPermissions.COUNSELING_MANAGE)
 	public ApiResponse<com.altafjava.platform.core.model.Page<CounselingReferralResponse>> listAll(
 			@RequestParam(defaultValue = "0") int page,
 			@RequestParam(defaultValue = "20") int size,
@@ -69,7 +70,7 @@ public class CounselingReferralController implements CounselingReferralApi {
 
 	@Override
 	@GetMapping("/students/{studentPublicId}")
-	@PreAuthorize("@permissionAuthorizationService.hasPermission('COUNSELING_MANAGE')")
+	@RequiresPermission(SchoolPermissions.COUNSELING_MANAGE)
 	public ApiResponse<com.altafjava.platform.core.model.Page<CounselingReferralResponse>> listForStudent(
 			@PathVariable String studentPublicId,
 			@RequestParam(defaultValue = "0") int page,
@@ -81,7 +82,7 @@ public class CounselingReferralController implements CounselingReferralApi {
 
 	@Override
 	@GetMapping("/{publicId}")
-	@PreAuthorize("@permissionAuthorizationService.hasPermission('COUNSELING_MANAGE')")
+	@RequiresPermission(SchoolPermissions.COUNSELING_MANAGE)
 	public ApiResponse<CounselingReferralResponse> get(@PathVariable String publicId) {
 		return ApiResponse.success(counselingReferralMapper.toResponse(counselingReferralService.get(publicId)));
 	}
@@ -89,7 +90,7 @@ public class CounselingReferralController implements CounselingReferralApi {
 	@Override
 	@PostMapping
 	@ResponseStatus(HttpStatus.CREATED)
-	@PreAuthorize("@permissionAuthorizationService.hasPermission('COUNSELING_MANAGE')")
+	@RequiresPermission(SchoolPermissions.COUNSELING_MANAGE)
 	public ApiResponse<CounselingReferralResponse> refer(@Valid @RequestBody ReferForCounselingRequest request) {
 		return ApiResponse.success(counselingReferralMapper
 				.toResponse(counselingReferralService.refer(request.studentPublicId(), request.reason())));
@@ -98,7 +99,7 @@ public class CounselingReferralController implements CounselingReferralApi {
 	@Override
 	@PatchMapping("/{publicId}/schedule")
 	@Command
-	@PreAuthorize("@permissionAuthorizationService.hasPermission('COUNSELING_MANAGE')")
+	@RequiresPermission(SchoolPermissions.COUNSELING_MANAGE)
 	public ApiResponse<CounselingReferralResponse> schedule(@PathVariable String publicId,
 			@Valid @RequestBody ScheduleCounselingReferralRequest request) {
 		return ApiResponse.success(counselingReferralMapper.toResponse(
@@ -107,14 +108,14 @@ public class CounselingReferralController implements CounselingReferralApi {
 
 	@Override
 	@PatchMapping("/{publicId}/complete")
-	@PreAuthorize("@permissionAuthorizationService.hasPermission('COUNSELING_MANAGE')")
+	@RequiresPermission(SchoolPermissions.COUNSELING_MANAGE)
 	public ApiResponse<CounselingReferralResponse> complete(@PathVariable String publicId) {
 		return ApiResponse.success(counselingReferralMapper.toResponse(counselingReferralService.complete(publicId)));
 	}
 
 	@Override
 	@PatchMapping("/{publicId}/decline")
-	@PreAuthorize("@permissionAuthorizationService.hasPermission('COUNSELING_MANAGE')")
+	@RequiresPermission(SchoolPermissions.COUNSELING_MANAGE)
 	public ApiResponse<CounselingReferralResponse> decline(@PathVariable String publicId) {
 		return ApiResponse.success(counselingReferralMapper.toResponse(counselingReferralService.decline(publicId)));
 	}

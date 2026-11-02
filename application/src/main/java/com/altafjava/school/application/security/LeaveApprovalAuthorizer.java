@@ -9,6 +9,7 @@ import com.altafjava.school.domain.employee.model.Employee;
 import com.altafjava.school.domain.employee.repository.EmployeeRepository;
 import com.altafjava.school.domain.leave.model.LeaveApprovalStage;
 import com.altafjava.school.domain.leave.model.LeaveRequest;
+import com.altafjava.school.domain.security.permission.SchoolPermissions;
 import lombok.RequiredArgsConstructor;
 
 /**
@@ -20,7 +21,7 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class LeaveApprovalAuthorizer {
 
-	private static final String MANAGE_PERMISSION = "LEAVE_REQUEST_MANAGE";
+	private static final String MANAGE_PERMISSION = SchoolPermissions.LEAVE_REQUEST_MANAGE;
 
 	private final EmployeeRepository employeeRepository;
 	private final DepartmentRepository departmentRepository;

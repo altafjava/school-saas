@@ -33,6 +33,7 @@ import com.altafjava.school.domain.classroom.repository.StudentClassroomLinkRepo
 import com.altafjava.school.domain.leave.model.LeaveRequestStatus;
 import com.altafjava.school.domain.leave.model.StudentLeaveRequest;
 import com.altafjava.school.domain.leave.repository.StudentLeaveRequestRepository;
+import com.altafjava.school.domain.security.permission.SchoolPermissions;
 import com.altafjava.school.domain.student.model.Student;
 import com.altafjava.school.domain.student.repository.StudentRepository;
 import lombok.RequiredArgsConstructor;
@@ -45,7 +46,7 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class StudentLeaveRequestService {
 
-	private static final String MANAGE_PERMISSION = "STUDENT_LEAVE_MANAGE";
+	private static final String MANAGE_PERMISSION = SchoolPermissions.STUDENT_LEAVE_MANAGE;
 	private static final String MARKED_BY = "student-leave";
 	private static final Set<LeaveRequestStatus> BLOCKING = Set.of(LeaveRequestStatus.PENDING,
 			LeaveRequestStatus.APPROVED);

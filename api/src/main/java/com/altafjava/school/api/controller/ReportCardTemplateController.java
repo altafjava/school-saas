@@ -1,18 +1,19 @@
 package com.altafjava.school.api.controller;
 
 import jakarta.validation.Valid;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import com.altafjava.platform.api.dto.response.ApiResponse;
+import com.altafjava.platform.application.security.annotation.RequiresPermission;
 import com.altafjava.school.api.controller.api.ReportCardTemplateApi;
 import com.altafjava.school.api.dto.request.ConfigureReportCardTemplateRequest;
 import com.altafjava.school.api.dto.response.ReportCardTemplateResponse;
 import com.altafjava.school.api.mapper.ReportCardTemplateMapper;
 import com.altafjava.school.application.service.ReportCardTemplateService;
+import com.altafjava.school.domain.security.permission.SchoolPermissions;
 
 // One config per tenant — which optional sections ReportCardPdfGenerator renders. Read is broad
 // (teachers need to know what a generated report card will contain); writes are tenant-admin-only.
@@ -31,7 +32,7 @@ public class ReportCardTemplateController implements ReportCardTemplateApi {
 
 	@Override
 	@GetMapping
-	@PreAuthorize("@permissionAuthorizationService.hasPermission('REPORT_CARD_TEMPLATE_READ')")
+	@RequiresPermission(SchoolPermissions.REPORT_CARD_TEMPLATE_READ)
 	public ApiResponse<ReportCardTemplateResponse> get() {
 		return ApiResponse
 				.success(reportCardTemplateMapper.toResponse(reportCardTemplateService.getForCurrentTenant()));
@@ -39,7 +40,7 @@ public class ReportCardTemplateController implements ReportCardTemplateApi {
 
 	@Override
 	@PutMapping
-	@PreAuthorize("@permissionAuthorizationService.hasPermission('REPORT_CARD_TEMPLATE_WRITE')")
+	@RequiresPermission(SchoolPermissions.REPORT_CARD_TEMPLATE_WRITE)
 	public ApiResponse<ReportCardTemplateResponse> configure(
 			@Valid @RequestBody ConfigureReportCardTemplateRequest request) {
 		return ApiResponse.success(reportCardTemplateMapper.toResponse(reportCardTemplateService.configure(

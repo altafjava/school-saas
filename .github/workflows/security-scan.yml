@@ -51,6 +51,13 @@ jobs:
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
 
+      # The runner shares ~/.m2 with local builds, and a publish there mid-run corrupts the jars under test.
+      - name: Take a private copy of the platform jars
+        run: |
+          mkdir -p "$RUNNER_TEMP/m2/com/altafjava"
+          cp -R ~/.m2/repository/com/altafjava/platform "$RUNNER_TEMP/m2/com/altafjava/"
+          echo "GRADLE_OPTS=${GRADLE_OPTS:-} -Dmaven.repo.local=$RUNNER_TEMP/m2" >> "$GITHUB_ENV"
+
       - name: OWASP Dependency Check
         env:
           GITHUB_ACTOR: ${{ github.actor }}

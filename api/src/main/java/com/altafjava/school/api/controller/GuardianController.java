@@ -3,7 +3,6 @@ package com.altafjava.school.api.controller;
 import java.util.List;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
@@ -15,6 +14,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import com.altafjava.platform.api.dto.response.ApiResponse;
+import com.altafjava.platform.application.security.annotation.RequiresPermission;
 import com.altafjava.school.api.controller.api.GuardianApi;
 import com.altafjava.school.api.dto.request.AddressRequest;
 import com.altafjava.school.api.dto.request.CreateGuardianRequest;
@@ -37,6 +37,7 @@ import com.altafjava.school.api.support.StudentResponseAssembler;
 import com.altafjava.school.application.service.GuardianConsentService;
 import com.altafjava.school.application.service.GuardianService;
 import com.altafjava.school.domain.guardian.model.GuardianConsentType;
+import com.altafjava.school.domain.security.permission.SchoolPermissions;
 
 @RestController
 @RequestMapping("/api/v1/guardians")
@@ -68,7 +69,7 @@ public class GuardianController implements GuardianApi {
 
 	@Override
 	@GetMapping
-	@PreAuthorize("@permissionAuthorizationService.hasPermission('GUARDIAN_MANAGE')")
+	@RequiresPermission(SchoolPermissions.GUARDIAN_MANAGE)
 	@SortableBy({ "firstName", "lastName" })
 	public ApiResponse<com.altafjava.platform.core.model.Page<GuardianResponse>> list(
 			@RequestParam(defaultValue = "0") int page,
@@ -82,7 +83,7 @@ public class GuardianController implements GuardianApi {
 
 	@Override
 	@GetMapping("/{publicId}")
-	@PreAuthorize("@permissionAuthorizationService.hasPermission('GUARDIAN_MANAGE')")
+	@RequiresPermission(SchoolPermissions.GUARDIAN_MANAGE)
 	public ApiResponse<GuardianResponse> get(@PathVariable String publicId) {
 		return ApiResponse.success(guardianMapper.toResponse(guardianService.findByPublicId(publicId)));
 	}
@@ -90,7 +91,7 @@ public class GuardianController implements GuardianApi {
 	@Override
 	@PostMapping
 	@ResponseStatus(HttpStatus.CREATED)
-	@PreAuthorize("@permissionAuthorizationService.hasPermission('GUARDIAN_MANAGE')")
+	@RequiresPermission(SchoolPermissions.GUARDIAN_MANAGE)
 	public ApiResponse<GuardianResponse> create(@Valid @RequestBody CreateGuardianRequest request) {
 		return ApiResponse.success(guardianMapper.toResponse(guardianService.create(
 				request.firstName(),
@@ -102,7 +103,7 @@ public class GuardianController implements GuardianApi {
 
 	@Override
 	@PatchMapping("/{publicId}/address")
-	@PreAuthorize("@permissionAuthorizationService.hasPermission('GUARDIAN_MANAGE')")
+	@RequiresPermission(SchoolPermissions.GUARDIAN_MANAGE)
 	public ApiResponse<GuardianResponse> updateAddress(@PathVariable String publicId,
 			@Valid @RequestBody AddressRequest request) {
 		return ApiResponse.success(
@@ -112,7 +113,7 @@ public class GuardianController implements GuardianApi {
 
 	@Override
 	@PatchMapping("/{publicId}/phone")
-	@PreAuthorize("@permissionAuthorizationService.hasPermission('GUARDIAN_MANAGE')")
+	@RequiresPermission(SchoolPermissions.GUARDIAN_MANAGE)
 	public ApiResponse<GuardianResponse> updatePhone(@PathVariable String publicId,
 			@Valid @RequestBody UpdatePhoneRequest request) {
 		return ApiResponse.success(guardianMapper
@@ -121,7 +122,7 @@ public class GuardianController implements GuardianApi {
 
 	@Override
 	@PatchMapping("/{publicId}/photo")
-	@PreAuthorize("@permissionAuthorizationService.hasPermission('GUARDIAN_MANAGE')")
+	@RequiresPermission(SchoolPermissions.GUARDIAN_MANAGE)
 	public ApiResponse<GuardianResponse> updatePhoto(@PathVariable String publicId,
 			@Valid @RequestBody UpdatePhotoRequest request) {
 		return ApiResponse
@@ -132,7 +133,7 @@ public class GuardianController implements GuardianApi {
 	@Override
 	@PostMapping("/{publicId}/students")
 	@ResponseStatus(HttpStatus.CREATED)
-	@PreAuthorize("@permissionAuthorizationService.hasPermission('GUARDIAN_MANAGE')")
+	@RequiresPermission(SchoolPermissions.GUARDIAN_MANAGE)
 	public ApiResponse<StudentGuardianLinkResponse> linkStudent(@PathVariable String publicId,
 			@Valid @RequestBody LinkGuardianRequest request) {
 		return ApiResponse.success(studentGuardianLinkMapper.toResponse(guardianService.linkToStudent(
@@ -144,7 +145,7 @@ public class GuardianController implements GuardianApi {
 
 	@Override
 	@PatchMapping("/{guardianPublicId}/students/{studentPublicId}/consent/grant")
-	@PreAuthorize("@permissionAuthorizationService.hasPermission('GUARDIAN_CONSENT_MANAGE')")
+	@RequiresPermission(SchoolPermissions.GUARDIAN_CONSENT_MANAGE)
 	public ApiResponse<StudentGuardianLinkResponse> grantConsent(@PathVariable String guardianPublicId,
 			@PathVariable String studentPublicId) {
 		return ApiResponse.success(studentGuardianLinkMapper.toResponse(
@@ -153,7 +154,7 @@ public class GuardianController implements GuardianApi {
 
 	@Override
 	@PatchMapping("/{guardianPublicId}/students/{studentPublicId}/consent/revoke")
-	@PreAuthorize("@permissionAuthorizationService.hasPermission('GUARDIAN_CONSENT_MANAGE')")
+	@RequiresPermission(SchoolPermissions.GUARDIAN_CONSENT_MANAGE)
 	public ApiResponse<StudentGuardianLinkResponse> revokeConsent(@PathVariable String guardianPublicId,
 			@PathVariable String studentPublicId) {
 		return ApiResponse.success(studentGuardianLinkMapper.toResponse(
@@ -162,7 +163,7 @@ public class GuardianController implements GuardianApi {
 
 	@Override
 	@GetMapping("/me/students")
-	@PreAuthorize("@permissionAuthorizationService.hasPermission('GUARDIAN_SELF_SERVICE')")
+	@RequiresPermission(SchoolPermissions.GUARDIAN_SELF_SERVICE)
 	public ApiResponse<com.altafjava.platform.core.model.Page<StudentResponse>> myStudents(
 			@RequestParam(defaultValue = "0") int page,
 			@RequestParam(defaultValue = "20") int size) {
@@ -175,7 +176,7 @@ public class GuardianController implements GuardianApi {
 	@Override
 	@PostMapping("/me/students/{studentPublicId}/consents")
 	@ResponseStatus(HttpStatus.CREATED)
-	@PreAuthorize("@permissionAuthorizationService.hasPermission('GUARDIAN_SELF_SERVICE')")
+	@RequiresPermission(SchoolPermissions.GUARDIAN_SELF_SERVICE)
 	public ApiResponse<GuardianConsentRecordResponse> grantSelfConsent(@PathVariable String studentPublicId,
 			@Valid @RequestBody GrantGuardianConsentRequest request) {
 		return ApiResponse.success(guardianConsentRecordMapper.toResponse(
@@ -185,7 +186,7 @@ public class GuardianController implements GuardianApi {
 	@Override
 	@DeleteMapping("/me/students/{studentPublicId}/consents/{consentType}")
 	@ResponseStatus(HttpStatus.NO_CONTENT)
-	@PreAuthorize("@permissionAuthorizationService.hasPermission('GUARDIAN_SELF_SERVICE')")
+	@RequiresPermission(SchoolPermissions.GUARDIAN_SELF_SERVICE)
 	public ApiResponse<GuardianConsentRecordResponse> revokeSelfConsent(@PathVariable String studentPublicId,
 			@PathVariable GuardianConsentType consentType) {
 		return ApiResponse.success(
@@ -194,7 +195,7 @@ public class GuardianController implements GuardianApi {
 
 	@Override
 	@GetMapping("/me/students/{studentPublicId}/consents")
-	@PreAuthorize("@permissionAuthorizationService.hasPermission('GUARDIAN_SELF_SERVICE')")
+	@RequiresPermission(SchoolPermissions.GUARDIAN_SELF_SERVICE)
 	public ApiResponse<List<GuardianConsentRecordResponse>> myConsents(@PathVariable String studentPublicId) {
 		return ApiResponse.success(guardianConsentService.listMine(studentPublicId).stream()
 				.map(guardianConsentRecordMapper::toResponse).toList());
@@ -202,7 +203,7 @@ public class GuardianController implements GuardianApi {
 
 	@Override
 	@GetMapping("/students/{studentPublicId}/consents")
-	@PreAuthorize("@permissionAuthorizationService.hasPermission('GUARDIAN_MANAGE')")
+	@RequiresPermission(SchoolPermissions.GUARDIAN_MANAGE)
 	public ApiResponse<List<GuardianConsentRecordResponse>> studentConsents(@PathVariable String studentPublicId) {
 		return ApiResponse.success(guardianConsentService.listForStudent(studentPublicId).stream()
 				.map(guardianConsentRecordMapper::toResponse).toList());

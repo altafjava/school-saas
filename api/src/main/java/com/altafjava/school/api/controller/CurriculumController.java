@@ -2,7 +2,6 @@ package com.altafjava.school.api.controller;
 
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -13,6 +12,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import com.altafjava.platform.api.dto.response.ApiResponse;
+import com.altafjava.platform.application.security.annotation.RequiresPermission;
 import com.altafjava.school.api.controller.api.CurriculumApi;
 import com.altafjava.school.api.dto.request.AssignGradingScaleRequest;
 import com.altafjava.school.api.dto.request.CreateCurriculumRequest;
@@ -23,6 +23,7 @@ import com.altafjava.school.api.support.PlatformPageMapper;
 import com.altafjava.school.api.support.SpringDataPageableResolver;
 import com.altafjava.school.application.reference.ReferenceSummaries;
 import com.altafjava.school.application.service.CurriculumService;
+import com.altafjava.school.domain.security.permission.SchoolPermissions;
 
 @RestController
 @RequestMapping("/api/v1/curricula")
@@ -46,7 +47,7 @@ public class CurriculumController implements CurriculumApi {
 
 	@Override
 	@GetMapping
-	@PreAuthorize("@permissionAuthorizationService.hasPermission('CURRICULUM_READ')")
+	@RequiresPermission(SchoolPermissions.CURRICULUM_READ)
 	public ApiResponse<com.altafjava.platform.core.model.Page<CurriculumResponse>> list(
 			@RequestParam(defaultValue = "0") int page,
 			@RequestParam(defaultValue = "20") int size,
@@ -57,7 +58,7 @@ public class CurriculumController implements CurriculumApi {
 
 	@Override
 	@GetMapping("/{publicId}")
-	@PreAuthorize("@permissionAuthorizationService.hasPermission('CURRICULUM_READ')")
+	@RequiresPermission(SchoolPermissions.CURRICULUM_READ)
 	public ApiResponse<CurriculumResponse> get(@PathVariable String publicId) {
 		return ApiResponse.success(curriculumMapper.toResponse(curriculumService.findByPublicId(publicId)));
 	}
@@ -65,7 +66,7 @@ public class CurriculumController implements CurriculumApi {
 	@Override
 	@PostMapping
 	@ResponseStatus(HttpStatus.CREATED)
-	@PreAuthorize("@permissionAuthorizationService.hasPermission('CURRICULUM_WRITE')")
+	@RequiresPermission(SchoolPermissions.CURRICULUM_WRITE)
 	public ApiResponse<CurriculumResponse> create(@Valid @RequestBody CreateCurriculumRequest request) {
 		return ApiResponse
 				.success(curriculumMapper.toResponse(curriculumService.create(request.boardPublicId(), request.name(),
@@ -74,7 +75,7 @@ public class CurriculumController implements CurriculumApi {
 
 	@Override
 	@PatchMapping("/{publicId}")
-	@PreAuthorize("@permissionAuthorizationService.hasPermission('CURRICULUM_WRITE')")
+	@RequiresPermission(SchoolPermissions.CURRICULUM_WRITE)
 	public ApiResponse<CurriculumResponse> updateDetails(@PathVariable String publicId,
 			@Valid @RequestBody UpdateCurriculumRequest request) {
 		return ApiResponse.success(curriculumMapper.toResponse(
@@ -84,7 +85,7 @@ public class CurriculumController implements CurriculumApi {
 
 	@Override
 	@PatchMapping("/{publicId}/grading-scale")
-	@PreAuthorize("@permissionAuthorizationService.hasPermission('CURRICULUM_WRITE')")
+	@RequiresPermission(SchoolPermissions.CURRICULUM_WRITE)
 	public ApiResponse<CurriculumResponse> assignGradingScale(@PathVariable String publicId,
 			@Valid @RequestBody AssignGradingScaleRequest request) {
 		return ApiResponse.success(curriculumMapper
@@ -94,7 +95,7 @@ public class CurriculumController implements CurriculumApi {
 
 	@Override
 	@PatchMapping("/{publicId}/deactivate")
-	@PreAuthorize("@permissionAuthorizationService.hasPermission('CURRICULUM_WRITE')")
+	@RequiresPermission(SchoolPermissions.CURRICULUM_WRITE)
 	public ApiResponse<CurriculumResponse> deactivate(@PathVariable String publicId) {
 		return ApiResponse.success(curriculumMapper.toResponse(curriculumService.deactivate(publicId)));
 	}

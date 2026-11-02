@@ -5,7 +5,6 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -14,6 +13,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import com.altafjava.platform.api.dto.response.ApiResponse;
+import com.altafjava.platform.application.security.annotation.RequiresPermission;
 import com.altafjava.platform.core.security.AuthenticatedUser;
 import com.altafjava.platform.domain.document.model.DocumentIssuance;
 import com.altafjava.school.api.controller.api.StudentIdCardApi;
@@ -21,6 +21,7 @@ import com.altafjava.school.api.dto.response.IssuedDocumentResponse;
 import com.altafjava.school.api.mapper.IssuedDocumentMapper;
 import com.altafjava.school.api.ratelimit.RateLimited;
 import com.altafjava.school.application.idcard.IdCardService;
+import com.altafjava.school.domain.security.permission.SchoolPermissions;
 
 @RestController
 @RequestMapping("/api/v1/students/{studentPublicId}/id-card")
@@ -37,7 +38,7 @@ public class StudentIdCardController implements StudentIdCardApi {
 	@Override
 	@PostMapping
 	@ResponseStatus(HttpStatus.CREATED)
-	@PreAuthorize("@permissionAuthorizationService.hasPermission('ID_CARD_ISSUE')")
+	@RequiresPermission(SchoolPermissions.ID_CARD_ISSUE)
 	@RateLimited(key = "student-id-card-issue", capacity = 60, periodMinutes = 60)
 	public ApiResponse<IssuedDocumentResponse> issue(@PathVariable String studentPublicId,
 			@AuthenticationPrincipal AuthenticatedUser user) {
@@ -49,7 +50,7 @@ public class StudentIdCardController implements StudentIdCardApi {
 	// needs its own Content-Type/Content-Disposition headers and binary body, not a JSON envelope.
 	@Override
 	@GetMapping("/{issuancePublicId}/download")
-	@PreAuthorize("@permissionAuthorizationService.hasPermission('ID_CARD_ISSUE')")
+	@RequiresPermission(SchoolPermissions.ID_CARD_ISSUE)
 	public ResponseEntity<byte[]> download(@PathVariable String studentPublicId,
 			@PathVariable String issuancePublicId) {
 		DocumentIssuance issuance = idCardService.findStudentCard(studentPublicId, issuancePublicId);

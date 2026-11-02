@@ -1,6 +1,7 @@
 package com.altafjava.school.architecture;
 
 import static com.tngtech.archunit.lang.syntax.ArchRuleDefinition.classes;
+import static com.tngtech.archunit.lang.syntax.ArchRuleDefinition.methods;
 import java.util.Set;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -60,12 +61,25 @@ class ControllerAuthorizationFitnessTest {
 					+ "anyRequest().authenticated() rule, which blocks anonymous access but not cross-role "
 					+ "or cross-tenant access within the authenticated population");
 
+	// A code inside a string compiles when mistyped and then refuses everyone; @RequiresPermission takes a constant.
+	@ArchTest
+	static final ArchRule noEndpointSpellsAPermissionInAString = methods()
+			.should(new ArchCondition<JavaMethod>("not spell a permission check in a @PreAuthorize string") {
+				@Override
+				public void check(JavaMethod method, ConditionEvents events) {
+					method.tryGetAnnotationOfType(PreAuthorize.class)
+							.filter(annotation -> annotation.value().contains("hasPermission("))
+							.ifPresent(annotation -> events.add(SimpleConditionEvent.violated(method,
+									method.getFullName() + " must use @RequiresPermission")));
+				}
+			});
+
 	private static ArchCondition<JavaClass> haveAuthorizationOnClassOrEveryHttpMethod() {
 		return new ArchCondition<>("declare @PreAuthorize at class level, be a known-public controller, "
 				+ "or annotate every HTTP-mapped method (itself or as a known-public endpoint)") {
 			@Override
 			public void check(JavaClass javaClass, ConditionEvents events) {
-				if (javaClass.isAnnotatedWith(PreAuthorize.class)) {
+				if (javaClass.isMetaAnnotatedWith(PreAuthorize.class)) {
 					return;
 				}
 				if (KNOWN_PUBLIC_CONTROLLERS.contains(javaClass.getFullName())) {
@@ -91,7 +105,7 @@ class ControllerAuthorizationFitnessTest {
 			}
 
 			private boolean isAuthorized(JavaClass javaClass, JavaMethod method) {
-				return method.isAnnotatedWith(PreAuthorize.class)
+				return method.isMetaAnnotatedWith(PreAuthorize.class)
 						|| KNOWN_PUBLIC_ENDPOINTS.contains(javaClass.getFullName() + "#" + method.getName());
 			}
 		};
