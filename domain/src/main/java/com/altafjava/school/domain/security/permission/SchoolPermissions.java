@@ -101,6 +101,9 @@ public final class SchoolPermissions {
 	public static final String GUARDIAN_SELF_SERVICE = "GUARDIAN_SELF_SERVICE";
 	public static final String HEALTH_RECORD_MANAGE = "HEALTH_RECORD_MANAGE";
 	public static final String HOLIDAY_READ = "HOLIDAY_READ";
+	public static final String PARENT_HOME_READ = "PARENT_HOME_READ";
+	public static final String STUDENT_HOME_READ = "STUDENT_HOME_READ";
+	public static final String TEACHER_HOME_READ = "TEACHER_HOME_READ";
 	public static final String HOLIDAY_WRITE = "HOLIDAY_WRITE";
 	public static final String HOSTEL_READ = "HOSTEL_READ";
 	public static final String HOSTEL_WRITE = "HOSTEL_WRITE";
@@ -237,6 +240,9 @@ public final class SchoolPermissions {
 			def(GUARDIAN_SELF_SERVICE, "View own linked students as a guardian", CAT_GUARDIAN),
 			def(HEALTH_RECORD_MANAGE, "View and edit student health records", CAT_DISCIPLINE),
 			def(HOLIDAY_READ, "View the school calendar", CAT_ACADEMIC),
+			def(PARENT_HOME_READ, "View the parent home screen for own linked children", CAT_DASHBOARD),
+			def(STUDENT_HOME_READ, "View the student home screen for own record", CAT_DASHBOARD),
+			def(TEACHER_HOME_READ, "View the teacher home screen for own classes", CAT_DASHBOARD),
 			def(HOLIDAY_WRITE, "Manage the school calendar", CAT_ACADEMIC),
 			def(HOSTEL_READ, "View hostel buildings", CAT_FACILITIES),
 			def(HOSTEL_WRITE, "Manage hostel buildings", CAT_FACILITIES),

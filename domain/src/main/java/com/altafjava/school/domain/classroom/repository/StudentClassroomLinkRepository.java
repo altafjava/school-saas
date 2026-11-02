@@ -9,6 +9,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
+import com.altafjava.school.domain.classroom.model.ClassroomHeadcount;
 import com.altafjava.school.domain.classroom.model.StudentClassroomLink;
 
 public interface StudentClassroomLinkRepository extends JpaRepository<StudentClassroomLink, Long> {
@@ -68,4 +69,10 @@ public interface StudentClassroomLinkRepository extends JpaRepository<StudentCla
 	// enrolled" source for jobs that must iterate every student, not just one classroom's.
 	@Query("SELECT DISTINCT l.studentId FROM StudentClassroomLink l WHERE l.tenantId = :tenantId")
 	List<Long> findDistinctStudentIdsByTenantId(@Param("tenantId") Long tenantId);
+
+	@Query("SELECT new com.altafjava.school.domain.classroom.model.ClassroomHeadcount(l.classroomId, COUNT(l)) "
+			+ "FROM StudentClassroomLink l WHERE l.tenantId = :tenantId AND l.classroomId IN :classroomIds "
+			+ "GROUP BY l.classroomId")
+	List<ClassroomHeadcount> countByClassroomIds(@Param("tenantId") Long tenantId,
+			@Param("classroomIds") Collection<Long> classroomIds);
 }

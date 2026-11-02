@@ -1,6 +1,5 @@
 package com.altafjava.school.application.service;
 
-import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Set;
@@ -30,6 +29,7 @@ import com.altafjava.school.domain.classroom.model.Classroom;
 import com.altafjava.school.domain.classroom.model.StudentClassroomLink;
 import com.altafjava.school.domain.classroom.repository.ClassroomRepository;
 import com.altafjava.school.domain.classroom.repository.StudentClassroomLinkRepository;
+import com.altafjava.school.domain.holiday.service.SchoolWeek;
 import com.altafjava.school.domain.leave.model.LeaveRequestStatus;
 import com.altafjava.school.domain.leave.model.StudentLeaveRequest;
 import com.altafjava.school.domain.leave.repository.StudentLeaveRequestRepository;
@@ -161,11 +161,10 @@ public class StudentLeaveRequestService {
 		attendanceRepository.save(attendance);
 	}
 
-	// Sunday is off everywhere this product runs; a school's other days off are in its holiday calendar.
 	private List<LocalDate> schoolDays(Long tenantId, StudentLeaveRequest request) {
 		Set<LocalDate> holidays = holidayService.datesInRange(tenantId, request.getStartDate(), request.getEndDate());
 		return request.getStartDate().datesUntil(request.getEndDate().plusDays(1))
-				.filter(day -> day.getDayOfWeek() != DayOfWeek.SUNDAY && !holidays.contains(day))
+				.filter(day -> !SchoolWeek.isWeeklyOff(day) && !holidays.contains(day))
 				.toList();
 	}
 

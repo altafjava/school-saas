@@ -55835,6 +55835,171 @@
         } ]
       }
     },
+    "/api/v1/me/home/teacher" : {
+      "get" : {
+        "tags" : [ "Me" ],
+        "summary" : "Teacher home",
+        "description" : "Today's timetable and substitutions, registers to mark, assignments to grade, exams needing marks, leave to review and the inbox, in one response. Requires a linked teacher record.",
+        "operationId" : "meHomeTeacher",
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiResponseTeacherHomeResponse"
+                }
+              }
+            }
+          },
+          "401" : {
+            "description" : "Missing, expired or revoked access token",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "403" : {
+            "description" : "The caller lacks the required permission",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "500" : {
+            "description" : "Unexpected error; quote error.traceId when reporting it",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "security" : [ {
+          "bearerAuth" : [ ]
+        }, {
+          "tenantHeader" : [ ]
+        } ]
+      }
+    },
+    "/api/v1/me/home/student" : {
+      "get" : {
+        "tags" : [ "Me" ],
+        "summary" : "Student home",
+        "description" : "Today's timetable, the student's own summary and the inbox, in one response. Requires a linked student record.",
+        "operationId" : "meHomeStudent",
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiResponseStudentHomeResponse"
+                }
+              }
+            }
+          },
+          "401" : {
+            "description" : "Missing, expired or revoked access token",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "403" : {
+            "description" : "The caller lacks the required permission",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "500" : {
+            "description" : "Unexpected error; quote error.traceId when reporting it",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "security" : [ {
+          "bearerAuth" : [ ]
+        }, {
+          "tenantHeader" : [ ]
+        } ]
+      }
+    },
+    "/api/v1/me/home/parent" : {
+      "get" : {
+        "tags" : [ "Me" ],
+        "summary" : "Parent home",
+        "description" : "One summary per linked child, and the inbox, in one response. A custody-restricted child is left out. Requires a linked guardian record.",
+        "operationId" : "meHomeParent",
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiResponseParentHomeResponse"
+                }
+              }
+            }
+          },
+          "401" : {
+            "description" : "Missing, expired or revoked access token",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "403" : {
+            "description" : "The caller lacks the required permission",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "500" : {
+            "description" : "Unexpected error; quote error.traceId when reporting it",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "security" : [ {
+          "bearerAuth" : [ ]
+        }, {
+          "tenantHeader" : [ ]
+        } ]
+      }
+    },
     "/api/v1/lookups" : {
       "get" : {
         "tags" : [ "Lookups" ],
@@ -85567,6 +85732,531 @@
           }
         },
         "required" : [ "teacher" ]
+      },
+      "ApiResponseTeacherHomeResponse" : {
+        "type" : "object",
+        "properties" : {
+          "success" : {
+            "type" : "boolean"
+          },
+          "data" : {
+            "$ref" : "#/components/schemas/TeacherHomeResponse"
+          },
+          "error" : {
+            "$ref" : "#/components/schemas/ApiErrorDetail"
+          },
+          "meta" : {
+            "$ref" : "#/components/schemas/ApiResponseMeta"
+          }
+        },
+        "required" : [ "success" ]
+      },
+      "AssignmentToGrade" : {
+        "type" : "object",
+        "properties" : {
+          "assignmentPublicId" : {
+            "type" : "string"
+          },
+          "title" : {
+            "type" : "string"
+          },
+          "classroom" : {
+            "$ref" : "#/components/schemas/ReferenceSummary"
+          },
+          "subject" : {
+            "$ref" : "#/components/schemas/ReferenceSummary"
+          },
+          "dueDate" : {
+            "type" : "string",
+            "format" : "date"
+          },
+          "ungradedCount" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        },
+        "required" : [ "ungradedCount" ]
+      },
+      "AssignmentsToGrade" : {
+        "type" : "object",
+        "properties" : {
+          "total" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "items" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/AssignmentToGrade"
+            }
+          }
+        },
+        "required" : [ "total" ]
+      },
+      "ExamNeedingMarks" : {
+        "type" : "object",
+        "properties" : {
+          "examPublicId" : {
+            "type" : "string"
+          },
+          "title" : {
+            "type" : "string"
+          },
+          "classroom" : {
+            "$ref" : "#/components/schemas/ReferenceSummary"
+          },
+          "subject" : {
+            "$ref" : "#/components/schemas/ReferenceSummary"
+          },
+          "scheduledAt" : {
+            "type" : "string",
+            "format" : "date-time"
+          },
+          "marksMissing" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        },
+        "required" : [ "marksMissing" ]
+      },
+      "ExamsNeedingMarks" : {
+        "type" : "object",
+        "properties" : {
+          "total" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "items" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/ExamNeedingMarks"
+            }
+          }
+        },
+        "required" : [ "total" ]
+      },
+      "InboxResponse" : {
+        "type" : "object",
+        "description" : "What is waiting to be read.",
+        "properties" : {
+          "unreadNotifications" : {
+            "type" : "integer",
+            "format" : "int64",
+            "description" : "Unread notifications"
+          }
+        },
+        "required" : [ "unreadNotifications" ]
+      },
+      "StaffLeaveItem" : {
+        "type" : "object",
+        "properties" : {
+          "leaveRequestPublicId" : {
+            "type" : "string"
+          },
+          "employee" : {
+            "$ref" : "#/components/schemas/ReferenceSummary"
+          },
+          "startDate" : {
+            "type" : "string",
+            "format" : "date"
+          },
+          "endDate" : {
+            "type" : "string",
+            "format" : "date"
+          }
+        }
+      },
+      "StaffLeaveQueue" : {
+        "type" : "object",
+        "properties" : {
+          "total" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "items" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/StaffLeaveItem"
+            }
+          }
+        },
+        "required" : [ "total" ]
+      },
+      "StudentLeaveItem" : {
+        "type" : "object",
+        "properties" : {
+          "leaveRequestPublicId" : {
+            "type" : "string"
+          },
+          "student" : {
+            "$ref" : "#/components/schemas/ReferenceSummary"
+          },
+          "classroom" : {
+            "$ref" : "#/components/schemas/ReferenceSummary"
+          },
+          "startDate" : {
+            "type" : "string",
+            "format" : "date"
+          },
+          "endDate" : {
+            "type" : "string",
+            "format" : "date"
+          },
+          "reason" : {
+            "type" : "string"
+          }
+        }
+      },
+      "StudentLeaveQueue" : {
+        "type" : "object",
+        "properties" : {
+          "total" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "items" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/StudentLeaveItem"
+            }
+          }
+        },
+        "required" : [ "total" ]
+      },
+      "TeacherHomeResponse" : {
+        "type" : "object",
+        "description" : "The teacher home screen. A card the caller's role may not read is absent; each queue shows its first items and the total waiting.",
+        "properties" : {
+          "date" : {
+            "type" : "string",
+            "format" : "date",
+            "description" : "Today at the school"
+          },
+          "schoolDay" : {
+            "type" : "boolean",
+            "description" : "False on Sundays and holidays"
+          },
+          "timetable" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/TimetableSlotResponse"
+            }
+          },
+          "attendanceToMark" : {
+            "type" : "array",
+            "description" : "The caller's classes with no register today",
+            "items" : {
+              "$ref" : "#/components/schemas/ReferenceSummary"
+            }
+          },
+          "assignmentsToGrade" : {
+            "$ref" : "#/components/schemas/AssignmentsToGrade"
+          },
+          "examsNeedingMarks" : {
+            "$ref" : "#/components/schemas/ExamsNeedingMarks"
+          },
+          "studentLeaveToReview" : {
+            "$ref" : "#/components/schemas/StudentLeaveQueue"
+          },
+          "staffLeaveToReview" : {
+            "$ref" : "#/components/schemas/StaffLeaveQueue"
+          },
+          "inbox" : {
+            "$ref" : "#/components/schemas/InboxResponse"
+          }
+        },
+        "required" : [ "schoolDay" ]
+      },
+      "TimetableSlotResponse" : {
+        "type" : "object",
+        "description" : "One period of today's timetable, after substitutions.",
+        "properties" : {
+          "periodName" : {
+            "type" : "string"
+          },
+          "startTime" : {
+            "type" : "string",
+            "format" : "time-local"
+          },
+          "endTime" : {
+            "type" : "string",
+            "format" : "time-local"
+          },
+          "classroom" : {
+            "$ref" : "#/components/schemas/ReferenceSummary"
+          },
+          "subject" : {
+            "$ref" : "#/components/schemas/ReferenceSummary"
+          },
+          "teacher" : {
+            "$ref" : "#/components/schemas/ReferenceSummary",
+            "description" : "Who teaches the slot today"
+          },
+          "venueName" : {
+            "type" : "string"
+          },
+          "coverage" : {
+            "type" : "string",
+            "enum" : [ "REGULAR", "SUBSTITUTED", "COVERING" ]
+          }
+        }
+      },
+      "ApiResponseStudentHomeResponse" : {
+        "type" : "object",
+        "properties" : {
+          "success" : {
+            "type" : "boolean"
+          },
+          "data" : {
+            "$ref" : "#/components/schemas/StudentHomeResponse"
+          },
+          "error" : {
+            "$ref" : "#/components/schemas/ApiErrorDetail"
+          },
+          "meta" : {
+            "$ref" : "#/components/schemas/ApiResponseMeta"
+          }
+        },
+        "required" : [ "success" ]
+      },
+      "Attendance" : {
+        "type" : "object",
+        "properties" : {
+          "today" : {
+            "type" : "string",
+            "description" : "Absent until today's register is marked",
+            "enum" : [ "PRESENT", "ABSENT", "LATE", "EXCUSED" ]
+          },
+          "presentDays" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "markedDays" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "percentage" : {
+            "type" : "number",
+            "description" : "Present days as a percentage of marked days this academic year"
+          }
+        },
+        "required" : [ "markedDays", "presentDays" ]
+      },
+      "Fees" : {
+        "type" : "object",
+        "properties" : {
+          "outstanding" : {
+            "type" : "number"
+          },
+          "nextDueDate" : {
+            "type" : "string",
+            "format" : "date"
+          },
+          "overdue" : {
+            "type" : "boolean"
+          }
+        },
+        "required" : [ "overdue" ]
+      },
+      "Homework" : {
+        "type" : "object",
+        "properties" : {
+          "assignmentPublicId" : {
+            "type" : "string"
+          },
+          "title" : {
+            "type" : "string"
+          },
+          "subject" : {
+            "$ref" : "#/components/schemas/ReferenceSummary"
+          },
+          "dueDate" : {
+            "type" : "string",
+            "format" : "date"
+          }
+        }
+      },
+      "LeaveRequest" : {
+        "type" : "object",
+        "properties" : {
+          "leaveRequestPublicId" : {
+            "type" : "string"
+          },
+          "startDate" : {
+            "type" : "string",
+            "format" : "date"
+          },
+          "endDate" : {
+            "type" : "string",
+            "format" : "date"
+          },
+          "reason" : {
+            "type" : "string"
+          }
+        }
+      },
+      "RecentResult" : {
+        "type" : "object",
+        "properties" : {
+          "examPublicId" : {
+            "type" : "string"
+          },
+          "examTitle" : {
+            "type" : "string"
+          },
+          "subject" : {
+            "$ref" : "#/components/schemas/ReferenceSummary"
+          },
+          "marks" : {
+            "type" : "number"
+          },
+          "maxMarks" : {
+            "type" : "number"
+          },
+          "gradeLetter" : {
+            "type" : "string"
+          },
+          "publishedAt" : {
+            "type" : "string",
+            "format" : "date-time"
+          }
+        }
+      },
+      "StudentHomeResponse" : {
+        "type" : "object",
+        "description" : "The student home screen.",
+        "properties" : {
+          "date" : {
+            "type" : "string",
+            "format" : "date",
+            "description" : "Today at the school"
+          },
+          "schoolDay" : {
+            "type" : "boolean",
+            "description" : "False on Sundays and holidays"
+          },
+          "timetable" : {
+            "type" : "array",
+            "description" : "Absent when the caller's role may not read it",
+            "items" : {
+              "$ref" : "#/components/schemas/TimetableSlotResponse"
+            }
+          },
+          "overview" : {
+            "$ref" : "#/components/schemas/StudentOverviewResponse"
+          },
+          "inbox" : {
+            "$ref" : "#/components/schemas/InboxResponse"
+          }
+        },
+        "required" : [ "schoolDay" ]
+      },
+      "StudentOverviewResponse" : {
+        "type" : "object",
+        "description" : "One student's cards. A card the caller's role may not read is absent.",
+        "properties" : {
+          "student" : {
+            "$ref" : "#/components/schemas/ReferenceSummary"
+          },
+          "classroom" : {
+            "$ref" : "#/components/schemas/ReferenceSummary",
+            "description" : "This academic year's classroom"
+          },
+          "attendance" : {
+            "$ref" : "#/components/schemas/Attendance"
+          },
+          "fees" : {
+            "$ref" : "#/components/schemas/Fees"
+          },
+          "upcomingExams" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/UpcomingExam"
+            }
+          },
+          "recentResults" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/RecentResult"
+            }
+          },
+          "homework" : {
+            "type" : "array",
+            "description" : "Assignments not yet handed in; a past due date means overdue",
+            "items" : {
+              "$ref" : "#/components/schemas/Homework"
+            }
+          },
+          "leaveRequests" : {
+            "type" : "array",
+            "description" : "Leave requests awaiting a decision",
+            "items" : {
+              "$ref" : "#/components/schemas/LeaveRequest"
+            }
+          }
+        }
+      },
+      "UpcomingExam" : {
+        "type" : "object",
+        "properties" : {
+          "examPublicId" : {
+            "type" : "string"
+          },
+          "title" : {
+            "type" : "string"
+          },
+          "subject" : {
+            "$ref" : "#/components/schemas/ReferenceSummary"
+          },
+          "scheduledAt" : {
+            "type" : "string",
+            "format" : "date-time"
+          }
+        }
+      },
+      "ApiResponseParentHomeResponse" : {
+        "type" : "object",
+        "properties" : {
+          "success" : {
+            "type" : "boolean"
+          },
+          "data" : {
+            "$ref" : "#/components/schemas/ParentHomeResponse"
+          },
+          "error" : {
+            "$ref" : "#/components/schemas/ApiErrorDetail"
+          },
+          "meta" : {
+            "$ref" : "#/components/schemas/ApiResponseMeta"
+          }
+        },
+        "required" : [ "success" ]
+      },
+      "ParentHomeResponse" : {
+        "type" : "object",
+        "description" : "The parent home screen.",
+        "properties" : {
+          "date" : {
+            "type" : "string",
+            "format" : "date",
+            "description" : "Today at the school"
+          },
+          "schoolDay" : {
+            "type" : "boolean",
+            "description" : "False on Sundays and holidays"
+          },
+          "children" : {
+            "type" : "array",
+            "description" : "One summary per linked child",
+            "items" : {
+              "$ref" : "#/components/schemas/StudentOverviewResponse"
+            }
+          },
+          "inbox" : {
+            "$ref" : "#/components/schemas/InboxResponse"
+          }
+        },
+        "required" : [ "schoolDay" ]
       },
       "ApiResponseListString" : {
         "type" : "object",

@@ -13,6 +13,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import com.altafjava.school.domain.attendance.model.Attendance;
 import com.altafjava.school.domain.attendance.model.AttendanceStatus;
+import com.altafjava.school.domain.attendance.model.AttendanceTally;
 
 public interface AttendanceRepository extends JpaRepository<Attendance, Long> {
 
@@ -138,4 +139,25 @@ public interface AttendanceRepository extends JpaRepository<Attendance, Long> {
 	// Offline-sync delta pull. Soft-deleted rows are invisible to it, so other devices do not learn
 	// of a delete; only the device that deleted sees it, in its own sync response.
 	List<Attendance> findByTenantIdAndUpdatedAtAfter(Long tenantId, Instant updatedAt);
+
+	// Which of the given classrooms have a register for the day.
+	@Query("SELECT DISTINCT a.classroomId FROM Attendance a WHERE a.tenantId = :tenantId AND a.attendanceDate = :date "
+			+ "AND a.classroomId IN :classroomIds")
+	List<Long> findClassroomIdsMarkedOn(@Param("tenantId") Long tenantId, @Param("date") LocalDate date,
+			@Param("classroomIds") Collection<Long> classroomIds);
+
+	List<Attendance> findAllByTenantIdAndAttendanceDateAndStudentIdIn(Long tenantId, LocalDate attendanceDate,
+			Collection<Long> studentIds);
+
+	/** Days per student and status, in one query however many students; {@code excludedDates} are holidays. */
+	@Query("""
+			SELECT new com.altafjava.school.domain.attendance.model.AttendanceTally(a.studentId, a.status, COUNT(a))
+			FROM Attendance a
+			WHERE a.tenantId = :tenantId AND a.studentId IN :studentIds AND a.attendanceDate BETWEEN :from AND :to
+			  AND (:everyDay = true OR a.attendanceDate NOT IN :excludedDates)
+			GROUP BY a.studentId, a.status
+			""")
+	List<AttendanceTally> tallyByStudent(@Param("tenantId") Long tenantId,
+			@Param("studentIds") Collection<Long> studentIds, @Param("from") LocalDate from, @Param("to") LocalDate to,
+			@Param("everyDay") boolean everyDay, @Param("excludedDates") Collection<LocalDate> excludedDates);
 }

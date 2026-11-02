@@ -401,6 +401,24 @@
             <column name="role_id" valueComputed="(SELECT id FROM roles WHERE name = 'ACADEMIC' AND tenant_id IS NULL)"/>
             <column name="permission_code" value="STUDENT_PROMOTE"/>
         </insert>
+        <insert tableName="role_permissions">
+            <column
+                    name="role_id"
+                    valueComputed="(SELECT id FROM roles WHERE name = 'TEACHER' AND tenant_id IS NULL)"/>
+            <column name="permission_code" value="TEACHER_HOME_READ"/>
+        </insert>
+        <insert tableName="role_permissions">
+            <column
+                    name="role_id"
+                    valueComputed="(SELECT id FROM roles WHERE name = 'PARENT' AND tenant_id IS NULL)"/>
+            <column name="permission_code" value="PARENT_HOME_READ"/>
+        </insert>
+        <insert tableName="role_permissions">
+            <column
+                    name="role_id"
+                    valueComputed="(SELECT id FROM roles WHERE name = 'STUDENT' AND tenant_id IS NULL)"/>
+            <column name="permission_code" value="STUDENT_HOME_READ"/>
+        </insert>
     </changeSet>
 
 </databaseChangeLog>

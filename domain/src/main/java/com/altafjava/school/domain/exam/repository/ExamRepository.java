@@ -55,4 +55,18 @@ public interface ExamRepository extends JpaRepository<Exam, Long> {
 	BigDecimal sumWeightageOfOtherExams(@Param("tenantId") Long tenantId, @Param("classroomId") Long classroomId,
 			@Param("subjectId") Long subjectId, @Param("termId") Long termId,
 			@Param("excludedStatus") ExamStatus excludedStatus, @Param("excludedExamId") Long excludedExamId);
+
+	@Query("SELECT e FROM Exam e WHERE e.tenantId = :tenantId AND e.classroomId IN :classroomIds "
+			+ "AND e.status = :status AND e.scheduledAt BETWEEN :from AND :to ORDER BY e.scheduledAt, e.id")
+	List<Exam> findInClassroomsBetween(@Param("tenantId") Long tenantId,
+			@Param("classroomIds") Collection<Long> classroomIds, @Param("status") ExamStatus status,
+			@Param("from") LocalDateTime from, @Param("to") LocalDateTime to, Pageable pageable);
+
+	// Exams that have been sat and whose results are still open, most recent first.
+	@Query("SELECT e FROM Exam e WHERE e.tenantId = :tenantId AND e.classroomId IN :classroomIds "
+			+ "AND e.status <> :excludedStatus AND e.scheduledAt <= :until AND e.resultsPublishedAt IS NULL "
+			+ "ORDER BY e.scheduledAt DESC, e.id DESC")
+	List<Exam> findWithOpenResults(@Param("tenantId") Long tenantId,
+			@Param("classroomIds") Collection<Long> classroomIds, @Param("excludedStatus") ExamStatus excludedStatus,
+			@Param("until") LocalDateTime until, Pageable pageable);
 }
