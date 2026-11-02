@@ -220,6 +220,9 @@
     "name" : "Organization Management",
     "description" : "System-admin endpoints for managing organizations and their tenants"
   }, {
+    "name" : "TenantIntegrationProvider Management",
+    "description" : "A tenant's overrides of the platform's virus scanning and tax providers.\n\n**Tenant Scope**: All endpoints are tenant-scoped via X-Tenant-ID header.\n**Auth**: JWT Bearer token required on all endpoints unless marked public."
+  }, {
     "name" : "Ticket",
     "description" : "APIs for managing Ticket operations.\n\n**Tenant Scope**: All endpoints are tenant-scoped via X-Tenant-ID header.\n**Auth**: JWT Bearer token required on all endpoints unless marked public."
   }, {
@@ -364,6 +367,9 @@
     "name" : "Guardian",
     "description" : "APIs for managing Guardian operations.\n\n**Tenant Scope**: All endpoints are tenant-scoped via X-Tenant-ID header.\n**Auth**: JWT Bearer token required on all endpoints unless marked public."
   }, {
+    "name" : "AdminIntegrationProvider Management",
+    "description" : "Platform default providers for virus scanning, tax and exchange rates.\n\n**Auth**: Super Admin only."
+  }, {
     "name" : "AdminCoupon Management",
     "description" : "APIs for managing AdminCoupon operations.\n\n**Tenant Scope**: All endpoints are tenant-scoped via X-Tenant-ID header.\n**Auth**: JWT Bearer token required on all endpoints unless marked public."
   }, {
@@ -372,6 +378,9 @@
   }, {
     "name" : "TenantWebhook Management",
     "description" : "APIs for managing TenantWebhook operations.\n\n**Tenant Scope**: All endpoints are tenant-scoped via X-Tenant-ID header.\n**Auth**: JWT Bearer token required on all endpoints unless marked public."
+  }, {
+    "name" : "EmailChange Management",
+    "description" : "APIs for changing a user's sign-in email.\n\n**Tenant Scope**: All endpoints are tenant-scoped via X-Tenant-ID header.\n**Auth**: JWT Bearer token required on all endpoints unless marked public."
   }, {
     "name" : "Admission",
     "description" : "APIs for managing Admission operations.\n\n**Tenant Scope**: All endpoints are tenant-scoped via X-Tenant-ID header.\n**Auth**: JWT Bearer token required on all endpoints unless marked public."
@@ -2178,6 +2187,163 @@
         "responses" : {
           "204" : {
             "description" : "Config deleted successfully"
+          },
+          "401" : {
+            "description" : "Missing, expired or revoked access token",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "403" : {
+            "description" : "The caller lacks the required permission",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "404" : {
+            "description" : "The resource does not exist in the caller's tenant",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "500" : {
+            "description" : "Unexpected error; quote error.traceId when reporting it",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "security" : [ {
+          "bearerAuth" : [ ]
+        }, {
+          "tenantHeader" : [ ]
+        } ]
+      }
+    },
+    "/api/v1/tenant-settings/integration-providers/{providerType}" : {
+      "put" : {
+        "tags" : [ "TenantIntegrationProvider Management" ],
+        "summary" : "upsertTenantIntegrationProviderConfig",
+        "operationId" : "tenantIntegrationProviderUpsertTenantIntegrationProviderConfig",
+        "parameters" : [ {
+          "name" : "providerType",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "string",
+            "enum" : [ "CLAMAV", "STRIPE_TAX", "EXCHANGE_RATE_API" ]
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/UpsertIntegrationProviderConfigRequest"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiResponseIntegrationProviderConfigResponse"
+                }
+              }
+            }
+          },
+          "400" : {
+            "description" : "Validation failed or a business rule rejected the request",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "401" : {
+            "description" : "Missing, expired or revoked access token",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "403" : {
+            "description" : "The caller lacks the required permission",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "404" : {
+            "description" : "The resource does not exist in the caller's tenant",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "500" : {
+            "description" : "Unexpected error; quote error.traceId when reporting it",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "security" : [ {
+          "bearerAuth" : [ ]
+        }, {
+          "tenantHeader" : [ ]
+        } ]
+      },
+      "delete" : {
+        "tags" : [ "TenantIntegrationProvider Management" ],
+        "summary" : "deleteTenantIntegrationProviderConfig",
+        "operationId" : "tenantIntegrationProviderDeleteTenantIntegrationProviderConfig",
+        "parameters" : [ {
+          "name" : "providerType",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "string",
+            "enum" : [ "CLAMAV", "STRIPE_TAX", "EXCHANGE_RATE_API" ]
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "OK"
           },
           "401" : {
             "description" : "Missing, expired or revoked access token",
@@ -6653,6 +6819,159 @@
           "bearerAuth" : [ ]
         }, {
           "tenantHeader" : [ ]
+        } ]
+      }
+    },
+    "/api/v1/admin/integration-providers/{providerType}" : {
+      "put" : {
+        "tags" : [ "AdminIntegrationProvider Management" ],
+        "summary" : "upsertIntegrationProviderConfig",
+        "operationId" : "adminIntegrationProviderUpsertIntegrationProviderConfig",
+        "parameters" : [ {
+          "name" : "providerType",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "string",
+            "enum" : [ "CLAMAV", "STRIPE_TAX", "EXCHANGE_RATE_API" ]
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/UpsertIntegrationProviderConfigRequest"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiResponseIntegrationProviderConfigResponse"
+                }
+              }
+            }
+          },
+          "400" : {
+            "description" : "Validation failed or a business rule rejected the request",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "401" : {
+            "description" : "Missing, expired or revoked access token",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "403" : {
+            "description" : "The caller lacks the required permission",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "404" : {
+            "description" : "The resource does not exist in the caller's tenant",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "500" : {
+            "description" : "Unexpected error; quote error.traceId when reporting it",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "security" : [ {
+          "bearerAuth" : [ ]
+        } ]
+      },
+      "delete" : {
+        "tags" : [ "AdminIntegrationProvider Management" ],
+        "summary" : "deleteIntegrationProviderConfig",
+        "operationId" : "adminIntegrationProviderDeleteIntegrationProviderConfig",
+        "parameters" : [ {
+          "name" : "providerType",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "string",
+            "enum" : [ "CLAMAV", "STRIPE_TAX", "EXCHANGE_RATE_API" ]
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "OK"
+          },
+          "401" : {
+            "description" : "Missing, expired or revoked access token",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "403" : {
+            "description" : "The caller lacks the required permission",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "404" : {
+            "description" : "The resource does not exist in the caller's tenant",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "500" : {
+            "description" : "Unexpected error; quote error.traceId when reporting it",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "security" : [ {
+          "bearerAuth" : [ ]
         } ]
       }
     },
@@ -24183,7 +24502,14 @@
         } ],
         "responses" : {
           "200" : {
-            "description" : "OK"
+            "description" : "OK",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiResponsePaymentMethodResponse"
+                }
+              }
+            }
           },
           "401" : {
             "description" : "Missing, expired or revoked access token",
@@ -24324,7 +24650,7 @@
             "content" : {
               "application/json" : {
                 "schema" : {
-                  "$ref" : "#/components/schemas/ApiResponseVoid"
+                  "$ref" : "#/components/schemas/ApiResponseDataExportStatusResponse"
                 }
               }
             }
@@ -26035,6 +26361,134 @@
             "application/json" : {
               "schema" : {
                 "$ref" : "#/components/schemas/EmailVerificationConfirmRequest"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiResponseVoid"
+                }
+              }
+            }
+          },
+          "400" : {
+            "description" : "Validation failed or a business rule rejected the request",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "401" : {
+            "description" : "Missing, expired or revoked access token",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "500" : {
+            "description" : "Unexpected error; quote error.traceId when reporting it",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "security" : [ {
+          "bearerAuth" : [ ]
+        }, {
+          "tenantHeader" : [ ]
+        } ]
+      }
+    },
+    "/api/v1/auth/email-change/request" : {
+      "post" : {
+        "tags" : [ "EmailChange Management" ],
+        "summary" : "requestChange",
+        "operationId" : "emailChangeRequestChange",
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/EmailChangeRequestBody"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiResponseVoid"
+                }
+              }
+            }
+          },
+          "400" : {
+            "description" : "Validation failed or a business rule rejected the request",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "401" : {
+            "description" : "Missing, expired or revoked access token",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "500" : {
+            "description" : "Unexpected error; quote error.traceId when reporting it",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "security" : [ {
+          "bearerAuth" : [ ]
+        }, {
+          "tenantHeader" : [ ]
+        } ]
+      }
+    },
+    "/api/v1/auth/email-change/confirm" : {
+      "post" : {
+        "tags" : [ "EmailChange Management" ],
+        "summary" : "confirmChange",
+        "operationId" : "emailChangeConfirmChange",
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/EmailChangeConfirmRequest"
               }
             }
           },
@@ -28994,15 +29448,8 @@
           "in" : "path",
           "required" : true,
           "schema" : {
-            "type" : "string"
-          }
-        }, {
-          "name" : "format",
-          "in" : "query",
-          "required" : false,
-          "schema" : {
             "type" : "string",
-            "default" : "JSON"
+            "format" : "uuid"
           }
         } ],
         "responses" : {
@@ -29011,17 +29458,7 @@
             "content" : {
               "application/json" : {
                 "schema" : {
-                  "$ref" : "#/components/schemas/ApiResponseExportJobResponse"
-                }
-              }
-            }
-          },
-          "400" : {
-            "description" : "Validation failed or a business rule rejected the request",
-            "content" : {
-              "application/json" : {
-                "schema" : {
-                  "$ref" : "#/components/schemas/ApiErrorResponse"
+                  "$ref" : "#/components/schemas/ApiResponseDataExportStatusResponse"
                 }
               }
             }
@@ -33743,6 +34180,79 @@
           },
           "403" : {
             "description" : "The caller lacks the required permission",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "500" : {
+            "description" : "Unexpected error; quote error.traceId when reporting it",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "security" : [ {
+          "bearerAuth" : [ ]
+        }, {
+          "tenantHeader" : [ ]
+        } ]
+      }
+    },
+    "/api/v1/tenant-settings/integration-providers/{providerType}/activate" : {
+      "patch" : {
+        "tags" : [ "TenantIntegrationProvider Management" ],
+        "summary" : "activateTenantIntegrationProviderConfig",
+        "operationId" : "tenantIntegrationProviderActivateTenantIntegrationProviderConfig",
+        "parameters" : [ {
+          "name" : "providerType",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "string",
+            "enum" : [ "CLAMAV", "STRIPE_TAX", "EXCHANGE_RATE_API" ]
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiResponseIntegrationProviderConfigResponse"
+                }
+              }
+            }
+          },
+          "401" : {
+            "description" : "Missing, expired or revoked access token",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "403" : {
+            "description" : "The caller lacks the required permission",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "404" : {
+            "description" : "The resource does not exist in the caller's tenant",
             "content" : {
               "application/json" : {
                 "schema" : {
@@ -45515,6 +46025,148 @@
         } ]
       }
     },
+    "/api/v1/admin/integration-providers/{providerType}/deactivate" : {
+      "patch" : {
+        "tags" : [ "AdminIntegrationProvider Management" ],
+        "summary" : "deactivateIntegrationProviderConfig",
+        "operationId" : "adminIntegrationProviderDeactivateIntegrationProviderConfig",
+        "parameters" : [ {
+          "name" : "providerType",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "string",
+            "enum" : [ "CLAMAV", "STRIPE_TAX", "EXCHANGE_RATE_API" ]
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiResponseIntegrationProviderConfigResponse"
+                }
+              }
+            }
+          },
+          "401" : {
+            "description" : "Missing, expired or revoked access token",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "403" : {
+            "description" : "The caller lacks the required permission",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "404" : {
+            "description" : "The resource does not exist in the caller's tenant",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "500" : {
+            "description" : "Unexpected error; quote error.traceId when reporting it",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "security" : [ {
+          "bearerAuth" : [ ]
+        } ]
+      }
+    },
+    "/api/v1/admin/integration-providers/{providerType}/activate" : {
+      "patch" : {
+        "tags" : [ "AdminIntegrationProvider Management" ],
+        "summary" : "activateIntegrationProviderConfig",
+        "operationId" : "adminIntegrationProviderActivateIntegrationProviderConfig",
+        "parameters" : [ {
+          "name" : "providerType",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "string",
+            "enum" : [ "CLAMAV", "STRIPE_TAX", "EXCHANGE_RATE_API" ]
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiResponseIntegrationProviderConfigResponse"
+                }
+              }
+            }
+          },
+          "401" : {
+            "description" : "Missing, expired or revoked access token",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "403" : {
+            "description" : "The caller lacks the required permission",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "404" : {
+            "description" : "The resource does not exist in the caller's tenant",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "500" : {
+            "description" : "Unexpected error; quote error.traceId when reporting it",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "security" : [ {
+          "bearerAuth" : [ ]
+        } ]
+      }
+    },
     "/api/v1/admin/features/{id}" : {
       "get" : {
         "tags" : [ "Feature Flags" ],
@@ -47851,6 +48503,114 @@
               "application/json" : {
                 "schema" : {
                   "$ref" : "#/components/schemas/ApiResponseEffectivePaymentGatewayConfigResponse"
+                }
+              }
+            }
+          },
+          "401" : {
+            "description" : "Missing, expired or revoked access token",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "403" : {
+            "description" : "The caller lacks the required permission",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "500" : {
+            "description" : "Unexpected error; quote error.traceId when reporting it",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "security" : [ {
+          "bearerAuth" : [ ]
+        }, {
+          "tenantHeader" : [ ]
+        } ]
+      }
+    },
+    "/api/v1/tenant-settings/integration-providers" : {
+      "get" : {
+        "tags" : [ "TenantIntegrationProvider Management" ],
+        "summary" : "getTenantIntegrationProviderConfigs",
+        "operationId" : "tenantIntegrationProviderGetTenantIntegrationProviderConfigs",
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiResponseListIntegrationProviderConfigResponse"
+                }
+              }
+            }
+          },
+          "401" : {
+            "description" : "Missing, expired or revoked access token",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "403" : {
+            "description" : "The caller lacks the required permission",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "500" : {
+            "description" : "Unexpected error; quote error.traceId when reporting it",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "security" : [ {
+          "bearerAuth" : [ ]
+        }, {
+          "tenantHeader" : [ ]
+        } ]
+      }
+    },
+    "/api/v1/tenant-settings/integration-providers/effective" : {
+      "get" : {
+        "tags" : [ "TenantIntegrationProvider Management" ],
+        "summary" : "getEffectiveIntegrationProviders",
+        "operationId" : "tenantIntegrationProviderGetEffectiveIntegrationProviders",
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiResponseListEffectiveIntegrationProviderResponse"
                 }
               }
             }
@@ -55834,7 +56594,7 @@
           "schema" : {
             "type" : "integer",
             "format" : "int32",
-            "default" : 1
+            "default" : 0
           }
         }, {
           "name" : "size",
@@ -56179,7 +56939,7 @@
           "schema" : {
             "type" : "integer",
             "format" : "int32",
-            "default" : 1
+            "default" : 0
           }
         }, {
           "name" : "size",
@@ -57631,6 +58391,86 @@
         } ]
       }
     },
+    "/api/v1/admin/tenants/{id}/export/{jobId}" : {
+      "get" : {
+        "tags" : [ "AdminExport Management" ],
+        "operationId" : "adminExportGetTenantExport",
+        "parameters" : [ {
+          "name" : "id",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid"
+          }
+        }, {
+          "name" : "jobId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiResponseDataExportStatusResponse"
+                }
+              }
+            }
+          },
+          "401" : {
+            "description" : "Missing, expired or revoked access token",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "403" : {
+            "description" : "The caller lacks the required permission",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "404" : {
+            "description" : "The resource does not exist in the caller's tenant",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "500" : {
+            "description" : "Unexpected error; quote error.traceId when reporting it",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "security" : [ {
+          "bearerAuth" : [ ]
+        }, {
+          "tenantHeader" : [ ]
+        } ]
+      }
+    },
     "/api/v1/admin/tenants/impersonation/sessions" : {
       "get" : {
         "tags" : [ "Super Admin Tenant Management" ],
@@ -57839,6 +58679,171 @@
             }
           }
         }
+      }
+    },
+    "/api/v1/admin/tenant-deletions" : {
+      "get" : {
+        "tags" : [ "AdminExport Management" ],
+        "operationId" : "adminExportListTenantDeletions",
+        "parameters" : [ {
+          "name" : "page",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int32",
+            "default" : 0
+          }
+        }, {
+          "name" : "size",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int32",
+            "default" : 20
+          }
+        }, {
+          "name" : "sort",
+          "in" : "query",
+          "description" : "Repeatable, `field` or `field,asc|desc`, at most 3 fields. Sortable: createdAt, updatedAt.",
+          "required" : false,
+          "schema" : {
+            "type" : "array",
+            "items" : {
+              "type" : "string"
+            }
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiResponsePageTenantDeletionResponse"
+                }
+              }
+            }
+          },
+          "400" : {
+            "description" : "Validation failed or a business rule rejected the request",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "401" : {
+            "description" : "Missing, expired or revoked access token",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "403" : {
+            "description" : "The caller lacks the required permission",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "500" : {
+            "description" : "Unexpected error; quote error.traceId when reporting it",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "security" : [ {
+          "bearerAuth" : [ ]
+        }, {
+          "tenantHeader" : [ ]
+        } ]
+      }
+    },
+    "/api/v1/admin/tenant-deletions/{tenantId}" : {
+      "get" : {
+        "tags" : [ "AdminExport Management" ],
+        "operationId" : "adminExportGetTenantDeletion",
+        "parameters" : [ {
+          "name" : "tenantId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiResponseTenantDeletionResponse"
+                }
+              }
+            }
+          },
+          "401" : {
+            "description" : "Missing, expired or revoked access token",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "403" : {
+            "description" : "The caller lacks the required permission",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "404" : {
+            "description" : "The resource does not exist in the caller's tenant",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "500" : {
+            "description" : "Unexpected error; quote error.traceId when reporting it",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "security" : [ {
+          "bearerAuth" : [ ]
+        }, {
+          "tenantHeader" : [ ]
+        } ]
       }
     },
     "/api/v1/admin/tax/exempt-certificates/pending" : {
@@ -58981,6 +59986,58 @@
           "bearerAuth" : [ ]
         }, {
           "tenantHeader" : [ ]
+        } ]
+      }
+    },
+    "/api/v1/admin/integration-providers" : {
+      "get" : {
+        "tags" : [ "AdminIntegrationProvider Management" ],
+        "summary" : "getIntegrationProviderConfigs",
+        "operationId" : "adminIntegrationProviderGetIntegrationProviderConfigs",
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiResponseListIntegrationProviderConfigResponse"
+                }
+              }
+            }
+          },
+          "401" : {
+            "description" : "Missing, expired or revoked access token",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "403" : {
+            "description" : "The caller lacks the required permission",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "500" : {
+            "description" : "Unexpected error; quote error.traceId when reporting it",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "security" : [ {
+          "bearerAuth" : [ ]
         } ]
       }
     },
@@ -62080,6 +63137,97 @@
         },
         "required" : [ "active", "publicId" ]
       },
+      "UpsertIntegrationProviderConfigRequest" : {
+        "type" : "object",
+        "properties" : {
+          "host" : {
+            "type" : "string",
+            "maxLength" : 255,
+            "minLength" : 0
+          },
+          "port" : {
+            "type" : "integer",
+            "format" : "int32",
+            "maximum" : 65535,
+            "minimum" : 1
+          },
+          "baseUrl" : {
+            "type" : "string",
+            "maxLength" : 500,
+            "minLength" : 0
+          },
+          "timeoutSeconds" : {
+            "type" : "integer",
+            "format" : "int32",
+            "maximum" : 300,
+            "minimum" : 1
+          },
+          "secret" : {
+            "type" : "string",
+            "maxLength" : 2000,
+            "minLength" : 0
+          }
+        }
+      },
+      "ApiResponseIntegrationProviderConfigResponse" : {
+        "type" : "object",
+        "properties" : {
+          "success" : {
+            "type" : "boolean"
+          },
+          "data" : {
+            "$ref" : "#/components/schemas/IntegrationProviderConfigResponse"
+          },
+          "error" : {
+            "$ref" : "#/components/schemas/ApiErrorDetail"
+          },
+          "meta" : {
+            "$ref" : "#/components/schemas/ApiResponseMeta"
+          }
+        },
+        "required" : [ "success" ]
+      },
+      "IntegrationProviderConfigResponse" : {
+        "type" : "object",
+        "properties" : {
+          "id" : {
+            "type" : "string"
+          },
+          "capability" : {
+            "type" : "string",
+            "enum" : [ "VIRUS_SCAN", "TAX", "EXCHANGE_RATE" ]
+          },
+          "providerType" : {
+            "type" : "string",
+            "enum" : [ "CLAMAV", "STRIPE_TAX", "EXCHANGE_RATE_API" ]
+          },
+          "active" : {
+            "type" : "boolean"
+          },
+          "host" : {
+            "type" : "string"
+          },
+          "port" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "baseUrl" : {
+            "type" : "string"
+          },
+          "timeoutSeconds" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "secretConfigured" : {
+            "type" : "boolean"
+          },
+          "updatedAt" : {
+            "type" : "string",
+            "format" : "date-time"
+          }
+        },
+        "required" : [ "active", "id", "secretConfigured" ]
+      },
       "UpsertEmailProviderConfigRequest" : {
         "type" : "object",
         "properties" : {
@@ -63196,6 +64344,9 @@
           },
           "isDefault" : {
             "type" : "boolean"
+          },
+          "verificationStatus" : {
+            "type" : "string"
           },
           "createdAt" : {
             "type" : "string",
@@ -70953,6 +72104,59 @@
         },
         "required" : [ "id" ]
       },
+      "ApiResponseDataExportStatusResponse" : {
+        "type" : "object",
+        "properties" : {
+          "success" : {
+            "type" : "boolean"
+          },
+          "data" : {
+            "$ref" : "#/components/schemas/DataExportStatusResponse"
+          },
+          "error" : {
+            "$ref" : "#/components/schemas/ApiErrorDetail"
+          },
+          "meta" : {
+            "$ref" : "#/components/schemas/ApiResponseMeta"
+          }
+        },
+        "required" : [ "success" ]
+      },
+      "DataExportStatusResponse" : {
+        "type" : "object",
+        "properties" : {
+          "id" : {
+            "type" : "string"
+          },
+          "status" : {
+            "type" : "string"
+          },
+          "downloadUrl" : {
+            "type" : "string"
+          },
+          "expiresAt" : {
+            "type" : "string",
+            "format" : "date-time"
+          },
+          "rowCount" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "fileCount" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "requestedAt" : {
+            "type" : "string",
+            "format" : "date-time"
+          },
+          "completedAt" : {
+            "type" : "string",
+            "format" : "date-time"
+          }
+        },
+        "required" : [ "id" ]
+      },
       "InvoiceCustomizationRequest" : {
         "type" : "object",
         "properties" : {
@@ -71559,6 +72763,32 @@
         }
       },
       "EmailVerificationConfirmRequest" : {
+        "type" : "object",
+        "properties" : {
+          "token" : {
+            "type" : "string",
+            "minLength" : 1
+          }
+        },
+        "required" : [ "token" ]
+      },
+      "EmailChangeRequestBody" : {
+        "type" : "object",
+        "properties" : {
+          "newEmail" : {
+            "type" : "string",
+            "format" : "email",
+            "maxLength" : 255,
+            "minLength" : 0
+          },
+          "currentPassword" : {
+            "type" : "string",
+            "minLength" : 1
+          }
+        },
+        "required" : [ "currentPassword", "newEmail" ]
+      },
+      "EmailChangeConfirmRequest" : {
         "type" : "object",
         "properties" : {
           "token" : {
@@ -72754,35 +73984,6 @@
           }
         },
         "required" : [ "days" ]
-      },
-      "ApiResponseExportJobResponse" : {
-        "type" : "object",
-        "properties" : {
-          "success" : {
-            "type" : "boolean"
-          },
-          "data" : {
-            "$ref" : "#/components/schemas/ExportJobResponse"
-          },
-          "error" : {
-            "$ref" : "#/components/schemas/ApiErrorDetail"
-          },
-          "meta" : {
-            "$ref" : "#/components/schemas/ApiResponseMeta"
-          }
-        },
-        "required" : [ "success" ]
-      },
-      "ExportJobResponse" : {
-        "type" : "object",
-        "properties" : {
-          "jobId" : {
-            "type" : "string"
-          },
-          "status" : {
-            "type" : "string"
-          }
-        }
       },
       "TaxJurisdictionRequest" : {
         "type" : "object",
@@ -76453,6 +77654,61 @@
           "confirmationMode" : {
             "type" : "string",
             "enum" : [ "SYNCHRONOUS", "WEBHOOK", "BOTH" ]
+          }
+        }
+      },
+      "ApiResponseListIntegrationProviderConfigResponse" : {
+        "type" : "object",
+        "properties" : {
+          "success" : {
+            "type" : "boolean"
+          },
+          "data" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/IntegrationProviderConfigResponse"
+            }
+          },
+          "error" : {
+            "$ref" : "#/components/schemas/ApiErrorDetail"
+          },
+          "meta" : {
+            "$ref" : "#/components/schemas/ApiResponseMeta"
+          }
+        },
+        "required" : [ "success" ]
+      },
+      "ApiResponseListEffectiveIntegrationProviderResponse" : {
+        "type" : "object",
+        "properties" : {
+          "success" : {
+            "type" : "boolean"
+          },
+          "data" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/EffectiveIntegrationProviderResponse"
+            }
+          },
+          "error" : {
+            "$ref" : "#/components/schemas/ApiErrorDetail"
+          },
+          "meta" : {
+            "$ref" : "#/components/schemas/ApiResponseMeta"
+          }
+        },
+        "required" : [ "success" ]
+      },
+      "EffectiveIntegrationProviderResponse" : {
+        "type" : "object",
+        "properties" : {
+          "capability" : {
+            "type" : "string",
+            "enum" : [ "VIRUS_SCAN", "TAX", "EXCHANGE_RATE" ]
+          },
+          "providerType" : {
+            "type" : "string",
+            "enum" : [ "CLAMAV", "STRIPE_TAX", "EXCHANGE_RATE_API" ]
           }
         }
       },
@@ -81499,51 +82755,6 @@
         },
         "required" : [ "pageNumber", "pageSize", "totalElements" ]
       },
-      "ApiResponseDataExportStatusResponse" : {
-        "type" : "object",
-        "properties" : {
-          "success" : {
-            "type" : "boolean"
-          },
-          "data" : {
-            "$ref" : "#/components/schemas/DataExportStatusResponse"
-          },
-          "error" : {
-            "$ref" : "#/components/schemas/ApiErrorDetail"
-          },
-          "meta" : {
-            "$ref" : "#/components/schemas/ApiResponseMeta"
-          }
-        },
-        "required" : [ "success" ]
-      },
-      "DataExportStatusResponse" : {
-        "type" : "object",
-        "properties" : {
-          "id" : {
-            "type" : "string"
-          },
-          "status" : {
-            "type" : "string"
-          },
-          "downloadUrl" : {
-            "type" : "string"
-          },
-          "expiresAt" : {
-            "type" : "string",
-            "format" : "date-time"
-          },
-          "requestedAt" : {
-            "type" : "string",
-            "format" : "date-time"
-          },
-          "completedAt" : {
-            "type" : "string",
-            "format" : "date-time"
-          }
-        },
-        "required" : [ "id" ]
-      },
       "ApiResponseListBillingContactResponse" : {
         "type" : "object",
         "properties" : {
@@ -82305,6 +83516,123 @@
           },
           "data" : {
             "$ref" : "#/components/schemas/TenantHealthScore"
+          },
+          "error" : {
+            "$ref" : "#/components/schemas/ApiErrorDetail"
+          },
+          "meta" : {
+            "$ref" : "#/components/schemas/ApiResponseMeta"
+          }
+        },
+        "required" : [ "success" ]
+      },
+      "ApiResponsePageTenantDeletionResponse" : {
+        "type" : "object",
+        "properties" : {
+          "success" : {
+            "type" : "boolean"
+          },
+          "data" : {
+            "$ref" : "#/components/schemas/PageTenantDeletionResponse"
+          },
+          "error" : {
+            "$ref" : "#/components/schemas/ApiErrorDetail"
+          },
+          "meta" : {
+            "$ref" : "#/components/schemas/ApiResponseMeta"
+          }
+        },
+        "required" : [ "success" ]
+      },
+      "PageTenantDeletionResponse" : {
+        "type" : "object",
+        "properties" : {
+          "content" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/TenantDeletionResponse"
+            }
+          },
+          "pageNumber" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "pageSize" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "totalElements" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        },
+        "required" : [ "pageNumber", "pageSize", "totalElements" ]
+      },
+      "TenantDeletionResponse" : {
+        "type" : "object",
+        "properties" : {
+          "id" : {
+            "type" : "string"
+          },
+          "tenantId" : {
+            "type" : "string"
+          },
+          "status" : {
+            "type" : "string"
+          },
+          "rowsRemoved" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "filesRemoved" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "rowCounts" : {
+            "type" : "object",
+            "additionalProperties" : {
+              "type" : "integer",
+              "format" : "int64"
+            }
+          },
+          "failureReason" : {
+            "type" : "string"
+          },
+          "startedAt" : {
+            "type" : "string",
+            "format" : "date-time"
+          },
+          "billingRemovedAt" : {
+            "type" : "string",
+            "format" : "date-time"
+          },
+          "searchRemovedAt" : {
+            "type" : "string",
+            "format" : "date-time"
+          },
+          "filesRemovedAt" : {
+            "type" : "string",
+            "format" : "date-time"
+          },
+          "rowsRemovedAt" : {
+            "type" : "string",
+            "format" : "date-time"
+          },
+          "verifiedAt" : {
+            "type" : "string",
+            "format" : "date-time"
+          }
+        },
+        "required" : [ "id" ]
+      },
+      "ApiResponseTenantDeletionResponse" : {
+        "type" : "object",
+        "properties" : {
+          "success" : {
+            "type" : "boolean"
+          },
+          "data" : {
+            "$ref" : "#/components/schemas/TenantDeletionResponse"
           },
           "error" : {
             "$ref" : "#/components/schemas/ApiErrorDetail"

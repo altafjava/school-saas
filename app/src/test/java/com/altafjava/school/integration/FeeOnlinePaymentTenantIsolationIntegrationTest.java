@@ -19,6 +19,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import com.altafjava.platform.application.dto.RegisterTenantCommand;
 import com.altafjava.platform.application.service.TenantOnboardingService;
 import com.altafjava.platform.core.exception.ResourceNotFoundException;
+import com.altafjava.platform.core.exception.TechnicalException;
 import com.altafjava.platform.core.security.AuthenticatedUser;
 import com.altafjava.platform.core.tenant.TenantContext;
 import com.altafjava.platform.domain.paymentgateway.service.PaymentChargeResult;
@@ -135,6 +136,25 @@ class FeeOnlinePaymentTenantIsolationIntegrationTest extends SchoolIntegrationTe
 		assertThrows(ResourceNotFoundException.class,
 				() -> feeOnlinePaymentService.findReceiptForSelfService(publicId),
 				"Tenant B must receive ResourceNotFoundException for tenant A's gateway fee payment");
+	}
+
+	@Test
+	void createCharge_gatewayDown_failsAndLeavesTheBalanceOwed() {
+		activateTenant(tenantA);
+		String suffix = UUID.randomUUID().toString().substring(0, 8);
+		String[] feeStructurePublicId = new String[1];
+		Student student = createStudentWithOutstandingBalance(suffix, feeStructurePublicId);
+		TestPaymentGatewayConfig.GATEWAY_DOWN.set(true);
+		try {
+			assertThrows(TechnicalException.class, () -> feeOnlinePaymentService
+					.createCharge(student.getPublicId().toString(), feeStructurePublicId[0]));
+		} finally {
+			TestPaymentGatewayConfig.GATEWAY_DOWN.set(false);
+		}
+
+		PaymentChargeResult retried = feeOnlinePaymentService.createCharge(student.getPublicId().toString(),
+				feeStructurePublicId[0]);
+		org.junit.jupiter.api.Assertions.assertNotNull(retried.gatewayChargeReference());
 	}
 
 	@Test

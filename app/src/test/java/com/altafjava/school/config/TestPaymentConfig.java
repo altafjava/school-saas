@@ -6,6 +6,8 @@ import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Primary;
 import org.springframework.context.annotation.Profile;
+import com.altafjava.platform.domain.payment.model.PaymentCardDetails;
+import com.altafjava.platform.domain.payment.model.PaymentMethodVerificationStatus;
 import com.altafjava.platform.domain.payment.service.PaymentProvider;
 
 @TestConfiguration
@@ -39,7 +41,31 @@ public class TestPaymentConfig {
 		}
 
 		@Override
-		public void attachPaymentMethod(String customerId, String paymentMethodId) {
+		public PaymentCardDetails attachPaymentMethod(String customerId, String paymentMethodId) {
+			return new PaymentCardDetails("mastercard", "1881", 3, 2031);
+		}
+
+		@Override
+		public PaymentMethodVerificationStatus verifyPaymentMethod(String customerId, String paymentMethodId) {
+			return PaymentMethodVerificationStatus.VERIFIED;
+		}
+
+		@Override
+		public boolean payInvoice(String invoiceId) {
+			return true;
+		}
+
+		@Override
+		public String refundInvoice(String invoiceId, java.math.BigDecimal amount, String currency) {
+			return "re_" + UUID.randomUUID();
+		}
+
+		@Override
+		public void applySubscriptionCoupon(String subscriptionId, String couponId) {
+		}
+
+		@Override
+		public void removeSubscriptionCoupon(String subscriptionId) {
 		}
 
 		@Override

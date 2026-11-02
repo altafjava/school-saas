@@ -4,6 +4,7 @@ import java.math.BigDecimal;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicBoolean;
 import org.mockito.Mockito;
 import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.context.annotation.Bean;
@@ -13,6 +14,7 @@ import com.altafjava.platform.application.paymentgateway.PaymentGatewayCredentia
 import com.altafjava.platform.application.paymentgateway.PaymentGatewayProviderRegistry;
 import com.altafjava.platform.application.paymentgateway.PaymentGatewayResolver;
 import com.altafjava.platform.application.paymentgateway.ResolvedPaymentGatewayConfig;
+import com.altafjava.platform.core.exception.TechnicalException;
 import com.altafjava.platform.domain.paymentgateway.model.PaymentGatewayConfirmationMode;
 import com.altafjava.platform.domain.paymentgateway.model.PaymentGatewayType;
 import com.altafjava.platform.domain.paymentgateway.service.PaymentChargeRequest;
@@ -41,6 +43,8 @@ import tools.jackson.databind.ObjectMapper;
 public class TestPaymentGatewayConfig {
 
 	public static final String VALID_SIGNATURE = "valid-signature";
+	/** Lets a test take the gateway down, because the failure path is what it needs to prove. */
+	public static final AtomicBoolean GATEWAY_DOWN = new AtomicBoolean();
 
 	@Bean
 	@Primary
@@ -83,6 +87,9 @@ public class TestPaymentGatewayConfig {
 
 		@Override
 		public PaymentChargeResult createCharge(PaymentGatewayCredentials credentials, PaymentChargeRequest request) {
+			if (GATEWAY_DOWN.get()) {
+				throw new TechnicalException("Gateway unavailable", null);
+			}
 			String reference = "pi_test_" + UUID.randomUUID();
 			charges.put(reference, request);
 			return new PaymentChargeResult(reference, "requires_confirmation", "secret_" + reference);

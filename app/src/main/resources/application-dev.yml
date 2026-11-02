@@ -48,17 +48,14 @@ app:
 
 platform:
   # Required by the platform, which has no defaults for these.
-  tax:
-    provider: none
-  exchangerate:
-    provider: none
-  virus-scan:
-    enabled: false
   admin:
     # Dev-only: sets a known password so the bootstrap admin is predictable.
     # ADMIN_INITIAL_PASSWORD env var is read by SystemAdminBootstrapService at first startup.
     # If the admin already exists this has no effect — see reset instructions in README.
     initial-email: admin@platform.local
+  email:
+    # Nothing is sent without a provider, so the log is how a developer reaches a reset link.
+    log-body: true
   security:
     encryption:
       key: 12345678901234567890123456789012

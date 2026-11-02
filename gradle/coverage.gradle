@@ -1,0 +1,57 @@
+// Coverage across modules. A controller in `api` is exercised by end-to-end tests in another module,
+// so a per-module report understates it; every module's execution data is merged here instead.
+apply plugin: 'jacoco'
+apply plugin: 'base'
+
+def sourceProjects = { subprojects.findAll { project.ext.coveredModules.contains(it.name) } }
+configure(sourceProjects()) { apply plugin: 'jacoco' }
+def executionFiles = fileTree(rootDir) { include '*/build/jacoco/*.exec' }
+def classesOf = { includes ->
+    files(sourceProjects().collect { module ->
+        fileTree(module.layout.buildDirectory.dir('classes/java/main')) {
+            include includes
+            exclude '**/*MapperImpl*.class', '**/*Application*.class'
+        }
+    })
+}
+
+tasks.register('jacocoMergedReport', JacocoReport) {
+    group = 'verification'
+    description = 'Coverage across all modules, counting tests in any module.'
+    executionData executionFiles
+    classDirectories.setFrom(classesOf(['**/*.class']))
+    sourceDirectories.setFrom(files(sourceProjects().collect { it.file('src/main/java') }))
+    reports {
+        xml.required = true
+        html.required = true
+    }
+}
+
+def coverageGates = tasks.register('coverageGates') {
+    group = 'verification'
+    description = 'Fails when any module or high-risk area drops below its floor.'
+}
+
+project.ext.coverageFloors.each { name, gate ->
+    def task = tasks.register("coverageGate${name}", JacocoCoverageVerification) {
+        executionData executionFiles
+        classDirectories.setFrom(classesOf(gate.classes))
+        violationRules {
+            rule {
+                limit {
+                    counter = 'LINE'
+                    minimum = gate.line
+                }
+            }
+        }
+    }
+    coverageGates.configure { dependsOn task }
+}
+
+gradle.projectsEvaluated {
+    def testTasks = subprojects.collectMany { it.tasks.withType(Test).matching { task -> task.name in ['test', 'infrastructureTest'] } }
+    tasks.named('jacocoMergedReport') { mustRunAfter testTasks }
+    tasks.withType(JacocoCoverageVerification).configureEach { mustRunAfter testTasks }
+    tasks.named('testHealthReport') { mustRunAfter testTasks }
+    tasks.named('check') { dependsOn 'jacocoMergedReport', coverageGates, 'testHealthReport' }
+}

@@ -57,12 +57,6 @@ app:
 
 platform:
   # Required, with no defaults: a deployment must choose each one, 'none' or 'false' included.
-  tax:
-    provider: ${TAX_PROVIDER}
-  exchangerate:
-    provider: ${EXCHANGE_RATE_PROVIDER}
-  virus-scan:
-    enabled: ${VIRUS_SCAN_ENABLED}
   datasource:
     replica:
       enabled: ${DB_REPLICA_ENABLED:false}

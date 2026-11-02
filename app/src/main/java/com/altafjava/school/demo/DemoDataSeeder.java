@@ -129,19 +129,24 @@ public class DemoDataSeeder {
 	 * @return the demo tenant, newly created or already present
 	 */
 	public Tenant seed() {
-		Tenant tenant = tenantRepository.findBySubdomain(SUBDOMAIN).orElseGet(() -> onboardingService.registerTenant(
-				new RegisterTenantCommand("Demo School", SUBDOMAIN, PLAN_BASIC, ADMIN_EMAIL, PASSWORD, "INR")));
-		if (userRepository.existsByEmail(LAST_SEEDED_EMAIL)) {
-			log.info("action=demo_seed_skipped reason=already-seeded subdomain={}", SUBDOMAIN);
-			return tenant;
-		}
+		return seed(SUBDOMAIN);
+	}
+
+	/** Seeds a full school under another subdomain, for proving a tenant-wide operation on real data. */
+	public Tenant seed(String subdomain) {
+		Tenant tenant = tenantRepository.findBySubdomain(subdomain).orElseGet(() -> onboardingService.registerTenant(
+				new RegisterTenantCommand("Demo School", subdomain, PLAN_BASIC, ADMIN_EMAIL, PASSWORD, "INR")));
 		TenantContext.runAsTenant(new TenantContextSnapshot(tenant.getId(), tenant.getPublicId(),
 				tenant.getSubdomain(), tenant.getType(), null),
 				() -> runAsTenantAdmin(tenant.getId(), () -> {
+					if (userRepository.existsByEmail(LAST_SEEDED_EMAIL)) {
+						log.info("action=demo_seed_skipped reason=already-seeded subdomain={}", subdomain);
+						return;
+					}
 					awaitTenantProvisioning();
 					new TransactionTemplate(transactionManager).executeWithoutResult(status -> seedTenant());
+					log.info("action=demo_seed_completed subdomain={} adminEmail={}", subdomain, ADMIN_EMAIL);
 				}));
-		log.info("action=demo_seed_completed subdomain={} adminEmail={}", SUBDOMAIN, ADMIN_EMAIL);
 		return tenant;
 	}
 
