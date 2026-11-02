@@ -247,7 +247,7 @@ class Phase2ApiE2ETest extends SchoolIntegrationTestBase {
 		String payment = asAdmin().header("Idempotency-Key", UUID.randomUUID().toString())
 				.body("{\"studentPublicId\":\"" + publicIds.of(Student.class, studentId(student))
 						+ "\",\"feeStructurePublicId\":\"" + publicIds.of(FeeStructure.class, structureId(structure))
-						+ "\",\"paidAmount\":800.00,\"paidAt\":\"2026-02-01T10:00:00\",\"receiptNumber\":\"RCPT-"
+						+ "\",\"paidAmount\":800.00,\"paidAt\":\"2026-02-01T10:00:00\",\"paymentMode\":\"CASH\",\"receiptNumber\":\"RCPT-"
 						+ UUID.randomUUID().toString().substring(0, 8) + "\"}")
 				.post("/api/v1/fee-payments").then().statusCode(HttpStatus.CREATED.value()).extract()
 				.path("data.publicId");

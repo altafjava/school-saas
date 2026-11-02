@@ -1,5 +1,6 @@
 package com.altafjava.school.application.filter;
 
+import com.altafjava.school.domain.fee.model.PaymentMode;
 import com.altafjava.school.domain.fee.model.PaymentSource;
 
 /**
@@ -7,7 +8,7 @@ import com.altafjava.school.domain.fee.model.PaymentSource;
  * confirmed through the gateway); refunds are a separate resource.
  */
 public record FeePaymentFilter(String studentPublicId, String feeStructurePublicId, DateWindow dates,
-		PaymentSource paymentSource) {
+		PaymentSource paymentSource, PaymentMode paymentMode) {
 
-	public static final FeePaymentFilter NONE = new FeePaymentFilter(null, null, DateWindow.UNBOUNDED, null);
+	public static final FeePaymentFilter NONE = new FeePaymentFilter(null, null, DateWindow.UNBOUNDED, null, null);
 }

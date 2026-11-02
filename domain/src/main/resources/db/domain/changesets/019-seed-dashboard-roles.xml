@@ -349,6 +349,22 @@
             <column name="role_id" valueComputed="(SELECT id FROM roles WHERE name = 'ACADEMIC' AND tenant_id IS NULL)"/>
             <column name="permission_code" value="EXAM_READ"/>
         </insert>
+        <insert tableName="role_permissions">
+            <column name="role_id" valueComputed="(SELECT id FROM roles WHERE name = 'PRINCIPAL' AND tenant_id IS NULL)"/>
+            <column name="permission_code" value="STUDENT_LEAVE_MANAGE"/>
+        </insert>
+        <insert tableName="role_permissions">
+            <column name="role_id" valueComputed="(SELECT id FROM roles WHERE name = 'PRINCIPAL' AND tenant_id IS NULL)"/>
+            <column name="permission_code" value="STUDENT_PROMOTE"/>
+        </insert>
+        <insert tableName="role_permissions">
+            <column name="role_id" valueComputed="(SELECT id FROM roles WHERE name = 'ACADEMIC' AND tenant_id IS NULL)"/>
+            <column name="permission_code" value="STUDENT_LEAVE_MANAGE"/>
+        </insert>
+        <insert tableName="role_permissions">
+            <column name="role_id" valueComputed="(SELECT id FROM roles WHERE name = 'ACADEMIC' AND tenant_id IS NULL)"/>
+            <column name="permission_code" value="STUDENT_PROMOTE"/>
+        </insert>
     </changeSet>
 
 </databaseChangeLog>

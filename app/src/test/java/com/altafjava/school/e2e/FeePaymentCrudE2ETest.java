@@ -125,7 +125,7 @@ class FeePaymentCrudE2ETest extends SchoolIntegrationTestBase {
 				.contentType(ContentType.JSON)
 				.body("{\"studentPublicId\":\"" + publicIds.of(Student.class, studentId)
 						+ "\",\"feeStructurePublicId\":\"" + publicIds.of(FeeStructure.class, feeStructureId)
-						+ "\",\"paidAmount\":500.00,\"paidAt\":\"2026-02-01T10:00:00\","
+						+ "\",\"paidAmount\":500.00,\"paidAt\":\"2026-02-01T10:00:00\",\"paymentMode\":\"CASH\","
 						+ "\"receiptNumber\":\"RCPT-FP1\"}")
 				.when()
 				.post("/api/v1/fee-payments")
@@ -160,7 +160,7 @@ class FeePaymentCrudE2ETest extends SchoolIntegrationTestBase {
 				.contentType(ContentType.JSON)
 				.body("{\"studentPublicId\":\"" + publicIds.of(Student.class, studentId)
 						+ "\",\"feeStructurePublicId\":\"" + publicIds.of(FeeStructure.class, feeStructureId)
-						+ "\",\"paidAmount\":500.00,\"paidAt\":\"2026-02-01T10:00:00\","
+						+ "\",\"paidAmount\":500.00,\"paidAt\":\"2026-02-01T10:00:00\",\"paymentMode\":\"CASH\","
 						+ "\"receiptNumber\":\"RCPT-FP2\"}")
 				.when()
 				.post("/api/v1/fee-payments")
@@ -180,7 +180,7 @@ class FeePaymentCrudE2ETest extends SchoolIntegrationTestBase {
 				.contentType(ContentType.JSON)
 				.body("{\"studentPublicId\":\"" + publicIds.of(Student.class, studentId)
 						+ "\",\"feeStructurePublicId\":\"" + publicIds.of(FeeStructure.class, feeStructureId)
-						+ "\",\"paidAmount\":500.00,\"paidAt\":\"2026-02-01T10:00:00\","
+						+ "\",\"paidAmount\":500.00,\"paidAt\":\"2026-02-01T10:00:00\",\"paymentMode\":\"CASH\","
 						+ "\"receiptNumber\":\"RCPT-FP3\"}")
 				.when()
 				.post("/api/v1/fee-payments")

@@ -179,7 +179,7 @@ public class FeeOnlinePaymentService {
 		Long tenantId = TenantContext.getCurrentTenantId();
 		Student student = resolveStudent(tenantId, studentPublicId);
 		studentDataAccessGuard.assertCanView(tenantId, studentPublicId);
-		return feePaymentRepository.search(tenantId, student.getId(), null, null, null, null, pageable);
+		return feePaymentRepository.search(tenantId, student.getId(), null, null, null, null, null, pageable);
 	}
 
 	@Transactional(readOnly = true)

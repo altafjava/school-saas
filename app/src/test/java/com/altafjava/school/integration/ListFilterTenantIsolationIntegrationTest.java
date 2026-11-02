@@ -99,7 +99,7 @@ class ListFilterTenantIsolationIntegrationTest extends SchoolIntegrationTestBase
 	@Test
 	void studentFilter_onFeePayments_doesNotResolveAnotherTenantsStudent() {
 		activate(tenantA);
-		FeePaymentFilter filter = new FeePaymentFilter(studentOfA, null, DateWindow.UNBOUNDED, null);
+		FeePaymentFilter filter = new FeePaymentFilter(studentOfA, null, DateWindow.UNBOUNDED, null, null);
 		assertDoesNotThrow(() -> feePaymentService.listFeePayments(filter, PAGE));
 
 		activate(tenantB);

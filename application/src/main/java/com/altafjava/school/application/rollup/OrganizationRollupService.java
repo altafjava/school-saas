@@ -161,7 +161,7 @@ public class OrganizationRollupService {
 			}
 		}
 
-		BigDecimal totalPaid = feePaymentRepository.sumPaidAmountByTenantId(tenantId);
+		BigDecimal totalPaid = feePaymentRepository.sumClearedAmountByTenantId(tenantId);
 		return FeeRollup.of(totalDue, totalPaid);
 	}
 

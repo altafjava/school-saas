@@ -42,9 +42,9 @@ class FinanceDashboardDataProviderTest {
 
 	@Test
 	void fetchData_returnsSingleSummaryRow() {
-		when(feePaymentRepository.sumPaidAmountByTenantId(1L)).thenReturn(BigDecimal.valueOf(50000));
+		when(feePaymentRepository.sumClearedAmountByTenantId(1L)).thenReturn(BigDecimal.valueOf(50000));
 		when(feeRefundRepository.sumCompletedByTenantId(1L)).thenReturn(BigDecimal.valueOf(2000));
-		when(feePaymentRepository.countByTenantId(1L)).thenReturn(200L);
+		when(feePaymentRepository.countClearedByTenantId(1L)).thenReturn(200L);
 		when(circulationRepository.sumFineAmountByTenantId(1L)).thenReturn(BigDecimal.valueOf(150));
 
 		List<Map<String, Object>> result = provider.fetchData(Map.of());

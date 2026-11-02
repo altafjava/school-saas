@@ -31,12 +31,12 @@ public class FinanceDashboardDataProvider implements ReportDataProvider {
 		Long tenantId = TenantContext.getCurrentTenantId();
 
 		Map<String, Object> row = new LinkedHashMap<>();
-		BigDecimal collected = feePaymentRepository.sumPaidAmountByTenantId(tenantId);
+		BigDecimal collected = feePaymentRepository.sumClearedAmountByTenantId(tenantId);
 		BigDecimal refunded = feeRefundRepository.sumCompletedByTenantId(tenantId);
 		row.put("totalFeeCollected", collected);
 		row.put("totalFeeRefunded", refunded);
 		row.put("netFeeCollected", collected.subtract(refunded));
-		row.put("feePaymentCount", feePaymentRepository.countByTenantId(tenantId));
+		row.put("feePaymentCount", feePaymentRepository.countClearedByTenantId(tenantId));
 		row.put("totalLibraryFinesCollected", circulationRepository.sumFineAmountByTenantId(tenantId));
 		return List.of(row);
 	}

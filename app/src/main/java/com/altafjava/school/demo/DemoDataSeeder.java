@@ -43,6 +43,7 @@ import com.altafjava.school.application.service.EventService;
 import com.altafjava.school.application.service.ExamService;
 import com.altafjava.school.application.service.ExamTypeDefinitionService;
 import com.altafjava.school.application.service.FeeAssignmentService;
+import com.altafjava.school.application.service.FeePaymentService;
 import com.altafjava.school.application.service.FeeStructureService;
 import com.altafjava.school.application.service.GradeService;
 import com.altafjava.school.application.service.GuardianService;
@@ -62,6 +63,8 @@ import com.altafjava.school.domain.exam.model.Exam;
 import com.altafjava.school.domain.exam.model.ExamTypeDefinition;
 import com.altafjava.school.domain.fee.model.FeeFrequency;
 import com.altafjava.school.domain.fee.model.FeeStructure;
+import com.altafjava.school.domain.fee.model.PaymentInstrument;
+import com.altafjava.school.domain.fee.model.PaymentMode;
 import com.altafjava.school.domain.guardian.model.Guardian;
 import com.altafjava.school.domain.guardian.model.RelationshipType;
 import com.altafjava.school.domain.guardian.repository.GuardianRepository;
@@ -123,6 +126,7 @@ public class DemoDataSeeder {
 	private final GuardianService guardianService;
 	private final FeeStructureService feeStructureService;
 	private final FeeAssignmentService feeAssignmentService;
+	private final FeePaymentService feePaymentService;
 	private final ExamTypeDefinitionService examTypeDefinitionService;
 	private final ExamService examService;
 	private final GradeService gradeService;
@@ -278,7 +282,7 @@ public class DemoDataSeeder {
 		}
 		List<Guardian> guardians = seedGuardians(students);
 
-		seedFees(classrooms);
+		seedFeePayments(seedFees(classrooms), students, today);
 		seedExamsAndGrades(random, term1, subjects, classrooms, students);
 		seedAttendance(random, classrooms, students, today);
 		seedTimetable(classrooms, subjects, teachers);
@@ -312,7 +316,7 @@ public class DemoDataSeeder {
 		return guardians;
 	}
 
-	private void seedFees(List<Classroom> classrooms) {
+	private FeeStructure seedFees(List<Classroom> classrooms) {
 		FeeStructure tuition = feeStructureService.create("Tuition", new BigDecimal("5000"), FeeFrequency.MONTHLY,
 				"STANDARD");
 		FeeStructure annual = feeStructureService.create("Annual charges", new BigDecimal("12000"),
@@ -321,6 +325,19 @@ public class DemoDataSeeder {
 		for (Classroom classroom : classrooms) {
 			feeAssignmentService.assign(tuition.getPublicId().toString(), null, classroom.getPublicId().toString());
 			feeAssignmentService.assign(annual.getPublicId().toString(), null, classroom.getPublicId().toString());
+		}
+		return tuition;
+	}
+
+	// One student per mode, so the fee history and the daily collection report both have something to show.
+	private void seedFeePayments(FeeStructure tuition, List<Student> students, LocalDate today) {
+		List<PaymentInstrument> instruments = List.of(PaymentInstrument.CASH,
+				new PaymentInstrument(PaymentMode.CHEQUE, null, "004512", today.minusDays(3), "State Bank of India"),
+				new PaymentInstrument(PaymentMode.UPI, "UPI-2041-7781", null, null, null),
+				new PaymentInstrument(PaymentMode.BANK_TRANSFER, "NEFT-88213", null, null, null));
+		for (int i = 0; i < instruments.size(); i++) {
+			feePaymentService.record(students.get(i).getPublicId().toString(), tuition.getPublicId().toString(),
+					new BigDecimal("5000"), today.minusDays(i + 1L).atTime(10, 0), null, instruments.get(i));
 		}
 	}
 

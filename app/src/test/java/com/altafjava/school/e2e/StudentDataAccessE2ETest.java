@@ -219,7 +219,7 @@ class StudentDataAccessE2ETest extends SchoolIntegrationTestBase {
 				.contentType(ContentType.JSON)
 				.body("{\"studentPublicId\":\"" + publicIds.of(Student.class, studentAId)
 						+ "\",\"feeStructurePublicId\":\"" + publicIds.of(FeeStructure.class, feeStructureId)
-						+ "\",\"paidAmount\":400.00,\"paidAt\":\"2026-02-01T10:00:00\","
+						+ "\",\"paidAmount\":400.00,\"paidAt\":\"2026-02-01T10:00:00\",\"paymentMode\":\"CASH\","
 						+ "\"receiptNumber\":\"RCPT-BAL-1\"}")
 				.when()
 				.post("/api/v1/fee-payments")

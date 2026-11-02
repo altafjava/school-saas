@@ -3,6 +3,7 @@ package com.altafjava.school.application.service;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -20,9 +21,11 @@ import org.springframework.transaction.annotation.Transactional;
 import com.altafjava.platform.application.service.NumberSequenceService;
 import com.altafjava.platform.core.audit.AuditAction;
 import com.altafjava.platform.core.audit.annotation.Audited;
+import com.altafjava.platform.core.exception.BusinessException;
 import com.altafjava.platform.core.exception.ResourceNotFoundException;
 import com.altafjava.platform.core.tenant.TenantContext;
 import com.altafjava.platform.domain.numbering.model.ResetPeriod;
+import com.altafjava.school.application.filter.DateWindow;
 import com.altafjava.school.application.filter.FeePaymentFilter;
 import com.altafjava.school.application.reference.EntityRef;
 import com.altafjava.school.application.reference.PublicIdLookup;
@@ -30,11 +33,14 @@ import com.altafjava.school.application.security.StudentDataAccessGuard;
 import com.altafjava.school.domain.classroom.repository.StudentClassroomLinkRepository;
 import com.altafjava.school.domain.fee.model.FeeAssignment;
 import com.altafjava.school.domain.fee.model.FeeBalance;
+import com.altafjava.school.domain.fee.model.FeeCollectionRow;
 import com.altafjava.school.domain.fee.model.FeeDiscount;
 import com.altafjava.school.domain.fee.model.FeeInstallment;
 import com.altafjava.school.domain.fee.model.FeePayment;
 import com.altafjava.school.domain.fee.model.FeeRefund;
 import com.altafjava.school.domain.fee.model.FeeStructure;
+import com.altafjava.school.domain.fee.model.PaymentInstrument;
+import com.altafjava.school.domain.fee.model.PaymentMode;
 import com.altafjava.school.domain.fee.repository.FeeAssignmentRepository;
 import com.altafjava.school.domain.fee.repository.FeeDiscountRepository;
 import com.altafjava.school.domain.fee.repository.FeeInstallmentRepository;
@@ -47,6 +53,8 @@ import com.altafjava.school.domain.student.repository.StudentRepository;
 
 @Service
 public class FeePaymentService {
+
+	private static final int MAX_COLLECTION_REPORT_DAYS = 92;
 
 	private static final String FEE_RECEIPT_SEQUENCE = "FEE_RECEIPT";
 
@@ -88,7 +96,19 @@ public class FeePaymentService {
 				publicIdLookup.idOrNull(EntityRef.STUDENT, filter.studentPublicId()),
 				publicIdLookup.idOrNull(EntityRef.FEE_STRUCTURE, filter.feeStructurePublicId()),
 				filter.dates().startInclusive(), filter.dates().endExclusive(),
-				filter.paymentSource(), pageable);
+				filter.paymentSource(), filter.paymentMode(), pageable);
+	}
+
+	/** One line per day and mode, with bounced cheques on their own columns. */
+	@Transactional(readOnly = true)
+	public List<FeeCollectionRow> collectionReport(LocalDate from, LocalDate to) {
+		if (ChronoUnit.DAYS.between(from, to) > MAX_COLLECTION_REPORT_DAYS) {
+			throw new BusinessException(
+					"A collection report can cover at most " + MAX_COLLECTION_REPORT_DAYS + " days");
+		}
+		DateWindow window = new DateWindow(from, to);
+		return feePaymentRepository.collectionByDayAndMode(TenantContext.getCurrentTenantId(),
+				window.startInclusive(), window.endExclusive());
 	}
 
 	@Transactional(readOnly = true)
@@ -117,7 +137,7 @@ public class FeePaymentService {
 		Map<Long, FeeAssignment> assignmentsByFeeStructureId = resolveApplicableAssignments(tenantId, student);
 		List<FeeStructure> feeStructures = feeStructureRepository
 				.findAllByIdInAndTenantId(new ArrayList<>(assignmentsByFeeStructureId.keySet()), tenantId);
-		List<FeePayment> payments = feePaymentRepository.findByStudentId(tenantId, student.getId());
+		List<FeePayment> payments = feePaymentRepository.findClearedByStudentId(tenantId, student.getId());
 		AdjustmentIndex adjustments = loadAdjustments(tenantId, List.of(student.getId()));
 		LocalDate today = LocalDate.now();
 
@@ -175,7 +195,7 @@ public class FeePaymentService {
 				.collect(Collectors.toMap(FeeStructure::getId, Function.identity()));
 
 		Map<Long, List<FeePayment>> paymentsByStudentId = feePaymentRepository
-				.findByStudentIdIn(tenantId, studentIds).stream()
+				.findClearedByStudentIdIn(tenantId, studentIds).stream()
 				.collect(Collectors.groupingBy(FeePayment::getStudentId));
 
 		AdjustmentIndex adjustments = loadAdjustments(tenantId, studentIds);
@@ -275,7 +295,11 @@ public class FeePaymentService {
 	@Transactional
 	@Audited(action = AuditAction.CREATE, resourceType = "FeePayment", details = "Fee payment recorded")
 	public FeePayment record(String studentPublicId, String feeStructurePublicId, BigDecimal paidAmount,
-			LocalDateTime paidAt, String receiptNumber) {
+			LocalDateTime paidAt, String receiptNumber, PaymentInstrument instrument) {
+		// Gateway payments arrive signed through FeeOnlinePaymentService; nobody may type one in.
+		if (instrument.mode() == PaymentMode.GATEWAY) {
+			throw new BusinessException("Gateway payments are recorded by the payment gateway");
+		}
 		Long tenantId = TenantContext.getCurrentTenantId();
 		Long studentId = studentRepository.findByPublicIdAndTenantId(UUID.fromString(studentPublicId), tenantId)
 				.orElseThrow(() -> new ResourceNotFoundException("Student not found: " + studentPublicId))
@@ -288,7 +312,23 @@ public class FeePaymentService {
 		if (feePaymentRepository.existsByReceiptNumberAndTenantId(resolvedReceiptNumber, tenantId)) {
 			throw new IllegalArgumentException("Receipt number already exists: " + resolvedReceiptNumber);
 		}
-		FeePayment payment = FeePayment.create(studentId, feeStructureId, paidAmount, paidAt, resolvedReceiptNumber);
+		FeePayment payment = FeePayment.create(studentId, feeStructureId, paidAmount, paidAt, resolvedReceiptNumber,
+				instrument);
+		return feePaymentRepository.save(payment);
+	}
+
+	/** The row lock keeps a bounce and a refund of the same payment from both passing their checks. */
+	@Transactional
+	@Audited(action = AuditAction.UPDATE, resourceType = "FeePayment", details = "Cheque bounced")
+	public FeePayment bounce(String publicId, String reason, LocalDateTime bouncedAt) {
+		Long tenantId = TenantContext.getCurrentTenantId();
+		FeePayment payment = feePaymentRepository
+				.findByPublicIdAndTenantIdForUpdate(UUID.fromString(publicId), tenantId)
+				.orElseThrow(() -> new ResourceNotFoundException("FeePayment not found: " + publicId));
+		if (feeRefundRepository.sumReservedByPayment(tenantId, payment.getId()).signum() > 0) {
+			throw new BusinessException("This payment has refunds against it, so its cheque cannot be marked bounced");
+		}
+		payment.bounce(reason, bouncedAt);
 		return feePaymentRepository.save(payment);
 	}
 

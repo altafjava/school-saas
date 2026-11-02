@@ -9,7 +9,7 @@ import com.altafjava.school.domain.student.model.EnrollmentStatus;
  * that each only know their own phase.
  */
 public enum LifecycleStage {
-	SUBMITTED, UNDER_REVIEW, WAITLISTED, APPROVED, REJECTED, ENROLLED, SUSPENDED, WITHDRAWN, TRANSFERRED, GRADUATED, ALUMNI;
+	SUBMITTED, UNDER_REVIEW, WAITLISTED, APPROVED, REJECTED, ENROLLED, PROMOTED, RETAINED, SUSPENDED, WITHDRAWN, TRANSFERRED, GRADUATED, ALUMNI;
 
 	public static LifecycleStage of(AdmissionStatus status) {
 		return switch (status) {

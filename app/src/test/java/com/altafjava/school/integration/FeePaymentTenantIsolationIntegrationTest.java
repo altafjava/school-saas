@@ -28,6 +28,7 @@ import com.altafjava.school.config.TestRedisConfig;
 import com.altafjava.school.domain.fee.model.FeeFrequency;
 import com.altafjava.school.domain.fee.model.FeePayment;
 import com.altafjava.school.domain.fee.model.FeeStructure;
+import com.altafjava.school.domain.fee.model.PaymentInstrument;
 import com.altafjava.school.domain.student.model.Student;
 
 /**
@@ -82,7 +83,7 @@ class FeePaymentTenantIsolationIntegrationTest extends SchoolIntegrationTestBase
 				BigDecimal.valueOf(500), FeeFrequency.MONTHLY, "Standard");
 		feePaymentService.record(student.getPublicId().toString(), structure.getPublicId().toString(),
 				BigDecimal.valueOf(500),
-				LocalDateTime.now(), "RCPT-" + UUID.randomUUID().toString().substring(0, 8));
+				LocalDateTime.now(), "RCPT-" + UUID.randomUUID().toString().substring(0, 8), PaymentInstrument.CASH);
 
 		activateTenant(tenantB);
 		Page<FeePayment> tenantBPayments = feePaymentService.listFeePayments(FeePaymentFilter.NONE,
@@ -104,7 +105,7 @@ class FeePaymentTenantIsolationIntegrationTest extends SchoolIntegrationTestBase
 		FeePayment payment = feePaymentService.record(student.getPublicId().toString(),
 				structure.getPublicId().toString(),
 				BigDecimal.valueOf(500), LocalDateTime.now(),
-				"RCPT-" + UUID.randomUUID().toString().substring(0, 8));
+				"RCPT-" + UUID.randomUUID().toString().substring(0, 8), PaymentInstrument.CASH);
 		String publicId = payment.getPublicId().toString();
 
 		activateTenant(tenantB);

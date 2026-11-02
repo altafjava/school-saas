@@ -92,6 +92,22 @@
             <column name="permission_code" value="EXAM_READ"/>
         </insert>
         <insert tableName="role_permissions">
+            <column name="role_id" valueComputed="(SELECT id FROM roles WHERE name = 'TEACHER' AND tenant_id IS NULL)"/>
+            <column name="permission_code" value="STUDENT_LEAVE_REVIEW"/>
+        </insert>
+        <insert tableName="role_permissions">
+            <column name="role_id" valueComputed="(SELECT id FROM roles WHERE name = 'PARENT' AND tenant_id IS NULL)"/>
+            <column name="permission_code" value="STUDENT_LEAVE_SELF_SERVICE"/>
+        </insert>
+        <insert tableName="role_permissions">
+            <column name="role_id" valueComputed="(SELECT id FROM roles WHERE name = 'TENANT_ADMIN' AND tenant_id IS NULL)"/>
+            <column name="permission_code" value="STUDENT_LEAVE_MANAGE"/>
+        </insert>
+        <insert tableName="role_permissions">
+            <column name="role_id" valueComputed="(SELECT id FROM roles WHERE name = 'TENANT_ADMIN' AND tenant_id IS NULL)"/>
+            <column name="permission_code" value="STUDENT_PROMOTE"/>
+        </insert>
+        <insert tableName="role_permissions">
             <column name="role_id" valueComputed="(SELECT id FROM roles WHERE name = 'TENANT_ADMIN' AND tenant_id IS NULL)"/>
             <column name="permission_code" value="EXAM_READ"/>
         </insert>

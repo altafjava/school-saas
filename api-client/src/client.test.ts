@@ -9,7 +9,11 @@ const server = setupServer();
 
 const session = {
   success: true,
-  data: { user: { id: 'u-1', email: 'admin@acme.test', emailVerified: true, twoFactorEnabled: false } },
+  data: {
+    user: { id: 'u-1', email: 'admin@acme.test', emailVerified: true, twoFactorEnabled: false },
+    superAdmin: false,
+    mfaSetupRequired: false,
+  },
 };
 
 describe('generated client', () => {
