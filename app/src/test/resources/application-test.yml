@@ -16,6 +16,10 @@ spring:
       connection-timeout: 30000
 
 scheduler:
+  datasource:
+    url: ${spring.datasource.url}
+    username: ${spring.datasource.username}
+    password: ${spring.datasource.password}
   cluster:
     instance-id: TEST_NODE
   thread-pool:
