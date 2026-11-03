@@ -62,4 +62,11 @@ public interface EmployeeRepository extends JpaRepository<Employee, Long> {
 	long countByTenantIdAndStatus(Long tenantId, EmployeeStatus status);
 
 	long countByTenantIdAndStaffCategoryAndStatus(Long tenantId, StaffCategory staffCategory, EmployeeStatus status);
+
+	@Query("""
+			SELECT e.userId FROM Employee e
+			WHERE e.tenantId = :tenantId AND e.userId IS NOT NULL
+			  AND e.status = com.altafjava.school.domain.employee.model.EmployeeStatus.ACTIVE
+			""")
+	List<Long> findActiveUserIds(@Param("tenantId") Long tenantId);
 }

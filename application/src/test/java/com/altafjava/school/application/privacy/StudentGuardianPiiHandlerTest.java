@@ -56,12 +56,15 @@ class StudentGuardianPiiHandlerTest {
 	@Mock
 	private EmployeeRepository employeeRepository;
 
+	@Mock
+	private com.altafjava.school.application.messaging.CommunicationDataEraser communicationDataEraser;
+
 	private StudentGuardianPiiHandler piiHandler;
 
 	private void newHandler() {
 		piiHandler = new StudentGuardianPiiHandler(studentRepository, guardianRepository, healthRecordRepository,
 				medicalIncidentRepository, disciplineIncidentRepository, counselingSessionRepository,
-				emergencyContactRepository, documentIssuanceService, employeeRepository);
+				emergencyContactRepository, documentIssuanceService, employeeRepository, communicationDataEraser);
 	}
 
 	private Student studentWithId(Long id) {

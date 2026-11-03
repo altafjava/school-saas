@@ -7,6 +7,7 @@ import org.springframework.transaction.annotation.Transactional;
 import com.altafjava.platform.application.document.DocumentIssuanceService;
 import com.altafjava.platform.core.privacy.DomainPiiHandler;
 import com.altafjava.school.application.document.SchoolDocumentTypes;
+import com.altafjava.school.application.messaging.CommunicationDataEraser;
 import com.altafjava.school.domain.counseling.model.CounselingSession;
 import com.altafjava.school.domain.counseling.repository.CounselingSessionRepository;
 import com.altafjava.school.domain.discipline.model.DisciplineIncident;
@@ -50,6 +51,7 @@ public class StudentGuardianPiiHandler implements DomainPiiHandler {
 	private final EmergencyContactRepository emergencyContactRepository;
 	private final DocumentIssuanceService documentIssuanceService;
 	private final EmployeeRepository employeeRepository;
+	private final CommunicationDataEraser communicationDataEraser;
 
 	public StudentGuardianPiiHandler(
 			StudentRepository studentRepository,
@@ -59,7 +61,8 @@ public class StudentGuardianPiiHandler implements DomainPiiHandler {
 			DisciplineIncidentRepository disciplineIncidentRepository,
 			CounselingSessionRepository counselingSessionRepository,
 			EmergencyContactRepository emergencyContactRepository,
-			DocumentIssuanceService documentIssuanceService, EmployeeRepository employeeRepository) {
+			DocumentIssuanceService documentIssuanceService, EmployeeRepository employeeRepository,
+			CommunicationDataEraser communicationDataEraser) {
 		this.studentRepository = studentRepository;
 		this.guardianRepository = guardianRepository;
 		this.healthRecordRepository = healthRecordRepository;
@@ -69,6 +72,7 @@ public class StudentGuardianPiiHandler implements DomainPiiHandler {
 		this.emergencyContactRepository = emergencyContactRepository;
 		this.documentIssuanceService = documentIssuanceService;
 		this.employeeRepository = employeeRepository;
+		this.communicationDataEraser = communicationDataEraser;
 	}
 
 	@Override
@@ -91,6 +95,7 @@ public class StudentGuardianPiiHandler implements DomainPiiHandler {
 			guardian.softDelete("gdpr-dsar-erasure");
 			guardianRepository.save(guardian);
 		});
+		communicationDataEraser.eraseForUser(tenantId, userId);
 	}
 
 	private void eraseStudentSensitiveRecords(Long studentId, Long tenantId) {
@@ -111,6 +116,7 @@ public class StudentGuardianPiiHandler implements DomainPiiHandler {
 			counselingSessionRepository.save(session);
 		});
 		documentIssuanceService.eraseOwnerPii(tenantId, SchoolDocumentTypes.OWNER_STUDENT, studentId);
+		communicationDataEraser.eraseForStudent(tenantId, studentId);
 		emergencyContactRepository.findAllByStudentIdAndTenantIdOrderByPriorityAsc(studentId, tenantId)
 				.forEach(contact -> {
 					contact.erasePii();

@@ -93,4 +93,20 @@ public interface StudentRepository extends JpaRepository<Student, Long> {
 	 */
 	List<Student> findAllByTenantIdAndEnrollmentStatusInAndEnrollmentStatusChangedAtLessThanEqual(Long tenantId,
 			List<EnrollmentStatus> enrollmentStatuses, Instant cutoff);
+
+	@Query("""
+			SELECT DISTINCT s.userId FROM Student s, StudentClassroomLink c
+			WHERE c.studentId = s.id AND s.tenantId = :tenantId AND c.tenantId = :tenantId
+			  AND s.userId IS NOT NULL AND c.classroomId IN :classroomIds
+			  AND s.enrollmentStatus = com.altafjava.school.domain.student.model.EnrollmentStatus.ACTIVE
+			""")
+	java.util.List<Long> findUserIdsByClassroomIds(@Param("tenantId") Long tenantId,
+			@Param("classroomIds") java.util.Collection<Long> classroomIds);
+
+	@Query("""
+			SELECT s.userId FROM Student s
+			WHERE s.tenantId = :tenantId AND s.userId IS NOT NULL
+			  AND s.enrollmentStatus = com.altafjava.school.domain.student.model.EnrollmentStatus.ACTIVE
+			""")
+	java.util.List<Long> findEnrolledUserIds(@Param("tenantId") Long tenantId);
 }

@@ -42,6 +42,9 @@ public final class SchoolPermissions {
 	public static final String ADMISSION_FEE_MANAGE = "ADMISSION_FEE_MANAGE";
 	public static final String ADMISSION_MANAGE = "ADMISSION_MANAGE";
 	public static final String ALUMNI_MANAGE = "ALUMNI_MANAGE";
+	public static final String ANNOUNCEMENT_CLASS_POST = "ANNOUNCEMENT_CLASS_POST";
+	public static final String ANNOUNCEMENT_MANAGE = "ANNOUNCEMENT_MANAGE";
+	public static final String ANNOUNCEMENT_READ = "ANNOUNCEMENT_READ";
 	public static final String ASSET_MANAGE = "ASSET_MANAGE";
 	public static final String ASSIGNMENT_READ = "ASSIGNMENT_READ";
 	public static final String ASSIGNMENT_WRITE = "ASSIGNMENT_WRITE";
@@ -131,6 +134,10 @@ public final class SchoolPermissions {
 	public static final String STUDENT_FEE_BALANCE_READ = "STUDENT_FEE_BALANCE_READ";
 	public static final String STUDENT_GRADES_READ = "STUDENT_GRADES_READ";
 	public static final String STUDENT_GRADES_WRITE = "STUDENT_GRADES_WRITE";
+	public static final String EMERGENCY_ALERT_SEND = "EMERGENCY_ALERT_SEND";
+	public static final String MESSAGING_PARTICIPATE = "MESSAGING_PARTICIPATE";
+	public static final String MESSAGING_REVIEW = "MESSAGING_REVIEW";
+	public static final String MESSAGING_SETTINGS_MANAGE = "MESSAGING_SETTINGS_MANAGE";
 	public static final String STUDENT_LEAVE_MANAGE = "STUDENT_LEAVE_MANAGE";
 	public static final String STUDENT_LEAVE_REVIEW = "STUDENT_LEAVE_REVIEW";
 	public static final String STUDENT_LEAVE_SELF_SERVICE = "STUDENT_LEAVE_SELF_SERVICE";
@@ -263,6 +270,13 @@ public final class SchoolPermissions {
 			def(STUDENT_FEE_BALANCE_READ, "View a student's fee balance", CAT_FINANCE),
 			def(STUDENT_GRADES_READ, "View student grades", CAT_ATTENDANCE),
 			def(STUDENT_GRADES_WRITE, "Record and correct student grades", CAT_ATTENDANCE),
+			def(ANNOUNCEMENT_CLASS_POST, "Post announcements to the classrooms one teaches", CAT_COMMUNICATION),
+			def(ANNOUNCEMENT_MANAGE, "Create and publish announcements to any audience", CAT_COMMUNICATION),
+			def(ANNOUNCEMENT_READ, "Read announcements addressed to oneself", CAT_COMMUNICATION),
+			def(EMERGENCY_ALERT_SEND, "Send emergency alerts on every channel", CAT_COMMUNICATION),
+			def(MESSAGING_PARTICIPATE, "Exchange private messages between guardians and teachers", CAT_COMMUNICATION),
+			def(MESSAGING_REVIEW, "Read conversations as a named reviewer, always audited", CAT_COMMUNICATION),
+			def(MESSAGING_SETTINGS_MANAGE, "Set messaging hours and the on/off switch", CAT_COMMUNICATION),
 			def(STUDENT_LEAVE_MANAGE, "Decide any student's leave request", CAT_ATTENDANCE),
 			def(STUDENT_LEAVE_REVIEW, "Raise and decide leave for students of one's own class", CAT_ATTENDANCE),
 			def(STUDENT_LEAVE_SELF_SERVICE, "Request leave for a linked child", CAT_GUARDIAN),

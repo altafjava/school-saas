@@ -41,4 +41,9 @@ public interface ClassroomRepository extends JpaRepository<Classroom, Long> {
 	boolean existsByIdAndTenantId(Long id, Long tenantId);
 
 	List<Classroom> findAllByClassTeacherIdAndTenantId(Long classTeacherId, Long tenantId);
+
+	List<Classroom> findAllByGradeInAndAcademicYearIdAndTenantId(Collection<String> grades, Long academicYearId,
+			Long tenantId);
+
+	List<Classroom> findAllByPublicIdInAndTenantId(Collection<UUID> publicIds, Long tenantId);
 }

@@ -351,6 +351,42 @@
         </insert>
         <insert tableName="role_permissions">
             <column name="role_id" valueComputed="(SELECT id FROM roles WHERE name = 'PRINCIPAL' AND tenant_id IS NULL)"/>
+            <column name="permission_code" value="ANNOUNCEMENT_MANAGE"/>
+        </insert>
+        <insert tableName="role_permissions">
+            <column name="role_id" valueComputed="(SELECT id FROM roles WHERE name = 'PRINCIPAL' AND tenant_id IS NULL)"/>
+            <column name="permission_code" value="ANNOUNCEMENT_READ"/>
+        </insert>
+        <insert tableName="role_permissions">
+            <column name="role_id" valueComputed="(SELECT id FROM roles WHERE name = 'PRINCIPAL' AND tenant_id IS NULL)"/>
+            <column name="permission_code" value="EMERGENCY_ALERT_SEND"/>
+        </insert>
+        <insert tableName="role_permissions">
+            <column name="role_id" valueComputed="(SELECT id FROM roles WHERE name = 'PRINCIPAL' AND tenant_id IS NULL)"/>
+            <column name="permission_code" value="MESSAGING_REVIEW"/>
+        </insert>
+        <insert tableName="role_permissions">
+            <column name="role_id" valueComputed="(SELECT id FROM roles WHERE name = 'PRINCIPAL' AND tenant_id IS NULL)"/>
+            <column name="permission_code" value="MESSAGING_SETTINGS_MANAGE"/>
+        </insert>
+        <insert tableName="role_permissions">
+            <column name="role_id" valueComputed="(SELECT id FROM roles WHERE name = 'ACADEMIC' AND tenant_id IS NULL)"/>
+            <column name="permission_code" value="ANNOUNCEMENT_MANAGE"/>
+        </insert>
+        <insert tableName="role_permissions">
+            <column name="role_id" valueComputed="(SELECT id FROM roles WHERE name = 'ACADEMIC' AND tenant_id IS NULL)"/>
+            <column name="permission_code" value="ANNOUNCEMENT_READ"/>
+        </insert>
+        <insert tableName="role_permissions">
+            <column name="role_id" valueComputed="(SELECT id FROM roles WHERE name = 'FINANCE' AND tenant_id IS NULL)"/>
+            <column name="permission_code" value="ANNOUNCEMENT_READ"/>
+        </insert>
+        <insert tableName="role_permissions">
+            <column name="role_id" valueComputed="(SELECT id FROM roles WHERE name = 'HR' AND tenant_id IS NULL)"/>
+            <column name="permission_code" value="ANNOUNCEMENT_READ"/>
+        </insert>
+        <insert tableName="role_permissions">
+            <column name="role_id" valueComputed="(SELECT id FROM roles WHERE name = 'PRINCIPAL' AND tenant_id IS NULL)"/>
             <column name="permission_code" value="STUDENT_LEAVE_MANAGE"/>
         </insert>
         <insert tableName="role_permissions">

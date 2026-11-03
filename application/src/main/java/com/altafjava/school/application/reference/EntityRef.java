@@ -22,6 +22,8 @@ import com.altafjava.school.domain.leave.model.LeaveType;
 import com.altafjava.school.domain.library.model.Book;
 import com.altafjava.school.domain.library.model.BookCopy;
 import com.altafjava.school.domain.lms.model.Assignment;
+import com.altafjava.school.domain.messaging.model.Conversation;
+import com.altafjava.school.domain.messaging.model.ConversationMessage;
 import com.altafjava.school.domain.student.model.Student;
 import com.altafjava.school.domain.subject.model.Subject;
 import com.altafjava.school.domain.term.model.Term;
@@ -36,8 +38,9 @@ import com.altafjava.school.domain.transport.model.Vehicle;
 public enum EntityRef {
 
 	ACADEMIC_YEAR(AcademicYear.class), ASSET(Asset.class), ASSIGNMENT(Assignment.class), BOARD(Board.class), BOOK(
-			Book.class), BOOK_COPY(BookCopy.class), CLASSROOM(Classroom.class), COUNSELING_SESSION(
-					CounselingSession.class), CURRICULUM(Curriculum.class), DEPARTMENT(Department.class),
+			Book.class), BOOK_COPY(BookCopy.class), CONVERSATION(Conversation.class), CONVERSATION_MESSAGE(
+					ConversationMessage.class), CLASSROOM(Classroom.class), COUNSELING_SESSION(
+							CounselingSession.class), CURRICULUM(Curriculum.class), DEPARTMENT(Department.class),
 	// Teachers are employees (joined inheritance): same id, and the public id lives on the employee row.
 	EMPLOYEE(Employee.class), EVENT(Event.class), EXAM(Exam.class), EXAM_TYPE(ExamTypeDefinition.class), FEE_STRUCTURE(
 			FeeStructure.class), GRADING_SCALE(GradingScale.class), GUARDIAN(Guardian.class), HOSTEL_BUILDING(

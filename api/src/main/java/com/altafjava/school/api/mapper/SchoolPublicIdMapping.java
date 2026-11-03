@@ -99,6 +99,16 @@ public class SchoolPublicIdMapping {
 		return publicIdResolver.resolve(EntityRef.GRADING_SCALE, id);
 	}
 
+	@Named("conversation")
+	public String conversation(Long id) {
+		return publicIdResolver.resolve(EntityRef.CONVERSATION, id);
+	}
+
+	@Named("conversationMessage")
+	public String conversationMessage(Long id) {
+		return publicIdResolver.resolve(EntityRef.CONVERSATION_MESSAGE, id);
+	}
+
 	@Named("guardian")
 	public String guardian(Long id) {
 		return publicIdResolver.resolve(EntityRef.GUARDIAN, id);
