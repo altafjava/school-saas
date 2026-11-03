@@ -11,6 +11,7 @@ import java.util.Map;
 import org.springframework.stereotype.Component;
 import com.altafjava.platform.application.service.report.provider.ReportDataProvider;
 import com.altafjava.platform.core.tenant.TenantContext;
+import com.altafjava.school.application.time.SchoolClock;
 import com.altafjava.school.domain.attendance.model.AttendanceStatus;
 import com.altafjava.school.domain.attendance.repository.AttendanceRepository;
 
@@ -26,16 +27,18 @@ public class AttendanceTrendDataProvider implements ReportDataProvider {
 	private static final DateTimeFormatter WEEK_LABEL_FORMAT = DateTimeFormatter.ofPattern("yyyy-MM-dd");
 
 	private final AttendanceRepository attendanceRepository;
+	private final SchoolClock schoolClock;
 
-	public AttendanceTrendDataProvider(AttendanceRepository attendanceRepository) {
+	public AttendanceTrendDataProvider(AttendanceRepository attendanceRepository, SchoolClock schoolClock) {
 		this.attendanceRepository = attendanceRepository;
+		this.schoolClock = schoolClock;
 	}
 
 	@Override
 	public List<Map<String, Object>> fetchData(Map<String, Object> parameters) {
 		Long tenantId = TenantContext.getCurrentTenantId();
 		int periods = periodCount(parameters);
-		LocalDate weekEnd = LocalDate.now();
+		LocalDate weekEnd = schoolClock.today(tenantId);
 
 		List<Map<String, Object>> rows = new ArrayList<>();
 		for (int i = periods - 1; i >= 0; i--) {

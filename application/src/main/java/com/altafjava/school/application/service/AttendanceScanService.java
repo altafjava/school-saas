@@ -13,6 +13,7 @@ import com.altafjava.school.application.document.SchoolDocumentTypes;
 import com.altafjava.school.application.document.StudentPlacementResolver;
 import com.altafjava.school.application.document.StudentPlacementResolver.Placement;
 import com.altafjava.school.application.idcard.QrPayloadReader;
+import com.altafjava.school.application.time.SchoolClock;
 import com.altafjava.school.domain.attendance.model.Attendance;
 import com.altafjava.school.domain.attendance.model.AttendanceStatus;
 import com.altafjava.school.domain.attendance.repository.AttendanceRepository;
@@ -37,12 +38,13 @@ public class AttendanceScanService {
 	private final StudentPlacementResolver placementResolver;
 	private final AttendanceRepository attendanceRepository;
 	private final HolidayService holidayService;
+	private final SchoolClock schoolClock;
 
 	@Transactional
 	public AttendanceScanResult scan(String qrPayload, String scannedBy) {
 		Long tenantId = TenantContext.getCurrentTenantId();
 		Student student = studentHolding(tenantId, qrPayload);
-		LocalDate today = LocalDate.now();
+		LocalDate today = schoolClock.today(tenantId);
 		if (!holidayService.datesInRange(tenantId, today, today).isEmpty()) {
 			throw new BusinessException("Today is a school holiday — attendance is not taken");
 		}

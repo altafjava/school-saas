@@ -27,6 +27,7 @@ import com.altafjava.platform.domain.document.model.DocumentIssuance;
 import com.altafjava.school.application.document.SchoolDocumentTypes;
 import com.altafjava.school.application.document.StudentPlacementResolver;
 import com.altafjava.school.application.idcard.QrPayloadReader;
+import com.altafjava.school.application.time.TestSchoolClocks;
 import com.altafjava.school.domain.academicyear.repository.AcademicYearRepository;
 import com.altafjava.school.domain.attendance.model.Attendance;
 import com.altafjava.school.domain.attendance.model.AttendanceStatus;
@@ -69,7 +70,7 @@ class AttendanceScanServiceTest {
 		StudentPlacementResolver placementResolver = new StudentPlacementResolver(studentClassroomLinkRepository,
 				classroomRepository, academicYearRepository);
 		service = new AttendanceScanService(new QrPayloadReader(), documentIssuanceService, studentRepository,
-				placementResolver, attendanceRepository, holidayService);
+				placementResolver, attendanceRepository, holidayService, TestSchoolClocks.systemDefault());
 		TenantContext.ForTesting.setCurrentTenant(TENANT_ID, null, null, TenantType.SHARED);
 		student = Student.create("STU-1", "Jane", "Doe", "jane@school.test", null);
 		student.setId(10L);

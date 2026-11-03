@@ -1,7 +1,6 @@
 package com.altafjava.school.application.service;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
@@ -26,6 +25,7 @@ import com.altafjava.platform.domain.paymentgateway.service.PaymentWebhookEvent;
 import com.altafjava.platform.domain.tenant.model.Tenant;
 import com.altafjava.platform.domain.tenant.repository.TenantRepository;
 import com.altafjava.school.application.security.StudentDataAccessGuard;
+import com.altafjava.school.application.time.SchoolClock;
 import com.altafjava.school.domain.fee.model.FeeBalance;
 import com.altafjava.school.domain.fee.model.FeePayment;
 import com.altafjava.school.domain.fee.model.FeeStructure;
@@ -65,6 +65,7 @@ public class FeeOnlinePaymentService {
 	private final PaymentGatewayResolver paymentGatewayResolver;
 	private final PaymentGatewayProviderRegistry paymentGatewayProviderRegistry;
 	private final PaymentGatewayCredentialsDecryptor paymentGatewayCredentialsDecryptor;
+	private final SchoolClock schoolClock;
 
 	/**
 	 * Creates a gateway charge for a student's outstanding balance on one fee structure. Read-only
@@ -196,7 +197,7 @@ public class FeeOnlinePaymentService {
 	private FeePayment recordGatewayPayment(Long studentId, Long feeStructureId, BigDecimal amount,
 			PaymentGatewayType providerType, String gatewayChargeReference) {
 		String receiptNumber = "GTW-" + gatewayChargeReference;
-		FeePayment payment = FeePayment.recordFromGateway(studentId, feeStructureId, amount, LocalDateTime.now(),
+		FeePayment payment = FeePayment.recordFromGateway(studentId, feeStructureId, amount, schoolClock.now(),
 				receiptNumber, providerType.name(), gatewayChargeReference);
 		return feePaymentRepository.save(payment);
 	}

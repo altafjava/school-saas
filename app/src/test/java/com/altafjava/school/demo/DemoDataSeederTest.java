@@ -9,6 +9,8 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
@@ -29,6 +31,7 @@ import com.altafjava.platform.domain.tenant.repository.TenantRepository;
 import com.altafjava.platform.domain.user.repository.UserRepository;
 import com.altafjava.school.application.service.AcademicYearService;
 import com.altafjava.school.application.service.ExamTypeDefinitionService;
+import com.altafjava.school.application.time.SchoolClock;
 import com.altafjava.school.domain.exam.model.ExamTypeDefinition;
 
 @ExtendWith(MockitoExtension.class)
@@ -52,6 +55,8 @@ class DemoDataSeederTest {
 	private PlatformTransactionManager transactionManager;
 	@Mock
 	private TransactionStatus transaction;
+	@Mock
+	private SchoolClock schoolClock;
 
 	@InjectMocks
 	private DemoDataSeeder seeder;
@@ -61,6 +66,8 @@ class DemoDataSeederTest {
 		when(tenantRepository.findBySubdomain(DemoDataSeeder.SUBDOMAIN)).thenReturn(Optional.of(tenant));
 		when(transactionManager.getTransaction(any())).thenReturn(transaction);
 		when(examTypeDefinitionService.listActive()).thenReturn(List.of(mock(ExamTypeDefinition.class)));
+		when(schoolClock.today()).thenReturn(LocalDate.of(2026, 6, 1));
+		when(schoolClock.now()).thenReturn(LocalDateTime.of(2026, 6, 1, 9, 0));
 	}
 
 	@Test

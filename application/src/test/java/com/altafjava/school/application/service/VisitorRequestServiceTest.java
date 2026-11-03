@@ -24,6 +24,7 @@ import com.altafjava.platform.core.exception.ResourceNotFoundException;
 import com.altafjava.platform.core.tenant.TenantContext;
 import com.altafjava.platform.core.tenant.TenantType;
 import com.altafjava.school.application.security.VisitorRequestAuthorizer;
+import com.altafjava.school.application.time.TestSchoolClocks;
 import com.altafjava.school.domain.employee.model.Employee;
 import com.altafjava.school.domain.employee.model.EmployeeStatus;
 import com.altafjava.school.domain.employee.model.StaffCategory;
@@ -56,7 +57,7 @@ class VisitorRequestServiceTest {
 	@BeforeEach
 	void setUp() {
 		service = new VisitorRequestService(visitorRequestRepository, employeeRepository, authorizer,
-				notificationService);
+				notificationService, TestSchoolClocks.systemDefault());
 		TenantContext.ForTesting.setCurrentTenant(TENANT_ID, null, null, TenantType.SHARED);
 		host = Employee.create(StaffCategory.SUPPORT, "EMP-1", "Jane", "Doe", "jane@school.test", null);
 		host.setId(20L);
@@ -117,7 +118,7 @@ class VisitorRequestServiceTest {
 
 	@Test
 	void raise_forAHostWhoHasLeft_throwsBusinessException() {
-		host.exit(EmployeeStatus.RESIGNED, LocalDate.now(), null);
+		host.exit(EmployeeStatus.RESIGNED, LocalDate.now(), null, LocalDate.now());
 		when(employeeRepository.findByPublicIdAndTenantId(HOST_PUBLIC_ID, TENANT_ID)).thenReturn(Optional.of(host));
 
 		assertThrows(BusinessException.class,

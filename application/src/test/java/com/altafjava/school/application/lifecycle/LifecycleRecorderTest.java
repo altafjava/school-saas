@@ -20,6 +20,7 @@ import com.altafjava.platform.core.exception.BusinessException;
 import com.altafjava.platform.core.security.AuthenticatedUser;
 import com.altafjava.platform.core.tenant.TenantContext;
 import com.altafjava.platform.core.tenant.TenantType;
+import com.altafjava.school.application.time.TestSchoolClocks;
 import com.altafjava.school.domain.admission.model.AdmissionStatus;
 import com.altafjava.school.domain.lifecycle.model.LifecycleStage;
 import com.altafjava.school.domain.lifecycle.model.LifecycleTransition;
@@ -36,7 +37,7 @@ class LifecycleRecorderTest {
 
 	@BeforeEach
 	void setUp() {
-		recorder = new LifecycleRecorder(repository);
+		recorder = new LifecycleRecorder(repository, TestSchoolClocks.systemDefault());
 		TenantContext.ForTesting.setCurrentTenant(1L, null, null, TenantType.SHARED);
 	}
 
@@ -92,7 +93,17 @@ class LifecycleRecorderTest {
 	}
 
 	@Test
+	void change_withoutADate_takesEffectOnTheSchoolsToday() {
+		recorder.admission(3L, null, AdmissionStatus.SUBMITTED, LifecycleChange.NONE);
+
+		assertEquals(LocalDate.now(), saved().getEffectiveOn());
+	}
+
+	@Test
 	void change_cannotTakeEffectInTheFuture() {
-		assertThrows(BusinessException.class, () -> new LifecycleChange("x", LocalDate.now().plusDays(1)));
+		LifecycleChange tomorrow = new LifecycleChange("x", LocalDate.now().plusDays(1));
+
+		assertThrows(BusinessException.class,
+				() -> recorder.student(7L, EnrollmentStatus.ACTIVE, EnrollmentStatus.WITHDRAWN, tomorrow));
 	}
 }

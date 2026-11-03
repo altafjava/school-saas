@@ -49,12 +49,13 @@ public class CounselingReferral extends SoftDeletableEntity {
 	@Column(name = "status", nullable = false, length = 20)
 	private CounselingReferralStatus status;
 
-	public static CounselingReferral refer(Long studentId, Long referredByUserId, String reason) {
+	public static CounselingReferral refer(Long studentId, Long referredByUserId, String reason,
+			LocalDateTime referredAt) {
 		return CounselingReferral.builder()
 				.studentId(studentId)
 				.referredByUserId(referredByUserId)
 				.reason(reason)
-				.referredAt(LocalDateTime.now())
+				.referredAt(referredAt)
 				.status(CounselingReferralStatus.PENDING)
 				.build();
 	}

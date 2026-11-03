@@ -54,6 +54,7 @@ import com.altafjava.school.application.service.SubjectService;
 import com.altafjava.school.application.service.TeacherService;
 import com.altafjava.school.application.service.TermService;
 import com.altafjava.school.application.service.TimetableService;
+import com.altafjava.school.application.time.SchoolClock;
 import com.altafjava.school.domain.academicyear.model.AcademicYear;
 import com.altafjava.school.domain.attendance.model.AttendanceStatus;
 import com.altafjava.school.domain.classroom.model.Classroom;
@@ -144,6 +145,7 @@ public class DemoDataSeeder {
 	private final GuardianRepository guardianRepository;
 	private final PasswordEncoder passwordEncoder;
 	private final PlatformTransactionManager transactionManager;
+	private final SchoolClock schoolClock;
 
 	/**
 	 * Seeds in one transaction, so a failure leaves no partial school. The parent login is created
@@ -231,7 +233,7 @@ public class DemoDataSeeder {
 
 	private ReportCardSample seedTenant() {
 		Random random = new Random(42);
-		LocalDate today = LocalDate.now();
+		LocalDate today = schoolClock.today();
 		int startYear = today.getMonthValue() >= 4 ? today.getYear() : today.getYear() - 1;
 		AcademicYear year = academicYearService.create(startYear + "-" + (startYear + 1 - 2000),
 				LocalDate.of(startYear, 4, 1), LocalDate.of(startYear + 1, 3, 31), true);
@@ -344,7 +346,7 @@ public class DemoDataSeeder {
 	private void seedExamsAndGrades(Random random, Term term, List<Subject> subjects, List<Classroom> classrooms,
 			List<Student> students) {
 		ExamTypeDefinition type = examTypeDefinitionService.listActive().getFirst();
-		LocalDateTime when = LocalDateTime.now().minusDays(14);
+		LocalDateTime when = schoolClock.now().minusDays(14);
 		for (int c = 0; c < classrooms.size(); c++) {
 			Classroom classroom = classrooms.get(c);
 			for (int s = 0; s < 2; s++) {
@@ -364,7 +366,7 @@ public class DemoDataSeeder {
 			}
 			Subject next = subjects.get(c % subjects.size());
 			examService.schedule(next.getName() + " term exam", next.getPublicId().toString(),
-					classroom.getPublicId().toString(), LocalDateTime.now().plusDays(10), new BigDecimal("100"),
+					classroom.getPublicId().toString(), schoolClock.now().plusDays(10), new BigDecimal("100"),
 					term.getPublicId().toString(), type.getPublicId().toString(), new BigDecimal("80"));
 		}
 	}

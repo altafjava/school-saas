@@ -5,6 +5,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.Optional;
 import org.junit.jupiter.api.Test;
 import com.altafjava.platform.core.exception.BusinessException;
@@ -36,7 +37,7 @@ class LeaveRequestTest {
 	void approve_fromPending_setsApprovedStatus() {
 		LeaveRequest request = submitted(LocalDate.now().plusDays(1), LocalDate.now().plusDays(2));
 
-		request.approve(99L);
+		request.approve(99L, LocalDateTime.now());
 
 		assertEquals(LeaveRequestStatus.APPROVED, request.getStatus());
 		assertEquals(99L, request.getApprovedByUserId());
@@ -45,16 +46,16 @@ class LeaveRequestTest {
 	@Test
 	void approve_whenNotPending_throwsBusinessException() {
 		LeaveRequest request = submitted(LocalDate.now().plusDays(1), LocalDate.now().plusDays(2));
-		request.approve(99L);
+		request.approve(99L, LocalDateTime.now());
 
-		assertThrows(BusinessException.class, () -> request.approve(99L));
+		assertThrows(BusinessException.class, () -> request.approve(99L, LocalDateTime.now()));
 	}
 
 	@Test
 	void reject_fromPending_setsRejectedStatusWithReason() {
 		LeaveRequest request = submitted(LocalDate.now().plusDays(1), LocalDate.now().plusDays(2));
 
-		request.reject(99L, "Insufficient staffing on those dates");
+		request.reject(99L, "Insufficient staffing on those dates", LocalDateTime.now());
 
 		assertEquals(LeaveRequestStatus.REJECTED, request.getStatus());
 		assertEquals("Insufficient staffing on those dates", request.getRejectionReason());
@@ -64,7 +65,7 @@ class LeaveRequestTest {
 	void cancel_whenPendingAndFuture_setsCancelledStatus() {
 		LeaveRequest request = submitted(LocalDate.now().plusDays(5), LocalDate.now().plusDays(6));
 
-		request.cancel();
+		request.cancel(LocalDate.now());
 
 		assertEquals(LeaveRequestStatus.CANCELLED, request.getStatus());
 	}
@@ -72,16 +73,16 @@ class LeaveRequestTest {
 	@Test
 	void cancel_whenAlreadyRejected_throwsBusinessException() {
 		LeaveRequest request = submitted(LocalDate.now().plusDays(1), LocalDate.now().plusDays(2));
-		request.reject(99L, "No");
+		request.reject(99L, "No", LocalDateTime.now());
 
-		assertThrows(BusinessException.class, request::cancel);
+		assertThrows(BusinessException.class, () -> request.cancel(LocalDate.now()));
 	}
 
 	@Test
 	void cancel_whenAlreadyStarted_throwsBusinessException() {
 		LeaveRequest request = submitted(LocalDate.now().minusDays(3), LocalDate.now().plusDays(1));
 
-		assertThrows(BusinessException.class, request::cancel);
+		assertThrows(BusinessException.class, () -> request.cancel(LocalDate.now()));
 	}
 
 	private LeaveRequest twoLevel() {
@@ -101,7 +102,7 @@ class LeaveRequestTest {
 		LeaveRequest request = twoLevel();
 		assertEquals(Optional.of(LeaveApprovalStage.DEPARTMENT_HEAD), request.awaitingStage());
 
-		request.approve(7L);
+		request.approve(7L, LocalDateTime.now());
 
 		assertEquals(Optional.of(LeaveApprovalStage.ADMINISTRATOR), request.awaitingStage());
 	}
@@ -110,7 +111,7 @@ class LeaveRequestTest {
 	void approve_firstOfTwoLevels_leavesTheRequestPending() {
 		LeaveRequest request = twoLevel();
 
-		request.approve(7L);
+		request.approve(7L, LocalDateTime.now());
 
 		assertEquals(LeaveRequestStatus.PENDING, request.getStatus());
 		assertEquals(1, request.getApprovalsGranted());
@@ -120,9 +121,9 @@ class LeaveRequestTest {
 	@Test
 	void approve_finalLevel_approvesAndRecordsTheFinalApprover() {
 		LeaveRequest request = twoLevel();
-		request.approve(7L);
+		request.approve(7L, LocalDateTime.now());
 
-		request.approve(8L);
+		request.approve(8L, LocalDateTime.now());
 
 		assertEquals(LeaveRequestStatus.APPROVED, request.getStatus());
 		assertEquals(8L, request.getApprovedByUserId());
@@ -133,7 +134,7 @@ class LeaveRequestTest {
 	void reject_atTheFirstLevel_endsTheRequest() {
 		LeaveRequest request = twoLevel();
 
-		request.reject(7L, "Exam week");
+		request.reject(7L, "Exam week", LocalDateTime.now());
 
 		assertEquals(LeaveRequestStatus.REJECTED, request.getStatus());
 		assertTrue(request.awaitingStage().isEmpty());

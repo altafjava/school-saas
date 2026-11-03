@@ -13,6 +13,7 @@ import com.altafjava.platform.application.alert.AlertTrigger;
 import com.altafjava.platform.domain.alert.model.AlertRule;
 import com.altafjava.platform.domain.notification.model.NotificationPriority;
 import com.altafjava.school.application.scheduler.support.StudentNotificationRecipientResolver;
+import com.altafjava.school.application.time.SchoolClock;
 import com.altafjava.school.domain.library.model.Circulation;
 import com.altafjava.school.domain.library.repository.CirculationRepository;
 import com.altafjava.school.domain.student.model.Student;
@@ -32,12 +33,15 @@ public class LibraryOverdueRuleEvaluator implements AlertRuleEvaluator {
 	private final CirculationRepository circulationRepository;
 	private final StudentRepository studentRepository;
 	private final StudentNotificationRecipientResolver recipientResolver;
+	private final SchoolClock schoolClock;
 
 	public LibraryOverdueRuleEvaluator(CirculationRepository circulationRepository,
-			StudentRepository studentRepository, StudentNotificationRecipientResolver recipientResolver) {
+			StudentRepository studentRepository, StudentNotificationRecipientResolver recipientResolver,
+			SchoolClock schoolClock) {
 		this.circulationRepository = circulationRepository;
 		this.studentRepository = studentRepository;
 		this.recipientResolver = recipientResolver;
+		this.schoolClock = schoolClock;
 	}
 
 	@Override
@@ -49,7 +53,7 @@ public class LibraryOverdueRuleEvaluator implements AlertRuleEvaluator {
 	public List<AlertTrigger> evaluate(AlertRule rule) {
 		Long tenantId = rule.getTenantId();
 		int graceDays = rule.getThresholdValue() != null ? rule.getThresholdValue().intValue() : DEFAULT_GRACE_DAYS;
-		LocalDate today = LocalDate.now();
+		LocalDate today = schoolClock.today(tenantId);
 
 		List<Circulation> overdueCirculations = circulationRepository.findAllByTenantIdAndReturnedAtIsNull(tenantId)
 				.stream()

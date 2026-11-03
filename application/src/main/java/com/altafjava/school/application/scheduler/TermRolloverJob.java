@@ -10,6 +10,7 @@ import com.altafjava.platform.application.scheduler.strategy.JobExecutionStrateg
 import com.altafjava.platform.core.tenant.TenantContext;
 import com.altafjava.platform.domain.scheduler.model.JobExecutionContext;
 import com.altafjava.platform.domain.scheduler.model.JobExecutionResult;
+import com.altafjava.school.application.time.SchoolClock;
 import com.altafjava.school.domain.term.model.Term;
 import com.altafjava.school.domain.term.repository.TermRepository;
 import lombok.extern.slf4j.Slf4j;
@@ -26,9 +27,11 @@ import lombok.extern.slf4j.Slf4j;
 public class TermRolloverJob implements JobExecutionStrategy {
 
 	private final TermRepository termRepository;
+	private final SchoolClock schoolClock;
 
-	public TermRolloverJob(TermRepository termRepository) {
+	public TermRolloverJob(TermRepository termRepository, SchoolClock schoolClock) {
 		this.termRepository = termRepository;
+		this.schoolClock = schoolClock;
 	}
 
 	@Override
@@ -52,7 +55,7 @@ public class TermRolloverJob implements JobExecutionStrategy {
 		Long tenantId = TenantContext.getCurrentTenantId();
 		log.info("action=term-rollover tenantId={} executionId={}", tenantId, ctx.executionId());
 
-		LocalDate today = LocalDate.now();
+		LocalDate today = schoolClock.today(tenantId);
 		Optional<Term> dueToBeCurrent = termRepository.findByDateRangeContainingAndTenantId(tenantId, today);
 		Optional<Term> currentlyMarked = termRepository.findCurrentByTenantId(tenantId);
 

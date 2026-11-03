@@ -16,11 +16,11 @@ import java.util.Set;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import com.altafjava.platform.application.tenant.TenantFormattingService;
 import com.altafjava.school.application.service.HolidayService;
+import com.altafjava.school.application.time.SchoolClock;
 import com.altafjava.school.domain.academicyear.model.AcademicYear;
 import com.altafjava.school.domain.academicyear.repository.AcademicYearRepository;
 
@@ -35,11 +35,12 @@ class HomeDayResolverTest {
 	private AcademicYearRepository academicYearRepository;
 	@Mock
 	private HolidayService holidayService;
-	@InjectMocks
 	private HomeDayResolver resolver;
 
 	@BeforeEach
 	void useUtc() {
+		resolver = new HomeDayResolver(new SchoolClock(tenantFormattingService), academicYearRepository,
+				holidayService);
 		when(tenantFormattingService.resolveZone(TENANT_ID)).thenReturn(ZoneOffset.UTC);
 	}
 

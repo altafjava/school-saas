@@ -19,6 +19,7 @@ import com.altafjava.school.application.reference.PublicIdLookup;
 import com.altafjava.school.application.security.AcademicScope;
 import com.altafjava.school.application.security.AcademicScopeResolver;
 import com.altafjava.school.application.security.StudentDataAccessGuard;
+import com.altafjava.school.application.time.SchoolClock;
 import com.altafjava.school.domain.academicyear.repository.AcademicYearRepository;
 import com.altafjava.school.domain.attendance.model.Attendance;
 import com.altafjava.school.domain.attendance.model.AttendanceCorrection;
@@ -63,6 +64,7 @@ public class StudentLeaveRequestService {
 	private final AcademicScopeResolver academicScopeResolver;
 	private final PermissionAuthorizationService permissionAuthorizationService;
 	private final PublicIdLookup publicIdLookup;
+	private final SchoolClock schoolClock;
 
 	@Transactional
 	public StudentLeaveRequest submit(String studentPublicId, LocalDate startDate, LocalDate endDate, String reason,
@@ -113,7 +115,7 @@ public class StudentLeaveRequestService {
 		Long tenantId = TenantContext.getCurrentTenantId();
 		StudentLeaveRequest request = require(tenantId, publicId);
 		assertMayDecide(tenantId, request, decidedByUserId);
-		request.approve(decidedByUserId);
+		request.approve(decidedByUserId, schoolClock.now(tenantId));
 		excuseDays(tenantId, request);
 		return studentLeaveRequestRepository.save(request);
 	}
@@ -123,7 +125,7 @@ public class StudentLeaveRequestService {
 		Long tenantId = TenantContext.getCurrentTenantId();
 		StudentLeaveRequest request = require(tenantId, publicId);
 		assertMayDecide(tenantId, request, decidedByUserId);
-		request.reject(decidedByUserId, rejectionReason);
+		request.reject(decidedByUserId, rejectionReason, schoolClock.now(tenantId));
 		return studentLeaveRequestRepository.save(request);
 	}
 

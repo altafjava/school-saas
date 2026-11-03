@@ -28,6 +28,7 @@ import com.altafjava.platform.core.tenant.TenantType;
 import com.altafjava.school.application.filter.PayslipFilter;
 import com.altafjava.school.application.reference.EntityRef;
 import com.altafjava.school.application.reference.PublicIdLookup;
+import com.altafjava.school.application.time.TestSchoolClocks;
 import com.altafjava.school.domain.employee.repository.EmployeeRepository;
 import com.altafjava.school.domain.leave.model.LeaveRequestStatus;
 import com.altafjava.school.domain.leave.model.LeaveType;
@@ -63,7 +64,7 @@ class PayslipServiceTest {
 	@BeforeEach
 	void setUp() {
 		payslipService = new PayslipService(payslipRepository, salaryStructureRepository, leaveRequestRepository,
-				leaveTypeRepository, employeeRepository, publicIdLookup);
+				leaveTypeRepository, employeeRepository, publicIdLookup, TestSchoolClocks.systemDefault());
 		TenantContext.ForTesting.setCurrentTenant(1L, null, null, TenantType.SHARED);
 	}
 

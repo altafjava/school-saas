@@ -25,6 +25,7 @@ import com.altafjava.school.application.filter.BookReservationFilter;
 import com.altafjava.school.application.library.ReservationAllocator;
 import com.altafjava.school.application.reference.EntityRef;
 import com.altafjava.school.application.reference.PublicIdLookup;
+import com.altafjava.school.application.time.TestSchoolClocks;
 import com.altafjava.school.domain.library.model.Book;
 import com.altafjava.school.domain.library.model.BookCopy;
 import com.altafjava.school.domain.library.model.BookCopyStatus;
@@ -67,7 +68,8 @@ class BookReservationServiceTest {
 	@BeforeEach
 	void setUp() {
 		service = new BookReservationService(bookReservationRepository, bookRepository, bookCopyRepository,
-				studentRepository, circulationRepository, reservationAllocator, publicIdLookup);
+				studentRepository, circulationRepository, reservationAllocator, publicIdLookup,
+				TestSchoolClocks.systemDefault());
 		TenantContext.ForTesting.setCurrentTenant(TENANT_ID, null, null, TenantType.SHARED);
 		book = Book.create("978", "Dune", "Herbert", "Ace", "Fiction");
 		book.setId(7L);

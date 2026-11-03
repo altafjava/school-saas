@@ -20,6 +20,7 @@ import com.altafjava.platform.core.exception.ResourceNotFoundException;
 import com.altafjava.platform.core.tenant.TenantContext;
 import com.altafjava.platform.core.tenant.TenantType;
 import com.altafjava.school.application.reference.PublicIdLookup;
+import com.altafjava.school.application.time.TestSchoolClocks;
 import com.altafjava.school.domain.academicyear.model.AcademicYear;
 import com.altafjava.school.domain.academicyear.repository.AcademicYearRepository;
 import com.altafjava.school.domain.term.model.Term;
@@ -39,7 +40,8 @@ class TermServiceTest {
 
 	@BeforeEach
 	void setUp() {
-		termService = new TermService(termRepository, academicYearRepository, publicIdLookup);
+		termService = new TermService(termRepository, academicYearRepository, publicIdLookup,
+				TestSchoolClocks.systemDefault());
 		TenantContext.ForTesting.setCurrentTenant(1L, null, null, TenantType.SHARED);
 	}
 

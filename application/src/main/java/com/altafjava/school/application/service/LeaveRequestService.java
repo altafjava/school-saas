@@ -26,6 +26,7 @@ import com.altafjava.school.application.reference.EntityRef;
 import com.altafjava.school.application.reference.PublicIdLookup;
 import com.altafjava.school.application.scheduler.support.TenantAdminNotifier;
 import com.altafjava.school.application.security.LeaveApprovalAuthorizer;
+import com.altafjava.school.application.time.SchoolClock;
 import com.altafjava.school.domain.academicyear.model.AcademicYear;
 import com.altafjava.school.domain.academicyear.repository.AcademicYearRepository;
 import com.altafjava.school.domain.department.model.Department;
@@ -61,13 +62,14 @@ public class LeaveRequestService {
 	private final LeaveApprovalAuthorizer leaveApprovalAuthorizer;
 	private final LeaveDayCalculator leaveDayCalculator = new LeaveDayCalculator();
 	private final PublicIdLookup publicIdLookup;
+	private final SchoolClock schoolClock;
 
 	public LeaveRequestService(LeaveRequestRepository leaveRequestRepository, LeaveTypeRepository leaveTypeRepository,
 			LeaveBalanceRepository leaveBalanceRepository, EmployeeRepository employeeRepository,
 			AcademicYearRepository academicYearRepository, TenantAdminNotifier tenantAdminNotifier,
 			NotificationService notificationService, HolidayService holidayService,
 			LeaveApprovalRepository leaveApprovalRepository, DepartmentRepository departmentRepository,
-			LeaveApprovalAuthorizer leaveApprovalAuthorizer, PublicIdLookup publicIdLookup) {
+			LeaveApprovalAuthorizer leaveApprovalAuthorizer, PublicIdLookup publicIdLookup, SchoolClock schoolClock) {
 		this.publicIdLookup = publicIdLookup;
 		this.leaveRequestRepository = leaveRequestRepository;
 		this.leaveTypeRepository = leaveTypeRepository;
@@ -80,6 +82,7 @@ public class LeaveRequestService {
 		this.leaveApprovalRepository = leaveApprovalRepository;
 		this.departmentRepository = departmentRepository;
 		this.leaveApprovalAuthorizer = leaveApprovalAuthorizer;
+		this.schoolClock = schoolClock;
 	}
 
 	@Transactional(readOnly = true)
@@ -136,7 +139,7 @@ public class LeaveRequestService {
 		if (!leaveType.isActive()) {
 			throw new BusinessException("Leave type '" + leaveType.getName() + "' is no longer available");
 		}
-		if (employee.isOnProbation(LocalDate.now()) && !leaveType.isAvailableDuringProbation()) {
+		if (employee.isOnProbation(schoolClock.today(tenantId)) && !leaveType.isAvailableDuringProbation()) {
 			throw new BusinessException(
 					"Leave type '" + leaveType.getName() + "' is not available during probation");
 		}
@@ -180,7 +183,7 @@ public class LeaveRequestService {
 				.orElseThrow(() -> new BusinessException(
 						"No leave balance allocated for employee " + request.getEmployeeId()));
 		leaveApprovalRepository.save(LeaveApproval.approved(request.getId(), stage, actorUserId));
-		request.approve(actorUserId);
+		request.approve(actorUserId, schoolClock.now(tenantId));
 		if (request.getStatus() == LeaveRequestStatus.APPROVED) {
 			balance.deduct(request.getDaysRequested());
 			leaveBalanceRepository.save(balance);
@@ -202,7 +205,7 @@ public class LeaveRequestService {
 		Long actorUserId = resolveCurrentUserId();
 		LeaveApprovalStage stage = authorizeDecision(tenantId, request, actorUserId, "reject");
 		leaveApprovalRepository.save(LeaveApproval.rejected(request.getId(), stage, actorUserId, rejectionReason));
-		request.reject(actorUserId, rejectionReason);
+		request.reject(actorUserId, rejectionReason, schoolClock.now(tenantId));
 		LeaveRequest saved = leaveRequestRepository.save(request);
 		notifyEmployeeOfDecision(tenantId, saved, SchoolNotificationTypes.LEAVE_REJECTED,
 				"Your leave request was rejected");
@@ -226,7 +229,7 @@ public class LeaveRequestService {
 			throw new AccessDeniedException("Cannot cancel another employee's leave request");
 		}
 		boolean wasApproved = request.getStatus() == LeaveRequestStatus.APPROVED;
-		request.cancel();
+		request.cancel(schoolClock.today());
 		if (wasApproved) {
 			leaveBalanceRepository
 					.findByEmployeeIdAndLeaveTypeIdAndAcademicYearIdAndTenantId(request.getEmployeeId(),

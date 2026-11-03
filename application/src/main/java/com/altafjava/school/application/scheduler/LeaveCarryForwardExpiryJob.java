@@ -1,6 +1,5 @@
 package com.altafjava.school.application.scheduler;
 
-import java.time.LocalDate;
 import java.util.Map;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
@@ -10,6 +9,7 @@ import com.altafjava.platform.core.tenant.TenantContext;
 import com.altafjava.platform.domain.scheduler.model.JobExecutionContext;
 import com.altafjava.platform.domain.scheduler.model.JobExecutionResult;
 import com.altafjava.school.application.service.LeaveBalanceService;
+import com.altafjava.school.application.time.SchoolClock;
 import lombok.extern.slf4j.Slf4j;
 
 /**
@@ -24,9 +24,11 @@ import lombok.extern.slf4j.Slf4j;
 public class LeaveCarryForwardExpiryJob implements JobExecutionStrategy {
 
 	private final LeaveBalanceService leaveBalanceService;
+	private final SchoolClock schoolClock;
 
-	public LeaveCarryForwardExpiryJob(LeaveBalanceService leaveBalanceService) {
+	public LeaveCarryForwardExpiryJob(LeaveBalanceService leaveBalanceService, SchoolClock schoolClock) {
 		this.leaveBalanceService = leaveBalanceService;
+		this.schoolClock = schoolClock;
 	}
 
 	@Override
@@ -48,7 +50,7 @@ public class LeaveCarryForwardExpiryJob implements JobExecutionStrategy {
 	@Transactional
 	public JobExecutionResult execute(JobExecutionContext ctx) {
 		Long tenantId = TenantContext.getCurrentTenantId();
-		int forfeited = leaveBalanceService.forfeitExpiredCarryForward(tenantId, LocalDate.now());
+		int forfeited = leaveBalanceService.forfeitExpiredCarryForward(tenantId, schoolClock.today(tenantId));
 		log.info("action=leave-carry-forward-expiry-complete tenantId={} forfeited={}", tenantId, forfeited);
 		return new JobExecutionResult.Success(Map.of("forfeited", forfeited), null);
 	}

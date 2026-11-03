@@ -1,6 +1,7 @@
 package com.altafjava.school.api.controller.api;
 
 import jakarta.validation.Valid;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import com.altafjava.platform.api.dto.response.ApiResponse;
@@ -28,4 +29,7 @@ public interface FeeOnlinePaymentApi {
 
 	@Operation(summary = "Get receipt")
 	public ApiResponse<FeePaymentResponse> getReceipt(@PathVariable String publicId);
+
+	@Operation(summary = "Download receipt", description = "The receipt as a PDF, for a payment made for the caller or their linked child. A bounced cheque has no receipt.")
+	public ResponseEntity<byte[]> downloadReceipt(@PathVariable String publicId);
 }

@@ -1,6 +1,5 @@
 package com.altafjava.school.application.service;
 
-import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -23,6 +22,7 @@ import com.altafjava.platform.core.tenant.TenantContext;
 import com.altafjava.school.application.reference.EntityRef;
 import com.altafjava.school.application.reference.PublicIdLookup;
 import com.altafjava.school.application.security.AcademicAccessGuard;
+import com.altafjava.school.application.time.SchoolClock;
 import com.altafjava.school.domain.academicyear.model.AcademicYear;
 import com.altafjava.school.domain.academicyear.repository.AcademicYearRepository;
 import com.altafjava.school.domain.classroom.event.StudentEnrolledInClassroomEvent;
@@ -48,12 +48,13 @@ public class ClassroomService {
 	private final EventPublisher eventPublisher;
 	private final AcademicAccessGuard academicAccessGuard;
 	private final PublicIdLookup publicIdLookup;
+	private final SchoolClock schoolClock;
 
 	public ClassroomService(ClassroomRepository classroomRepository, TeacherRepository teacherRepository,
 			AcademicYearRepository academicYearRepository,
 			StudentClassroomLinkRepository studentClassroomLinkRepository, StudentRepository studentRepository,
 			CurriculumRepository curriculumRepository, EventPublisher eventPublisher,
-			AcademicAccessGuard academicAccessGuard, PublicIdLookup publicIdLookup) {
+			AcademicAccessGuard academicAccessGuard, PublicIdLookup publicIdLookup, SchoolClock schoolClock) {
 		this.publicIdLookup = publicIdLookup;
 		this.classroomRepository = classroomRepository;
 		this.teacherRepository = teacherRepository;
@@ -63,6 +64,7 @@ public class ClassroomService {
 		this.curriculumRepository = curriculumRepository;
 		this.eventPublisher = eventPublisher;
 		this.academicAccessGuard = academicAccessGuard;
+		this.schoolClock = schoolClock;
 	}
 
 	/** Free-text {@code q} (blank = no filter) over the entity's identifying fields. */
@@ -170,7 +172,7 @@ public class ClassroomService {
 			throw new BusinessException("Classroom " + classroomPublicId + " is at full capacity");
 		}
 		StudentClassroomLink link = StudentClassroomLink.create(student.getId(), classroom.getId(),
-				academicYear.getId(), LocalDate.now());
+				academicYear.getId(), schoolClock.today(tenantId));
 		StudentClassroomLink saved;
 		try {
 			saved = studentClassroomLinkRepository.save(link);

@@ -20,6 +20,7 @@ import com.altafjava.platform.core.tenant.TenantContext;
 import com.altafjava.platform.domain.notification.model.NotificationPriority;
 import com.altafjava.school.application.scheduler.support.StudentNotificationRecipientResolver;
 import com.altafjava.school.application.security.AcademicAccessGuard;
+import com.altafjava.school.application.time.SchoolClock;
 import com.altafjava.school.domain.classroom.repository.StudentClassroomLinkRepository;
 import com.altafjava.school.domain.lms.model.Assignment;
 import com.altafjava.school.domain.lms.model.Submission;
@@ -39,11 +40,13 @@ public class SubmissionService {
 	private final AcademicAccessGuard academicAccessGuard;
 	private final StudentNotificationRecipientResolver recipientResolver;
 	private final NotificationService notificationService;
+	private final SchoolClock schoolClock;
 
 	public SubmissionService(SubmissionRepository submissionRepository, AssignmentRepository assignmentRepository,
 			StudentRepository studentRepository, StudentClassroomLinkRepository studentClassroomLinkRepository,
 			AcademicAccessGuard academicAccessGuard,
-			StudentNotificationRecipientResolver recipientResolver, NotificationService notificationService) {
+			StudentNotificationRecipientResolver recipientResolver, NotificationService notificationService,
+			SchoolClock schoolClock) {
 		this.submissionRepository = submissionRepository;
 		this.assignmentRepository = assignmentRepository;
 		this.studentRepository = studentRepository;
@@ -51,6 +54,7 @@ public class SubmissionService {
 		this.academicAccessGuard = academicAccessGuard;
 		this.recipientResolver = recipientResolver;
 		this.notificationService = notificationService;
+		this.schoolClock = schoolClock;
 	}
 
 	@Transactional
@@ -72,9 +76,10 @@ public class SubmissionService {
 					"A submission already exists for student " + student.getId() + " on assignment "
 							+ assignmentPublicId);
 		}
-		boolean isLate = LocalDateTime.now().toLocalDate().isAfter(assignment.getDueDate());
+		LocalDateTime now = schoolClock.now(tenantId);
+		boolean isLate = now.toLocalDate().isAfter(assignment.getDueDate());
 		Submission submission = Submission.submit(assignment.getId(), student.getId(), storageKey, textContent,
-				isLate);
+				isLate, now);
 		return submissionRepository.save(submission);
 	}
 
@@ -103,7 +108,7 @@ public class SubmissionService {
 		}
 		Long gradingTeacherId = academicAccessGuard.requireTeacherOfSubject(tenantId, assignment.getClassroomId(),
 				assignment.getSubjectId());
-		submission.grade(marks, feedback, gradingTeacherId);
+		submission.grade(marks, feedback, gradingTeacherId, schoolClock.now());
 		Submission saved = submissionRepository.save(submission);
 		notifyStudent(tenantId, saved, assignment);
 		return saved;

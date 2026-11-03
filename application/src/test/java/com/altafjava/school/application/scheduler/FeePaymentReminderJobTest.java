@@ -18,9 +18,10 @@ import com.altafjava.platform.core.tenant.TenantType;
 import com.altafjava.platform.domain.scheduler.model.JobExecutionContext;
 import com.altafjava.platform.domain.scheduler.model.JobExecutionResult;
 import com.altafjava.platform.domain.scheduler.model.TriggerType;
+import com.altafjava.school.application.alert.FeeOverdueReminderRuleEvaluator;
 import com.altafjava.school.application.alert.FeePaymentReminderRuleEvaluator;
 
-/** The balance/threshold logic itself is tested in {@code FeePaymentReminderRuleEvaluatorTest}. */
+/** The date rules themselves are tested in the two fee reminder evaluator tests. */
 @ExtendWith(MockitoExtension.class)
 class FeePaymentReminderJobTest {
 
@@ -46,12 +47,14 @@ class FeePaymentReminderJobTest {
 	}
 
 	@Test
-	void execute_delegatesToAlertDispatchServiceForFeePaymentReminderRuleType() {
+	void execute_dispatchesTheDueAndOverdueRules() {
 		when(alertDispatchService.evaluateAndDispatch(1L, FeePaymentReminderRuleEvaluator.RULE_TYPE)).thenReturn(2);
+		when(alertDispatchService.evaluateAndDispatch(1L, FeeOverdueReminderRuleEvaluator.RULE_TYPE)).thenReturn(1);
 
 		JobExecutionResult result = job.execute(context());
 
 		verify(alertDispatchService).evaluateAndDispatch(1L, FeePaymentReminderRuleEvaluator.RULE_TYPE);
-		assertEquals(new JobExecutionResult.Success(Map.of("remindedCount", 2), null), result);
+		verify(alertDispatchService).evaluateAndDispatch(1L, FeeOverdueReminderRuleEvaluator.RULE_TYPE);
+		assertEquals(new JobExecutionResult.Success(Map.of("dueCount", 2, "overdueCount", 1), null), result);
 	}
 }

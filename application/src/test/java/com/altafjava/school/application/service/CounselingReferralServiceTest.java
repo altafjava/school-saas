@@ -8,6 +8,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -27,6 +28,7 @@ import com.altafjava.platform.core.security.AuthenticatedUser;
 import com.altafjava.platform.core.tenant.TenantContext;
 import com.altafjava.platform.core.tenant.TenantType;
 import com.altafjava.school.application.reference.PublicIdLookup;
+import com.altafjava.school.application.time.TestSchoolClocks;
 import com.altafjava.school.domain.counseling.model.CounselingReferral;
 import com.altafjava.school.domain.counseling.model.CounselingSession;
 import com.altafjava.school.domain.counseling.repository.CounselingReferralRepository;
@@ -55,7 +57,8 @@ class CounselingReferralServiceTest {
 	@BeforeEach
 	void setUp() {
 		counselingReferralService = new CounselingReferralService(counselingReferralRepository,
-				counselingSessionRepository, studentRepository, activityLogService, publicIdLookup);
+				counselingSessionRepository, studentRepository, activityLogService, publicIdLookup,
+				TestSchoolClocks.systemDefault());
 		TenantContext.ForTesting.setCurrentTenant(1L, null, null, TenantType.SHARED);
 	}
 
@@ -105,7 +108,8 @@ class CounselingReferralServiceTest {
 	void scheduleWithSession_sessionBelongsToSameStudent_succeeds() {
 		UUID referralPublicId = UUID.randomUUID();
 		UUID sessionPublicId = UUID.randomUUID();
-		CounselingReferral referral = CounselingReferral.refer(10L, CURRENT_USER_ID, "Struggling academically");
+		CounselingReferral referral = CounselingReferral.refer(10L, CURRENT_USER_ID, "Struggling academically",
+				LocalDateTime.now());
 		CounselingSession session = CounselingSession.schedule(10L, 20L, LocalDate.of(2026, 5, 1), "Notes", false);
 		session.setId(42L);
 		when(counselingReferralRepository.findByPublicIdAndTenantId(referralPublicId, 1L))
@@ -124,7 +128,8 @@ class CounselingReferralServiceTest {
 	void scheduleWithSession_sessionBelongsToDifferentStudent_throwsBusinessException() {
 		UUID referralPublicId = UUID.randomUUID();
 		UUID sessionPublicId = UUID.randomUUID();
-		CounselingReferral referral = CounselingReferral.refer(10L, CURRENT_USER_ID, "Struggling academically");
+		CounselingReferral referral = CounselingReferral.refer(10L, CURRENT_USER_ID, "Struggling academically",
+				LocalDateTime.now());
 		CounselingSession session = CounselingSession.schedule(999L, 20L, LocalDate.of(2026, 5, 1), "Notes", false);
 		session.setId(42L);
 		when(counselingReferralRepository.findByPublicIdAndTenantId(referralPublicId, 1L))
@@ -140,7 +145,8 @@ class CounselingReferralServiceTest {
 	@Test
 	void decline_fromPending_succeeds() {
 		UUID referralPublicId = UUID.randomUUID();
-		CounselingReferral referral = CounselingReferral.refer(10L, CURRENT_USER_ID, "Struggling academically");
+		CounselingReferral referral = CounselingReferral.refer(10L, CURRENT_USER_ID, "Struggling academically",
+				LocalDateTime.now());
 		when(counselingReferralRepository.findByPublicIdAndTenantId(referralPublicId, 1L))
 				.thenReturn(Optional.of(referral));
 		when(counselingReferralRepository.save(any(CounselingReferral.class))).thenAnswer(persisted());

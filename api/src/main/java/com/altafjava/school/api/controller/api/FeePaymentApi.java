@@ -3,6 +3,7 @@ package com.altafjava.school.api.controller.api;
 import java.time.LocalDate;
 import java.util.List;
 import jakarta.validation.Valid;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -46,4 +47,7 @@ public interface FeePaymentApi {
 	@Operation(summary = "Mark a cheque bounced", description = "Keeps the payment as evidence and restores the student's balance. A payment with refunds cannot bounce.")
 	public ApiResponse<FeePaymentResponse> bounce(@PathVariable String publicId,
 			@Valid @RequestBody BounceFeePaymentRequest request);
+
+	@Operation(summary = "Download receipt", description = "The payment's receipt as a PDF with a verification code. Issued on the first download and the same document after that. A bounced cheque has no receipt, and bouncing revokes one already issued.")
+	public ResponseEntity<byte[]> receipt(@PathVariable String publicId);
 }

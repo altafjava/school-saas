@@ -21,21 +21,25 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import com.altafjava.platform.application.document.DocumentIssuanceService;
 import com.altafjava.platform.application.service.NumberSequenceService;
 import com.altafjava.platform.core.exception.ResourceNotFoundException;
 import com.altafjava.platform.core.tenant.TenantContext;
 import com.altafjava.platform.core.tenant.TenantType;
+import com.altafjava.platform.domain.document.model.DocumentIssuance;
 import com.altafjava.platform.domain.numbering.model.ResetPeriod;
 import com.altafjava.school.application.filter.DateWindow;
 import com.altafjava.school.application.filter.FeePaymentFilter;
 import com.altafjava.school.application.reference.EntityRef;
 import com.altafjava.school.application.reference.PublicIdLookup;
 import com.altafjava.school.application.security.StudentDataAccessGuard;
+import com.altafjava.school.application.time.TestSchoolClocks;
 import com.altafjava.school.domain.classroom.repository.StudentClassroomLinkRepository;
 import com.altafjava.school.domain.fee.model.FeeAssignment;
 import com.altafjava.school.domain.fee.model.FeePayment;
 import com.altafjava.school.domain.fee.model.FeeStructure;
 import com.altafjava.school.domain.fee.model.PaymentInstrument;
+import com.altafjava.school.domain.fee.model.PaymentMode;
 import com.altafjava.school.domain.fee.model.PaymentSource;
 import com.altafjava.school.domain.fee.repository.FeeAssignmentRepository;
 import com.altafjava.school.domain.fee.repository.FeeDiscountRepository;
@@ -71,6 +75,8 @@ class FeePaymentServiceTest {
 	private FeeRefundRepository feeRefundRepository;
 	@Mock
 	private PublicIdLookup publicIdLookup;
+	@Mock
+	private DocumentIssuanceService documentIssuanceService;
 
 	private FeePaymentService feePaymentService;
 
@@ -79,7 +85,7 @@ class FeePaymentServiceTest {
 		feePaymentService = new FeePaymentService(feePaymentRepository, studentRepository, feeStructureRepository,
 				feeAssignmentRepository, studentClassroomLinkRepository, studentDataAccessGuard,
 				numberSequenceService, feeDiscountRepository, feeInstallmentRepository, feeRefundRepository,
-				publicIdLookup);
+				publicIdLookup, TestSchoolClocks.systemDefault(), documentIssuanceService);
 		TenantContext.ForTesting.setCurrentTenant(1L, null, null, TenantType.SHARED);
 	}
 
@@ -142,6 +148,43 @@ class FeePaymentServiceTest {
 		FeePayment payment = feePaymentService.record(publicId("student", 1).toString(), publicId("feeStructure", 2).toString(), BigDecimal.valueOf(500), LocalDateTime.now(), null, PaymentInstrument.CASH);
 
 		assertEquals("RCPT-2026-000001", payment.getReceiptNumber());
+	}
+
+	private static FeePayment chequePayment() {
+		FeePayment payment = FeePayment.create(1L, 2L, BigDecimal.valueOf(500), LocalDateTime.now(), "RCPT-CHQ",
+				new PaymentInstrument(PaymentMode.CHEQUE, null, "004512", LocalDate.now(), "State Bank"));
+		payment.setId(9L);
+		return payment;
+	}
+
+	@Test
+	void bounce_revokesAReceiptAlreadyIssued() {
+		FeePayment payment = chequePayment();
+		payment.attachReceipt(77L);
+		DocumentIssuance receipt = DocumentIssuance.create("FEE_RECEIPT", "STUDENT", 1L, "Fee Receipt", null, null,
+				null, "CODE", "key", null);
+		when(feePaymentRepository.findByPublicIdAndTenantIdForUpdate(publicId("payment", 9), 1L))
+				.thenReturn(Optional.of(payment));
+		when(feeRefundRepository.sumReservedByPayment(1L, 9L)).thenReturn(BigDecimal.ZERO);
+		when(documentIssuanceService.findById(77L)).thenReturn(Optional.of(receipt));
+		when(feePaymentRepository.save(payment)).thenReturn(payment);
+
+		feePaymentService.bounce(publicId("payment", 9).toString(), "Insufficient funds", LocalDateTime.now());
+
+		verify(documentIssuanceService).revoke(receipt, "Cheque bounced: Insufficient funds");
+	}
+
+	@Test
+	void bounce_withNoReceiptIssued_revokesNothing() {
+		FeePayment payment = chequePayment();
+		when(feePaymentRepository.findByPublicIdAndTenantIdForUpdate(publicId("payment", 9), 1L))
+				.thenReturn(Optional.of(payment));
+		when(feeRefundRepository.sumReservedByPayment(1L, 9L)).thenReturn(BigDecimal.ZERO);
+		when(feePaymentRepository.save(payment)).thenReturn(payment);
+
+		feePaymentService.bounce(publicId("payment", 9).toString(), "Insufficient funds", LocalDateTime.now());
+
+		verify(documentIssuanceService, never()).revoke(any(), any());
 	}
 
 	@Test

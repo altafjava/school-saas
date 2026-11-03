@@ -30,6 +30,7 @@ import com.altafjava.school.application.reference.EntityRef;
 import com.altafjava.school.application.reference.PublicIdLookup;
 import com.altafjava.school.application.security.AcademicAccessGuard;
 import com.altafjava.school.application.security.CourseworkReach;
+import com.altafjava.school.application.time.TestSchoolClocks;
 import com.altafjava.school.domain.classroom.model.Classroom;
 import com.altafjava.school.domain.classroom.repository.ClassroomRepository;
 import com.altafjava.school.domain.lms.model.Lesson;
@@ -59,7 +60,7 @@ class LessonServiceTest {
 	@BeforeEach
 	void setUp() {
 		lessonService = new LessonService(lessonRepository, classroomRepository, subjectRepository,
-				academicAccessGuard, publicIdLookup);
+				academicAccessGuard, publicIdLookup, TestSchoolClocks.systemDefault());
 		TenantContext.ForTesting.setCurrentTenant(1L, null, null, TenantType.SHARED);
 		// An absent filter resolves to no id; a bare Mockito mock would answer 0L.
 		lenient().when(publicIdLookup.idOrNull(any(), any())).thenReturn(null);

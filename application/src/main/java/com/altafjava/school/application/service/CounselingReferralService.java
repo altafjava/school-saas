@@ -16,6 +16,7 @@ import com.altafjava.platform.core.tenant.TenantContext;
 import com.altafjava.school.application.filter.CounselingReferralFilter;
 import com.altafjava.school.application.reference.EntityRef;
 import com.altafjava.school.application.reference.PublicIdLookup;
+import com.altafjava.school.application.time.SchoolClock;
 import com.altafjava.school.domain.counseling.model.CounselingReferral;
 import com.altafjava.school.domain.counseling.model.CounselingSession;
 import com.altafjava.school.domain.counseling.repository.CounselingReferralRepository;
@@ -31,15 +32,17 @@ public class CounselingReferralService {
 	private final StudentRepository studentRepository;
 	private final ActivityLogService activityLogService;
 	private final PublicIdLookup publicIdLookup;
+	private final SchoolClock schoolClock;
 
 	public CounselingReferralService(CounselingReferralRepository counselingReferralRepository,
 			CounselingSessionRepository counselingSessionRepository, StudentRepository studentRepository,
-			ActivityLogService activityLogService, PublicIdLookup publicIdLookup) {
+			ActivityLogService activityLogService, PublicIdLookup publicIdLookup, SchoolClock schoolClock) {
 		this.publicIdLookup = publicIdLookup;
 		this.counselingReferralRepository = counselingReferralRepository;
 		this.counselingSessionRepository = counselingSessionRepository;
 		this.studentRepository = studentRepository;
 		this.activityLogService = activityLogService;
+		this.schoolClock = schoolClock;
 	}
 
 	@Transactional(readOnly = true)
@@ -68,7 +71,8 @@ public class CounselingReferralService {
 		Student student = studentRepository.findByPublicIdAndTenantId(UUID.fromString(studentPublicId), tenantId)
 				.orElseThrow(() -> new ResourceNotFoundException("Student not found: " + studentPublicId));
 
-		CounselingReferral referral = CounselingReferral.refer(student.getId(), resolveCurrentUserId(), reason);
+		CounselingReferral referral = CounselingReferral.refer(student.getId(), resolveCurrentUserId(), reason,
+				schoolClock.now());
 		CounselingReferral saved = counselingReferralRepository.save(referral);
 		// reason is deliberately excluded from the audit trail — confidential referral content.
 		logAction(tenantId, "CREATE", saved.getPublicId().toString(), "Counseling referral created");

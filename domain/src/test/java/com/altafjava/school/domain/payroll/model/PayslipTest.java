@@ -4,6 +4,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.List;
 import org.junit.jupiter.api.Test;
 import com.altafjava.platform.core.exception.BusinessException;
@@ -47,7 +48,7 @@ class PayslipTest {
 	void finalizePayslip_fromDraft_setsFinalizedStatus() {
 		Payslip payslip = payslip();
 
-		payslip.finalizePayslip();
+		payslip.finalizePayslip(LocalDateTime.now());
 
 		assertEquals(PayslipStatus.FINALIZED, payslip.getStatus());
 		assertNotNull(payslip.getFinalizedAt());
@@ -56,17 +57,17 @@ class PayslipTest {
 	@Test
 	void finalizePayslip_whenNotDraft_throwsBusinessException() {
 		Payslip payslip = payslip();
-		payslip.finalizePayslip();
+		payslip.finalizePayslip(LocalDateTime.now());
 
-		assertThrows(BusinessException.class, payslip::finalizePayslip);
+		assertThrows(BusinessException.class, () -> payslip.finalizePayslip(LocalDateTime.now()));
 	}
 
 	@Test
 	void markDisbursed_fromFinalized_setsDisbursedStatus() {
 		Payslip payslip = payslip();
-		payslip.finalizePayslip();
+		payslip.finalizePayslip(LocalDateTime.now());
 
-		payslip.markDisbursed();
+		payslip.markDisbursed(LocalDateTime.now());
 
 		assertEquals(PayslipStatus.DISBURSED, payslip.getStatus());
 		assertNotNull(payslip.getDisbursedAt());
@@ -76,15 +77,15 @@ class PayslipTest {
 	void markDisbursed_whenStillDraft_throwsBusinessException() {
 		Payslip payslip = payslip();
 
-		assertThrows(BusinessException.class, payslip::markDisbursed);
+		assertThrows(BusinessException.class, () -> payslip.markDisbursed(LocalDateTime.now()));
 	}
 
 	@Test
 	void markDisbursed_whenAlreadyDisbursed_throwsBusinessException() {
 		Payslip payslip = payslip();
-		payslip.finalizePayslip();
-		payslip.markDisbursed();
+		payslip.finalizePayslip(LocalDateTime.now());
+		payslip.markDisbursed(LocalDateTime.now());
 
-		assertThrows(BusinessException.class, payslip::markDisbursed);
+		assertThrows(BusinessException.class, () -> payslip.markDisbursed(LocalDateTime.now()));
 	}
 }

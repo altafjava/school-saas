@@ -16,6 +16,7 @@ import com.altafjava.platform.core.tenant.TenantContext;
 import com.altafjava.school.application.filter.PayslipFilter;
 import com.altafjava.school.application.reference.EntityRef;
 import com.altafjava.school.application.reference.PublicIdLookup;
+import com.altafjava.school.application.time.SchoolClock;
 import com.altafjava.school.domain.employee.model.Employee;
 import com.altafjava.school.domain.employee.repository.EmployeeRepository;
 import com.altafjava.school.domain.leave.model.LeaveRequest;
@@ -42,16 +43,18 @@ public class PayslipService {
 	// holds its FeeBalanceCalculator.
 	private final PayrollCalculator payrollCalculator = new PayrollCalculator();
 	private final PublicIdLookup publicIdLookup;
+	private final SchoolClock schoolClock;
 
 	public PayslipService(PayslipRepository payslipRepository, SalaryStructureRepository salaryStructureRepository,
 			LeaveRequestRepository leaveRequestRepository, LeaveTypeRepository leaveTypeRepository,
-			EmployeeRepository employeeRepository, PublicIdLookup publicIdLookup) {
+			EmployeeRepository employeeRepository, PublicIdLookup publicIdLookup, SchoolClock schoolClock) {
 		this.publicIdLookup = publicIdLookup;
 		this.payslipRepository = payslipRepository;
 		this.salaryStructureRepository = salaryStructureRepository;
 		this.leaveRequestRepository = leaveRequestRepository;
 		this.leaveTypeRepository = leaveTypeRepository;
 		this.employeeRepository = employeeRepository;
+		this.schoolClock = schoolClock;
 	}
 
 	@Transactional(readOnly = true)
@@ -99,7 +102,7 @@ public class PayslipService {
 	@Audited(action = AuditAction.UPDATE, resourceType = "Payslip", details = "Payslip finalized")
 	public Payslip finalizePayslip(String publicId) {
 		Payslip payslip = findByPublicId(publicId);
-		payslip.finalizePayslip();
+		payslip.finalizePayslip(schoolClock.now());
 		return payslipRepository.save(payslip);
 	}
 
@@ -107,7 +110,7 @@ public class PayslipService {
 	@Audited(action = AuditAction.UPDATE, resourceType = "Payslip", details = "Payslip marked disbursed")
 	public Payslip markDisbursed(String publicId) {
 		Payslip payslip = findByPublicId(publicId);
-		payslip.markDisbursed();
+		payslip.markDisbursed(schoolClock.now());
 		return payslipRepository.save(payslip);
 	}
 

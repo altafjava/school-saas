@@ -41,6 +41,7 @@ import com.altafjava.platform.domain.paymentgateway.service.PaymentWebhookEvent;
 import com.altafjava.platform.domain.tenant.model.Tenant;
 import com.altafjava.platform.domain.tenant.repository.TenantRepository;
 import com.altafjava.school.application.security.StudentDataAccessGuard;
+import com.altafjava.school.application.time.TestSchoolClocks;
 import com.altafjava.school.domain.fee.model.FeeBalance;
 import com.altafjava.school.domain.fee.model.FeePayment;
 import com.altafjava.school.domain.fee.model.FeeStructure;
@@ -83,7 +84,7 @@ class FeeOnlinePaymentServiceTest {
 	void setUp() {
 		service = new FeeOnlinePaymentService(studentRepository, feeStructureRepository, feePaymentRepository,
 				tenantRepository, feePaymentService, studentDataAccessGuard, paymentGatewayResolver,
-				paymentGatewayProviderRegistry, paymentGatewayCredentialsDecryptor);
+				paymentGatewayProviderRegistry, paymentGatewayCredentialsDecryptor, TestSchoolClocks.systemDefault());
 		TenantContext.ForTesting.setCurrentTenant(1L, UUID.randomUUID(), "school-a", TenantType.SHARED);
 	}
 

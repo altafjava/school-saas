@@ -8,8 +8,10 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
@@ -21,7 +23,9 @@ import com.altafjava.platform.application.alert.AlertTrigger;
 import com.altafjava.platform.application.tenant.TenantFormattingService;
 import com.altafjava.platform.domain.alert.model.AlertRule;
 import com.altafjava.school.application.scheduler.support.StudentNotificationRecipientResolver;
-import com.altafjava.school.domain.attendance.repository.AttendanceRepository;
+import com.altafjava.school.application.time.TestSchoolClocks;
+import com.altafjava.school.domain.classroom.model.StudentClassroomLink;
+import com.altafjava.school.domain.classroom.repository.StudentClassroomLinkRepository;
 import com.altafjava.school.domain.exam.model.Exam;
 import com.altafjava.school.domain.exam.repository.ExamRepository;
 import com.altafjava.school.domain.notification.SchoolNotificationTypes;
@@ -38,7 +42,7 @@ class ExamScheduleReminderRuleEvaluatorTest {
 	@Mock
 	private SubjectRepository subjectRepository;
 	@Mock
-	private AttendanceRepository attendanceRepository;
+	private StudentClassroomLinkRepository studentClassroomLinkRepository;
 	@Mock
 	private StudentRepository studentRepository;
 	@Mock
@@ -49,8 +53,14 @@ class ExamScheduleReminderRuleEvaluatorTest {
 	private ExamScheduleReminderRuleEvaluator evaluator;
 
 	private void newEvaluator() {
-		evaluator = new ExamScheduleReminderRuleEvaluator(examRepository, subjectRepository, attendanceRepository,
-				studentRepository, recipientResolver, tenantFormattingService);
+		evaluator = new ExamScheduleReminderRuleEvaluator(examRepository, subjectRepository,
+				studentClassroomLinkRepository,
+				studentRepository, recipientResolver, tenantFormattingService, TestSchoolClocks.systemDefault());
+	}
+
+	private static List<StudentClassroomLink> roster(Long... studentIds) {
+		return Arrays.stream(studentIds)
+				.map(studentId -> StudentClassroomLink.create(studentId, 10L, 3L, LocalDate.now())).toList();
 	}
 
 	private AlertRule rule() {
@@ -88,7 +98,7 @@ class ExamScheduleReminderRuleEvaluatorTest {
 
 		when(examRepository.findUpcoming(eq(1L), any(), any())).thenReturn(List.of(exam));
 		when(subjectRepository.findByIdAndTenantId(5L, 1L)).thenReturn(Optional.of(subject));
-		when(attendanceRepository.findDistinctStudentIdsByClassroomId(1L, 10L)).thenReturn(List.of(1L));
+		when(studentClassroomLinkRepository.findAllByClassroomId(1L, 10L)).thenReturn(roster(1L));
 		when(studentRepository.findAllByIdInAndTenantId(List.of(1L), 1L)).thenReturn(List.of(student));
 		when(recipientResolver.resolve(1L, student)).thenReturn(Optional.of(77L));
 		when(tenantFormattingService.localizedFormatter(eq(1L), any()))
@@ -115,7 +125,7 @@ class ExamScheduleReminderRuleEvaluatorTest {
 
 		when(examRepository.findUpcoming(eq(1L), any(), any())).thenReturn(List.of(exam));
 		when(subjectRepository.findByIdAndTenantId(5L, 1L)).thenReturn(Optional.of(subject));
-		when(attendanceRepository.findDistinctStudentIdsByClassroomId(1L, 10L)).thenReturn(List.of(1L, 2L));
+		when(studentClassroomLinkRepository.findAllByClassroomId(1L, 10L)).thenReturn(roster(1L, 2L));
 		when(studentRepository.findAllByIdInAndTenantId(List.of(1L, 2L), 1L))
 				.thenReturn(List.of(student1, student2));
 		when(recipientResolver.resolve(eq(1L), any(Student.class))).thenReturn(Optional.of(77L));
@@ -137,7 +147,7 @@ class ExamScheduleReminderRuleEvaluatorTest {
 		when(subjectRepository.findByIdAndTenantId(5L, 1L)).thenReturn(Optional.empty());
 
 		assertTrue(evaluator.evaluate(rule()).isEmpty());
-		verify(attendanceRepository, never()).findDistinctStudentIdsByClassroomId(any(), any());
+		verify(studentClassroomLinkRepository, never()).findAllByClassroomId(any(), any());
 	}
 
 	@Test

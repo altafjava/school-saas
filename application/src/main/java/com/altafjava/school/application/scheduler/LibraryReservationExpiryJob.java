@@ -1,6 +1,5 @@
 package com.altafjava.school.application.scheduler;
 
-import java.time.LocalDate;
 import java.util.Map;
 import org.springframework.stereotype.Component;
 import com.altafjava.platform.application.scheduler.annotation.ScheduledJob;
@@ -9,6 +8,7 @@ import com.altafjava.platform.core.tenant.TenantContext;
 import com.altafjava.platform.domain.scheduler.model.JobExecutionContext;
 import com.altafjava.platform.domain.scheduler.model.JobExecutionResult;
 import com.altafjava.school.application.service.BookReservationService;
+import com.altafjava.school.application.time.SchoolClock;
 import lombok.extern.slf4j.Slf4j;
 
 /**
@@ -22,9 +22,11 @@ import lombok.extern.slf4j.Slf4j;
 public class LibraryReservationExpiryJob implements JobExecutionStrategy {
 
 	private final BookReservationService bookReservationService;
+	private final SchoolClock schoolClock;
 
-	public LibraryReservationExpiryJob(BookReservationService bookReservationService) {
+	public LibraryReservationExpiryJob(BookReservationService bookReservationService, SchoolClock schoolClock) {
 		this.bookReservationService = bookReservationService;
+		this.schoolClock = schoolClock;
 	}
 
 	@Override
@@ -45,7 +47,7 @@ public class LibraryReservationExpiryJob implements JobExecutionStrategy {
 	@Override
 	public JobExecutionResult execute(JobExecutionContext ctx) {
 		Long tenantId = TenantContext.getCurrentTenantId();
-		int expired = bookReservationService.expireLapsedHolds(tenantId, LocalDate.now());
+		int expired = bookReservationService.expireLapsedHolds(tenantId, schoolClock.today(tenantId));
 		log.info("action=library-reservation-expiry-complete tenantId={} expired={}", tenantId, expired);
 		return new JobExecutionResult.Success(Map.of("expired", expired), null);
 	}

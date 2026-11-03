@@ -13,6 +13,7 @@ import com.altafjava.platform.application.alert.AlertRuleEvaluator;
 import com.altafjava.platform.application.alert.AlertTrigger;
 import com.altafjava.platform.domain.alert.model.AlertRule;
 import com.altafjava.platform.domain.notification.model.NotificationPriority;
+import com.altafjava.school.application.time.SchoolClock;
 import com.altafjava.school.domain.attendance.repository.AttendanceRepository;
 import com.altafjava.school.domain.classroom.model.Classroom;
 import com.altafjava.school.domain.classroom.repository.ClassroomRepository;
@@ -32,12 +33,14 @@ public class AttendanceNotMarkedRuleEvaluator implements AlertRuleEvaluator {
 	private final ClassroomRepository classroomRepository;
 	private final AttendanceRepository attendanceRepository;
 	private final TeacherRepository teacherRepository;
+	private final SchoolClock schoolClock;
 
 	public AttendanceNotMarkedRuleEvaluator(ClassroomRepository classroomRepository,
-			AttendanceRepository attendanceRepository, TeacherRepository teacherRepository) {
+			AttendanceRepository attendanceRepository, TeacherRepository teacherRepository, SchoolClock schoolClock) {
 		this.classroomRepository = classroomRepository;
 		this.attendanceRepository = attendanceRepository;
 		this.teacherRepository = teacherRepository;
+		this.schoolClock = schoolClock;
 	}
 
 	@Override
@@ -48,7 +51,7 @@ public class AttendanceNotMarkedRuleEvaluator implements AlertRuleEvaluator {
 	@Override
 	public List<AlertTrigger> evaluate(AlertRule rule) {
 		Long tenantId = rule.getTenantId();
-		LocalDate today = LocalDate.now();
+		LocalDate today = schoolClock.today(tenantId);
 
 		List<Classroom> unmarkedClassroomsWithTeacher = unmarkedClassroomsWithTeacher(tenantId, today);
 		if (unmarkedClassroomsWithTeacher.isEmpty()) {

@@ -11,6 +11,7 @@ import java.util.Map;
 import org.springframework.stereotype.Component;
 import com.altafjava.platform.application.service.report.provider.ReportDataProvider;
 import com.altafjava.platform.core.tenant.TenantContext;
+import com.altafjava.school.application.time.SchoolClock;
 import com.altafjava.school.domain.leave.model.LeaveRequestStatus;
 import com.altafjava.school.domain.leave.repository.LeaveRequestRepository;
 
@@ -25,16 +26,18 @@ public class LeaveUtilizationTrendDataProvider implements ReportDataProvider {
 	private static final DateTimeFormatter MONTH_LABEL_FORMAT = DateTimeFormatter.ofPattern("yyyy-MM");
 
 	private final LeaveRequestRepository leaveRequestRepository;
+	private final SchoolClock schoolClock;
 
-	public LeaveUtilizationTrendDataProvider(LeaveRequestRepository leaveRequestRepository) {
+	public LeaveUtilizationTrendDataProvider(LeaveRequestRepository leaveRequestRepository, SchoolClock schoolClock) {
 		this.leaveRequestRepository = leaveRequestRepository;
+		this.schoolClock = schoolClock;
 	}
 
 	@Override
 	public List<Map<String, Object>> fetchData(Map<String, Object> parameters) {
 		Long tenantId = TenantContext.getCurrentTenantId();
 		int periods = periodCount(parameters);
-		YearMonth currentMonth = YearMonth.now();
+		YearMonth currentMonth = schoolClock.currentMonth(tenantId);
 
 		List<Map<String, Object>> rows = new ArrayList<>();
 		for (int i = periods - 1; i >= 0; i--) {

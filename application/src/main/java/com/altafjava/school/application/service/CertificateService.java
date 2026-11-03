@@ -1,6 +1,5 @@
 package com.altafjava.school.application.service;
 
-import java.time.LocalDate;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Map;
@@ -17,6 +16,7 @@ import com.altafjava.platform.core.tenant.TenantContext;
 import com.altafjava.platform.domain.document.model.DocumentIssuance;
 import com.altafjava.school.application.document.SchoolDocumentTypes;
 import com.altafjava.school.application.document.StudentPlacementResolver;
+import com.altafjava.school.application.time.SchoolClock;
 import com.altafjava.school.domain.academicyear.model.AcademicYear;
 import com.altafjava.school.domain.certificate.model.CertificateType;
 import com.altafjava.school.domain.certificate.repository.CertificateTypeRepository;
@@ -40,6 +40,7 @@ public class CertificateService {
 	private final StudentRepository studentRepository;
 	private final StudentPlacementResolver placementResolver;
 	private final DocumentIssuanceService documentIssuanceService;
+	private final SchoolClock schoolClock;
 
 	@Transactional(readOnly = true)
 	public Page<DocumentIssuance> listForStudent(String studentPublicId,
@@ -96,7 +97,7 @@ public class CertificateService {
 		values.put("studentName", student.getFirstName() + " " + student.getLastName());
 		values.put("studentCode", student.getStudentCode());
 		values.put("certificateName", type.getName());
-		values.put("issueDate", LocalDate.now().toString());
+		values.put("issueDate", schoolClock.today(tenantId).toString());
 		var placement = placementResolver.resolve(tenantId, student.getId());
 		values.put("className", placement.map(StudentPlacementResolver.Placement::classLabel).orElse(""));
 		values.put("academicYear",

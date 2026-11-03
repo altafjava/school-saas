@@ -284,8 +284,8 @@ class RecordListFiltersIntegrationTest extends SchoolIntegrationTestBase {
 		Student first = student();
 		Student second = student();
 		CounselingReferral pending = counselingReferralRepository
-				.save(CounselingReferral.refer(first.getId(), 1L, "Anxiety"));
-		CounselingReferral declined = CounselingReferral.refer(second.getId(), 1L, "Conduct");
+				.save(CounselingReferral.refer(first.getId(), 1L, "Anxiety", LocalDateTime.now()));
+		CounselingReferral declined = CounselingReferral.refer(second.getId(), 1L, "Conduct", LocalDateTime.now());
 		declined.decline();
 		declined = counselingReferralRepository.save(declined);
 		LocalDate today = LocalDate.now();
@@ -466,7 +466,7 @@ class RecordListFiltersIntegrationTest extends SchoolIntegrationTestBase {
 				1));
 		LeaveRequest bobSick = LeaveRequest.submit(bob.getId(), sick.getId(), year.getId(),
 				LocalDate.of(2031, 8, 1), LocalDate.of(2031, 8, 2), "Flu", BigDecimal.valueOf(2), 1);
-		bobSick.cancel();
+		bobSick.cancel(LocalDate.now());
 		bobSick = leaveRequestRepository.save(bobSick);
 
 		assertIds(leaveRequestService.listAll(new LeaveRequestFilter(ana.getPublicId().toString(), null, null,

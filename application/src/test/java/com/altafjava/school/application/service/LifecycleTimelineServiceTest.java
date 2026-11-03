@@ -66,7 +66,8 @@ class LifecycleTimelineServiceTest {
 	@Test
 	void forStudent_returnsTheJoinedTimeline() {
 		student();
-		LifecycleTransition row = LifecycleTransition.record(null, 5L, null, LifecycleStage.ENROLLED, null, null, null);
+		LifecycleTransition row = LifecycleTransition.record(null, 5L, null, LifecycleStage.ENROLLED, null,
+				LocalDate.of(2026, 4, 1), null);
 		when(repository.findTimelineForStudent(1L, 5L)).thenReturn(List.of(row));
 
 		assertEquals(List.of(row), service.forStudent(STUDENT_PUBLIC_ID.toString()));

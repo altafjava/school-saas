@@ -1,6 +1,5 @@
 package com.altafjava.school.application.service;
 
-import java.time.LocalDate;
 import java.util.UUID;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -11,6 +10,7 @@ import com.altafjava.platform.core.exception.ResourceNotFoundException;
 import com.altafjava.platform.core.search.LikePattern;
 import com.altafjava.platform.core.tenant.TenantContext;
 import com.altafjava.school.application.library.ReservationAllocator;
+import com.altafjava.school.application.time.SchoolClock;
 import com.altafjava.school.domain.library.model.Book;
 import com.altafjava.school.domain.library.model.BookCopy;
 import com.altafjava.school.domain.library.repository.BookCopyRepository;
@@ -22,12 +22,14 @@ public class BookCatalogService {
 	private final BookRepository bookRepository;
 	private final BookCopyRepository bookCopyRepository;
 	private final ReservationAllocator reservationAllocator;
+	private final SchoolClock schoolClock;
 
 	public BookCatalogService(BookRepository bookRepository, BookCopyRepository bookCopyRepository,
-			ReservationAllocator reservationAllocator) {
+			ReservationAllocator reservationAllocator, SchoolClock schoolClock) {
 		this.bookRepository = bookRepository;
 		this.bookCopyRepository = bookCopyRepository;
 		this.reservationAllocator = reservationAllocator;
+		this.schoolClock = schoolClock;
 	}
 
 	/** Free-text {@code q} (blank = no filter) over the entity's identifying fields. */
@@ -75,7 +77,7 @@ public class BookCatalogService {
 			throw new BusinessException("Copy code already exists for this book: " + copyCode);
 		}
 		BookCopy copy = bookCopyRepository.save(BookCopy.create(book.getId(), copyCode));
-		reservationAllocator.allocate(tenantId, copy, LocalDate.now());
+		reservationAllocator.allocate(tenantId, copy, schoolClock.today(tenantId));
 		return copy;
 	}
 

@@ -1,16 +1,14 @@
 package com.altafjava.school.application.messaging;
 
 import java.time.LocalTime;
-import java.time.ZoneId;
-import java.time.ZonedDateTime;
 import java.time.format.DateTimeParseException;
 import java.util.Optional;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import com.altafjava.platform.application.service.TenantSettingOverrideService;
-import com.altafjava.platform.application.service.TenantSettingsService;
 import com.altafjava.platform.core.exception.BusinessException;
 import com.altafjava.platform.core.tenant.TenantContext;
+import com.altafjava.school.application.time.SchoolClock;
 import lombok.RequiredArgsConstructor;
 
 /** Each school decides whether messaging is on and when, stored as tenant setting overrides. */
@@ -23,7 +21,7 @@ public class MessagingSettingsService {
 	static final String HOURS_END_KEY = "school.messaging.hours-end";
 
 	private final TenantSettingOverrideService tenantSettingOverrideService;
-	private final TenantSettingsService tenantSettingsService;
+	private final SchoolClock schoolClock;
 
 	@Transactional(readOnly = true)
 	public MessagingSettings get() {
@@ -52,15 +50,10 @@ public class MessagingSettingsService {
 		if (!settings.enabled()) {
 			throw new BusinessException("Messaging is switched off at this school");
 		}
-		if (!settings.isOpenAt(ZonedDateTime.now(schoolZone()).toLocalTime())) {
+		if (!settings.isOpenAt(schoolClock.now().toLocalTime())) {
 			throw new BusinessException(
 					"Messaging is open from " + settings.hoursStart() + " to " + settings.hoursEnd());
 		}
-	}
-
-	private ZoneId schoolZone() {
-		String timezone = tenantSettingsService.getSettings(TenantContext.getCurrentTenantId()).timezone();
-		return timezone == null || timezone.isBlank() ? ZoneId.of("UTC") : ZoneId.of(timezone);
 	}
 
 	private void store(Long tenantId, String key, LocalTime time) {

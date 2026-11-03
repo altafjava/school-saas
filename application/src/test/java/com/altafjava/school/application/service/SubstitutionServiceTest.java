@@ -26,6 +26,7 @@ import com.altafjava.platform.core.exception.BusinessException;
 import com.altafjava.platform.core.exception.ResourceNotFoundException;
 import com.altafjava.platform.core.tenant.TenantContext;
 import com.altafjava.platform.core.tenant.TenantType;
+import com.altafjava.school.application.time.TestSchoolClocks;
 import com.altafjava.school.domain.leave.repository.LeaveRequestRepository;
 import com.altafjava.school.domain.teacher.model.Teacher;
 import com.altafjava.school.domain.teacher.repository.TeacherRepository;
@@ -64,7 +65,7 @@ class SubstitutionServiceTest {
 	@BeforeEach
 	void setUp() {
 		service = new SubstitutionService(substitutionRepository, timetableEntryRepository, teacherRepository,
-				leaveRequestRepository, holidayService, notificationService);
+				leaveRequestRepository, holidayService, notificationService, TestSchoolClocks.systemDefault());
 		TenantContext.ForTesting.setCurrentTenant(TENANT_ID, null, null, TenantType.SHARED);
 		LocalDate today = LocalDate.now();
 		nextMonday = today.plusDays(((DayOfWeek.MONDAY.getValue() - today.getDayOfWeek().getValue()) + 7) % 7 + 7);

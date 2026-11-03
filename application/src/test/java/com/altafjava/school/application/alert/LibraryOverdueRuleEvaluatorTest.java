@@ -14,6 +14,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import com.altafjava.platform.application.alert.AlertTrigger;
 import com.altafjava.platform.domain.alert.model.AlertRule;
 import com.altafjava.school.application.scheduler.support.StudentNotificationRecipientResolver;
+import com.altafjava.school.application.time.TestSchoolClocks;
 import com.altafjava.school.domain.library.model.Circulation;
 import com.altafjava.school.domain.library.repository.CirculationRepository;
 import com.altafjava.school.domain.notification.SchoolNotificationTypes;
@@ -33,7 +34,8 @@ class LibraryOverdueRuleEvaluatorTest {
 	private LibraryOverdueRuleEvaluator evaluator;
 
 	private void newEvaluator() {
-		evaluator = new LibraryOverdueRuleEvaluator(circulationRepository, studentRepository, recipientResolver);
+		evaluator = new LibraryOverdueRuleEvaluator(circulationRepository, studentRepository, recipientResolver,
+				TestSchoolClocks.systemDefault());
 	}
 
 	private AlertRule ruleWithGraceDays(Integer graceDays) {

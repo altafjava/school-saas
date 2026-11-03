@@ -9,6 +9,7 @@ import com.altafjava.platform.application.scheduler.strategy.JobExecutionStrateg
 import com.altafjava.platform.core.tenant.TenantContext;
 import com.altafjava.platform.domain.scheduler.model.JobExecutionContext;
 import com.altafjava.platform.domain.scheduler.model.JobExecutionResult;
+import com.altafjava.school.application.time.SchoolClock;
 import com.altafjava.school.domain.academicyear.model.AcademicYear;
 import com.altafjava.school.domain.academicyear.repository.AcademicYearRepository;
 import lombok.extern.slf4j.Slf4j;
@@ -23,9 +24,11 @@ import lombok.extern.slf4j.Slf4j;
 public class AcademicYearRolloverJob implements JobExecutionStrategy {
 
 	private final AcademicYearRepository academicYearRepository;
+	private final SchoolClock schoolClock;
 
-	public AcademicYearRolloverJob(AcademicYearRepository academicYearRepository) {
+	public AcademicYearRolloverJob(AcademicYearRepository academicYearRepository, SchoolClock schoolClock) {
 		this.academicYearRepository = academicYearRepository;
+		this.schoolClock = schoolClock;
 	}
 
 	@Override
@@ -49,7 +52,7 @@ public class AcademicYearRolloverJob implements JobExecutionStrategy {
 		Long tenantId = TenantContext.getCurrentTenantId();
 		log.info("action=academic-year-rollover tenantId={} executionId={}", tenantId, ctx.executionId());
 
-		int year = LocalDate.now().getYear();
+		int year = schoolClock.today(tenantId).getYear();
 		String newYearName = year + "-" + (year + 1);
 
 		academicYearRepository.findByCurrentTrueAndTenantId(tenantId)

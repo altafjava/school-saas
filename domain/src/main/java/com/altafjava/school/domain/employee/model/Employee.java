@@ -152,14 +152,14 @@ public class Employee extends SoftDeletableEntity {
 	 * Records that this person has left. Exit is final — the record stays for payroll history and
 	 * statutory retention; rehiring is a new hire, not a reversal.
 	 */
-	public void exit(EmployeeStatus exitStatus, LocalDate exitDate, String reason) {
+	public void exit(EmployeeStatus exitStatus, LocalDate exitDate, String reason, LocalDate today) {
 		if (exitStatus == null || !exitStatus.isExit()) {
 			throw new BusinessException("An exit must be RESIGNED, TERMINATED or RETIRED");
 		}
 		if (!isActive()) {
 			throw new BusinessException("Employee has already left the school: " + this.status);
 		}
-		if (exitDate == null || exitDate.isAfter(LocalDate.now())) {
+		if (exitDate == null || exitDate.isAfter(today)) {
 			throw new BusinessException("The exit date must be today or earlier");
 		}
 		if (joinDate != null && exitDate.isBefore(joinDate)) {

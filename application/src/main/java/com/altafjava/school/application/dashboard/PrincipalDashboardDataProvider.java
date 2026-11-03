@@ -14,9 +14,11 @@ import com.altafjava.platform.core.tenant.TenantContext;
 import com.altafjava.school.application.alert.AttendanceNotMarkedRuleEvaluator;
 import com.altafjava.school.application.alert.ExamScheduleReminderRuleEvaluator;
 import com.altafjava.school.application.alert.FeeDefaultRiskRuleEvaluator;
+import com.altafjava.school.application.alert.FeeOverdueReminderRuleEvaluator;
 import com.altafjava.school.application.alert.FeePaymentReminderRuleEvaluator;
 import com.altafjava.school.application.alert.LibraryOverdueRuleEvaluator;
 import com.altafjava.school.application.alert.LowAttendanceRuleEvaluator;
+import com.altafjava.school.application.time.SchoolClock;
 import com.altafjava.school.domain.attendance.model.AttendanceStatus;
 import com.altafjava.school.domain.attendance.repository.AttendanceRepository;
 import com.altafjava.school.domain.event.repository.EventRepository;
@@ -37,6 +39,7 @@ public class PrincipalDashboardDataProvider implements ReportDataProvider {
 	private static final List<String> ALERT_RULE_TYPES = List.of(
 			LowAttendanceRuleEvaluator.RULE_TYPE,
 			FeePaymentReminderRuleEvaluator.RULE_TYPE,
+			FeeOverdueReminderRuleEvaluator.RULE_TYPE,
 			FeeDefaultRiskRuleEvaluator.RULE_TYPE,
 			ExamScheduleReminderRuleEvaluator.RULE_TYPE,
 			AttendanceNotMarkedRuleEvaluator.RULE_TYPE,
@@ -46,20 +49,23 @@ public class PrincipalDashboardDataProvider implements ReportDataProvider {
 	private final AttendanceRepository attendanceRepository;
 	private final EventRepository eventRepository;
 	private final AlertDispatchService alertDispatchService;
+	private final SchoolClock schoolClock;
 
 	public PrincipalDashboardDataProvider(StudentRepository studentRepository,
 			AttendanceRepository attendanceRepository, EventRepository eventRepository,
-			AlertDispatchService alertDispatchService) {
+			AlertDispatchService alertDispatchService, SchoolClock schoolClock) {
 		this.studentRepository = studentRepository;
 		this.attendanceRepository = attendanceRepository;
 		this.eventRepository = eventRepository;
 		this.alertDispatchService = alertDispatchService;
+		this.schoolClock = schoolClock;
 	}
 
 	@Override
 	public List<Map<String, Object>> fetchData(Map<String, Object> parameters) {
 		Long tenantId = TenantContext.getCurrentTenantId();
-		LocalDate today = LocalDate.now();
+		LocalDateTime now = schoolClock.now(tenantId);
+		LocalDate today = now.toLocalDate();
 		LocalDate windowStart = today.minusDays(ATTENDANCE_WINDOW_DAYS);
 
 		long activeStudentCount = studentRepository.countByEnrollmentStatusAndTenantId(EnrollmentStatus.ACTIVE,
@@ -68,7 +74,7 @@ public class PrincipalDashboardDataProvider implements ReportDataProvider {
 		long presentCount = attendanceRepository.countByTenantIdAndAttendanceDateBetweenAndStatus(tenantId,
 				windowStart, today, AttendanceStatus.PRESENT);
 		long upcomingEventCount = eventRepository.countByTenantIdAndActiveTrueAndEventDateAfter(tenantId,
-				LocalDateTime.now());
+				now);
 
 		Map<String, Object> row = new LinkedHashMap<>();
 		row.put("activeStudentCount", activeStudentCount);

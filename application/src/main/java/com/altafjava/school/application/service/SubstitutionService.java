@@ -20,6 +20,7 @@ import com.altafjava.platform.core.exception.ResourceNotFoundException;
 import com.altafjava.platform.core.tenant.TenantContext;
 import com.altafjava.platform.domain.notification.model.NotificationPriority;
 import com.altafjava.platform.domain.notification.model.NotificationTypes;
+import com.altafjava.school.application.time.SchoolClock;
 import com.altafjava.school.domain.leave.repository.LeaveRequestRepository;
 import com.altafjava.school.domain.teacher.model.Teacher;
 import com.altafjava.school.domain.teacher.repository.TeacherRepository;
@@ -44,6 +45,7 @@ public class SubstitutionService {
 	private final LeaveRequestRepository leaveRequestRepository;
 	private final HolidayService holidayService;
 	private final NotificationService notificationService;
+	private final SchoolClock schoolClock;
 
 	@Transactional(readOnly = true)
 	public Page<SubstitutionDetails> listOn(LocalDate date, Pageable pageable) {
@@ -90,7 +92,7 @@ public class SubstitutionService {
 				.filter(Teacher::isActive)
 				.orElseThrow(() -> new ResourceNotFoundException("Teacher not found: " + substituteTeacherPublicId));
 		TimetableSubstitution substitution = TimetableSubstitution.assign(entry, date, substitute.getId(), reason,
-				assignedByUserId, LocalDate.now());
+				assignedByUserId, schoolClock.today(tenantId));
 		requireWorkingDay(tenantId, date);
 		if (substitutionRepository.existsActiveFor(tenantId, entry.getId(), date)) {
 			throw new BusinessException("A substitute is already assigned to this slot on " + date);
@@ -110,7 +112,7 @@ public class SubstitutionService {
 		TimetableSubstitution substitution = substitutionRepository
 				.findByPublicIdAndTenantId(UUID.fromString(publicId), tenantId)
 				.orElseThrow(() -> new ResourceNotFoundException("Substitution not found: " + publicId));
-		substitution.cancel(reason, LocalDate.now());
+		substitution.cancel(reason, schoolClock.today(tenantId));
 		return details(tenantId, List.of(substitutionRepository.save(substitution))).get(0);
 	}
 

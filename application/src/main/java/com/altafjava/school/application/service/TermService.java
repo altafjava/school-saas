@@ -12,6 +12,7 @@ import com.altafjava.platform.core.tenant.TenantContext;
 import com.altafjava.school.application.filter.TermFilter;
 import com.altafjava.school.application.reference.EntityRef;
 import com.altafjava.school.application.reference.PublicIdLookup;
+import com.altafjava.school.application.time.SchoolClock;
 import com.altafjava.school.domain.academicyear.repository.AcademicYearRepository;
 import com.altafjava.school.domain.term.model.Term;
 import com.altafjava.school.domain.term.repository.TermRepository;
@@ -22,12 +23,14 @@ public class TermService {
 	private final TermRepository termRepository;
 	private final AcademicYearRepository academicYearRepository;
 	private final PublicIdLookup publicIdLookup;
+	private final SchoolClock schoolClock;
 
 	public TermService(TermRepository termRepository, AcademicYearRepository academicYearRepository,
-			PublicIdLookup publicIdLookup) {
+			PublicIdLookup publicIdLookup, SchoolClock schoolClock) {
 		this.publicIdLookup = publicIdLookup;
 		this.termRepository = termRepository;
 		this.academicYearRepository = academicYearRepository;
+		this.schoolClock = schoolClock;
 	}
 
 	@Transactional(readOnly = true)
@@ -55,7 +58,8 @@ public class TermService {
 			throw new IllegalArgumentException("Term already exists: " + name + " for this academic year");
 		}
 		Term term = Term.create(name, startDate, endDate, academicYearId);
-		if (!startDate.isAfter(LocalDate.now()) && !endDate.isBefore(LocalDate.now())) {
+		LocalDate today = schoolClock.today(tenantId);
+		if (!startDate.isAfter(today) && !endDate.isBefore(today)) {
 			termRepository.findCurrentByTenantId(tenantId).ifPresent(Term::markNotCurrent);
 			term.markCurrent();
 		}

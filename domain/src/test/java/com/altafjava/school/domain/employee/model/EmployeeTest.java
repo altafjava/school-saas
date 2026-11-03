@@ -47,7 +47,7 @@ class EmployeeTest {
 	void exit_recordsStatusDateAndReason() {
 		Employee employee = clerk();
 
-		employee.exit(EmployeeStatus.RESIGNED, LocalDate.now(), "Relocating");
+		employee.exit(EmployeeStatus.RESIGNED, LocalDate.now(), "Relocating", LocalDate.now());
 
 		assertFalse(employee.isActive());
 		assertEquals(EmployeeStatus.RESIGNED, employee.getStatus());
@@ -58,9 +58,10 @@ class EmployeeTest {
 	@Test
 	void exit_isFinal() {
 		Employee employee = clerk();
-		employee.exit(EmployeeStatus.TERMINATED, LocalDate.now(), null);
+		employee.exit(EmployeeStatus.TERMINATED, LocalDate.now(), null, LocalDate.now());
 
-		assertThrows(BusinessException.class, () -> employee.exit(EmployeeStatus.RESIGNED, LocalDate.now(), null));
+		assertThrows(BusinessException.class,
+				() -> employee.exit(EmployeeStatus.RESIGNED, LocalDate.now(), null, LocalDate.now()));
 	}
 
 	@Test
@@ -68,11 +69,13 @@ class EmployeeTest {
 		Employee employee = clerk();
 
 		assertThrows(BusinessException.class,
-				() -> employee.exit(EmployeeStatus.RESIGNED, LocalDate.now().plusDays(1), null));
-		assertThrows(BusinessException.class, () -> employee.exit(EmployeeStatus.RESIGNED, JOINED.minusDays(1), null));
-		assertThrows(BusinessException.class, () -> employee.exit(EmployeeStatus.ACTIVE, LocalDate.now(), null));
-		assertThrows(BusinessException.class, () -> employee.exit(null, LocalDate.now(), null));
-		assertThrows(BusinessException.class, () -> employee.exit(EmployeeStatus.RETIRED, null, null));
+				() -> employee.exit(EmployeeStatus.RESIGNED, LocalDate.now().plusDays(1), null, LocalDate.now()));
+		assertThrows(BusinessException.class,
+				() -> employee.exit(EmployeeStatus.RESIGNED, JOINED.minusDays(1), null, LocalDate.now()));
+		assertThrows(BusinessException.class,
+				() -> employee.exit(EmployeeStatus.ACTIVE, LocalDate.now(), null, LocalDate.now()));
+		assertThrows(BusinessException.class, () -> employee.exit(null, LocalDate.now(), null, LocalDate.now()));
+		assertThrows(BusinessException.class, () -> employee.exit(EmployeeStatus.RETIRED, null, null, LocalDate.now()));
 		assertTrue(employee.isActive());
 	}
 
