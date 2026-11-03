@@ -24,7 +24,7 @@ public final class TestSchoolClocks {
 		private final ZoneId zone;
 
 		FixedZoneFormatting(ZoneId zone) {
-			super(null);
+			super(null, null);
 			this.zone = zone;
 		}
 

@@ -72,7 +72,7 @@ describe('apiFetch', () => {
             code: 'VALIDATION_FAILED',
             message: 'Validation failed',
             traceId: 'trace-1',
-            details: [{ field: 'email', message: 'must be a valid email' }],
+            details: [{ field: 'email', code: 'EMAIL', message: 'must be a valid email' }],
           },
         },
         { status: 400, headers: { 'Content-Type': 'application/json', 'X-Request-Id': 'req-1' } },
@@ -88,7 +88,7 @@ describe('apiFetch', () => {
     expect(apiError.traceId).toBe('trace-1');
     expect(apiError.requestId).toBe('req-1');
     expect(apiError.message).toBe('Validation failed');
-    expect(apiError.fieldErrors).toEqual([{ field: 'email', message: 'must be a valid email' }]);
+    expect(apiError.fieldErrors).toEqual([{ field: 'email', code: 'EMAIL', message: 'must be a valid email' }]);
   });
 
   it('keeps the status when the failure body is not JSON', async () => {
