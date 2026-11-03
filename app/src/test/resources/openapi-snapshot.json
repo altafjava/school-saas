@@ -55,9 +55,6 @@
     "name" : "Admin Product",
     "description" : "The platform operator's edit of the product brand."
   }, {
-    "name" : "AdminBilling Management",
-    "description" : "APIs for managing AdminBilling operations.\n\n**Tenant Scope**: All endpoints are tenant-scoped via X-Tenant-ID header.\n**Auth**: JWT Bearer token required on all endpoints unless marked public."
-  }, {
     "name" : "Storage Regions (Admin)",
     "description" : "Platform-wide region-aware file storage routing"
   }, {
@@ -192,6 +189,9 @@
   }, {
     "name" : "SMS Providers (Tenant)",
     "description" : "Per-tenant SMS provider override"
+  }, {
+    "name" : "AdminBilling Management",
+    "description" : "Refunds and account credits issued by the platform operator.\n\n**Auth**: super admin only."
   }, {
     "name" : "Subscriptions",
     "description" : "Subscription Management"
@@ -10449,17 +10449,6 @@
             "format" : "int32",
             "default" : 20
           }
-        }, {
-          "name" : "sort",
-          "in" : "query",
-          "description" : "Repeatable, `field` or `field,asc|desc`, at most 3 fields. Sortable: createdAt, updatedAt.",
-          "required" : false,
-          "schema" : {
-            "type" : "array",
-            "items" : {
-              "type" : "string"
-            }
-          }
         } ],
         "responses" : {
           "200" : {
@@ -16520,11 +16509,22 @@
         "summary" : "getDefinitions",
         "operationId" : "reportGetDefinitions",
         "parameters" : [ {
-          "name" : "pageable",
+          "name" : "page",
           "in" : "query",
-          "required" : true,
+          "required" : false,
           "schema" : {
-            "$ref" : "#/components/schemas/Pageable"
+            "type" : "integer",
+            "format" : "int32",
+            "default" : 0
+          }
+        }, {
+          "name" : "size",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int32",
+            "default" : 20
           }
         } ],
         "responses" : {
@@ -16534,6 +16534,16 @@
               "application/json" : {
                 "schema" : {
                   "$ref" : "#/components/schemas/ApiResponsePageReportDefinitionResponse"
+                }
+              }
+            }
+          },
+          "400" : {
+            "description" : "Validation failed or a business rule rejected the request",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiErrorResponse"
                 }
               }
             }
@@ -16908,17 +16918,6 @@
             "type" : "integer",
             "format" : "int32",
             "default" : 20
-          }
-        }, {
-          "name" : "sort",
-          "in" : "query",
-          "description" : "Repeatable, `field` or `field,asc|desc`, at most 3 fields. Sortable: createdAt, updatedAt.",
-          "required" : false,
-          "schema" : {
-            "type" : "array",
-            "items" : {
-              "type" : "string"
-            }
           }
         } ],
         "responses" : {
@@ -18139,17 +18138,6 @@
             "format" : "int32",
             "default" : 20
           }
-        }, {
-          "name" : "sort",
-          "in" : "query",
-          "description" : "Repeatable, `field` or `field,asc|desc`, at most 3 fields. Sortable: createdAt, updatedAt.",
-          "required" : false,
-          "schema" : {
-            "type" : "array",
-            "items" : {
-              "type" : "string"
-            }
-          }
         } ],
         "responses" : {
           "200" : {
@@ -18340,17 +18328,6 @@
             "format" : "int32",
             "default" : 20
           }
-        }, {
-          "name" : "sort",
-          "in" : "query",
-          "description" : "Repeatable, `field` or `field,asc|desc`, at most 3 fields. Sortable: createdAt, updatedAt.",
-          "required" : false,
-          "schema" : {
-            "type" : "array",
-            "items" : {
-              "type" : "string"
-            }
-          }
         } ],
         "responses" : {
           "200" : {
@@ -18488,11 +18465,22 @@
         "tags" : [ "Notification Templates" ],
         "operationId" : "notificationTemplateGetTemplates",
         "parameters" : [ {
-          "name" : "pageable",
+          "name" : "page",
           "in" : "query",
-          "required" : true,
+          "required" : false,
           "schema" : {
-            "$ref" : "#/components/schemas/Pageable"
+            "type" : "integer",
+            "format" : "int32",
+            "default" : 0
+          }
+        }, {
+          "name" : "size",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int32",
+            "default" : 20
           }
         } ],
         "responses" : {
@@ -18502,6 +18490,16 @@
               "application/json" : {
                 "schema" : {
                   "$ref" : "#/components/schemas/ApiResponsePageNotificationTemplateResponse"
+                }
+              }
+            }
+          },
+          "400" : {
+            "description" : "Validation failed or a business rule rejected the request",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiErrorResponse"
                 }
               }
             }
@@ -24833,17 +24831,6 @@
             "format" : "int32",
             "default" : 20
           }
-        }, {
-          "name" : "sort",
-          "in" : "query",
-          "description" : "Repeatable, `field` or `field,asc|desc`, at most 3 fields. Sortable: createdAt, updatedAt.",
-          "required" : false,
-          "schema" : {
-            "type" : "array",
-            "items" : {
-              "type" : "string"
-            }
-          }
         } ],
         "responses" : {
           "200" : {
@@ -29258,89 +29245,6 @@
         } ]
       }
     },
-    "/api/v1/billing/credits/apply" : {
-      "post" : {
-        "tags" : [ "Billing Management" ],
-        "summary" : "applyCredit",
-        "operationId" : "billingApplyCredit",
-        "parameters" : [ {
-          "name" : "Idempotency-Key",
-          "in" : "header",
-          "description" : "Unique per logical request; a retry carrying the same key is applied once",
-          "required" : true,
-          "schema" : {
-            "type" : "string"
-          }
-        } ],
-        "requestBody" : {
-          "content" : {
-            "application/json" : {
-              "schema" : {
-                "$ref" : "#/components/schemas/ApplyCreditRequest"
-              }
-            }
-          },
-          "required" : true
-        },
-        "responses" : {
-          "200" : {
-            "description" : "OK",
-            "content" : {
-              "application/json" : {
-                "schema" : {
-                  "$ref" : "#/components/schemas/ApiResponseCreditResponse"
-                }
-              }
-            }
-          },
-          "400" : {
-            "description" : "Validation failed or a business rule rejected the request",
-            "content" : {
-              "application/json" : {
-                "schema" : {
-                  "$ref" : "#/components/schemas/ApiErrorResponse"
-                }
-              }
-            }
-          },
-          "401" : {
-            "description" : "Missing, expired or revoked access token",
-            "content" : {
-              "application/json" : {
-                "schema" : {
-                  "$ref" : "#/components/schemas/ApiErrorResponse"
-                }
-              }
-            }
-          },
-          "403" : {
-            "description" : "The caller lacks the required permission",
-            "content" : {
-              "application/json" : {
-                "schema" : {
-                  "$ref" : "#/components/schemas/ApiErrorResponse"
-                }
-              }
-            }
-          },
-          "500" : {
-            "description" : "Unexpected error; quote error.traceId when reporting it",
-            "content" : {
-              "application/json" : {
-                "schema" : {
-                  "$ref" : "#/components/schemas/ApiErrorResponse"
-                }
-              }
-            }
-          }
-        },
-        "security" : [ {
-          "bearerAuth" : [ ]
-        }, {
-          "tenantHeader" : [ ]
-        } ]
-      }
-    },
     "/api/v1/billing/coupons/validate" : {
       "post" : {
         "tags" : [ "BillingCoupon Management" ],
@@ -32529,17 +32433,6 @@
             "type" : "integer",
             "format" : "int32",
             "default" : 20
-          }
-        }, {
-          "name" : "sort",
-          "in" : "query",
-          "description" : "Repeatable, `field` or `field,asc|desc`, at most 3 fields. Sortable: createdAt, updatedAt.",
-          "required" : false,
-          "schema" : {
-            "type" : "array",
-            "items" : {
-              "type" : "string"
-            }
           }
         } ],
         "responses" : {
@@ -35832,17 +35725,6 @@
             "format" : "int32",
             "default" : 20
           }
-        }, {
-          "name" : "sort",
-          "in" : "query",
-          "description" : "Repeatable, `field` or `field,asc|desc`, at most 3 fields. Sortable: createdAt, updatedAt.",
-          "required" : false,
-          "schema" : {
-            "type" : "array",
-            "items" : {
-              "type" : "string"
-            }
-          }
         } ],
         "responses" : {
           "200" : {
@@ -36048,11 +35930,121 @@
         } ]
       }
     },
-    "/api/v1/admin/billing/refund" : {
+    "/api/v1/admin/billing/tenants/{tenantId}/credits" : {
+      "post" : {
+        "tags" : [ "AdminBilling Management" ],
+        "summary" : "applyCredit",
+        "description" : "Grants a school account credit",
+        "operationId" : "adminBillingApplyCredit",
+        "parameters" : [ {
+          "name" : "tenantId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid"
+          }
+        }, {
+          "name" : "Idempotency-Key",
+          "in" : "header",
+          "description" : "Unique per logical request; a retry carrying the same key is applied once",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/ApplyCreditRequest"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiResponseCreditResponse"
+                }
+              }
+            }
+          },
+          "400" : {
+            "description" : "Validation failed or a business rule rejected the request",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "401" : {
+            "description" : "Missing, expired or revoked access token",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "403" : {
+            "description" : "The caller lacks the required permission",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "404" : {
+            "description" : "The resource does not exist in the caller's tenant",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "500" : {
+            "description" : "Unexpected error; quote error.traceId when reporting it",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "security" : [ {
+          "bearerAuth" : [ ]
+        } ]
+      }
+    },
+    "/api/v1/admin/billing/refunds" : {
       "post" : {
         "tags" : [ "AdminBilling Management" ],
         "summary" : "processRefund",
+        "description" : "Refunds part or all of a paid platform invoice through the payment provider",
         "operationId" : "adminBillingProcessRefund",
+        "parameters" : [ {
+          "name" : "Idempotency-Key",
+          "in" : "header",
+          "description" : "Unique per logical request; a retry carrying the same key is applied once",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
         "requestBody" : {
           "content" : {
             "application/json" : {
@@ -36117,8 +36109,6 @@
         },
         "security" : [ {
           "bearerAuth" : [ ]
-        }, {
-          "tenantHeader" : [ ]
         } ]
       }
     },
@@ -57267,17 +57257,6 @@
             "format" : "int32",
             "default" : 20
           }
-        }, {
-          "name" : "sort",
-          "in" : "query",
-          "description" : "Repeatable, `field` or `field,asc|desc`, at most 3 fields. Sortable: createdAt, updatedAt.",
-          "required" : false,
-          "schema" : {
-            "type" : "array",
-            "items" : {
-              "type" : "string"
-            }
-          }
         } ],
         "responses" : {
           "200" : {
@@ -57553,11 +57532,22 @@
             "type" : "string"
           }
         }, {
-          "name" : "pageable",
+          "name" : "page",
           "in" : "query",
-          "required" : true,
+          "required" : false,
           "schema" : {
-            "$ref" : "#/components/schemas/Pageable"
+            "type" : "integer",
+            "format" : "int32",
+            "default" : 0
+          }
+        }, {
+          "name" : "size",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int32",
+            "default" : 20
           }
         } ],
         "responses" : {
@@ -57567,6 +57557,16 @@
               "application/json" : {
                 "schema" : {
                   "$ref" : "#/components/schemas/ApiResponsePageReportExecutionResponse"
+                }
+              }
+            }
+          },
+          "400" : {
+            "description" : "Validation failed or a business rule rejected the request",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiErrorResponse"
                 }
               }
             }
@@ -60696,17 +60696,6 @@
             "type" : "integer",
             "format" : "int32",
             "default" : 20
-          }
-        }, {
-          "name" : "sort",
-          "in" : "query",
-          "description" : "Repeatable, `field` or `field,asc|desc`, at most 3 fields. Sortable: createdAt, updatedAt.",
-          "required" : false,
-          "schema" : {
-            "type" : "array",
-            "items" : {
-              "type" : "string"
-            }
           }
         } ],
         "responses" : {
@@ -64795,17 +64784,6 @@
             "format" : "int32",
             "default" : 10
           }
-        }, {
-          "name" : "sort",
-          "in" : "query",
-          "description" : "Repeatable, `field` or `field,asc|desc`, at most 3 fields. Sortable: createdAt, updatedAt.",
-          "required" : false,
-          "schema" : {
-            "type" : "array",
-            "items" : {
-              "type" : "string"
-            }
-          }
         } ],
         "responses" : {
           "200" : {
@@ -65139,17 +65117,6 @@
             "type" : "integer",
             "format" : "int32",
             "default" : 10
-          }
-        }, {
-          "name" : "sort",
-          "in" : "query",
-          "description" : "Repeatable, `field` or `field,asc|desc`, at most 3 fields. Sortable: createdAt, updatedAt.",
-          "required" : false,
-          "schema" : {
-            "type" : "array",
-            "items" : {
-              "type" : "string"
-            }
           }
         } ],
         "responses" : {
@@ -65963,17 +65930,6 @@
             "format" : "int32",
             "default" : 20
           }
-        }, {
-          "name" : "sort",
-          "in" : "query",
-          "description" : "Repeatable, `field` or `field,asc|desc`, at most 3 fields. Sortable: createdAt, updatedAt.",
-          "required" : false,
-          "schema" : {
-            "type" : "array",
-            "items" : {
-              "type" : "string"
-            }
-          }
         } ],
         "responses" : {
           "200" : {
@@ -66056,17 +66012,6 @@
             "type" : "integer",
             "format" : "int32",
             "default" : 20
-          }
-        }, {
-          "name" : "sort",
-          "in" : "query",
-          "description" : "Repeatable, `field` or `field,asc|desc`, at most 3 fields. Sortable: createdAt, updatedAt.",
-          "required" : false,
-          "schema" : {
-            "type" : "array",
-            "items" : {
-              "type" : "string"
-            }
           }
         } ],
         "responses" : {
@@ -66943,11 +66888,22 @@
         "summary" : "getTenantsUsage",
         "operationId" : "adminUsageGetTenantsUsage",
         "parameters" : [ {
-          "name" : "pageable",
+          "name" : "page",
           "in" : "query",
-          "required" : true,
+          "required" : false,
           "schema" : {
-            "$ref" : "#/components/schemas/Pageable"
+            "type" : "integer",
+            "format" : "int32",
+            "default" : 0
+          }
+        }, {
+          "name" : "size",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int32",
+            "default" : 20
           }
         } ],
         "responses" : {
@@ -66957,6 +66913,16 @@
               "application/json" : {
                 "schema" : {
                   "$ref" : "#/components/schemas/ApiResponsePageAdminUsageMetricResponse"
+                }
+              }
+            }
+          },
+          "400" : {
+            "description" : "Validation failed or a business rule rejected the request",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiErrorResponse"
                 }
               }
             }
@@ -67205,17 +67171,6 @@
             "format" : "int32",
             "default" : 20
           }
-        }, {
-          "name" : "sort",
-          "in" : "query",
-          "description" : "Repeatable, `field` or `field,asc|desc`, at most 3 fields. Sortable: createdAt, updatedAt.",
-          "required" : false,
-          "schema" : {
-            "type" : "array",
-            "items" : {
-              "type" : "string"
-            }
-          }
         } ],
         "responses" : {
           "200" : {
@@ -67412,17 +67367,6 @@
             "type" : "integer",
             "format" : "int32",
             "default" : 20
-          }
-        }, {
-          "name" : "sort",
-          "in" : "query",
-          "description" : "Repeatable, `field` or `field,asc|desc`, at most 3 fields. Sortable: createdAt, updatedAt.",
-          "required" : false,
-          "schema" : {
-            "type" : "array",
-            "items" : {
-              "type" : "string"
-            }
           }
         } ],
         "responses" : {
@@ -67974,17 +67918,6 @@
             "type" : "string",
             "format" : "date-time"
           }
-        }, {
-          "name" : "sort",
-          "in" : "query",
-          "description" : "Repeatable, `field` or `field,asc|desc`, at most 3 fields. Sortable: createdAt, updatedAt.",
-          "required" : false,
-          "schema" : {
-            "type" : "array",
-            "items" : {
-              "type" : "string"
-            }
-          }
         } ],
         "responses" : {
           "200" : {
@@ -68131,17 +68064,6 @@
             "format" : "int32",
             "default" : 20
           }
-        }, {
-          "name" : "sort",
-          "in" : "query",
-          "description" : "Repeatable, `field` or `field,asc|desc`, at most 3 fields. Sortable: createdAt, updatedAt.",
-          "required" : false,
-          "schema" : {
-            "type" : "array",
-            "items" : {
-              "type" : "string"
-            }
-          }
         } ],
         "responses" : {
           "200" : {
@@ -68247,17 +68169,6 @@
             "type" : "integer",
             "format" : "int32",
             "default" : 20
-          }
-        }, {
-          "name" : "sort",
-          "in" : "query",
-          "description" : "Repeatable, `field` or `field,asc|desc`, at most 3 fields. Sortable: createdAt, updatedAt.",
-          "required" : false,
-          "schema" : {
-            "type" : "array",
-            "items" : {
-              "type" : "string"
-            }
           }
         } ],
         "responses" : {
@@ -68850,11 +68761,22 @@
             "format" : "date-time"
           }
         }, {
-          "name" : "pageable",
+          "name" : "page",
           "in" : "query",
-          "required" : true,
+          "required" : false,
           "schema" : {
-            "$ref" : "#/components/schemas/Pageable"
+            "type" : "integer",
+            "format" : "int32",
+            "default" : 0
+          }
+        }, {
+          "name" : "size",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int32",
+            "default" : 20
           }
         } ],
         "responses" : {
@@ -69237,11 +69159,22 @@
         "summary" : "getAuditLogs",
         "operationId" : "adminAuditLogGetAuditLogs",
         "parameters" : [ {
-          "name" : "pageable",
+          "name" : "page",
           "in" : "query",
-          "required" : true,
+          "required" : false,
           "schema" : {
-            "$ref" : "#/components/schemas/Pageable"
+            "type" : "integer",
+            "format" : "int32",
+            "default" : 0
+          }
+        }, {
+          "name" : "size",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int32",
+            "default" : 20
           }
         } ],
         "responses" : {
@@ -69251,6 +69184,16 @@
               "application/json" : {
                 "schema" : {
                   "$ref" : "#/components/schemas/ApiResponsePageSystemAuditLogResponse"
+                }
+              }
+            }
+          },
+          "400" : {
+            "description" : "Validation failed or a business rule rejected the request",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiErrorResponse"
                 }
               }
             }
@@ -69515,17 +69458,6 @@
           "schema" : {
             "type" : "string",
             "default" : "desc"
-          }
-        }, {
-          "name" : "sort",
-          "in" : "query",
-          "description" : "Repeatable, `field` or `field,asc|desc`, at most 3 fields. Sortable: createdAt, updatedAt.",
-          "required" : false,
-          "schema" : {
-            "type" : "array",
-            "items" : {
-              "type" : "string"
-            }
           }
         } ],
         "responses" : {
@@ -73542,7 +73474,7 @@
             "format" : "date-time"
           }
         },
-        "required" : [ "audienceType", "body", "channels", "includeStudents", "title" ]
+        "required" : [ "audienceType", "body", "channels", "includeStudents", "title", "version" ]
       },
       "AnnouncementResponse" : {
         "type" : "object",
@@ -74525,13 +74457,15 @@
             "type" : "string",
             "description" : "First name",
             "example" : "John",
-            "minLength" : 1
+            "maxLength" : 100,
+            "minLength" : 0
           },
           "lastName" : {
             "type" : "string",
             "description" : "Last name",
             "example" : "Doe",
-            "minLength" : 1
+            "maxLength" : 100,
+            "minLength" : 0
           },
           "roles" : {
             "type" : "array",
@@ -75239,35 +75173,47 @@
           "line1" : {
             "type" : "string",
             "description" : "Street address line 1",
-            "example" : "123 Main Street"
+            "example" : "123 Main Street",
+            "maxLength" : 200,
+            "minLength" : 0
           },
           "line2" : {
             "type" : "string",
             "description" : "Street address line 2 (optional)",
-            "example" : "Suite 4"
+            "example" : "Suite 4",
+            "maxLength" : 200,
+            "minLength" : 0
           },
           "city" : {
             "type" : "string",
             "description" : "City",
-            "example" : "Metropolis"
+            "example" : "Metropolis",
+            "maxLength" : 100,
+            "minLength" : 0
           },
           "state" : {
             "type" : "string",
             "description" : "State or province (optional)",
-            "example" : "NY"
+            "example" : "NY",
+            "maxLength" : 100,
+            "minLength" : 0
           },
           "postalCode" : {
             "type" : "string",
             "description" : "Postal / ZIP code",
-            "example" : "10001"
+            "example" : "10001",
+            "maxLength" : 20,
+            "minLength" : 0
           },
           "countryCode" : {
             "type" : "string",
             "description" : "ISO 3166-1 alpha-2 country code",
             "example" : "US",
+            "minLength" : 1,
             "pattern" : "[A-Z]{2}"
           }
-        }
+        },
+        "required" : [ "city", "countryCode", "line1" ]
       },
       "TenantResponse" : {
         "type" : "object",
@@ -75812,14 +75758,19 @@
           "email" : {
             "type" : "string",
             "description" : "User email address",
-            "example" : "user@example.com"
+            "example" : "user@example.com",
+            "maxLength" : 254,
+            "minLength" : 0
           },
           "password" : {
             "type" : "string",
             "description" : "User password",
-            "example" : "StrongPassword123!"
+            "example" : "StrongPassword123!",
+            "maxLength" : 128,
+            "minLength" : 0
           }
-        }
+        },
+        "required" : [ "email", "password" ]
       },
       "ApiResponseAuthResponse" : {
         "type" : "object",
@@ -75890,7 +75841,9 @@
             "enum" : [ "CREATE", "UPDATE", "DELETE" ]
           },
           "entityType" : {
-            "type" : "string"
+            "type" : "string",
+            "maxLength" : 100,
+            "minLength" : 0
           },
           "entityId" : {
             "type" : "string",
@@ -75914,7 +75867,8 @@
               "format" : "int64"
             }
           }
-        }
+        },
+        "required" : [ "clientGeneratedId", "clientTimestamp", "entityType", "operationType" ]
       },
       "SyncQueueRequest" : {
         "type" : "object",
@@ -75932,7 +75886,7 @@
             "minItems" : 0
           }
         },
-        "required" : [ "deviceId" ]
+        "required" : [ "deviceId", "entries" ]
       },
       "ApiResponseListOfflineSyncQueueEntryResponse" : {
         "type" : "object",
@@ -77462,9 +77416,12 @@
             "enum" : [ "EXPORT", "ERASURE", "RECTIFICATION", "RESTRICTION", "PORTABILITY" ]
           },
           "details" : {
-            "type" : "string"
+            "type" : "string",
+            "maxLength" : 5000,
+            "minLength" : 0
           }
-        }
+        },
+        "required" : [ "requestType" ]
       },
       "ApiResponseDataSubjectRequestResponse" : {
         "type" : "object",
@@ -77531,13 +77488,15 @@
             "type" : "boolean"
           },
           "policyVersion" : {
-            "type" : "string"
+            "type" : "string",
+            "maxLength" : 20,
+            "minLength" : 0
           },
           "consentLanguage" : {
             "type" : "string"
           }
         },
-        "required" : [ "granted" ]
+        "required" : [ "consentType", "granted" ]
       },
       "ApiResponseConsentRecordResponse" : {
         "type" : "object",
@@ -77904,7 +77863,9 @@
             "type" : "string",
             "format" : "email",
             "description" : "Billing contact email",
-            "example" : "billing@acme-corp-holdings.example.com"
+            "example" : "billing@acme-corp-holdings.example.com",
+            "maxLength" : 254,
+            "minLength" : 0
           },
           "maxTenants" : {
             "type" : "integer",
@@ -79321,6 +79282,7 @@
       },
       "AssignFeeStructureRequest" : {
         "type" : "object",
+        "description" : "Assign to one student or to a whole classroom; send exactly one of the two",
         "properties" : {
           "studentPublicId" : {
             "type" : "string"
@@ -80925,9 +80887,11 @@
               "type" : "string",
               "maxLength" : 200,
               "minLength" : 0
-            }
+            },
+            "minItems" : 1
           }
-        }
+        },
+        "required" : [ "dependsOnFieldKey", "expectedValues", "operator" ]
       },
       "ApiResponseCustomFieldDefinitionResponse" : {
         "type" : "object",
@@ -82548,70 +82512,6 @@
           }
         }
       },
-      "ApplyCreditRequest" : {
-        "type" : "object",
-        "properties" : {
-          "amount" : {
-            "type" : "number",
-            "minimum" : 0.01
-          },
-          "currency" : {
-            "type" : "string",
-            "minLength" : 1
-          },
-          "reason" : {
-            "type" : "string"
-          }
-        },
-        "required" : [ "currency" ]
-      },
-      "ApiResponseCreditResponse" : {
-        "type" : "object",
-        "properties" : {
-          "success" : {
-            "type" : "boolean"
-          },
-          "data" : {
-            "$ref" : "#/components/schemas/CreditResponse"
-          },
-          "error" : {
-            "$ref" : "#/components/schemas/ApiErrorDetail"
-          },
-          "meta" : {
-            "$ref" : "#/components/schemas/ApiResponseMeta"
-          }
-        },
-        "required" : [ "success" ]
-      },
-      "CreditResponse" : {
-        "type" : "object",
-        "properties" : {
-          "id" : {
-            "type" : "string"
-          },
-          "amount" : {
-            "type" : "number"
-          },
-          "currency" : {
-            "type" : "string"
-          },
-          "usedAmount" : {
-            "type" : "number"
-          },
-          "reason" : {
-            "type" : "string"
-          },
-          "expiresAt" : {
-            "type" : "string",
-            "format" : "date-time"
-          },
-          "createdAt" : {
-            "type" : "string",
-            "format" : "date-time"
-          }
-        },
-        "required" : [ "id" ]
-      },
       "ValidateCouponRequest" : {
         "type" : "object",
         "properties" : {
@@ -82717,10 +82617,15 @@
         "type" : "object",
         "properties" : {
           "email" : {
-            "type" : "string"
+            "type" : "string",
+            "format" : "email",
+            "maxLength" : 255,
+            "minLength" : 0
           },
           "name" : {
-            "type" : "string"
+            "type" : "string",
+            "maxLength" : 255,
+            "minLength" : 0
           },
           "isPrimary" : {
             "type" : "boolean"
@@ -82729,7 +82634,7 @@
             "type" : "boolean"
           }
         },
-        "required" : [ "isCc", "isPrimary" ]
+        "required" : [ "email", "isCc", "isPrimary" ]
       },
       "ApiResponseBillingContactResponse" : {
         "type" : "object",
@@ -82778,10 +82683,14 @@
         "type" : "object",
         "properties" : {
           "reasonCategory" : {
-            "type" : "string"
+            "type" : "string",
+            "maxLength" : 50,
+            "minLength" : 0
           },
           "reasonText" : {
-            "type" : "string"
+            "type" : "string",
+            "maxLength" : 1000,
+            "minLength" : 0
           },
           "rating" : {
             "type" : "integer",
@@ -82791,9 +82700,12 @@
             "type" : "boolean"
           },
           "feedback" : {
-            "type" : "string"
+            "type" : "string",
+            "maxLength" : 2000,
+            "minLength" : 0
           }
-        }
+        },
+        "required" : [ "reasonCategory" ]
       },
       "CancellationConfirmationRequest" : {
         "type" : "object",
@@ -82927,13 +82839,15 @@
             "type" : "string",
             "description" : "First name",
             "example" : "John",
-            "minLength" : 1
+            "maxLength" : 100,
+            "minLength" : 0
           },
           "lastName" : {
             "type" : "string",
             "description" : "Last name",
             "example" : "Doe",
-            "minLength" : 1
+            "maxLength" : 100,
+            "minLength" : 0
           }
         },
         "required" : [ "email", "firstName", "lastName", "password" ]
@@ -83011,7 +82925,8 @@
         "properties" : {
           "phone" : {
             "type" : "string",
-            "minLength" : 1
+            "maxLength" : 30,
+            "minLength" : 0
           }
         },
         "required" : [ "phone" ]
@@ -83407,6 +83322,7 @@
       },
       "SubmitAssignmentRequest" : {
         "type" : "object",
+        "description" : "An uploaded file, written text, or both; at least one is required",
         "properties" : {
           "storageKey" : {
             "type" : "string",
@@ -83414,7 +83330,9 @@
             "minLength" : 0
           },
           "textContent" : {
-            "type" : "string"
+            "type" : "string",
+            "maxLength" : 100000,
+            "minLength" : 0
           }
         }
       },
@@ -84299,7 +84217,8 @@
             "minItems" : 0,
             "uniqueItems" : true
           }
-        }
+        },
+        "required" : [ "tags" ]
       },
       "TenantSuspensionRequest" : {
         "type" : "object",
@@ -84873,22 +84792,91 @@
         },
         "required" : [ "tenantId" ]
       },
+      "ApplyCreditRequest" : {
+        "type" : "object",
+        "properties" : {
+          "amount" : {
+            "type" : "number",
+            "minimum" : 0.01
+          },
+          "currency" : {
+            "type" : "string",
+            "minLength" : 1,
+            "pattern" : "[A-Z]{3}"
+          },
+          "reason" : {
+            "type" : "string",
+            "maxLength" : 255,
+            "minLength" : 0
+          }
+        },
+        "required" : [ "amount", "currency", "reason" ]
+      },
+      "ApiResponseCreditResponse" : {
+        "type" : "object",
+        "properties" : {
+          "success" : {
+            "type" : "boolean"
+          },
+          "data" : {
+            "$ref" : "#/components/schemas/CreditResponse"
+          },
+          "error" : {
+            "$ref" : "#/components/schemas/ApiErrorDetail"
+          },
+          "meta" : {
+            "$ref" : "#/components/schemas/ApiResponseMeta"
+          }
+        },
+        "required" : [ "success" ]
+      },
+      "CreditResponse" : {
+        "type" : "object",
+        "properties" : {
+          "id" : {
+            "type" : "string"
+          },
+          "amount" : {
+            "type" : "number"
+          },
+          "currency" : {
+            "type" : "string"
+          },
+          "usedAmount" : {
+            "type" : "number"
+          },
+          "reason" : {
+            "type" : "string"
+          },
+          "expiresAt" : {
+            "type" : "string",
+            "format" : "date-time"
+          },
+          "createdAt" : {
+            "type" : "string",
+            "format" : "date-time"
+          }
+        },
+        "required" : [ "id" ]
+      },
       "ProcessRefundRequest" : {
         "type" : "object",
         "properties" : {
           "invoiceId" : {
             "type" : "string",
-            "minLength" : 1
+            "format" : "uuid"
           },
           "amount" : {
             "type" : "number",
             "minimum" : 0.01
           },
           "reason" : {
-            "type" : "string"
+            "type" : "string",
+            "maxLength" : 255,
+            "minLength" : 0
           }
         },
-        "required" : [ "invoiceId" ]
+        "required" : [ "amount", "invoiceId" ]
       },
       "ApiResponseRefundResponse" : {
         "type" : "object",
@@ -84956,18 +84944,28 @@
       },
       "AlertConfigurationRequest" : {
         "type" : "object",
+        "description" : "An alert rule: what to watch, when it fires and where it notifies",
         "properties" : {
           "alertType" : {
             "type" : "string",
             "enum" : [ "DAILY_REVENUE_SUMMARY", "PAYMENT_FAILURE_SPIKE", "CHURN_SPIKE", "HIGH_VALUE_CANCELLATION", "FRAUD_DETECTED" ]
           },
           "thresholdConfigJson" : {
-            "type" : "string"
+            "type" : "string",
+            "description" : "Threshold settings as JSON",
+            "example" : {
+              "threshold" : 5
+            },
+            "minLength" : 1
           },
           "notificationChannelsJson" : {
-            "type" : "string"
+            "type" : "string",
+            "description" : "Notification channels as a JSON array",
+            "example" : [ "EMAIL" ],
+            "minLength" : 1
           }
-        }
+        },
+        "required" : [ "alertType", "notificationChannelsJson", "thresholdConfigJson" ]
       },
       "AlertResponse" : {
         "type" : "object",
@@ -85185,16 +85183,24 @@
         "type" : "object",
         "properties" : {
           "firstName" : {
-            "type" : "string"
+            "type" : "string",
+            "maxLength" : 100,
+            "minLength" : 0
           },
           "lastName" : {
-            "type" : "string"
+            "type" : "string",
+            "maxLength" : 100,
+            "minLength" : 0
           },
           "phone" : {
-            "type" : "string"
+            "type" : "string",
+            "maxLength" : 30,
+            "minLength" : 0
           },
           "avatarUrl" : {
-            "type" : "string"
+            "type" : "string",
+            "maxLength" : 255,
+            "minLength" : 0
           },
           "preferredLocale" : {
             "type" : "string"
@@ -85272,7 +85278,9 @@
           "name" : {
             "type" : "string",
             "description" : "New name of the tenant",
-            "example" : "Acme Corporation"
+            "example" : "Acme Corporation",
+            "maxLength" : 255,
+            "minLength" : 0
           },
           "planId" : {
             "type" : "string",
@@ -85287,7 +85295,9 @@
             "type" : "string",
             "format" : "email",
             "description" : "Billing email address",
-            "example" : "billing@acme-corp.example.com"
+            "example" : "billing@acme-corp.example.com",
+            "maxLength" : 254,
+            "minLength" : 0
           },
           "billingAddress" : {
             "$ref" : "#/components/schemas/BillingAddressDto",
@@ -85296,12 +85306,16 @@
           "taxId" : {
             "type" : "string",
             "description" : "Tax ID",
-            "example" : "TAX-123456789"
+            "example" : "TAX-123456789",
+            "maxLength" : 50,
+            "minLength" : 0
           },
           "paymentMethodId" : {
             "type" : "string",
             "description" : "Payment method ID",
-            "example" : "pm_12345"
+            "example" : "pm_12345",
+            "maxLength" : 100,
+            "minLength" : 0
           },
           "currencyCode" : {
             "type" : "string",
@@ -89837,27 +89851,6 @@
           },
           "category" : {
             "type" : "string"
-          }
-        }
-      },
-      "Pageable" : {
-        "type" : "object",
-        "properties" : {
-          "page" : {
-            "type" : "integer",
-            "format" : "int32",
-            "minimum" : 0
-          },
-          "size" : {
-            "type" : "integer",
-            "format" : "int32",
-            "minimum" : 1
-          },
-          "sort" : {
-            "type" : "array",
-            "items" : {
-              "type" : "string"
-            }
           }
         }
       },

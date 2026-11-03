@@ -12,7 +12,7 @@ import com.altafjava.school.domain.announcement.model.AnnouncementChannel;
 import com.altafjava.school.domain.announcement.model.AudienceType;
 
 public record UpdateAnnouncementRequest(
-		Long version,
+		@NotNull Long version,
 		@NotBlank @Size(max = 200) String title,
 		@NotBlank @Size(max = 20000) String body,
 		@NotNull AudienceType audienceType,

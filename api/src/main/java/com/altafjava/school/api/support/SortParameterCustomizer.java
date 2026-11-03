@@ -13,14 +13,16 @@ import io.swagger.v3.oas.models.parameters.Parameter;
 /**
  * Documents the {@code sort} query parameter on every paged endpoint, naming the fields that
  * endpoint accepts — the resolver reads the parameter from the request, so it is not a controller
- * argument springdoc would discover on its own.
+ * argument springdoc would discover on its own. Platform controllers page without it, so they are left alone.
  */
 @Component
 public class SortParameterCustomizer implements OperationCustomizer {
 
+	private static final String SCHOOL_PACKAGE = "com.altafjava.school.";
+
 	@Override
 	public Operation customize(Operation operation, HandlerMethod handlerMethod) {
-		if (!isPaged(operation)) {
+		if (!handlerMethod.getBeanType().getName().startsWith(SCHOOL_PACKAGE) || !isPaged(operation)) {
 			return operation;
 		}
 		Set<String> fields = new TreeSet<>(SortParser.AUDIT_ATTRIBUTES);

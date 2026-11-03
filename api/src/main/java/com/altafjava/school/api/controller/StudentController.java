@@ -391,7 +391,7 @@ public class StudentController implements StudentApi {
 	@RequiresPermission(SchoolPermissions.STUDENT_SELF_SERVICE_READ)
 	public ResponseEntity<byte[]> downloadReportCard(@PathVariable String publicId,
 			@PathVariable String reportCardPublicId) {
-		ReportCard reportCard = reportCardService.findByPublicId(publicId, reportCardPublicId);
+		ReportCard reportCard = reportCardService.findForStudent(publicId, reportCardPublicId);
 		byte[] pdf = reportCardService.downloadPdf(reportCard);
 		return ResponseEntity.ok()
 				.contentType(MediaType.APPLICATION_PDF)

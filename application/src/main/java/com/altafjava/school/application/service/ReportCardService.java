@@ -137,10 +137,13 @@ public class ReportCardService {
 	}
 
 	@Transactional(readOnly = true)
-	public ReportCard findByPublicId(String studentPublicId, String reportCardPublicId) {
+	public ReportCard findForStudent(String studentPublicId, String reportCardPublicId) {
 		Long tenantId = TenantContext.getCurrentTenantId();
+		Student student = studentRepository.findByPublicIdAndTenantId(UUID.fromString(studentPublicId), tenantId)
+				.orElseThrow(() -> new ResourceNotFoundException("Student not found: " + studentPublicId));
 		studentDataAccessGuard.assertCanView(tenantId, studentPublicId);
-		return reportCardRepository.findByPublicIdAndTenantId(UUID.fromString(reportCardPublicId), tenantId)
+		return reportCardRepository
+				.findByPublicIdAndStudentIdAndTenantId(UUID.fromString(reportCardPublicId), student.getId(), tenantId)
 				.orElseThrow(() -> new ResourceNotFoundException("Report card not found: " + reportCardPublicId));
 	}
 
