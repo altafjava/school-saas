@@ -81,7 +81,7 @@ public class SchoolPlatformConfigurer implements PlatformConfigurer {
 
 	@Override
 	public Set<String> enabledNotificationChannels() {
-		return Set.of("EMAIL", "IN_APP", "SMS");
+		return Set.of("EMAIL", "IN_APP", "SMS", "PUSH", "WHATSAPP");
 	}
 
 	@Override

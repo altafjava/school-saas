@@ -2,6 +2,7 @@ package com.altafjava.school.domain.lms.repository;
 
 import java.time.LocalDate;
 import java.util.Collection;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import org.springframework.data.domain.Page;
@@ -34,4 +35,10 @@ public interface AssignmentRepository extends JpaRepository<Assignment, Long> {
 			@Param("classroomIds") Collection<Long> classroomIds, @Param("classroomId") Long classroomId,
 			@Param("subjectId") Long subjectId, @Param("from") LocalDate from, @Param("to") LocalDate to,
 			Pageable pageable);
+
+	@Query("SELECT a FROM Assignment a WHERE a.tenantId = :tenantId AND a.classroomId IN :classroomIds "
+			+ "AND a.dueDate BETWEEN :from AND :to ORDER BY a.dueDate, a.id")
+	List<Assignment> findDueInClassrooms(@Param("tenantId") Long tenantId,
+			@Param("classroomIds") Collection<Long> classroomIds, @Param("from") LocalDate from,
+			@Param("to") LocalDate to, Pageable pageable);
 }

@@ -2,7 +2,9 @@ package com.altafjava.school.application.security;
 
 import java.util.HashSet;
 import java.util.Set;
+import java.util.stream.Collectors;
 import org.springframework.stereotype.Component;
+import com.altafjava.school.domain.guardian.model.StudentGuardianLink;
 import com.altafjava.school.domain.guardian.repository.GuardianRepository;
 import com.altafjava.school.domain.guardian.repository.StudentGuardianLinkRepository;
 import com.altafjava.school.domain.student.repository.StudentRepository;
@@ -28,10 +30,14 @@ public class OwnStudentResolver {
 		studentRepository.findByUserIdAndTenantId(userId, tenantId)
 				.ifPresent(student -> studentIds.add(student.getId()));
 		guardianRepository.findByUserIdAndTenantId(userId, tenantId)
-				.ifPresent(guardian -> studentGuardianLinkRepository
-						.findAllByGuardianIdAndTenantId(guardian.getId(), tenantId).stream()
-						.filter(link -> !link.isCustodyRestricted())
-						.forEach(link -> studentIds.add(link.getStudentId())));
+				.ifPresent(guardian -> studentIds.addAll(childrenOf(guardian.getId(), tenantId)));
 		return Set.copyOf(studentIds);
+	}
+
+	public Set<Long> childrenOf(Long guardianId, Long tenantId) {
+		return studentGuardianLinkRepository.findAllByGuardianIdAndTenantId(guardianId, tenantId).stream()
+				.filter(link -> !link.isCustodyRestricted())
+				.map(StudentGuardianLink::getStudentId)
+				.collect(Collectors.toUnmodifiableSet());
 	}
 }

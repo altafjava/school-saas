@@ -1,5 +1,6 @@
 package com.altafjava.school.domain.grade.repository;
 
+import java.time.Instant;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
@@ -9,7 +10,9 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
+import com.altafjava.school.domain.grade.model.ExamGradeCount;
 import com.altafjava.school.domain.grade.model.Grade;
+import com.altafjava.school.domain.grade.model.PublishedResult;
 
 public interface GradeRepository extends JpaRepository<Grade, Long> {
 
@@ -83,4 +86,19 @@ public interface GradeRepository extends JpaRepository<Grade, Long> {
 	// precedent for tenant-wide aggregates.
 	@Query("SELECT g.gradeLetter, COUNT(g) FROM Grade g WHERE g.tenantId = :tenantId GROUP BY g.gradeLetter")
 	List<Object[]> countGroupedByGradeLetter(@Param("tenantId") Long tenantId);
+
+	@Query("SELECT new com.altafjava.school.domain.grade.model.ExamGradeCount(g.examId, COUNT(g)) FROM Grade g "
+			+ "WHERE g.tenantId = :tenantId AND g.examId IN :examIds GROUP BY g.examId")
+	List<ExamGradeCount> countByExam(@Param("tenantId") Long tenantId, @Param("examIds") Collection<Long> examIds);
+
+	@Query("""
+			SELECT new com.altafjava.school.domain.grade.model.PublishedResult(g.studentId, e.publicId, e.title,
+			       g.subjectId, g.marks, e.maxMarks, g.gradeLetter, e.resultsPublishedAt)
+			FROM Grade g JOIN Exam e ON e.id = g.examId
+			WHERE g.tenantId = :tenantId AND e.tenantId = :tenantId AND g.studentId IN :studentIds
+			  AND e.resultsPublishedAt >= :since
+			ORDER BY e.resultsPublishedAt DESC, g.id DESC
+			""")
+	List<PublishedResult> findPublishedSince(@Param("tenantId") Long tenantId,
+			@Param("studentIds") Collection<Long> studentIds, @Param("since") Instant since, Pageable pageable);
 }

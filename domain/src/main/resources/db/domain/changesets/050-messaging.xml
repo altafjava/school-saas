@@ -1,0 +1,204 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                            http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-5.0.xsd">
+
+    <changeSet id="school-191-conversations" author="school">
+        <createTable tableName="conversations">
+            <column name="id" type="BIGINT" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="public_id" type="UUID">
+                <constraints nullable="false" unique="true"/>
+            </column>
+            <column name="tenant_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="guardian_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="teacher_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="student_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="guardian_user_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="teacher_user_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="guardian_last_read_message_id" type="BIGINT" defaultValueNumeric="0">
+                <constraints nullable="false"/>
+            </column>
+            <column name="teacher_last_read_message_id" type="BIGINT" defaultValueNumeric="0">
+                <constraints nullable="false"/>
+            </column>
+            <column name="last_message_at" type="TIMESTAMP"/>
+            <column name="created_at" type="TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_by" type="VARCHAR(100)"/>
+            <column name="updated_at" type="TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="updated_by" type="VARCHAR(100)"/>
+            <column name="version" type="BIGINT" defaultValueNumeric="0">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+        <addUniqueConstraint tableName="conversations" columnNames="tenant_id, guardian_id, teacher_id, student_id"
+                constraintName="uq_conversations_participants"/>
+        <addForeignKeyConstraint constraintName="fk_conversations_guardian"
+                baseTableName="conversations" baseColumnNames="guardian_id"
+                referencedTableName="guardians" referencedColumnNames="id"/>
+        <addForeignKeyConstraint constraintName="fk_conversations_teacher"
+                baseTableName="conversations" baseColumnNames="teacher_id"
+                referencedTableName="teachers" referencedColumnNames="id"/>
+        <addForeignKeyConstraint constraintName="fk_conversations_student"
+                baseTableName="conversations" baseColumnNames="student_id"
+                referencedTableName="students" referencedColumnNames="id"/>
+        <createIndex indexName="idx_conversations_guardian_user_id" tableName="conversations">
+            <column name="guardian_user_id"/>
+        </createIndex>
+        <createIndex indexName="idx_conversations_teacher_user_id" tableName="conversations">
+            <column name="teacher_user_id"/>
+        </createIndex>
+        <createIndex indexName="idx_conversations_student_id" tableName="conversations">
+            <column name="student_id"/>
+        </createIndex>
+        <createIndex indexName="idx_conversations_last_message_at" tableName="conversations">
+            <column name="last_message_at"/>
+        </createIndex>
+        <createIndex indexName="idx_conversations_created_at" tableName="conversations">
+            <column name="created_at"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet id="school-191-conversation-messages" author="school">
+        <createTable tableName="conversation_messages">
+            <column name="id" type="BIGINT" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="public_id" type="UUID">
+                <constraints nullable="false" unique="true"/>
+            </column>
+            <column name="tenant_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="conversation_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="sender_user_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="body" type="TEXT"/>
+            <column name="erased_at" type="TIMESTAMP"/>
+            <column name="created_at" type="TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_by" type="VARCHAR(100)"/>
+            <column name="updated_at" type="TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="updated_by" type="VARCHAR(100)"/>
+            <column name="version" type="BIGINT" defaultValueNumeric="0">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+        <addForeignKeyConstraint constraintName="fk_conversation_messages_conversation"
+                baseTableName="conversation_messages" baseColumnNames="conversation_id"
+                referencedTableName="conversations" referencedColumnNames="id"/>
+        <createIndex indexName="idx_conversation_messages_tenant_id" tableName="conversation_messages">
+            <column name="tenant_id"/>
+        </createIndex>
+        <createIndex indexName="idx_conversation_messages_conversation_id" tableName="conversation_messages">
+            <column name="conversation_id"/>
+        </createIndex>
+        <createIndex indexName="idx_conversation_messages_sender_user_id" tableName="conversation_messages">
+            <column name="sender_user_id"/>
+        </createIndex>
+        <createIndex indexName="idx_conversation_messages_created_at" tableName="conversation_messages">
+            <column name="created_at"/>
+        </createIndex>
+
+        <createTable tableName="conversation_message_attachments">
+            <column name="message_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="file_public_id" type="UUID">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+        <addForeignKeyConstraint constraintName="fk_conversation_message_attachments"
+                baseTableName="conversation_message_attachments" baseColumnNames="message_id"
+                referencedTableName="conversation_messages" referencedColumnNames="id"/>
+        <createIndex indexName="idx_conversation_message_attachments_message_id" tableName="conversation_message_attachments">
+            <column name="message_id"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet id="school-191-message-reports" author="school">
+        <createTable tableName="message_reports">
+            <column name="id" type="BIGINT" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="public_id" type="UUID">
+                <constraints nullable="false" unique="true"/>
+            </column>
+            <column name="tenant_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="message_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="conversation_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="reported_by_user_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="resolved_by_user_id" type="BIGINT"/>
+            <column name="reason" type="VARCHAR(1000)"/>
+            <column name="resolution_note" type="VARCHAR(500)"/>
+            <column name="resolved_at" type="TIMESTAMP"/>
+            <column name="status" type="VARCHAR(20)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_at" type="TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_by" type="VARCHAR(100)"/>
+            <column name="updated_at" type="TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="updated_by" type="VARCHAR(100)"/>
+            <column name="version" type="BIGINT" defaultValueNumeric="0">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+        <addUniqueConstraint tableName="message_reports" columnNames="message_id, reported_by_user_id"
+                constraintName="uq_message_reports_message_reporter"/>
+        <addForeignKeyConstraint constraintName="fk_message_reports_message"
+                baseTableName="message_reports" baseColumnNames="message_id"
+                referencedTableName="conversation_messages" referencedColumnNames="id"/>
+        <addForeignKeyConstraint constraintName="fk_message_reports_conversation"
+                baseTableName="message_reports" baseColumnNames="conversation_id"
+                referencedTableName="conversations" referencedColumnNames="id"/>
+        <createIndex indexName="idx_message_reports_tenant_id" tableName="message_reports">
+            <column name="tenant_id"/>
+        </createIndex>
+        <createIndex indexName="idx_message_reports_status" tableName="message_reports">
+            <column name="status"/>
+        </createIndex>
+        <createIndex indexName="idx_message_reports_reported_by_user_id" tableName="message_reports">
+            <column name="reported_by_user_id"/>
+        </createIndex>
+        <createIndex indexName="idx_message_reports_created_at" tableName="message_reports">
+            <column name="created_at"/>
+        </createIndex>
+    </changeSet>
+</databaseChangeLog>

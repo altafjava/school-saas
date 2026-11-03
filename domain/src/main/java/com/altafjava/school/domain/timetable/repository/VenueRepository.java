@@ -1,5 +1,7 @@
 package com.altafjava.school.domain.timetable.repository;
 
+import java.util.Collection;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import org.springframework.data.domain.Page;
@@ -25,4 +27,6 @@ public interface VenueRepository extends JpaRepository<Venue, Long> {
 	Optional<Venue> findByIdAndTenantId(Long id, Long tenantId);
 
 	boolean existsByCodeAndTenantId(String code, Long tenantId);
+
+	List<Venue> findAllByIdInAndTenantId(Collection<Long> ids, Long tenantId);
 }

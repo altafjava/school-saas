@@ -2,6 +2,7 @@ package com.altafjava.school.domain.leave.repository;
 
 import java.time.LocalDate;
 import java.util.Collection;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import org.springframework.data.domain.Page;
@@ -41,4 +42,21 @@ public interface StudentLeaveRequestRepository extends JpaRepository<StudentLeav
 	boolean existsOverlapping(@Param("tenantId") Long tenantId, @Param("studentId") Long studentId,
 			@Param("statuses") Collection<LeaveRequestStatus> statuses, @Param("startDate") LocalDate startDate,
 			@Param("endDate") LocalDate endDate);
+
+	// What a class teacher can decide: never a request they raised themselves.
+	@Query("""
+			SELECT r FROM StudentLeaveRequest r
+			WHERE r.tenantId = :tenantId AND r.status = :status AND r.classroomId IN :classroomIds
+			  AND r.requestedByUserId <> :excludedRequesterId
+			ORDER BY r.startDate, r.id
+			""")
+	Page<StudentLeaveRequest> findForReview(@Param("tenantId") Long tenantId,
+			@Param("status") LeaveRequestStatus status, @Param("classroomIds") Collection<Long> classroomIds,
+			@Param("excludedRequesterId") Long excludedRequesterId, Pageable pageable);
+
+	@Query("SELECT r FROM StudentLeaveRequest r WHERE r.tenantId = :tenantId AND r.status = :status "
+			+ "AND r.studentId IN :studentIds ORDER BY r.startDate, r.id")
+	List<StudentLeaveRequest> findByStudentsAndStatus(@Param("tenantId") Long tenantId,
+			@Param("status") LeaveRequestStatus status, @Param("studentIds") Collection<Long> studentIds,
+			Pageable pageable);
 }

@@ -375,4 +375,86 @@
         <Method name="&lt;init&gt;"/>
         <Bug pattern="EI_EXPOSE_REP2"/>
     </Match>
+    <!--
+      Request and command records carry a request's collections, or a loaded entity, one call down
+      and are never kept. Copying would also turn a null element into a 500 before validation runs.
+    -->
+    <Match>
+        <Class name="com.altafjava.school.api.dto.request.CreateAnnouncementRequest"/>
+        <Bug pattern="EI_EXPOSE_REP"/>
+    </Match>
+    <Match>
+        <Class name="com.altafjava.school.api.dto.request.CreateAnnouncementRequest"/>
+        <Bug pattern="EI_EXPOSE_REP2"/>
+    </Match>
+    <Match>
+        <Class name="com.altafjava.school.api.dto.request.UpdateAnnouncementRequest"/>
+        <Bug pattern="EI_EXPOSE_REP"/>
+    </Match>
+    <Match>
+        <Class name="com.altafjava.school.api.dto.request.UpdateAnnouncementRequest"/>
+        <Bug pattern="EI_EXPOSE_REP2"/>
+    </Match>
+    <Match>
+        <Class name="com.altafjava.school.api.dto.request.SendEmergencyAlertRequest"/>
+        <Bug pattern="EI_EXPOSE_REP"/>
+    </Match>
+    <Match>
+        <Class name="com.altafjava.school.api.dto.request.SendEmergencyAlertRequest"/>
+        <Bug pattern="EI_EXPOSE_REP2"/>
+    </Match>
+    <Match>
+        <Class name="com.altafjava.school.api.dto.request.SendMessageRequest"/>
+        <Bug pattern="EI_EXPOSE_REP"/>
+    </Match>
+    <Match>
+        <Class name="com.altafjava.school.api.dto.request.SendMessageRequest"/>
+        <Bug pattern="EI_EXPOSE_REP2"/>
+    </Match>
+    <Match>
+        <Class name="com.altafjava.school.api.dto.request.StartConversationRequest"/>
+        <Bug pattern="EI_EXPOSE_REP"/>
+    </Match>
+    <Match>
+        <Class name="com.altafjava.school.api.dto.request.StartConversationRequest"/>
+        <Bug pattern="EI_EXPOSE_REP2"/>
+    </Match>
+    <Match>
+        <Class name="com.altafjava.school.application.announcement.AnnouncementService$Draft"/>
+        <Bug pattern="EI_EXPOSE_REP"/>
+    </Match>
+    <Match>
+        <Class name="com.altafjava.school.application.announcement.AnnouncementService$Draft"/>
+        <Bug pattern="EI_EXPOSE_REP2"/>
+    </Match>
+    <Match>
+        <Class name="com.altafjava.school.application.announcement.AnnouncementService$FeedItem"/>
+        <Bug pattern="EI_EXPOSE_REP"/>
+    </Match>
+    <Match>
+        <Class name="com.altafjava.school.application.announcement.AnnouncementService$FeedItem"/>
+        <Bug pattern="EI_EXPOSE_REP2"/>
+    </Match>
+    <Match>
+        <Class name="com.altafjava.school.application.messaging.ConversationService$NewConversation"/>
+        <Bug pattern="EI_EXPOSE_REP"/>
+    </Match>
+    <Match>
+        <Class name="com.altafjava.school.application.messaging.ConversationService$NewConversation"/>
+        <Bug pattern="EI_EXPOSE_REP2"/>
+    </Match>
+    <Match>
+        <Class name="com.altafjava.school.application.messaging.ConversationSummary"/>
+        <Bug pattern="EI_EXPOSE_REP"/>
+    </Match>
+    <Match>
+        <Class name="com.altafjava.school.application.messaging.ConversationSummary"/>
+        <Bug pattern="EI_EXPOSE_REP2"/>
+    </Match>
+    <!-- Constructor injection of a stateless component SpotBugs reads as mutable from its method names. -->
+    <Match>
+        <Class name="com.altafjava.school.application.privacy.SchoolDataRetentionHandler"/>
+        <Method name="&lt;init&gt;"/>
+        <Bug pattern="EI_EXPOSE_REP2"/>
+    </Match>
 </FindBugsFilter>

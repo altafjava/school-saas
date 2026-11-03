@@ -65,7 +65,7 @@ public class SchoolProfileService {
 	private List<LinkedStudent> linkedStudents(Long tenantId, Guardian guardian) {
 		List<Long> studentIds = studentGuardianLinkRepository
 				.findByGuardianId(tenantId, guardian.getId(), PageRequest.of(0, LINKED_STUDENTS_LIMIT)).getContent()
-				.stream().map(StudentGuardianLink::getStudentId).toList();
+				.stream().filter(link -> !link.isCustodyRestricted()).map(StudentGuardianLink::getStudentId).toList();
 		List<Student> students = studentRepository.findAllByIdInAndTenantId(studentIds, tenantId);
 		Map<Long, StudentPlacement> placements = studentPlacementService.currentPlacements(students);
 		return students.stream()

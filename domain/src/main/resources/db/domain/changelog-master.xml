@@ -53,5 +53,7 @@
     <include file="db/domain/changesets/046-sibling-groups.xml"/>
     <include file="db/domain/changesets/047-student-retention-setting.xml"/>
     <include file="db/domain/changesets/048-student-leave-requests.xml"/>
+    <include file="db/domain/changesets/049-announcements.xml"/>
+    <include file="db/domain/changesets/050-messaging.xml"/>
 
 </databaseChangeLog>

@@ -1,6 +1,7 @@
 package com.altafjava.school.domain.timetable.repository;
 
 import java.time.LocalDate;
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -42,4 +43,14 @@ public interface TimetableSubstitutionRepository extends JpaRepository<Timetable
 			+ "AND s.substituteTeacherId = :teacherId AND s.cancelledAt IS NULL")
 	boolean existsActiveForSubstitute(@Param("tenantId") Long tenantId, @Param("entryId") Long entryId,
 			@Param("date") LocalDate date, @Param("teacherId") Long teacherId);
+
+	@Query("SELECT s FROM TimetableSubstitution s WHERE s.tenantId = :tenantId AND s.substitutionDate = :date "
+			+ "AND s.timetableEntryId IN :entryIds AND s.cancelledAt IS NULL")
+	List<TimetableSubstitution> findActiveForEntries(@Param("tenantId") Long tenantId, @Param("date") LocalDate date,
+			@Param("entryIds") Collection<Long> entryIds);
+
+	@Query("SELECT s FROM TimetableSubstitution s WHERE s.tenantId = :tenantId AND s.substitutionDate = :date "
+			+ "AND s.substituteTeacherId = :teacherId AND s.cancelledAt IS NULL")
+	List<TimetableSubstitution> findActiveCoveredBy(@Param("tenantId") Long tenantId, @Param("date") LocalDate date,
+			@Param("teacherId") Long teacherId);
 }

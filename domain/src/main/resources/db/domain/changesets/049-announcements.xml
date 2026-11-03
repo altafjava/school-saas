@@ -1,0 +1,174 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                            http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-5.0.xsd">
+
+    <changeSet id="school-190-announcements" author="school">
+        <createTable tableName="announcements">
+            <column name="id" type="BIGINT" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="public_id" type="UUID">
+                <constraints nullable="false" unique="true"/>
+            </column>
+            <column name="tenant_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_by_user_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="title" type="VARCHAR(200)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="body" type="TEXT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="include_students" type="BOOLEAN" defaultValueBoolean="false">
+                <constraints nullable="false"/>
+            </column>
+            <column name="emergency" type="BOOLEAN" defaultValueBoolean="false">
+                <constraints nullable="false"/>
+            </column>
+            <column name="recipient_count" type="INT" defaultValueNumeric="0">
+                <constraints nullable="false"/>
+            </column>
+            <column name="publish_at" type="TIMESTAMP"/>
+            <column name="published_at" type="TIMESTAMP"/>
+            <column name="expires_at" type="TIMESTAMP"/>
+            <column name="dispatched_at" type="TIMESTAMP"/>
+            <column name="audience_type" type="VARCHAR(20)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="status" type="VARCHAR(20)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_at" type="TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_by" type="VARCHAR(100)"/>
+            <column name="updated_at" type="TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="updated_by" type="VARCHAR(100)"/>
+            <column name="deleted" type="BOOLEAN" defaultValueBoolean="false">
+                <constraints nullable="false"/>
+            </column>
+            <column name="deleted_at" type="TIMESTAMP"/>
+            <column name="deleted_by" type="VARCHAR(100)"/>
+            <column name="deleted_token" type="BIGINT" defaultValueNumeric="0">
+                <constraints nullable="false"/>
+            </column>
+            <column name="version" type="BIGINT" defaultValueNumeric="0">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+        <createIndex indexName="idx_announcements_tenant_id" tableName="announcements">
+            <column name="tenant_id"/>
+        </createIndex>
+        <createIndex indexName="idx_announcements_status" tableName="announcements">
+            <column name="status"/>
+        </createIndex>
+        <createIndex indexName="idx_announcements_deleted" tableName="announcements">
+            <column name="deleted"/>
+        </createIndex>
+        <createIndex indexName="idx_announcements_created_at" tableName="announcements">
+            <column name="created_at"/>
+        </createIndex>
+        <createIndex indexName="idx_announcements_publish_at" tableName="announcements">
+            <column name="publish_at"/>
+        </createIndex>
+        <createIndex indexName="idx_announcements_expires_at" tableName="announcements">
+            <column name="expires_at"/>
+        </createIndex>
+
+        <createTable tableName="announcement_targets">
+            <column name="announcement_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="target_value" type="VARCHAR(100)">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+        <addPrimaryKey tableName="announcement_targets" columnNames="announcement_id, target_value" constraintName="pk_announcement_targets"/>
+        <addForeignKeyConstraint constraintName="fk_announcement_targets"
+                baseTableName="announcement_targets" baseColumnNames="announcement_id"
+                referencedTableName="announcements" referencedColumnNames="id"/>
+
+        <createTable tableName="announcement_channels">
+            <column name="announcement_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="channel" type="VARCHAR(20)">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+        <addPrimaryKey tableName="announcement_channels" columnNames="announcement_id, channel" constraintName="pk_announcement_channels"/>
+        <addForeignKeyConstraint constraintName="fk_announcement_channels"
+                baseTableName="announcement_channels" baseColumnNames="announcement_id"
+                referencedTableName="announcements" referencedColumnNames="id"/>
+
+        <createTable tableName="announcement_attachments">
+            <column name="announcement_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="file_public_id" type="UUID">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+        <addForeignKeyConstraint constraintName="fk_announcement_attachments"
+                baseTableName="announcement_attachments" baseColumnNames="announcement_id"
+                referencedTableName="announcements" referencedColumnNames="id"/>
+        <createIndex indexName="idx_announcement_attachments_announcement_id" tableName="announcement_attachments">
+            <column name="announcement_id"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet id="school-190-announcement-recipients" author="school">
+        <createTable tableName="announcement_recipients">
+            <column name="id" type="BIGINT" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="public_id" type="UUID">
+                <constraints nullable="false" unique="true"/>
+            </column>
+            <column name="tenant_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="announcement_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="user_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="notified_at" type="TIMESTAMP"/>
+            <column name="read_at" type="TIMESTAMP"/>
+            <column name="created_at" type="TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_by" type="VARCHAR(100)"/>
+            <column name="updated_at" type="TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="updated_by" type="VARCHAR(100)"/>
+            <column name="version" type="BIGINT" defaultValueNumeric="0">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+        <addUniqueConstraint tableName="announcement_recipients" columnNames="announcement_id, user_id"
+                constraintName="uq_announcement_recipients_announcement_user"/>
+        <addForeignKeyConstraint constraintName="fk_announcement_recipients_announcement"
+                baseTableName="announcement_recipients" baseColumnNames="announcement_id"
+                referencedTableName="announcements" referencedColumnNames="id"/>
+        <createIndex indexName="idx_announcement_recipients_tenant_id" tableName="announcement_recipients">
+            <column name="tenant_id"/>
+        </createIndex>
+        <createIndex indexName="idx_announcement_recipients_user_id" tableName="announcement_recipients">
+            <column name="user_id"/>
+        </createIndex>
+        <createIndex indexName="idx_announcement_recipients_created_at" tableName="announcement_recipients">
+            <column name="created_at"/>
+        </createIndex>
+    </changeSet>
+</databaseChangeLog>
