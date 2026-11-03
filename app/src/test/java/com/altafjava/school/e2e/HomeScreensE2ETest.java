@@ -258,11 +258,14 @@ class HomeScreensE2ETest extends SchoolIntegrationTestBase {
 				"Fractions", null, null, today.plusDays(3), BigDecimal.TEN));
 		Assignment handedIn = assignmentRepository.save(Assignment.create(homeroom.getId(), maths.getId(), teacherId,
 				"Decimals", null, null, today.plusDays(1), BigDecimal.TEN));
-		submissionRepository.save(Submission.submit(handedIn.getId(), ada.getId(), null, "done", false));
-		submissionRepository.save(Submission.submit(open.getId(), ben.getId(), null, "done", true));
+		submissionRepository
+				.save(Submission.submit(handedIn.getId(), ada.getId(), null, "done", false, LocalDateTime.now()));
+		submissionRepository
+				.save(Submission.submit(open.getId(), ben.getId(), null, "done", true, LocalDateTime.now()));
 		Assignment oldClassWork = assignmentRepository.save(Assignment.create(promotedClass.getId(), maths.getId(),
 				teacherId, "Old worksheet", null, null, today.minusYears(1), BigDecimal.TEN));
-		submissionRepository.save(Submission.submit(oldClassWork.getId(), stranger.getId(), null, "old", false));
+		submissionRepository.save(
+				Submission.submit(oldClassWork.getId(), stranger.getId(), null, "old", false, LocalDateTime.now()));
 	}
 
 	private void seedLeaveAttendanceAndFees() {
@@ -295,7 +298,9 @@ class HomeScreensE2ETest extends SchoolIntegrationTestBase {
 				.body("data.studentLeaveToReview.total", equalTo(1))
 				.body("data.studentLeaveToReview.items[0].student.name", equalTo("Ben Family"))
 				.body("data.staffLeaveToReview.total", equalTo(0))
-				.body("data.inbox.unreadNotifications", equalTo(0));
+				.body("data.inbox.unreadNotifications", equalTo(0))
+				.body("data.inbox.unreadAnnouncements", equalTo(0))
+				.body("data.inbox.unreadMessages", equalTo(0));
 	}
 
 	@Test
@@ -443,7 +448,8 @@ class HomeScreensE2ETest extends SchoolIntegrationTestBase {
 				.body("data.overview.homework.title", contains("Fractions"))
 				.body("data.overview.upcomingExams.title", contains("Next week test"))
 				.body("data.overview.leaveRequests", nullValue())
-				.body("data.inbox", notNullValue());
+				.body("data.inbox.unreadAnnouncements", equalTo(0))
+				.body("data.inbox.unreadMessages", nullValue());
 	}
 
 	@Test

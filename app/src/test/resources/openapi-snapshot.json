@@ -57657,6 +57657,80 @@
         } ]
       }
     },
+    "/api/v1/fee-payments/{publicId}/receipt" : {
+      "get" : {
+        "tags" : [ "Fee Payment" ],
+        "summary" : "Download receipt",
+        "description" : "The payment's receipt as a PDF with a verification code. Issued on the first download and the same document after that. A bounced cheque has no receipt, and bouncing revokes one already issued.",
+        "operationId" : "feePaymentReceipt",
+        "parameters" : [ {
+          "name" : "publicId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "type" : "string",
+                  "format" : "byte"
+                }
+              }
+            }
+          },
+          "401" : {
+            "description" : "Missing, expired or revoked access token",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "403" : {
+            "description" : "The caller lacks the required permission",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "404" : {
+            "description" : "The resource does not exist in the caller's tenant",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "500" : {
+            "description" : "Unexpected error; quote error.traceId when reporting it",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "security" : [ {
+          "bearerAuth" : [ ]
+        }, {
+          "tenantHeader" : [ ]
+        } ]
+      }
+    },
     "/api/v1/fee-payments/self-service/{publicId}" : {
       "get" : {
         "tags" : [ "Fee Online Payment" ],
@@ -57677,6 +57751,80 @@
               "application/json" : {
                 "schema" : {
                   "$ref" : "#/components/schemas/ApiResponseFeePaymentResponse"
+                }
+              }
+            }
+          },
+          "401" : {
+            "description" : "Missing, expired or revoked access token",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "403" : {
+            "description" : "The caller lacks the required permission",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "404" : {
+            "description" : "The resource does not exist in the caller's tenant",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "500" : {
+            "description" : "Unexpected error; quote error.traceId when reporting it",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "security" : [ {
+          "bearerAuth" : [ ]
+        }, {
+          "tenantHeader" : [ ]
+        } ]
+      }
+    },
+    "/api/v1/fee-payments/self-service/{publicId}/receipt" : {
+      "get" : {
+        "tags" : [ "Fee Online Payment" ],
+        "summary" : "Download receipt",
+        "description" : "The receipt as a PDF, for a payment made for the caller or their linked child. A bounced cheque has no receipt.",
+        "operationId" : "feeOnlinePaymentDownloadReceipt",
+        "parameters" : [ {
+          "name" : "publicId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "type" : "string",
+                  "format" : "byte"
                 }
               }
             }
@@ -80754,7 +80902,8 @@
           },
           "effectiveOn" : {
             "type" : "string",
-            "format" : "date"
+            "format" : "date",
+            "description" : "Today or earlier at the school; defaults to today"
           }
         }
       },
@@ -81382,7 +81531,8 @@
           },
           "exitDate" : {
             "type" : "string",
-            "format" : "date"
+            "format" : "date",
+            "description" : "Today or earlier at the school"
           },
           "reason" : {
             "type" : "string",
@@ -85837,12 +85987,22 @@
       },
       "InboxResponse" : {
         "type" : "object",
-        "description" : "What is waiting to be read.",
+        "description" : "What is waiting to be read. A count the caller's role may not read is absent.",
         "properties" : {
           "unreadNotifications" : {
             "type" : "integer",
             "format" : "int64",
             "description" : "Unread notifications"
+          },
+          "unreadAnnouncements" : {
+            "type" : "integer",
+            "format" : "int64",
+            "description" : "Unread announcements still in effect"
+          },
+          "unreadMessages" : {
+            "type" : "integer",
+            "format" : "int64",
+            "description" : "Unread messages across the caller's conversations"
           }
         },
         "required" : [ "unreadNotifications" ]

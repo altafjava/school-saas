@@ -195,7 +195,7 @@ class IdCardServiceTest {
 		UUID publicId = UUID.randomUUID();
 		Employee leaver = Employee.create(StaffCategory.SUPPORT, "EMP-2", "Old", "Hand", "old@school.test",
 				LocalDate.of(2018, 1, 1));
-		leaver.exit(EmployeeStatus.RETIRED, LocalDate.now(), null);
+		leaver.exit(EmployeeStatus.RETIRED, LocalDate.now(), null, LocalDate.now());
 		when(employeeRepository.findByPublicIdAndTenantId(publicId, 1L)).thenReturn(Optional.of(leaver));
 
 		assertThrows(BusinessException.class, () -> idCardService.issueForEmployee(publicId.toString(), ISSUER));

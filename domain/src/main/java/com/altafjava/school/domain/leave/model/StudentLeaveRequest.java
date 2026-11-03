@@ -77,18 +77,18 @@ public class StudentLeaveRequest extends SoftDeletableEntity {
 				.build();
 	}
 
-	public void approve(Long decidedByUserId) {
+	public void approve(Long decidedByUserId, LocalDateTime decidedAt) {
 		requirePending("approve");
 		this.status = LeaveRequestStatus.APPROVED;
 		this.decidedByUserId = decidedByUserId;
-		this.decidedAt = LocalDateTime.now();
+		this.decidedAt = decidedAt;
 	}
 
-	public void reject(Long decidedByUserId, String rejectionReason) {
+	public void reject(Long decidedByUserId, String rejectionReason, LocalDateTime decidedAt) {
 		requirePending("reject");
 		this.status = LeaveRequestStatus.REJECTED;
 		this.decidedByUserId = decidedByUserId;
-		this.decidedAt = LocalDateTime.now();
+		this.decidedAt = decidedAt;
 		this.rejectionReason = rejectionReason;
 	}
 

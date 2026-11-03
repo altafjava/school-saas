@@ -16,6 +16,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -42,6 +43,7 @@ import com.altafjava.school.application.reference.EntityRef;
 import com.altafjava.school.application.reference.PublicIdLookup;
 import com.altafjava.school.application.scheduler.support.TenantAdminNotifier;
 import com.altafjava.school.application.security.LeaveApprovalAuthorizer;
+import com.altafjava.school.application.time.TestSchoolClocks;
 import com.altafjava.school.domain.academicyear.model.AcademicYear;
 import com.altafjava.school.domain.academicyear.repository.AcademicYearRepository;
 import com.altafjava.school.domain.department.model.Department;
@@ -99,7 +101,7 @@ class LeaveRequestServiceTest {
 		leaveRequestService = new LeaveRequestService(leaveRequestRepository, leaveTypeRepository,
 				leaveBalanceRepository, employeeRepository, academicYearRepository, tenantAdminNotifier,
 				notificationService, holidayService, leaveApprovalRepository, departmentRepository,
-				leaveApprovalAuthorizer, publicIdLookup);
+				leaveApprovalAuthorizer, publicIdLookup, TestSchoolClocks.systemDefault());
 		TenantContext.ForTesting.setCurrentTenant(1L, null, null, TenantType.SHARED);
 	}
 
@@ -245,7 +247,7 @@ class LeaveRequestServiceTest {
 		authenticateAsUser(CURRENT_USER_ID);
 		LeaveRequest request = LeaveRequest.submit(10L, 20L, 30L, LocalDate.now().plusDays(3),
 				LocalDate.now().plusDays(4), "Personal", BigDecimal.valueOf(2), 1);
-		request.approve(1L);
+		request.approve(1L, LocalDateTime.now());
 		LeaveBalance balance = LeaveBalance.allocate(10L, 20L, 30L, BigDecimal.TEN);
 		balance.deduct(request.getDaysRequested());
 		when(leaveRequestRepository.findByPublicIdAndTenantId(requestPublicId, 1L)).thenReturn(Optional.of(request));
@@ -412,7 +414,7 @@ class LeaveRequestServiceTest {
 		UUID requestPublicId = UUID.randomUUID();
 		authenticateAsUser(CURRENT_USER_ID);
 		LeaveRequest request = twoLevelRequest();
-		request.approve(66L);
+		request.approve(66L, LocalDateTime.now());
 		stubRequestLookup(requestPublicId, request);
 		LeaveBalance balance = LeaveBalance.allocate(10L, 20L, 30L, BigDecimal.TEN);
 		when(leaveBalanceRepository.findByEmployeeIdAndLeaveTypeIdAndAcademicYearIdAndTenantId(10L, 20L, 30L, 1L))
@@ -431,7 +433,7 @@ class LeaveRequestServiceTest {
 		UUID requestPublicId = UUID.randomUUID();
 		authenticateAsUser(CURRENT_USER_ID);
 		LeaveRequest request = twoLevelRequest();
-		request.approve(CURRENT_USER_ID);
+		request.approve(CURRENT_USER_ID, LocalDateTime.now());
 		stubRequestLookup(requestPublicId, request);
 		when(leaveApprovalRepository.existsByLeaveRequestIdAndDecidedByUserIdAndTenantId(any(), eq(CURRENT_USER_ID),
 				eq(1L))).thenReturn(true);
@@ -460,7 +462,7 @@ class LeaveRequestServiceTest {
 		authenticateAsUser(CURRENT_USER_ID);
 		LeaveRequest request = LeaveRequest.submit(10L, 20L, 30L, LocalDate.now().plusDays(1),
 				LocalDate.now().plusDays(2), "Personal", BigDecimal.valueOf(2), 1);
-		request.reject(1L, "no");
+		request.reject(1L, "no", LocalDateTime.now());
 		stubRequestLookup(requestPublicId, request);
 
 		assertThrows(BusinessException.class, () -> leaveRequestService.approve(requestPublicId.toString()));

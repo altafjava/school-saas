@@ -35,12 +35,6 @@ public interface AttendanceRepository extends JpaRepository<Attendance, Long> {
 
 	Page<Attendance> findByStudentIdAndTenantId(Long studentId, Long tenantId, Pageable pageable);
 
-	// Roster inferred from attendance history — retained for ExamScheduleReminderJob's existing call
-	// site; StudentClassroomLinkRepository is now the authoritative source of enrollment, use that.
-	@Query("SELECT DISTINCT a.studentId FROM Attendance a WHERE a.tenantId = :tenantId AND a.classroomId = :classroomId")
-	List<Long> findDistinctStudentIdsByClassroomId(@Param("tenantId") Long tenantId,
-			@Param("classroomId") Long classroomId);
-
 	long countByTenantIdAndAttendanceDateBetweenAndStatus(Long tenantId, LocalDate from, LocalDate to,
 			AttendanceStatus status);
 

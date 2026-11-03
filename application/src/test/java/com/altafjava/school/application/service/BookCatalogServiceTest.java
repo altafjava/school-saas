@@ -17,6 +17,7 @@ import com.altafjava.platform.core.exception.BusinessException;
 import com.altafjava.platform.core.tenant.TenantContext;
 import com.altafjava.platform.core.tenant.TenantType;
 import com.altafjava.school.application.library.ReservationAllocator;
+import com.altafjava.school.application.time.TestSchoolClocks;
 import com.altafjava.school.domain.library.model.Book;
 import com.altafjava.school.domain.library.model.BookCopy;
 import com.altafjava.school.domain.library.repository.BookCopyRepository;
@@ -38,7 +39,8 @@ class BookCatalogServiceTest {
 
 	@BeforeEach
 	void setUp() {
-		bookCatalogService = new BookCatalogService(bookRepository, bookCopyRepository, reservationAllocator);
+		bookCatalogService = new BookCatalogService(bookRepository, bookCopyRepository, reservationAllocator,
+				TestSchoolClocks.systemDefault());
 		TenantContext.ForTesting.setCurrentTenant(1L, null, null, TenantType.SHARED);
 	}
 

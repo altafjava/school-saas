@@ -7,6 +7,7 @@ import java.util.Map;
 import org.springframework.stereotype.Component;
 import com.altafjava.platform.application.service.report.provider.ReportDataProvider;
 import com.altafjava.platform.core.tenant.TenantContext;
+import com.altafjava.school.application.time.SchoolClock;
 import com.altafjava.school.domain.exam.repository.ExamRepository;
 import com.altafjava.school.domain.grade.repository.GradeRepository;
 
@@ -22,18 +23,22 @@ public class AcademicDashboardDataProvider implements ReportDataProvider {
 
 	private final GradeRepository gradeRepository;
 	private final ExamRepository examRepository;
+	private final SchoolClock schoolClock;
 
-	public AcademicDashboardDataProvider(GradeRepository gradeRepository, ExamRepository examRepository) {
+	public AcademicDashboardDataProvider(GradeRepository gradeRepository, ExamRepository examRepository,
+			SchoolClock schoolClock) {
 		this.gradeRepository = gradeRepository;
 		this.examRepository = examRepository;
+		this.schoolClock = schoolClock;
 	}
 
 	@Override
 	public List<Map<String, Object>> fetchData(Map<String, Object> parameters) {
 		Long tenantId = TenantContext.getCurrentTenantId();
 		long totalGradesRecorded = gradeRepository.countByTenantId(tenantId);
-		long upcomingExamCount = examRepository.countByTenantIdAndScheduledAtBetween(tenantId, LocalDateTime.now(),
-				LocalDateTime.now().plusDays(UPCOMING_EXAM_WINDOW_DAYS));
+		LocalDateTime now = schoolClock.now(tenantId);
+		long upcomingExamCount = examRepository.countByTenantIdAndScheduledAtBetween(tenantId, now,
+				now.plusDays(UPCOMING_EXAM_WINDOW_DAYS));
 
 		List<Object[]> distribution = gradeRepository.countGroupedByGradeLetter(tenantId);
 		// totalGradesRecorded/upcomingExamCount are embedded on every row below rather than

@@ -16,6 +16,7 @@ import com.altafjava.platform.core.exception.BusinessException;
 import com.altafjava.platform.core.exception.ResourceNotFoundException;
 import com.altafjava.platform.core.tenant.TenantContext;
 import com.altafjava.platform.domain.document.model.DocumentIssuance;
+import com.altafjava.school.application.time.SchoolClock;
 import com.altafjava.school.application.visitor.VisitorBadgeIssuer;
 import com.altafjava.school.domain.employee.model.Employee;
 import com.altafjava.school.domain.employee.repository.EmployeeRepository;
@@ -41,17 +42,19 @@ public class VisitorLogService {
 	private final VisitorBadgeIssuer visitorBadgeIssuer;
 	private final DocumentIssuanceService documentIssuanceService;
 	private final TransactionTemplate transactionTemplate;
+	private final SchoolClock schoolClock;
 
 	public VisitorLogService(VisitorLogRepository visitorLogRepository,
 			VisitorRequestRepository visitorRequestRepository, EmployeeRepository employeeRepository,
 			VisitorBadgeIssuer visitorBadgeIssuer, DocumentIssuanceService documentIssuanceService,
-			PlatformTransactionManager transactionManager) {
+			PlatformTransactionManager transactionManager, SchoolClock schoolClock) {
 		this.visitorLogRepository = visitorLogRepository;
 		this.visitorRequestRepository = visitorRequestRepository;
 		this.employeeRepository = employeeRepository;
 		this.visitorBadgeIssuer = visitorBadgeIssuer;
 		this.documentIssuanceService = documentIssuanceService;
 		this.transactionTemplate = new TransactionTemplate(transactionManager);
+		this.schoolClock = schoolClock;
 	}
 
 	@Transactional(readOnly = true)
@@ -80,7 +83,7 @@ public class VisitorLogService {
 	@Audited(action = AuditAction.CREATE, resourceType = "VisitorLog", details = "Visitor checked in")
 	public VisitorLog checkIn(String requestPublicId, String photoFilePublicId, Long checkedInByUserId) {
 		Long tenantId = TenantContext.getCurrentTenantId();
-		LocalDate today = LocalDate.now();
+		LocalDate today = schoolClock.today(tenantId);
 		AdmittedVisit visit = transactionTemplate
 				.execute(status -> admit(tenantId, requestPublicId, photoFilePublicId, today));
 		DocumentIssuance badge = visitorBadgeIssuer.issue(tenantId, visit.request(), visit.host(), visit.photo(),
@@ -99,7 +102,7 @@ public class VisitorLogService {
 	@Audited(action = AuditAction.UPDATE, resourceType = "VisitorLog", details = "Visitor checked out")
 	public VisitorLog checkOut(String publicId) {
 		VisitorLog visitorLog = findByPublicId(publicId);
-		visitorLog.checkOut(LocalDateTime.now());
+		visitorLog.checkOut(schoolClock.now());
 		VisitorLog saved = visitorLogRepository.save(visitorLog);
 		if (saved.getBadgeIssuanceId() != null) {
 			documentIssuanceService.findById(saved.getBadgeIssuanceId())
@@ -141,7 +144,7 @@ public class VisitorLogService {
 	private VisitorLog recordCheckIn(Long tenantId, AdmittedVisit visit, DocumentIssuance badge) {
 		VisitorRequest request = visitorRequestRepository.findByIdAndTenantId(visit.request().getId(), tenantId)
 				.orElseThrow(() -> new ResourceNotFoundException("Visitor request not found"));
-		VisitorLog visitorLog = VisitorLog.checkIn(request, visit.photo(), LocalDateTime.now());
+		VisitorLog visitorLog = VisitorLog.checkIn(request, visit.photo(), schoolClock.now(tenantId));
 		visitorLog.attachBadge(badge.getId());
 		request.markCheckedIn();
 		visitorRequestRepository.save(request);

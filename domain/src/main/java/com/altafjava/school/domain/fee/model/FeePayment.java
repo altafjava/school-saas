@@ -86,6 +86,10 @@ public class FeePayment extends SoftDeletableEntity {
 	@Column(name = "bounce_reason", length = 500)
 	private String bounceReason;
 
+	// The issued receipt document, set the first time a receipt is downloaded.
+	@Column(name = "receipt_document_id")
+	private Long receiptDocumentId;
+
 	public static FeePayment create(Long studentId, Long feeStructureId, BigDecimal paidAmount,
 			LocalDateTime paidAt, String receiptNumber, PaymentInstrument instrument) {
 		return FeePayment.builder()
@@ -113,6 +117,13 @@ public class FeePayment extends SoftDeletableEntity {
 		this.status = FeePaymentStatus.BOUNCED;
 		this.bouncedAt = bouncedAt;
 		this.bounceReason = reason;
+	}
+
+	public void attachReceipt(Long receiptDocumentId) {
+		if (this.receiptDocumentId != null) {
+			throw new BusinessException("This payment already has a receipt");
+		}
+		this.receiptDocumentId = receiptDocumentId;
 	}
 
 	public boolean isBounced() {

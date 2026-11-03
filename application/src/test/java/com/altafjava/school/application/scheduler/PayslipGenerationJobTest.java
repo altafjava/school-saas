@@ -26,6 +26,7 @@ import com.altafjava.platform.domain.scheduler.model.JobExecutionContext;
 import com.altafjava.platform.domain.scheduler.model.JobExecutionResult;
 import com.altafjava.platform.domain.scheduler.model.TriggerType;
 import com.altafjava.school.application.service.PayslipService;
+import com.altafjava.school.application.time.TestSchoolClocks;
 import com.altafjava.school.domain.employee.model.Employee;
 import com.altafjava.school.domain.employee.model.StaffCategory;
 import com.altafjava.school.domain.employee.repository.EmployeeRepository;
@@ -42,7 +43,7 @@ class PayslipGenerationJobTest {
 
 	@BeforeEach
 	void setUp() {
-		job = new PayslipGenerationJob(employeeRepository, payslipService);
+		job = new PayslipGenerationJob(employeeRepository, payslipService, TestSchoolClocks.systemDefault());
 		TenantContext.ForTesting.setCurrentTenant(1L, null, null, TenantType.SHARED);
 	}
 

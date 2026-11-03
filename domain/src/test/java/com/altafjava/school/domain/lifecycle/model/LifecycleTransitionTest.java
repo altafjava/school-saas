@@ -11,12 +11,19 @@ import com.altafjava.school.domain.student.model.EnrollmentStatus;
 class LifecycleTransitionTest {
 
 	@Test
-	void record_defaultsEffectiveDateToToday() {
+	void record_keepsTheEffectiveDateAndReason() {
+		LocalDate effectiveOn = LocalDate.of(2026, 4, 1);
 		LifecycleTransition transition = LifecycleTransition.record(null, 5L, LifecycleStage.ENROLLED,
-				LifecycleStage.WITHDRAWN, "Relocated", null, 9L);
+				LifecycleStage.WITHDRAWN, "Relocated", effectiveOn, 9L);
 
-		assertEquals(LocalDate.now(), transition.getEffectiveOn());
+		assertEquals(effectiveOn, transition.getEffectiveOn());
 		assertEquals("Relocated", transition.getReason());
+	}
+
+	@Test
+	void record_needsAnEffectiveDate() {
+		assertThrows(BusinessException.class, () -> LifecycleTransition.record(null, 5L, LifecycleStage.ENROLLED,
+				LifecycleStage.WITHDRAWN, null, null, null));
 	}
 
 	@Test

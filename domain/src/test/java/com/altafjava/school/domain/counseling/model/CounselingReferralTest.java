@@ -2,13 +2,14 @@ package com.altafjava.school.domain.counseling.model;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import java.time.LocalDateTime;
 import org.junit.jupiter.api.Test;
 import com.altafjava.platform.core.exception.BusinessException;
 
 class CounselingReferralTest {
 
 	private CounselingReferral referred() {
-		return CounselingReferral.refer(1L, 99L, "Struggling academically and socially withdrawn");
+		return CounselingReferral.refer(1L, 99L, "Struggling academically and socially withdrawn", LocalDateTime.now());
 	}
 
 	@Test

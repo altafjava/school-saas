@@ -534,6 +534,7 @@
             </column>
             <column name="bounced_at" type="TIMESTAMP"/>
             <column name="bounce_reason" type="VARCHAR(500)"/>
+            <column name="receipt_document_id" type="BIGINT"/>
             <column name="created_at" type="TIMESTAMP">
                 <constraints nullable="false"/>
             </column>
@@ -596,6 +597,12 @@
                 baseTableName="fee_payments"
                 baseColumnNames="student_id"
                 referencedTableName="students"
+                referencedColumnNames="id"/>
+        <addForeignKeyConstraint
+                constraintName="fk_fee_payments_receipt_document_id"
+                baseTableName="fee_payments"
+                baseColumnNames="receipt_document_id"
+                referencedTableName="document_issuances"
                 referencedColumnNames="id"/>
         <addForeignKeyConstraint
                 constraintName="fk_fee_payments_fee_structure_id"

@@ -12,6 +12,7 @@ import com.altafjava.school.application.reference.EntityRef;
 import com.altafjava.school.application.reference.PublicIdLookup;
 import com.altafjava.school.application.security.AcademicAccessGuard;
 import com.altafjava.school.application.security.CourseworkReach;
+import com.altafjava.school.application.time.SchoolClock;
 import com.altafjava.school.domain.classroom.model.Classroom;
 import com.altafjava.school.domain.classroom.repository.ClassroomRepository;
 import com.altafjava.school.domain.lms.model.Lesson;
@@ -26,15 +27,17 @@ public class LessonService {
 	private final SubjectRepository subjectRepository;
 	private final AcademicAccessGuard academicAccessGuard;
 	private final PublicIdLookup publicIdLookup;
+	private final SchoolClock schoolClock;
 
 	public LessonService(LessonRepository lessonRepository, ClassroomRepository classroomRepository,
 			SubjectRepository subjectRepository, AcademicAccessGuard academicAccessGuard,
-			PublicIdLookup publicIdLookup) {
+			PublicIdLookup publicIdLookup, SchoolClock schoolClock) {
 		this.publicIdLookup = publicIdLookup;
 		this.lessonRepository = lessonRepository;
 		this.classroomRepository = classroomRepository;
 		this.subjectRepository = subjectRepository;
 		this.academicAccessGuard = academicAccessGuard;
+		this.schoolClock = schoolClock;
 	}
 
 	@Transactional
@@ -48,7 +51,8 @@ public class LessonService {
 				.orElseThrow(() -> new ResourceNotFoundException("Subject not found: " + subjectPublicId))
 				.getId();
 		Long teacherId = academicAccessGuard.requireTeacherOfSubject(tenantId, classroom.getId(), subjectId);
-		Lesson lesson = Lesson.post(classroom.getId(), subjectId, teacherId, title, description, storageKey);
+		Lesson lesson = Lesson.post(classroom.getId(), subjectId, teacherId, title, description, storageKey,
+				schoolClock.now());
 		return lessonRepository.save(lesson);
 	}
 

@@ -113,29 +113,29 @@ public class LeaveRequest extends SoftDeletableEntity {
 	}
 
 	/** Records one approval; the request is approved once every required level has given theirs. */
-	public void approve(Long approvedByUserId) {
+	public void approve(Long approvedByUserId, LocalDateTime decidedAt) {
 		requireStatus(LeaveRequestStatus.PENDING, "approve");
 		this.approvalsGranted++;
 		if (this.approvalsGranted >= this.approvalsRequired) {
 			this.status = LeaveRequestStatus.APPROVED;
 			this.approvedByUserId = approvedByUserId;
-			this.approvedAt = LocalDateTime.now();
+			this.approvedAt = decidedAt;
 		}
 	}
 
-	public void reject(Long rejectedByUserId, String rejectionReason) {
+	public void reject(Long rejectedByUserId, String rejectionReason, LocalDateTime decidedAt) {
 		requireStatus(LeaveRequestStatus.PENDING, "reject");
 		this.status = LeaveRequestStatus.REJECTED;
 		this.approvedByUserId = rejectedByUserId;
-		this.approvedAt = LocalDateTime.now();
+		this.approvedAt = decidedAt;
 		this.rejectionReason = rejectionReason;
 	}
 
-	public void cancel() {
+	public void cancel(LocalDate today) {
 		if (this.status == LeaveRequestStatus.REJECTED || this.status == LeaveRequestStatus.CANCELLED) {
 			throw new BusinessException("Cannot cancel a leave request that is already " + this.status);
 		}
-		if (this.startDate.isBefore(LocalDate.now())) {
+		if (this.startDate.isBefore(today)) {
 			throw new BusinessException("Cannot cancel a leave request that has already started");
 		}
 		this.status = LeaveRequestStatus.CANCELLED;

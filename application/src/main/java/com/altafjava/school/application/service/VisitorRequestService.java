@@ -18,6 +18,7 @@ import com.altafjava.platform.core.tenant.TenantContext;
 import com.altafjava.platform.domain.notification.model.NotificationPriority;
 import com.altafjava.platform.domain.notification.model.NotificationTypes;
 import com.altafjava.school.application.security.VisitorRequestAuthorizer;
+import com.altafjava.school.application.time.SchoolClock;
 import com.altafjava.school.domain.employee.model.Employee;
 import com.altafjava.school.domain.employee.repository.EmployeeRepository;
 import com.altafjava.school.domain.visitor.model.VisitorRequest;
@@ -40,6 +41,7 @@ public class VisitorRequestService {
 	private final EmployeeRepository employeeRepository;
 	private final VisitorRequestAuthorizer authorizer;
 	private final NotificationService notificationService;
+	private final SchoolClock schoolClock;
 
 	@Transactional(readOnly = true)
 	public Page<VisitorRequest> list(VisitorRequestStatus status, LocalDate from, LocalDate to, Pageable pageable) {
@@ -76,7 +78,7 @@ public class VisitorRequestService {
 			throw new BusinessException("The host has left the school");
 		}
 		authorizer.assertMayRaiseFor(tenantId, host, actorUserId);
-		LocalDate today = LocalDate.now();
+		LocalDate today = schoolClock.today(tenantId);
 		VisitorRequest request = visitDate == null
 				? VisitorRequest.walkIn(visitorName, visitorPhone, purpose, host.getId(), actorUserId, today)
 				: VisitorRequest.preRegister(visitorName, visitorPhone, purpose, host.getId(), visitDate,
@@ -92,7 +94,7 @@ public class VisitorRequestService {
 		Long tenantId = TenantContext.getCurrentTenantId();
 		VisitorRequest request = require(tenantId, publicId);
 		authorizer.assertMayDecide(tenantId, request, actorUserId);
-		request.approve(actorUserId, LocalDate.now());
+		request.approve(actorUserId, schoolClock.today(tenantId));
 		return visitorRequestRepository.save(request);
 	}
 

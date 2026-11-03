@@ -13,6 +13,7 @@ import com.altafjava.platform.application.alert.AlertTrigger;
 import com.altafjava.platform.domain.alert.model.AlertRule;
 import com.altafjava.platform.domain.notification.model.NotificationPriority;
 import com.altafjava.school.application.scheduler.support.StudentNotificationRecipientResolver;
+import com.altafjava.school.application.time.SchoolClock;
 import com.altafjava.school.domain.attendance.model.AttendancePercentage;
 import com.altafjava.school.domain.attendance.model.AttendanceStatus;
 import com.altafjava.school.domain.attendance.repository.AttendanceRepository;
@@ -38,15 +39,17 @@ public class LowAttendanceRuleEvaluator implements AlertRuleEvaluator {
 	private final AttendanceRepository attendanceRepository;
 	private final StudentRepository studentRepository;
 	private final StudentNotificationRecipientResolver recipientResolver;
+	private final SchoolClock schoolClock;
 	private final AttendancePercentageCalculator attendancePercentageCalculator = new AttendancePercentageCalculator();
 
 	public LowAttendanceRuleEvaluator(StudentClassroomLinkRepository studentClassroomLinkRepository,
 			AttendanceRepository attendanceRepository, StudentRepository studentRepository,
-			StudentNotificationRecipientResolver recipientResolver) {
+			StudentNotificationRecipientResolver recipientResolver, SchoolClock schoolClock) {
 		this.studentClassroomLinkRepository = studentClassroomLinkRepository;
 		this.attendanceRepository = attendanceRepository;
 		this.studentRepository = studentRepository;
 		this.recipientResolver = recipientResolver;
+		this.schoolClock = schoolClock;
 	}
 
 	@Override
@@ -59,7 +62,7 @@ public class LowAttendanceRuleEvaluator implements AlertRuleEvaluator {
 		Long tenantId = rule.getTenantId();
 		int thresholdPercent = rule.getThresholdValue() != null ? rule.getThresholdValue().intValue()
 				: DEFAULT_THRESHOLD_PERCENT;
-		LocalDate to = LocalDate.now();
+		LocalDate to = schoolClock.today(tenantId);
 		LocalDate from = to.minusDays(ROLLING_WINDOW_DAYS);
 
 		List<Long> studentIds = studentClassroomLinkRepository.findDistinctStudentIdsByTenantId(tenantId);

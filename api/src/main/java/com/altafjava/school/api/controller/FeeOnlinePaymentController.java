@@ -1,7 +1,11 @@
 package com.altafjava.school.api.controller;
 
 import jakarta.validation.Valid;
+import org.springframework.http.ContentDisposition;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -20,6 +24,8 @@ import com.altafjava.school.api.dto.response.FeeChargeResponse;
 import com.altafjava.school.api.dto.response.FeePaymentResponse;
 import com.altafjava.school.api.mapper.FeePaymentMapper;
 import com.altafjava.school.application.service.FeeOnlinePaymentService;
+import com.altafjava.school.application.service.FeeReceiptPdf;
+import com.altafjava.school.application.service.FeeReceiptService;
 import com.altafjava.school.domain.security.permission.SchoolPermissions;
 
 // Parent/student self-service fee payment: create a gateway charge, confirm it synchronously, and
@@ -32,9 +38,11 @@ public class FeeOnlinePaymentController implements FeeOnlinePaymentApi {
 
 	private final FeeOnlinePaymentService feeOnlinePaymentService;
 	private final FeePaymentMapper feePaymentMapper;
+	private final FeeReceiptService feeReceiptService;
 
 	public FeeOnlinePaymentController(FeeOnlinePaymentService feeOnlinePaymentService,
-			FeePaymentMapper feePaymentMapper) {
+			FeePaymentMapper feePaymentMapper, FeeReceiptService feeReceiptService) {
+		this.feeReceiptService = feeReceiptService;
 		this.feeOnlinePaymentService = feeOnlinePaymentService;
 		this.feePaymentMapper = feePaymentMapper;
 	}
@@ -68,5 +76,17 @@ public class FeeOnlinePaymentController implements FeeOnlinePaymentApi {
 	public ApiResponse<FeePaymentResponse> getReceipt(@PathVariable String publicId) {
 		return ApiResponse
 				.success(feePaymentMapper.toResponse(feeOnlinePaymentService.findReceiptForSelfService(publicId)));
+	}
+
+	@Override
+	@GetMapping("/{publicId}/receipt")
+	@RequiresPermission(SchoolPermissions.FEE_PAYMENT_SELF_SERVICE)
+	public ResponseEntity<byte[]> downloadReceipt(@PathVariable String publicId) {
+		FeeReceiptPdf receipt = feeReceiptService.downloadForSelfService(publicId);
+		return ResponseEntity.ok()
+				.contentType(MediaType.APPLICATION_PDF)
+				.header(HttpHeaders.CONTENT_DISPOSITION,
+						ContentDisposition.attachment().filename(receipt.fileName()).build().toString())
+				.body(receipt.content());
 	}
 }

@@ -4,7 +4,6 @@ import java.util.List;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import com.altafjava.platform.application.service.NotificationService;
 import com.altafjava.platform.core.tenant.TenantContext;
 import com.altafjava.school.application.security.OwnStudentResolver;
 import com.altafjava.school.domain.classroom.model.StudentClassroomLink;
@@ -29,7 +28,7 @@ public class FamilyHomeService {
 	private final StudentClassroomLinkRepository studentClassroomLinkRepository;
 	private final StudentOverviewLoader studentOverviewLoader;
 	private final TodayTimetableBuilder todayTimetableBuilder;
-	private final NotificationService notificationService;
+	private final InboxLoader inboxLoader;
 
 	@Transactional(readOnly = true)
 	public ParentHome parent() {
@@ -42,7 +41,7 @@ public class FamilyHomeService {
 				: studentRepository.findAllByIdInAndTenantId(childIds, tenantId);
 		HomeDay day = homeDayResolver.today(tenantId);
 		return new ParentHome(day.date(), day.schoolDay(),
-				studentOverviewLoader.load(tenantId, children, caller, day), inboxOf(caller));
+				studentOverviewLoader.load(tenantId, children, caller, day), inboxLoader.load(caller));
 	}
 
 	@Transactional(readOnly = true)
@@ -53,7 +52,8 @@ public class FamilyHomeService {
 				.orElseThrow(() -> new AccessDeniedException("No student record linked to the current user"));
 		HomeDay day = homeDayResolver.today(tenantId);
 		return new StudentHome(day.date(), day.schoolDay(), timetableOf(tenantId, student, caller, day),
-				studentOverviewLoader.load(tenantId, List.of(student), caller, day).getFirst(), inboxOf(caller));
+				studentOverviewLoader.load(tenantId, List.of(student), caller, day).getFirst(),
+				inboxLoader.load(caller));
 	}
 
 	private List<TimetableSlot> timetableOf(Long tenantId, Student student, HomeCaller caller, HomeDay day) {
@@ -68,9 +68,5 @@ public class FamilyHomeService {
 				.map(StudentClassroomLink::getClassroomId)
 				.map(classroomId -> todayTimetableBuilder.forClassroom(tenantId, classroomId, day))
 				.orElse(List.of());
-	}
-
-	private Inbox inboxOf(HomeCaller caller) {
-		return new Inbox(notificationService.getUnreadCount(caller.userId().toString()));
 	}
 }

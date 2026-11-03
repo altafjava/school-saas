@@ -73,13 +73,16 @@ public class LifecycleTransition extends TenantEntity {
 		if (toStage == null || toStage == fromStage) {
 			throw new BusinessException("A lifecycle transition must change the stage");
 		}
+		if (effectiveOn == null) {
+			throw new BusinessException("A lifecycle transition needs the date it takes effect");
+		}
 		return LifecycleTransition.builder()
 				.admissionId(admissionId)
 				.studentId(studentId)
 				.fromStage(fromStage)
 				.toStage(toStage)
 				.reason(reason)
-				.effectiveOn(effectiveOn != null ? effectiveOn : LocalDate.now())
+				.effectiveOn(effectiveOn)
 				.recordedByUserId(recordedByUserId)
 				.build();
 	}

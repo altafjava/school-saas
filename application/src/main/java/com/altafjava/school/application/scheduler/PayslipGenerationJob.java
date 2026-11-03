@@ -12,6 +12,7 @@ import com.altafjava.platform.core.tenant.TenantContext;
 import com.altafjava.platform.domain.scheduler.model.JobExecutionContext;
 import com.altafjava.platform.domain.scheduler.model.JobExecutionResult;
 import com.altafjava.school.application.service.PayslipService;
+import com.altafjava.school.application.time.SchoolClock;
 import com.altafjava.school.domain.employee.model.Employee;
 import com.altafjava.school.domain.employee.repository.EmployeeRepository;
 import lombok.extern.slf4j.Slf4j;
@@ -29,10 +30,13 @@ public class PayslipGenerationJob implements JobExecutionStrategy {
 
 	private final EmployeeRepository employeeRepository;
 	private final PayslipService payslipService;
+	private final SchoolClock schoolClock;
 
-	public PayslipGenerationJob(EmployeeRepository employeeRepository, PayslipService payslipService) {
+	public PayslipGenerationJob(EmployeeRepository employeeRepository, PayslipService payslipService,
+			SchoolClock schoolClock) {
 		this.employeeRepository = employeeRepository;
 		this.payslipService = payslipService;
+		this.schoolClock = schoolClock;
 	}
 
 	@Override
@@ -54,7 +58,7 @@ public class PayslipGenerationJob implements JobExecutionStrategy {
 	@Transactional
 	public JobExecutionResult execute(JobExecutionContext ctx) {
 		Long tenantId = TenantContext.getCurrentTenantId();
-		YearMonth payMonth = YearMonth.now().minusMonths(1);
+		YearMonth payMonth = schoolClock.currentMonth(tenantId).minusMonths(1);
 		log.info("action=payslip-generation tenantId={} payMonth={} executionId={}", tenantId, payMonth,
 				ctx.executionId());
 

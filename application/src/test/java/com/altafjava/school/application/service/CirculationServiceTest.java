@@ -27,6 +27,7 @@ import com.altafjava.school.application.filter.DateWindow;
 import com.altafjava.school.application.library.ReservationAllocator;
 import com.altafjava.school.application.reference.EntityRef;
 import com.altafjava.school.application.reference.PublicIdLookup;
+import com.altafjava.school.application.time.TestSchoolClocks;
 import com.altafjava.school.domain.library.model.BookCopy;
 import com.altafjava.school.domain.library.model.BookCopyStatus;
 import com.altafjava.school.domain.library.model.BookReservation;
@@ -63,7 +64,8 @@ class CirculationServiceTest {
 	@BeforeEach
 	void setUp() {
 		circulationService = new CirculationService(circulationRepository, bookCopyRepository, studentRepository,
-				tenantSettingOverrideService, bookReservationRepository, reservationAllocator, publicIdLookup);
+				tenantSettingOverrideService, bookReservationRepository, reservationAllocator, publicIdLookup,
+				TestSchoolClocks.systemDefault());
 		TenantContext.ForTesting.setCurrentTenant(1L, null, null, TenantType.SHARED);
 	}
 

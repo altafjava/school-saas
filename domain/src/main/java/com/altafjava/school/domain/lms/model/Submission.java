@@ -60,25 +60,25 @@ public class Submission extends SoftDeletableEntity {
 	private SubmissionStatus status;
 
 	public static Submission submit(Long assignmentId, Long studentId, String storageKey, String textContent,
-			boolean isLate) {
+			boolean isLate, LocalDateTime submittedAt) {
 		return Submission.builder()
 				.assignmentId(assignmentId)
 				.studentId(studentId)
 				.storageKey(storageKey)
 				.textContent(textContent)
-				.submittedAt(LocalDateTime.now())
+				.submittedAt(submittedAt)
 				.status(isLate ? SubmissionStatus.LATE : SubmissionStatus.SUBMITTED)
 				.build();
 	}
 
-	public void grade(BigDecimal marks, String feedback, Long gradedByTeacherId) {
+	public void grade(BigDecimal marks, String feedback, Long gradedByTeacherId, LocalDateTime gradedAt) {
 		if (this.status == SubmissionStatus.GRADED) {
 			throw new BusinessException("Submission is already graded");
 		}
 		this.marksObtained = marks;
 		this.feedback = feedback;
 		this.gradedBy = gradedByTeacherId;
-		this.gradedAt = LocalDateTime.now();
+		this.gradedAt = gradedAt;
 		this.status = SubmissionStatus.GRADED;
 	}
 }

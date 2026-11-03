@@ -18,6 +18,7 @@ import com.altafjava.platform.domain.scheduler.model.JobExecutionContext;
 import com.altafjava.platform.domain.scheduler.model.JobExecutionResult;
 import com.altafjava.platform.domain.scheduler.model.TriggerType;
 import com.altafjava.school.application.scheduler.support.TenantAdminNotifier;
+import com.altafjava.school.application.time.TestSchoolClocks;
 import com.altafjava.school.domain.attendance.model.AttendanceStatus;
 import com.altafjava.school.domain.attendance.repository.AttendanceRepository;
 
@@ -33,7 +34,8 @@ class AttendanceSummaryReportJobTest {
 
 	@BeforeEach
 	void setUp() {
-		job = new AttendanceSummaryReportJob(attendanceRepository, tenantAdminNotifier);
+		job = new AttendanceSummaryReportJob(attendanceRepository, tenantAdminNotifier,
+				TestSchoolClocks.systemDefault());
 		TenantContext.ForTesting.setCurrentTenant(1L, null, null, TenantType.SHARED);
 	}
 

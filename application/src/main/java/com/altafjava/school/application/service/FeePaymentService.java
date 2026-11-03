@@ -18,6 +18,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import com.altafjava.platform.application.document.DocumentIssuanceService;
 import com.altafjava.platform.application.service.NumberSequenceService;
 import com.altafjava.platform.core.audit.AuditAction;
 import com.altafjava.platform.core.audit.annotation.Audited;
@@ -30,6 +31,7 @@ import com.altafjava.school.application.filter.FeePaymentFilter;
 import com.altafjava.school.application.reference.EntityRef;
 import com.altafjava.school.application.reference.PublicIdLookup;
 import com.altafjava.school.application.security.StudentDataAccessGuard;
+import com.altafjava.school.application.time.SchoolClock;
 import com.altafjava.school.domain.classroom.repository.StudentClassroomLinkRepository;
 import com.altafjava.school.domain.fee.model.FeeAssignment;
 import com.altafjava.school.domain.fee.model.FeeBalance;
@@ -50,8 +52,10 @@ import com.altafjava.school.domain.fee.repository.FeeStructureRepository;
 import com.altafjava.school.domain.fee.service.FeeBalanceCalculator;
 import com.altafjava.school.domain.student.model.Student;
 import com.altafjava.school.domain.student.repository.StudentRepository;
+import lombok.RequiredArgsConstructor;
 
 @Service
+@RequiredArgsConstructor
 public class FeePaymentService {
 
 	private static final int MAX_COLLECTION_REPORT_DAYS = 92;
@@ -69,26 +73,9 @@ public class FeePaymentService {
 	private final FeeInstallmentRepository feeInstallmentRepository;
 	private final FeeRefundRepository feeRefundRepository;
 	private final PublicIdLookup publicIdLookup;
+	private final SchoolClock schoolClock;
+	private final DocumentIssuanceService documentIssuanceService;
 	private final FeeBalanceCalculator feeBalanceCalculator = new FeeBalanceCalculator();
-
-	public FeePaymentService(FeePaymentRepository feePaymentRepository, StudentRepository studentRepository,
-			FeeStructureRepository feeStructureRepository, FeeAssignmentRepository feeAssignmentRepository,
-			StudentClassroomLinkRepository studentClassroomLinkRepository,
-			StudentDataAccessGuard studentDataAccessGuard, NumberSequenceService numberSequenceService,
-			FeeDiscountRepository feeDiscountRepository, FeeInstallmentRepository feeInstallmentRepository,
-			FeeRefundRepository feeRefundRepository, PublicIdLookup publicIdLookup) {
-		this.publicIdLookup = publicIdLookup;
-		this.feePaymentRepository = feePaymentRepository;
-		this.studentRepository = studentRepository;
-		this.feeStructureRepository = feeStructureRepository;
-		this.feeAssignmentRepository = feeAssignmentRepository;
-		this.studentClassroomLinkRepository = studentClassroomLinkRepository;
-		this.studentDataAccessGuard = studentDataAccessGuard;
-		this.numberSequenceService = numberSequenceService;
-		this.feeDiscountRepository = feeDiscountRepository;
-		this.feeInstallmentRepository = feeInstallmentRepository;
-		this.feeRefundRepository = feeRefundRepository;
-	}
 
 	@Transactional(readOnly = true)
 	public Page<FeePayment> listFeePayments(FeePaymentFilter filter, Pageable pageable) {
@@ -139,7 +126,7 @@ public class FeePaymentService {
 				.findAllByIdInAndTenantId(new ArrayList<>(assignmentsByFeeStructureId.keySet()), tenantId);
 		List<FeePayment> payments = feePaymentRepository.findClearedByStudentId(tenantId, student.getId());
 		AdjustmentIndex adjustments = loadAdjustments(tenantId, List.of(student.getId()));
-		LocalDate today = LocalDate.now();
+		LocalDate today = schoolClock.today(tenantId);
 
 		return feeStructures.stream()
 				.map(feeStructure -> feeBalanceCalculator.calculate(feeStructure,
@@ -199,7 +186,7 @@ public class FeePaymentService {
 				.collect(Collectors.groupingBy(FeePayment::getStudentId));
 
 		AdjustmentIndex adjustments = loadAdjustments(tenantId, studentIds);
-		LocalDate today = LocalDate.now();
+		LocalDate today = schoolClock.today(tenantId);
 		Map<Long, List<FeeBalance>> result = new HashMap<>();
 		for (Long studentId : studentIds) {
 			List<FeePayment> payments = paymentsByStudentId.getOrDefault(studentId, List.of());
@@ -329,6 +316,11 @@ public class FeePaymentService {
 			throw new BusinessException("This payment has refunds against it, so its cheque cannot be marked bounced");
 		}
 		payment.bounce(reason, bouncedAt);
+		// The receipt stays on file, but verifying it now shows it was revoked.
+		if (payment.getReceiptDocumentId() != null) {
+			documentIssuanceService.findById(payment.getReceiptDocumentId())
+					.ifPresent(receipt -> documentIssuanceService.revoke(receipt, "Cheque bounced: " + reason));
+		}
 		return feePaymentRepository.save(payment);
 	}
 

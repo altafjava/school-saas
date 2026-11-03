@@ -46,7 +46,7 @@ public class Lesson extends SoftDeletableEntity {
 	private LocalDateTime postedAt;
 
 	public static Lesson post(Long classroomId, Long subjectId, Long teacherId, String title, String description,
-			String storageKey) {
+			String storageKey, LocalDateTime postedAt) {
 		return Lesson.builder()
 				.classroomId(classroomId)
 				.subjectId(subjectId)
@@ -54,7 +54,7 @@ public class Lesson extends SoftDeletableEntity {
 				.title(title)
 				.description(description)
 				.storageKey(storageKey)
-				.postedAt(LocalDateTime.now())
+				.postedAt(postedAt)
 				.build();
 	}
 }

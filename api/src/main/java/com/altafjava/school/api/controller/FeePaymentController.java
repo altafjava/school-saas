@@ -3,7 +3,11 @@ package com.altafjava.school.api.controller;
 import java.time.LocalDate;
 import java.util.List;
 import jakarta.validation.Valid;
+import org.springframework.http.ContentDisposition;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -28,6 +32,8 @@ import com.altafjava.school.application.filter.DateWindow;
 import com.altafjava.school.application.filter.FeePaymentFilter;
 import com.altafjava.school.application.reference.ReferenceSummaries;
 import com.altafjava.school.application.service.FeePaymentService;
+import com.altafjava.school.application.service.FeeReceiptPdf;
+import com.altafjava.school.application.service.FeeReceiptService;
 import com.altafjava.school.domain.fee.model.PaymentMode;
 import com.altafjava.school.domain.fee.model.PaymentSource;
 import com.altafjava.school.domain.security.permission.SchoolPermissions;
@@ -38,14 +44,16 @@ public class FeePaymentController implements FeePaymentApi {
 
 	private final FeePaymentService feePaymentService;
 	private final FeePaymentMapper feePaymentMapper;
+	private final FeeReceiptService feeReceiptService;
 
 	private final SpringDataPageableResolver pageableResolver;
 
 	private final ReferenceSummaries referenceSummaries;
 
 	public FeePaymentController(FeePaymentService feePaymentService, FeePaymentMapper feePaymentMapper,
-			SpringDataPageableResolver pageableResolver,
+			FeeReceiptService feeReceiptService, SpringDataPageableResolver pageableResolver,
 			ReferenceSummaries referenceSummaries) {
+		this.feeReceiptService = feeReceiptService;
 		this.referenceSummaries = referenceSummaries;
 		this.feePaymentService = feePaymentService;
 		this.feePaymentMapper = feePaymentMapper;
@@ -114,5 +122,17 @@ public class FeePaymentController implements FeePaymentApi {
 			@Valid @RequestBody BounceFeePaymentRequest request) {
 		return ApiResponse.success(feePaymentMapper
 				.toResponse(feePaymentService.bounce(publicId, request.reason(), request.bouncedAt())));
+	}
+
+	@Override
+	@GetMapping("/{publicId}/receipt")
+	@RequiresPermission(SchoolPermissions.FEE_PAYMENT_MANAGE)
+	public ResponseEntity<byte[]> receipt(@PathVariable String publicId) {
+		FeeReceiptPdf receipt = feeReceiptService.download(publicId);
+		return ResponseEntity.ok()
+				.contentType(MediaType.APPLICATION_PDF)
+				.header(HttpHeaders.CONTENT_DISPOSITION,
+						ContentDisposition.attachment().filename(receipt.fileName()).build().toString())
+				.body(receipt.content());
 	}
 }

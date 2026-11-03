@@ -17,6 +17,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import com.altafjava.platform.application.document.DocumentIssuanceService;
 import com.altafjava.platform.application.document.DocumentIssueRequest;
 import com.altafjava.platform.domain.document.model.DocumentIssuance;
+import com.altafjava.school.application.time.TestSchoolClocks;
 import com.altafjava.school.domain.admission.model.Admission;
 
 @ExtendWith(MockitoExtension.class)
@@ -45,7 +46,7 @@ class OfferLetterIssuerTest {
 	void issue_ownsTheLetterByTheAdmissionAndNamesTheApplicant() {
 		when(documentIssuanceService.issue(any())).thenReturn(issuance(9L));
 
-		new OfferLetterIssuer(documentIssuanceService).issue(1L, approvedAdmission(), 7L);
+		new OfferLetterIssuer(documentIssuanceService, TestSchoolClocks.systemDefault()).issue(1L, approvedAdmission(), 7L);
 
 		ArgumentCaptor<DocumentIssueRequest> captor = ArgumentCaptor.forClass(DocumentIssueRequest.class);
 		verify(documentIssuanceService).issue(captor.capture());
@@ -68,7 +69,7 @@ class OfferLetterIssuerTest {
 		when(documentIssuanceService.findById(5L)).thenReturn(Optional.of(previous));
 		when(documentIssuanceService.issue(any())).thenReturn(issuance(6L));
 
-		new OfferLetterIssuer(documentIssuanceService).issue(1L, admission, 7L);
+		new OfferLetterIssuer(documentIssuanceService, TestSchoolClocks.systemDefault()).issue(1L, admission, 7L);
 
 		verify(documentIssuanceService).revoke(previous, "Superseded by a re-issued offer letter");
 	}
@@ -77,7 +78,7 @@ class OfferLetterIssuerTest {
 	void firstIssue_revokesNothing() {
 		when(documentIssuanceService.issue(any())).thenReturn(issuance(6L));
 
-		new OfferLetterIssuer(documentIssuanceService).issue(1L, approvedAdmission(), 7L);
+		new OfferLetterIssuer(documentIssuanceService, TestSchoolClocks.systemDefault()).issue(1L, approvedAdmission(), 7L);
 
 		verify(documentIssuanceService, never()).revoke(any(), any());
 	}

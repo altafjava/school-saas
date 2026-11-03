@@ -15,7 +15,9 @@ import com.altafjava.platform.application.tenant.TenantFormattingService;
 import com.altafjava.platform.domain.alert.model.AlertRule;
 import com.altafjava.platform.domain.notification.model.NotificationPriority;
 import com.altafjava.school.application.scheduler.support.StudentNotificationRecipientResolver;
-import com.altafjava.school.domain.attendance.repository.AttendanceRepository;
+import com.altafjava.school.application.time.SchoolClock;
+import com.altafjava.school.domain.classroom.model.StudentClassroomLink;
+import com.altafjava.school.domain.classroom.repository.StudentClassroomLinkRepository;
 import com.altafjava.school.domain.exam.model.Exam;
 import com.altafjava.school.domain.exam.repository.ExamRepository;
 import com.altafjava.school.domain.student.model.Student;
@@ -36,20 +38,23 @@ public class ExamScheduleReminderRuleEvaluator implements AlertRuleEvaluator {
 
 	private final ExamRepository examRepository;
 	private final SubjectRepository subjectRepository;
-	private final AttendanceRepository attendanceRepository;
+	private final StudentClassroomLinkRepository studentClassroomLinkRepository;
 	private final StudentRepository studentRepository;
 	private final StudentNotificationRecipientResolver recipientResolver;
 	private final TenantFormattingService tenantFormattingService;
+	private final SchoolClock schoolClock;
 
 	public ExamScheduleReminderRuleEvaluator(ExamRepository examRepository, SubjectRepository subjectRepository,
-			AttendanceRepository attendanceRepository, StudentRepository studentRepository,
-			StudentNotificationRecipientResolver recipientResolver, TenantFormattingService tenantFormattingService) {
+			StudentClassroomLinkRepository studentClassroomLinkRepository, StudentRepository studentRepository,
+			StudentNotificationRecipientResolver recipientResolver, TenantFormattingService tenantFormattingService,
+			SchoolClock schoolClock) {
 		this.examRepository = examRepository;
 		this.subjectRepository = subjectRepository;
-		this.attendanceRepository = attendanceRepository;
+		this.studentClassroomLinkRepository = studentClassroomLinkRepository;
 		this.studentRepository = studentRepository;
 		this.recipientResolver = recipientResolver;
 		this.tenantFormattingService = tenantFormattingService;
+		this.schoolClock = schoolClock;
 	}
 
 	@Override
@@ -62,7 +67,7 @@ public class ExamScheduleReminderRuleEvaluator implements AlertRuleEvaluator {
 		Long tenantId = rule.getTenantId();
 		int daysBefore = rule.getThresholdValue() != null ? rule.getThresholdValue().intValue()
 				: DEFAULT_DAYS_BEFORE;
-		LocalDateTime now = LocalDateTime.now();
+		LocalDateTime now = schoolClock.now(tenantId);
 
 		List<AlertTrigger> triggers = new ArrayList<>();
 		for (Exam exam : examRepository.findUpcoming(tenantId, now, now.plusDays(daysBefore))) {
@@ -76,8 +81,8 @@ public class ExamScheduleReminderRuleEvaluator implements AlertRuleEvaluator {
 		if (subject == null) {
 			return List.of();
 		}
-		List<Long> studentIds = attendanceRepository.findDistinctStudentIdsByClassroomId(tenantId,
-				exam.getClassroomId());
+		List<Long> studentIds = studentClassroomLinkRepository.findAllByClassroomId(tenantId, exam.getClassroomId())
+				.stream().map(StudentClassroomLink::getStudentId).toList();
 		Map<Long, Student> studentsById = studentRepository.findAllByIdInAndTenantId(studentIds, tenantId).stream()
 				.collect(Collectors.toMap(Student::getId, Function.identity()));
 

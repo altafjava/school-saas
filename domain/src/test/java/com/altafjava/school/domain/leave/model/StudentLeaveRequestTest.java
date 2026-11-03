@@ -4,6 +4,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import org.junit.jupiter.api.Test;
 import com.altafjava.platform.core.exception.BusinessException;
 
@@ -26,7 +27,7 @@ class StudentLeaveRequestTest {
 	void approval_recordsWhoDecidedAndWhen() {
 		StudentLeaveRequest request = request();
 
-		request.approve(9L);
+		request.approve(9L, LocalDateTime.now());
 
 		assertEquals(LeaveRequestStatus.APPROVED, request.getStatus());
 		assertEquals(9L, request.getDecidedByUserId());
@@ -37,7 +38,7 @@ class StudentLeaveRequestTest {
 	void rejection_keepsTheReason() {
 		StudentLeaveRequest request = request();
 
-		request.reject(9L, "Exam week");
+		request.reject(9L, "Exam week", LocalDateTime.now());
 
 		assertEquals(LeaveRequestStatus.REJECTED, request.getStatus());
 		assertEquals("Exam week", request.getRejectionReason());
@@ -46,9 +47,9 @@ class StudentLeaveRequestTest {
 	@Test
 	void decidedRequest_cannotChangeAgain() {
 		StudentLeaveRequest request = request();
-		request.approve(9L);
+		request.approve(9L, LocalDateTime.now());
 
-		assertThrows(BusinessException.class, () -> request.reject(9L, "Changed my mind"));
+		assertThrows(BusinessException.class, () -> request.reject(9L, "Changed my mind", LocalDateTime.now()));
 		assertThrows(BusinessException.class, request::cancel);
 	}
 

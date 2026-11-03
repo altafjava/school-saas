@@ -17,6 +17,7 @@ import com.altafjava.platform.core.tenant.TenantContext;
 import com.altafjava.school.application.employee.EmployeeCodeAllocator;
 import com.altafjava.school.application.reference.EntityRef;
 import com.altafjava.school.application.reference.PublicIdLookup;
+import com.altafjava.school.application.time.SchoolClock;
 import com.altafjava.school.domain.classroom.repository.ClassroomRepository;
 import com.altafjava.school.domain.common.model.Address;
 import com.altafjava.school.domain.common.model.Gender;
@@ -44,6 +45,7 @@ public class EmployeeService {
 	private final EmployeeCodeAllocator employeeCodeAllocator;
 	private final PhoneNumberValidator phoneNumberValidator = new PhoneNumberValidator();
 	private final PublicIdLookup publicIdLookup;
+	private final SchoolClock schoolClock;
 
 	@Transactional(readOnly = true)
 	public Page<Employee> search(StaffCategory category, EmployeeStatus status, String departmentPublicId, String q,
@@ -143,7 +145,7 @@ public class EmployeeService {
 		if (classroomRepository.existsByClassTeacherIdAndTenantId(employee.getId(), employee.getTenantId())) {
 			throw new BusinessException("Reassign this teacher's classes before recording their exit");
 		}
-		employee.exit(status, exitDate, reason);
+		employee.exit(status, exitDate, reason, schoolClock.today(employee.getTenantId()));
 		return employeeRepository.save(employee);
 	}
 

@@ -1,10 +1,13 @@
 package com.altafjava.school.application.lifecycle;
 
+import java.time.LocalDate;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
+import com.altafjava.platform.core.exception.BusinessException;
 import com.altafjava.platform.core.security.AuthenticatedUser;
 import com.altafjava.platform.core.tenant.TenantContext;
+import com.altafjava.school.application.time.SchoolClock;
 import com.altafjava.school.domain.admission.model.AdmissionStatus;
 import com.altafjava.school.domain.lifecycle.model.LifecycleStage;
 import com.altafjava.school.domain.lifecycle.model.LifecycleTransition;
@@ -22,6 +25,7 @@ import lombok.RequiredArgsConstructor;
 public class LifecycleRecorder {
 
 	private final LifecycleTransitionRepository repository;
+	private final SchoolClock schoolClock;
 
 	public void admission(Long admissionId, AdmissionStatus from, AdmissionStatus to, LifecycleChange change) {
 		save(admissionId, null, from == null ? null : LifecycleStage.of(from), LifecycleStage.of(to), change);
@@ -55,10 +59,22 @@ public class LifecycleRecorder {
 
 	private void save(Long admissionId, Long studentId, LifecycleStage from, LifecycleStage to,
 			LifecycleChange change) {
+		Long tenantId = TenantContext.getCurrentTenantId();
 		LifecycleTransition transition = LifecycleTransition.record(admissionId, studentId, from, to, change.reason(),
-				change.effectiveOn(), currentUserId());
-		transition.setTenantId(TenantContext.getCurrentTenantId());
+				effectiveOn(tenantId, change), currentUserId());
+		transition.setTenantId(tenantId);
 		repository.save(transition);
+	}
+
+	private LocalDate effectiveOn(Long tenantId, LifecycleChange change) {
+		LocalDate today = schoolClock.today(tenantId);
+		if (change.effectiveOn() == null) {
+			return today;
+		}
+		if (change.effectiveOn().isAfter(today)) {
+			throw new BusinessException("A lifecycle change cannot take effect in the future: " + change.effectiveOn());
+		}
+		return change.effectiveOn();
 	}
 
 	private Long currentUserId() {

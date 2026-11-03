@@ -30,10 +30,12 @@ import com.altafjava.platform.domain.report.repository.ReportDefinitionRepositor
 import com.altafjava.school.application.alert.AttendanceNotMarkedRuleEvaluator;
 import com.altafjava.school.application.alert.ExamScheduleReminderRuleEvaluator;
 import com.altafjava.school.application.alert.FeeDefaultRiskRuleEvaluator;
+import com.altafjava.school.application.alert.FeeOverdueReminderRuleEvaluator;
 import com.altafjava.school.application.alert.FeePaymentReminderRuleEvaluator;
 import com.altafjava.school.application.alert.LibraryOverdueRuleEvaluator;
 import com.altafjava.school.application.alert.LowAttendanceRuleEvaluator;
 import com.altafjava.school.application.security.SchoolRoles;
+import com.altafjava.school.application.time.SchoolClock;
 import com.altafjava.school.domain.academicyear.model.AcademicYear;
 import com.altafjava.school.domain.academicyear.repository.AcademicYearRepository;
 import com.altafjava.school.domain.curriculum.model.GradingScale;
@@ -66,10 +68,14 @@ public class SchoolTenantProvisioningListener {
 
 	private static final List<TemplateSeed> NOTIFICATION_TEMPLATE_SEEDS = List.of(
 			new TemplateSeed(SchoolNotificationTypes.FEE_DUE, "Fee Payment Reminder",
-					"Dear parent/guardian,\n\n{{studentName}} has an outstanding fee balance of {{amount}}. "
-							+ "Please make payment at your earliest convenience to avoid any disruption to "
-							+ "enrollment.\n\nThank you.",
-					List.of("studentName", "amount")),
+					"Dear parent/guardian,\n\nA fee payment of {{amount}} for {{studentName}} is due on "
+							+ "{{dueDate}}. Please pay by then to avoid a late fee.\n\nThank you.",
+					List.of("studentName", "amount", "dueDate")),
+			new TemplateSeed(SchoolNotificationTypes.FEE_OVERDUE, "Fee Payment Overdue",
+					"Dear parent/guardian,\n\nA fee payment of {{amount}} for {{studentName}} has been overdue "
+							+ "since {{dueDate}} ({{daysOverdue}} days). Please pay as soon as possible, or contact "
+							+ "the school office if you need help.\n\nThank you.",
+					List.of("studentName", "amount", "dueDate", "daysOverdue")),
 			new TemplateSeed(SchoolNotificationTypes.EXAM_SCHEDULED, "Upcoming Exam: {{examTitle}}",
 					"Dear parent/guardian,\n\n{{studentName}} has a {{subjectName}} exam ({{examTitle}}) "
 							+ "scheduled for {{scheduledAt}}. Please ensure they are well prepared.\n\nThank you.",
@@ -125,13 +131,14 @@ public class SchoolTenantProvisioningListener {
 			new DashboardReportSeed("Finance Dashboard Trend", "feeCollectionTrendDataProvider"),
 			new DashboardReportSeed("HR Dashboard Trend", "leaveUtilizationTrendDataProvider"));
 
-	// Defaults exactly preserve pre-Phase-4 hardcoded job behavior; a tenant admin can tune or
-	// disable any of these via AlertRuleController without a deploy.
+	// Starting values only: a tenant admin can tune or disable any of these via AlertRuleController.
 	private static final List<AlertRuleSeed> ALERT_RULE_SEEDS = List.of(
 			new AlertRuleSeed(LowAttendanceRuleEvaluator.RULE_TYPE, "Low attendance alert",
 					BigDecimal.valueOf(75), SchoolNotificationTypes.LOW_ATTENDANCE_ALERT),
 			new AlertRuleSeed(FeePaymentReminderRuleEvaluator.RULE_TYPE, "Fee payment reminder",
-					null, SchoolNotificationTypes.FEE_DUE),
+					BigDecimal.valueOf(3), SchoolNotificationTypes.FEE_DUE),
+			new AlertRuleSeed(FeeOverdueReminderRuleEvaluator.RULE_TYPE, "Fee overdue reminder",
+					BigDecimal.valueOf(7), SchoolNotificationTypes.FEE_OVERDUE),
 			new AlertRuleSeed(FeeDefaultRiskRuleEvaluator.RULE_TYPE, "Fee default risk",
 					BigDecimal.valueOf(1000), SchoolNotificationTypes.FEE_DEFAULT_RISK),
 			new AlertRuleSeed(ExamScheduleReminderRuleEvaluator.RULE_TYPE, "Exam schedule reminder",
@@ -171,6 +178,7 @@ public class SchoolTenantProvisioningListener {
 	private final DataRetentionPolicyService dataRetentionPolicyService;
 	private final GlobalSettingService globalSettingService;
 	private final ObjectMapper objectMapper;
+	private final SchoolClock schoolClock;
 
 	private static final String STUDENT_ENTITY_TYPE = "STUDENT";
 	// Super Admin's starting point, editable per tenant up to SchoolPlatformConfigurer's ceiling.
@@ -199,7 +207,7 @@ public class SchoolTenantProvisioningListener {
 	}
 
 	private void seedDefaultAcademicYear(Long tenantId) {
-		LocalDate now = LocalDate.now();
+		LocalDate now = schoolClock.today(tenantId);
 		int year = now.getYear();
 		String name = year + "-" + (year + 1);
 

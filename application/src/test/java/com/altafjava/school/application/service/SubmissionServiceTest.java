@@ -12,6 +12,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -35,6 +36,7 @@ import com.altafjava.platform.core.tenant.TenantContext;
 import com.altafjava.platform.core.tenant.TenantType;
 import com.altafjava.school.application.scheduler.support.StudentNotificationRecipientResolver;
 import com.altafjava.school.application.security.AcademicAccessGuard;
+import com.altafjava.school.application.time.TestSchoolClocks;
 import com.altafjava.school.domain.classroom.model.StudentClassroomLink;
 import com.altafjava.school.domain.classroom.repository.StudentClassroomLinkRepository;
 import com.altafjava.school.domain.lms.model.Assignment;
@@ -72,7 +74,7 @@ class SubmissionServiceTest {
 	void setUp() {
 		submissionService = new SubmissionService(submissionRepository, assignmentRepository, studentRepository,
 				studentClassroomLinkRepository, academicAccessGuard, recipientResolver,
-				notificationService);
+				notificationService, TestSchoolClocks.systemDefault());
 		TenantContext.ForTesting.setCurrentTenant(1L, null, null, TenantType.SHARED);
 	}
 
@@ -220,7 +222,7 @@ class SubmissionServiceTest {
 	void grade_teacherScoped_gradesAndNotifiesStudent() {
 		UUID submissionPublicId = UUID.randomUUID();
 		Assignment assignment = assignmentWithId(3L, 5L, LocalDate.now());
-		Submission submission = Submission.submit(3L, 20L, null, "My answer", false);
+		Submission submission = Submission.submit(3L, 20L, null, "My answer", false, LocalDateTime.now());
 		when(assignmentRepository.findByPublicIdAndTenantId(ASSIGNMENT_PUBLIC_ID, 1L))
 				.thenReturn(Optional.of(assignment));
 		when(submissionRepository.findByPublicIdAndTenantId(submissionPublicId, 1L))
@@ -243,7 +245,7 @@ class SubmissionServiceTest {
 	void grade_teacherNotScoped_throwsAccessDenied() {
 		UUID submissionPublicId = UUID.randomUUID();
 		Assignment assignment = assignmentWithId(3L, 5L, LocalDate.now());
-		Submission submission = Submission.submit(3L, 20L, null, "My answer", false);
+		Submission submission = Submission.submit(3L, 20L, null, "My answer", false, LocalDateTime.now());
 		when(assignmentRepository.findByPublicIdAndTenantId(ASSIGNMENT_PUBLIC_ID, 1L))
 				.thenReturn(Optional.of(assignment));
 		when(submissionRepository.findByPublicIdAndTenantId(submissionPublicId, 1L))

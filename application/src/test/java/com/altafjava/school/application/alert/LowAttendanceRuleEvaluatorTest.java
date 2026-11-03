@@ -15,6 +15,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import com.altafjava.platform.application.alert.AlertTrigger;
 import com.altafjava.platform.domain.alert.model.AlertRule;
 import com.altafjava.school.application.scheduler.support.StudentNotificationRecipientResolver;
+import com.altafjava.school.application.time.TestSchoolClocks;
 import com.altafjava.school.domain.attendance.model.AttendanceStatus;
 import com.altafjava.school.domain.attendance.repository.AttendanceRepository;
 import com.altafjava.school.domain.attendance.repository.AttendanceRepository.StudentAttendanceCount;
@@ -39,7 +40,7 @@ class LowAttendanceRuleEvaluatorTest {
 
 	private void newEvaluator() {
 		evaluator = new LowAttendanceRuleEvaluator(studentClassroomLinkRepository, attendanceRepository,
-				studentRepository, recipientResolver);
+				studentRepository, recipientResolver, TestSchoolClocks.systemDefault());
 	}
 
 	private AlertRule ruleWithThreshold(Integer thresholdPercent) {

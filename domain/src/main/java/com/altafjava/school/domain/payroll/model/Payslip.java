@@ -84,16 +84,16 @@ public class Payslip extends SoftDeletableEntity {
 
 	// Named finalizePayslip rather than finalize() — the latter collides with Object's deprecated
 	// finalizer hook.
-	public void finalizePayslip() {
+	public void finalizePayslip(LocalDateTime finalizedAt) {
 		requireStatus(PayslipStatus.DRAFT, "finalize");
 		this.status = PayslipStatus.FINALIZED;
-		this.finalizedAt = LocalDateTime.now();
+		this.finalizedAt = finalizedAt;
 	}
 
-	public void markDisbursed() {
+	public void markDisbursed(LocalDateTime disbursedAt) {
 		requireStatus(PayslipStatus.FINALIZED, "mark disbursed");
 		this.status = PayslipStatus.DISBURSED;
-		this.disbursedAt = LocalDateTime.now();
+		this.disbursedAt = disbursedAt;
 	}
 
 	private void requireStatus(PayslipStatus required, String action) {

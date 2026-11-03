@@ -1,6 +1,5 @@
 package com.altafjava.school.application.admission;
 
-import java.time.LocalDate;
 import java.util.HashMap;
 import java.util.Map;
 import org.springframework.stereotype.Component;
@@ -8,6 +7,7 @@ import com.altafjava.platform.application.document.DocumentIssuanceService;
 import com.altafjava.platform.application.document.DocumentIssueRequest;
 import com.altafjava.platform.domain.document.model.DocumentIssuance;
 import com.altafjava.school.application.document.SchoolDocumentTypes;
+import com.altafjava.school.application.time.SchoolClock;
 import com.altafjava.school.domain.admission.model.Admission;
 import lombok.RequiredArgsConstructor;
 
@@ -21,6 +21,7 @@ import lombok.RequiredArgsConstructor;
 public class OfferLetterIssuer {
 
 	private final DocumentIssuanceService documentIssuanceService;
+	private final SchoolClock schoolClock;
 
 	public DocumentIssuance issue(Long tenantId, Admission admission, Long issuedByUserId) {
 		String applicantName = admission.getApplicantFirstName() + " " + admission.getApplicantLastName();
@@ -29,7 +30,7 @@ public class OfferLetterIssuer {
 		model.put("guardianName", admission.getGuardianFirstName() + " " + admission.getGuardianLastName());
 		model.put("appliedGrade", admission.getAppliedGrade());
 		model.put("applicationReference", admission.getPublicId().toString().substring(0, 8).toUpperCase());
-		model.put("offerDate", LocalDate.now().toString());
+		model.put("offerDate", schoolClock.today(tenantId).toString());
 		model.put("hasFeeReceipt", admission.getApplicationFeeReceiptNumber() != null);
 		model.put("feeReceiptNumber", admission.getApplicationFeeReceiptNumber());
 

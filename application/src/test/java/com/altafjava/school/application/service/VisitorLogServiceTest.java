@@ -30,6 +30,7 @@ import com.altafjava.platform.core.exception.ResourceNotFoundException;
 import com.altafjava.platform.core.tenant.TenantContext;
 import com.altafjava.platform.core.tenant.TenantType;
 import com.altafjava.platform.domain.document.model.DocumentIssuance;
+import com.altafjava.school.application.time.TestSchoolClocks;
 import com.altafjava.school.application.visitor.VisitorBadgeIssuer;
 import com.altafjava.school.domain.employee.model.Employee;
 import com.altafjava.school.domain.employee.model.EmployeeStatus;
@@ -71,7 +72,7 @@ class VisitorLogServiceTest {
 	void setUp() {
 		lenient().when(transactionManager.getTransaction(any())).thenReturn(mock(TransactionStatus.class));
 		service = new VisitorLogService(visitorLogRepository, visitorRequestRepository, employeeRepository,
-				visitorBadgeIssuer, documentIssuanceService, transactionManager);
+				visitorBadgeIssuer, documentIssuanceService, transactionManager, TestSchoolClocks.systemDefault());
 		TenantContext.ForTesting.setCurrentTenant(TENANT_ID, null, null, TenantType.SHARED);
 		request = VisitorRequest.walkIn("Alex Ray", "555-0100", "Meeting", 20L, 3L, LocalDate.now());
 		request.setId(40L);
@@ -154,7 +155,7 @@ class VisitorLogServiceTest {
 
 	@Test
 	void checkIn_whenTheHostHasLeft_throwsBusinessException() {
-		host.exit(EmployeeStatus.RESIGNED, LocalDate.now(), null);
+		host.exit(EmployeeStatus.RESIGNED, LocalDate.now(), null, LocalDate.now());
 		stubAdmissible();
 
 		assertThrows(BusinessException.class,

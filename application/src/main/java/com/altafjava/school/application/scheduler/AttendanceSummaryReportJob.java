@@ -9,6 +9,7 @@ import com.altafjava.platform.core.tenant.TenantContext;
 import com.altafjava.platform.domain.scheduler.model.JobExecutionContext;
 import com.altafjava.platform.domain.scheduler.model.JobExecutionResult;
 import com.altafjava.school.application.scheduler.support.TenantAdminNotifier;
+import com.altafjava.school.application.time.SchoolClock;
 import com.altafjava.school.domain.attendance.model.AttendanceStatus;
 import com.altafjava.school.domain.attendance.repository.AttendanceRepository;
 import lombok.extern.slf4j.Slf4j;
@@ -24,11 +25,13 @@ public class AttendanceSummaryReportJob implements JobExecutionStrategy {
 
 	private final AttendanceRepository attendanceRepository;
 	private final TenantAdminNotifier tenantAdminNotifier;
+	private final SchoolClock schoolClock;
 
 	public AttendanceSummaryReportJob(AttendanceRepository attendanceRepository,
-			TenantAdminNotifier tenantAdminNotifier) {
+			TenantAdminNotifier tenantAdminNotifier, SchoolClock schoolClock) {
 		this.attendanceRepository = attendanceRepository;
 		this.tenantAdminNotifier = tenantAdminNotifier;
+		this.schoolClock = schoolClock;
 	}
 
 	@Override
@@ -51,7 +54,7 @@ public class AttendanceSummaryReportJob implements JobExecutionStrategy {
 		Long tenantId = TenantContext.getCurrentTenantId();
 		log.info("action=attendance-summary-report tenantId={} executionId={}", tenantId, ctx.executionId());
 
-		LocalDate to = LocalDate.now();
+		LocalDate to = schoolClock.today(tenantId);
 		LocalDate from = to.minusDays(7);
 		long present = countByStatus(tenantId, from, to, AttendanceStatus.PRESENT);
 		long absent = countByStatus(tenantId, from, to, AttendanceStatus.ABSENT);

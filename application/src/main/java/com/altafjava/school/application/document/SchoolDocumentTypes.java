@@ -23,6 +23,7 @@ public class SchoolDocumentTypes {
 	public static final String REPORT_CARD = "REPORT_CARD";
 	public static final String ADMISSION_OFFER_LETTER = "ADMISSION_OFFER_LETTER";
 	public static final String VISITOR_BADGE = "VISITOR_BADGE";
+	public static final String FEE_RECEIPT = "FEE_RECEIPT";
 
 	public static final String OWNER_STUDENT = "STUDENT";
 	public static final String OWNER_EMPLOYEE = "EMPLOYEE";
@@ -87,6 +88,22 @@ public class SchoolDocumentTypes {
 				PlaceholderField.text("validOn", "Date the badge is valid"),
 				PlaceholderField.image("photo", "Photo")),
 				DefaultDocumentTemplate.classpath(DocumentTemplateFormat.SVG, "document-templates/visitor-badge.svg"));
+	}
+
+	@Bean
+	DocumentTypeDefinition feeReceiptDocumentType() {
+		return new DocumentTypeDefinition(FEE_RECEIPT, "Fee receipt", List.of(
+				PlaceholderField.text("receiptNumber", "Receipt number"),
+				PlaceholderField.text("studentName", "Student name"),
+				PlaceholderField.text("studentCode", "Admission no."),
+				PlaceholderField.text("className", "Class"),
+				PlaceholderField.text("feeName", "Fee"),
+				PlaceholderField.text("amount", "Amount paid, with currency"),
+				PlaceholderField.text("paidOn", "Date paid"),
+				PlaceholderField.text("paymentMode", "Payment mode"),
+				PlaceholderField.flag("hasReference", "Has a transaction or cheque reference"),
+				PlaceholderField.text("reference", "Transaction or cheque reference")),
+				DefaultDocumentTemplate.classpath(DocumentTemplateFormat.HTML, "document-templates/fee-receipt.html"));
 	}
 
 	@Bean

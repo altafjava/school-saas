@@ -23,6 +23,7 @@ import com.altafjava.platform.core.tenant.TenantType;
 import com.altafjava.platform.domain.scheduler.model.JobExecutionContext;
 import com.altafjava.platform.domain.scheduler.model.JobExecutionResult;
 import com.altafjava.platform.domain.scheduler.model.TriggerType;
+import com.altafjava.school.application.time.TestSchoolClocks;
 import com.altafjava.school.domain.term.model.Term;
 import com.altafjava.school.domain.term.repository.TermRepository;
 
@@ -36,7 +37,7 @@ class TermRolloverJobTest {
 
 	@BeforeEach
 	void setUp() {
-		job = new TermRolloverJob(termRepository);
+		job = new TermRolloverJob(termRepository, TestSchoolClocks.systemDefault());
 		TenantContext.ForTesting.setCurrentTenant(1L, null, null, TenantType.SHARED);
 	}
 

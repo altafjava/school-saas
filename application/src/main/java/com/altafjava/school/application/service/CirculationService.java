@@ -15,6 +15,7 @@ import com.altafjava.school.application.filter.CirculationFilter;
 import com.altafjava.school.application.library.ReservationAllocator;
 import com.altafjava.school.application.reference.EntityRef;
 import com.altafjava.school.application.reference.PublicIdLookup;
+import com.altafjava.school.application.time.SchoolClock;
 import com.altafjava.school.domain.library.model.BookCopy;
 import com.altafjava.school.domain.library.model.BookCopyStatus;
 import com.altafjava.school.domain.library.model.BookReservation;
@@ -50,11 +51,12 @@ public class CirculationService {
 	private final ReservationAllocator reservationAllocator;
 	private final LibraryFineCalculator libraryFineCalculator = new LibraryFineCalculator();
 	private final PublicIdLookup publicIdLookup;
+	private final SchoolClock schoolClock;
 
 	public CirculationService(CirculationRepository circulationRepository, BookCopyRepository bookCopyRepository,
 			StudentRepository studentRepository, TenantSettingOverrideService tenantSettingOverrideService,
 			BookReservationRepository bookReservationRepository, ReservationAllocator reservationAllocator,
-			PublicIdLookup publicIdLookup) {
+			PublicIdLookup publicIdLookup, SchoolClock schoolClock) {
 		this.publicIdLookup = publicIdLookup;
 		this.circulationRepository = circulationRepository;
 		this.bookCopyRepository = bookCopyRepository;
@@ -62,6 +64,7 @@ public class CirculationService {
 		this.tenantSettingOverrideService = tenantSettingOverrideService;
 		this.bookReservationRepository = bookReservationRepository;
 		this.reservationAllocator = reservationAllocator;
+		this.schoolClock = schoolClock;
 	}
 
 	@Transactional(readOnly = true)
@@ -83,7 +86,7 @@ public class CirculationService {
 		checkoutCopy(tenantId, copy, student.getId());
 		bookCopyRepository.save(copy);
 
-		LocalDate today = LocalDate.now();
+		LocalDate today = schoolClock.today(tenantId);
 		LocalDate dueDate = today.plusDays(resolveDueDays(tenantId));
 		Circulation circulation = Circulation.checkout(copy.getId(), student.getId(), today, dueDate);
 		return circulationRepository.save(circulation);
@@ -106,7 +109,7 @@ public class CirculationService {
 						() -> new ResourceNotFoundException("Book copy not found: " + circulation.getBookCopyId()));
 		copy.returnCopy();
 		bookCopyRepository.save(copy);
-		reservationAllocator.allocate(tenantId, copy, LocalDate.now());
+		reservationAllocator.allocate(tenantId, copy, schoolClock.today(tenantId));
 
 		return saved;
 	}
@@ -128,7 +131,7 @@ public class CirculationService {
 				circulation.getStudentId())) {
 			throw new BusinessException("Another member is waiting for this book, so it cannot be renewed");
 		}
-		LocalDate today = LocalDate.now();
+		LocalDate today = schoolClock.today(tenantId);
 		LocalDate base = circulation.getDueDate().isAfter(today) ? circulation.getDueDate() : today;
 		circulation.renew(today, base.plusDays(resolveDueDays(tenantId)), resolveMaxRenewals(tenantId));
 		return circulationRepository.save(circulation);

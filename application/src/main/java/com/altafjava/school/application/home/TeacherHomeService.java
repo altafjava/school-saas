@@ -13,7 +13,6 @@ import org.springframework.data.domain.Sort;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import com.altafjava.platform.application.service.NotificationService;
 import com.altafjava.platform.core.tenant.TenantContext;
 import com.altafjava.school.application.reference.ReferenceSummary;
 import com.altafjava.school.application.security.TeachingAssignmentResolver;
@@ -70,7 +69,7 @@ public class TeacherHomeService {
 	private final StudentRepository studentRepository;
 	private final EmployeeRepository employeeRepository;
 	private final LeaveRequestService leaveRequestService;
-	private final NotificationService notificationService;
+	private final InboxLoader inboxLoader;
 
 	/** The classes the screen draws on, and how the teacher relates to them. */
 	private record Teaching(TeachingAssignments assignments, Map<Long, Classroom> classrooms, Set<Long> homerooms) {
@@ -99,7 +98,7 @@ public class TeacherHomeService {
 						? studentLeaveToReview(tenantId, teaching, caller)
 						: null,
 				caller.holds(SchoolPermissions.LEAVE_REQUEST_REVIEW) ? staffLeaveToReview(tenantId, caller) : null,
-				new Inbox(notificationService.getUnreadCount(caller.userId().toString())));
+				inboxLoader.load(caller));
 	}
 
 	// Timetable rows and class-teacher links outlive their year, so a promoted class must be filtered out.

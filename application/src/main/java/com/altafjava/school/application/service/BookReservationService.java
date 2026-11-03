@@ -14,6 +14,7 @@ import com.altafjava.school.application.filter.BookReservationFilter;
 import com.altafjava.school.application.library.ReservationAllocator;
 import com.altafjava.school.application.reference.EntityRef;
 import com.altafjava.school.application.reference.PublicIdLookup;
+import com.altafjava.school.application.time.SchoolClock;
 import com.altafjava.school.domain.library.model.Book;
 import com.altafjava.school.domain.library.model.BookCopy;
 import com.altafjava.school.domain.library.model.BookCopyStatus;
@@ -40,6 +41,7 @@ public class BookReservationService {
 	private final CirculationRepository circulationRepository;
 	private final ReservationAllocator reservationAllocator;
 	private final PublicIdLookup publicIdLookup;
+	private final SchoolClock schoolClock;
 
 	@Transactional(readOnly = true)
 	public Page<BookReservation> list(BookReservationFilter filter, Pageable pageable) {
@@ -66,7 +68,7 @@ public class BookReservationService {
 		reservation.cancel();
 		BookReservation saved = bookReservationRepository.save(reservation);
 		if (holdingACopy) {
-			passOn(tenantId, heldCopyId, LocalDate.now());
+			passOn(tenantId, heldCopyId, schoolClock.today(tenantId));
 		}
 		return saved;
 	}
