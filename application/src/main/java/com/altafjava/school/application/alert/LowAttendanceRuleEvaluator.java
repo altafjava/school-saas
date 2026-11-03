@@ -7,6 +7,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
 import org.springframework.stereotype.Component;
 import com.altafjava.platform.application.alert.AlertRuleEvaluator;
 import com.altafjava.platform.application.alert.AlertTrigger;
@@ -15,9 +17,8 @@ import com.altafjava.platform.domain.notification.model.NotificationPriority;
 import com.altafjava.school.application.scheduler.support.StudentNotificationRecipientResolver;
 import com.altafjava.school.application.time.SchoolClock;
 import com.altafjava.school.domain.attendance.model.AttendancePercentage;
-import com.altafjava.school.domain.attendance.model.AttendanceStatus;
+import com.altafjava.school.domain.attendance.model.AttendanceTally;
 import com.altafjava.school.domain.attendance.repository.AttendanceRepository;
-import com.altafjava.school.domain.attendance.repository.AttendanceRepository.StudentAttendanceCount;
 import com.altafjava.school.domain.attendance.service.AttendancePercentageCalculator;
 import com.altafjava.school.domain.classroom.repository.StudentClassroomLinkRepository;
 import com.altafjava.school.domain.student.model.Student;
@@ -69,23 +70,19 @@ public class LowAttendanceRuleEvaluator implements AlertRuleEvaluator {
 		if (studentIds.isEmpty()) {
 			return List.of();
 		}
-		Map<Long, Long> totalMarkedByStudentId = toCountMap(
-				attendanceRepository.countByStudentIdsAndTenantIdAndAttendanceDateBetween(studentIds, tenantId, from,
-						to));
-		Map<Long, Long> presentByStudentId = toCountMap(attendanceRepository
-				.countByStudentIdsAndTenantIdAndAttendanceDateBetweenAndStatus(studentIds, tenantId, from, to,
-						AttendanceStatus.PRESENT));
+		Map<Long, List<AttendanceTally>> talliesByStudentId = attendanceRepository
+				.tallyByStudent(tenantId, studentIds, from, to, true, Set.of()).stream()
+				.collect(Collectors.groupingBy(AttendanceTally::studentId));
 
 		List<Long> belowThresholdStudentIds = new ArrayList<>();
 		Map<Long, AttendancePercentage> percentageByStudentId = new HashMap<>();
 		for (Long studentId : studentIds) {
-			Long totalMarkedDays = totalMarkedByStudentId.get(studentId);
-			if (totalMarkedDays == null || totalMarkedDays == 0) {
+			List<AttendanceTally> tallies = talliesByStudentId.get(studentId);
+			if (tallies == null) {
 				continue;
 			}
-			long presentDays = presentByStudentId.getOrDefault(studentId, 0L);
-			AttendancePercentage attendancePercentage = attendancePercentageCalculator.calculate(presentDays,
-					totalMarkedDays);
+			AttendancePercentage attendancePercentage = attendancePercentageCalculator
+					.calculate(AttendanceTally.byStatus(tallies));
 			if (attendancePercentage.percentage().compareTo(BigDecimal.valueOf(thresholdPercent)) < 0) {
 				belowThresholdStudentIds.add(studentId);
 				percentageByStudentId.put(studentId, attendancePercentage);
@@ -100,14 +97,6 @@ public class LowAttendanceRuleEvaluator implements AlertRuleEvaluator {
 			buildTrigger(tenantId, student, percentageByStudentId.get(student.getId())).ifPresent(triggers::add);
 		}
 		return triggers;
-	}
-
-	private Map<Long, Long> toCountMap(List<StudentAttendanceCount> counts) {
-		Map<Long, Long> byStudentId = new HashMap<>();
-		for (StudentAttendanceCount count : counts) {
-			byStudentId.put(count.getStudentId(), count.getTotal());
-		}
-		return byStudentId;
 	}
 
 	private Optional<AlertTrigger> buildTrigger(Long tenantId, Student student,

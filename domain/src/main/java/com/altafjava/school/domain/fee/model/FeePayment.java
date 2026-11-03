@@ -89,6 +89,9 @@ public class FeePayment extends SoftDeletableEntity {
 	// The issued receipt document, set the first time a receipt is downloaded.
 	@Column(name = "receipt_document_id")
 	private Long receiptDocumentId;
+	// FK to fee_invoices.id — optional; the invoice this payment settles.
+	@Column(name = "invoice_id")
+	private Long invoiceId;
 
 	public static FeePayment create(Long studentId, Long feeStructureId, BigDecimal paidAmount,
 			LocalDateTime paidAt, String receiptNumber, PaymentInstrument instrument) {
@@ -104,6 +107,17 @@ public class FeePayment extends SoftDeletableEntity {
 				.chequeDate(instrument.chequeDate())
 				.chequeBank(instrument.chequeBank())
 				.build();
+	}
+
+	/** Settles part of an invoice; the invoice must bill the fee this payment is for. */
+	public void applyTo(FeeInvoice invoice) {
+		if (invoice.isCancelled()) {
+			throw new BusinessException("A cancelled invoice cannot be paid");
+		}
+		if (!invoice.getStudentId().equals(studentId) || !invoice.bills(feeStructureId)) {
+			throw new BusinessException("The invoice does not bill this fee to this student");
+		}
+		this.invoiceId = invoice.getId();
 	}
 
 	/** Keeps the row as evidence but takes the money out of every balance and total. */

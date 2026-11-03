@@ -11,6 +11,11 @@ import com.altafjava.school.application.messaging.CommunicationDataEraser;
 import com.altafjava.school.domain.announcement.model.Announcement;
 import com.altafjava.school.domain.announcement.model.AnnouncementStatus;
 import com.altafjava.school.domain.announcement.repository.AnnouncementRepository;
+import com.altafjava.school.domain.enquiry.model.Enquiry;
+import com.altafjava.school.domain.enquiry.model.EnquiryFollowUp;
+import com.altafjava.school.domain.enquiry.model.EnquiryStatus;
+import com.altafjava.school.domain.enquiry.repository.EnquiryFollowUpRepository;
+import com.altafjava.school.domain.enquiry.repository.EnquiryRepository;
 import com.altafjava.school.domain.messaging.repository.ConversationRepository;
 import com.altafjava.school.domain.student.model.EnrollmentStatus;
 import com.altafjava.school.domain.student.model.Student;
@@ -43,6 +48,9 @@ public class SchoolDataRetentionHandler implements DomainRetentionHandler {
 	private static final String ENTITY_TYPE_STUDENT = "STUDENT";
 	private static final String ENTITY_TYPE_ANNOUNCEMENT = "ANNOUNCEMENT";
 	private static final String ENTITY_TYPE_CONVERSATION = "CONVERSATION";
+	private static final String ENTITY_TYPE_ENQUIRY = "ENQUIRY";
+	private static final List<EnquiryStatus> FINISHED_ENQUIRIES = List.of(EnquiryStatus.CONVERTED,
+			EnquiryStatus.CLOSED);
 	private static final String RETENTION_ACTOR = "data-retention-window-elapsed";
 	private static final List<AnnouncementStatus> CLOSED_ANNOUNCEMENTS = List.of(AnnouncementStatus.EXPIRED,
 			AnnouncementStatus.CANCELLED, AnnouncementStatus.PUBLISHED);
@@ -53,11 +61,16 @@ public class SchoolDataRetentionHandler implements DomainRetentionHandler {
 	private final AnnouncementRepository announcementRepository;
 	private final ConversationRepository conversationRepository;
 	private final CommunicationDataEraser communicationDataEraser;
+	private final EnquiryRepository enquiryRepository;
+	private final EnquiryFollowUpRepository enquiryFollowUpRepository;
 	private final TransactionTemplate transactionTemplate;
 
 	public SchoolDataRetentionHandler(StudentRepository studentRepository,
 			AnnouncementRepository announcementRepository, ConversationRepository conversationRepository,
-			CommunicationDataEraser communicationDataEraser, PlatformTransactionManager transactionManager) {
+			CommunicationDataEraser communicationDataEraser, EnquiryRepository enquiryRepository,
+			EnquiryFollowUpRepository enquiryFollowUpRepository, PlatformTransactionManager transactionManager) {
+		this.enquiryRepository = enquiryRepository;
+		this.enquiryFollowUpRepository = enquiryFollowUpRepository;
 		this.studentRepository = studentRepository;
 		this.announcementRepository = announcementRepository;
 		this.conversationRepository = conversationRepository;
@@ -71,6 +84,7 @@ public class SchoolDataRetentionHandler implements DomainRetentionHandler {
 			case ENTITY_TYPE_STUDENT -> enforceStudents(tenantId, cutoff, deletionPolicy);
 			case ENTITY_TYPE_ANNOUNCEMENT -> enforceAnnouncements(tenantId, cutoff, deletionPolicy);
 			case ENTITY_TYPE_CONVERSATION -> enforceConversations(tenantId, cutoff, deletionPolicy);
+			case ENTITY_TYPE_ENQUIRY -> enforceEnquiries(tenantId, cutoff, deletionPolicy);
 			default -> {
 				log.info("action=retention-entity-type-not-handled tenantId={} entityType={}", tenantId, entityType);
 				yield 0;
@@ -108,6 +122,33 @@ public class SchoolDataRetentionHandler implements DomainRetentionHandler {
 						communicationDataEraser.eraseConversation(tenantId, conversation);
 					}
 				});
+	}
+
+	// Only finished enquiries: a family still being followed up keeps its details.
+	private int enforceEnquiries(Long tenantId, Instant cutoff, String deletionPolicy) {
+		return forEachInOwnTransaction(enquiryRepository.findFinishedBefore(tenantId, FINISHED_ENQUIRIES, cutoff),
+				enquiry -> applyToEnquiry(tenantId, enquiry, deletionPolicy));
+	}
+
+	private void applyToEnquiry(Long tenantId, Enquiry enquiry, String deletionPolicy) {
+		List<EnquiryFollowUp> followUps = enquiryFollowUpRepository.findAllByEnquiry(tenantId, enquiry.getId());
+		switch (deletionPolicy) {
+			case "HARD_DELETE" -> {
+				enquiryFollowUpRepository.deleteAll(followUps);
+				enquiryRepository.delete(enquiry);
+			}
+			case "ANONYMIZE" -> {
+				followUps.forEach(EnquiryFollowUp::erasePii);
+				enquiryFollowUpRepository.saveAll(followUps);
+				enquiry.erasePii();
+				enquiry.softDelete(RETENTION_ACTOR);
+				enquiryRepository.save(enquiry);
+			}
+			default -> {
+				enquiry.softDelete(RETENTION_ACTOR);
+				enquiryRepository.save(enquiry);
+			}
+		}
 	}
 
 	// One bad row is reported after the rest have committed, as for students below.

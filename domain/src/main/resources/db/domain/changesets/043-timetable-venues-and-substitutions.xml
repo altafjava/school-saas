@@ -74,6 +74,12 @@
                 baseColumnNames="venue_id"
                 referencedTableName="venues"
                 referencedColumnNames="id"/>
+        <addForeignKeyConstraint
+                constraintName="fk_exams_venue_id"
+                baseTableName="exams"
+                baseColumnNames="venue_id"
+                referencedTableName="venues"
+                referencedColumnNames="id"/>
     </changeSet>
 
     <changeSet id="school-166-timetable-substitutions" author="school">

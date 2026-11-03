@@ -24,11 +24,13 @@ public class SchoolDocumentTypes {
 	public static final String ADMISSION_OFFER_LETTER = "ADMISSION_OFFER_LETTER";
 	public static final String VISITOR_BADGE = "VISITOR_BADGE";
 	public static final String FEE_RECEIPT = "FEE_RECEIPT";
+	public static final String FEE_INVOICE = "FEE_INVOICE";
 
 	public static final String OWNER_STUDENT = "STUDENT";
 	public static final String OWNER_EMPLOYEE = "EMPLOYEE";
 	public static final String OWNER_ADMISSION = "ADMISSION";
 	public static final String OWNER_VISITOR_REQUEST = "VISITOR_REQUEST";
+	public static final String OWNER_FEE_INVOICE = "FEE_INVOICE";
 
 	@Bean
 	DocumentTypeDefinition studentIdCardDocumentType() {
@@ -146,5 +148,22 @@ public class SchoolDocumentTypes {
 				PlaceholderField.text("labelClassTeacher", "Label: Class teacher"),
 				PlaceholderField.text("labelPrincipal", "Label: Principal")),
 				DefaultDocumentTemplate.classpath(DocumentTemplateFormat.HTML, "document-templates/report-card.html"));
+	}
+
+	@Bean
+	DocumentTypeDefinition feeInvoiceDocumentType() {
+		return new DocumentTypeDefinition(FEE_INVOICE, "Fee invoice", List.of(
+				PlaceholderField.text("invoiceNumber", "Invoice number"),
+				PlaceholderField.text("studentName", "Student name"),
+				PlaceholderField.text("studentCode", "Admission no."),
+				PlaceholderField.text("className", "Class"),
+				PlaceholderField.text("period", "Period billed"),
+				PlaceholderField.text("issueDate", "Issue date"),
+				PlaceholderField.text("dueDate", "Due date"),
+				PlaceholderField.list("lines", "Charges", List.of(
+						PlaceholderField.text("description", "Charge"),
+						PlaceholderField.text("amount", "Amount"))),
+				PlaceholderField.text("total", "Total")),
+				DefaultDocumentTemplate.classpath(DocumentTemplateFormat.HTML, "document-templates/fee-invoice.html"));
 	}
 }

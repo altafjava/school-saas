@@ -1,6 +1,7 @@
 package com.altafjava.school.application.service;
 
 import java.time.LocalDate;
+import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 import org.springframework.data.domain.Page;
@@ -21,6 +22,7 @@ import com.altafjava.school.domain.attendance.model.Attendance;
 import com.altafjava.school.domain.attendance.model.AttendanceCorrection;
 import com.altafjava.school.domain.attendance.model.AttendancePercentage;
 import com.altafjava.school.domain.attendance.model.AttendanceStatus;
+import com.altafjava.school.domain.attendance.model.AttendanceTally;
 import com.altafjava.school.domain.attendance.repository.AttendanceCorrectionRepository;
 import com.altafjava.school.domain.attendance.repository.AttendanceRepository;
 import com.altafjava.school.domain.attendance.service.AttendancePercentageCalculator;
@@ -106,17 +108,8 @@ public class AttendanceService {
 		// Denominator is days attendance was actually marked, minus any tenant-defined holiday that
 		// fell in range — a holiday mistakenly marked as attendance must not count either way.
 		Set<LocalDate> holidayDates = holidayService.datesInRange(tenantId, from, to);
-		long totalMarkedDays = holidayDates.isEmpty()
-				? attendanceRepository.countByStudentIdAndTenantIdAndAttendanceDateBetween(student.getId(), tenantId,
-						from, to)
-				: attendanceRepository.countByStudentIdAndTenantIdAndAttendanceDateBetweenExcludingDates(
-						student.getId(), tenantId, from, to, holidayDates);
-		long presentDays = holidayDates.isEmpty()
-				? attendanceRepository.countByStudentIdAndTenantIdAndAttendanceDateBetweenAndStatus(student.getId(),
-						tenantId, from, to, AttendanceStatus.PRESENT)
-				: attendanceRepository.countByStudentIdAndTenantIdAndAttendanceDateBetweenAndStatusExcludingDates(
-						student.getId(), tenantId, from, to, AttendanceStatus.PRESENT, holidayDates);
-		return attendancePercentageCalculator.calculate(presentDays, totalMarkedDays);
+		return attendancePercentageCalculator.calculate(AttendanceTally.byStatus(attendanceRepository.tallyByStudent(
+				tenantId, List.of(student.getId()), from, to, holidayDates.isEmpty(), holidayDates)));
 	}
 
 	@Transactional

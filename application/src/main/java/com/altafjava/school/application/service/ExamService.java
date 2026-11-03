@@ -14,6 +14,8 @@ import com.altafjava.platform.core.concurrency.ExpectedVersion;
 import com.altafjava.platform.core.exception.BusinessException;
 import com.altafjava.platform.core.exception.ResourceNotFoundException;
 import com.altafjava.platform.core.tenant.TenantContext;
+import com.altafjava.school.application.exam.ExamClashGuard;
+import com.altafjava.school.application.exam.ExamScheduleVisibility;
 import com.altafjava.school.application.filter.ExamFilter;
 import com.altafjava.school.application.reference.EntityRef;
 import com.altafjava.school.application.reference.PublicIdLookup;
@@ -22,6 +24,7 @@ import com.altafjava.school.application.security.CourseworkReach;
 import com.altafjava.school.domain.classroom.repository.ClassroomRepository;
 import com.altafjava.school.domain.exam.event.ExamResultsPublishedEvent;
 import com.altafjava.school.domain.exam.model.Exam;
+import com.altafjava.school.domain.exam.model.ExamSlot;
 import com.altafjava.school.domain.exam.model.ExamStatus;
 import com.altafjava.school.domain.exam.repository.ExamRepository;
 import com.altafjava.school.domain.exam.repository.ExamTypeDefinitionRepository;
@@ -44,12 +47,26 @@ public class ExamService {
 	private final EventPublisher eventPublisher;
 	private final AcademicAccessGuard academicAccessGuard;
 	private final PublicIdLookup publicIdLookup;
+	private final ExamClashGuard examClashGuard;
+	private final ExamScheduleVisibility examScheduleVisibility;
+
+	/** When and where an exam sits, as the caller names it: the venue by public id, and optional. */
+	public record SlotRequest(LocalDateTime startsAt, int durationMinutes, String venuePublicId) {
+	}
+
+	/** What a new exam is; the slot comes separately so it can be checked for clashes. */
+	public record ExamDetails(String title, String subjectPublicId, String classroomPublicId, BigDecimal maxMarks,
+			String termPublicId, String examTypePublicId, BigDecimal weightage) {
+	}
 
 	public ExamService(ExamRepository examRepository, ClassroomRepository classroomRepository,
 			SubjectRepository subjectRepository, TermRepository termRepository,
 			ExamTypeDefinitionRepository examTypeDefinitionRepository, GradeRepository gradeRepository,
-			EventPublisher eventPublisher, AcademicAccessGuard academicAccessGuard, PublicIdLookup publicIdLookup) {
+			EventPublisher eventPublisher, AcademicAccessGuard academicAccessGuard, PublicIdLookup publicIdLookup,
+			ExamClashGuard examClashGuard, ExamScheduleVisibility examScheduleVisibility) {
 		this.publicIdLookup = publicIdLookup;
+		this.examClashGuard = examClashGuard;
+		this.examScheduleVisibility = examScheduleVisibility;
 		this.examRepository = examRepository;
 		this.classroomRepository = classroomRepository;
 		this.subjectRepository = subjectRepository;
@@ -65,9 +82,11 @@ public class ExamService {
 		Long tenantId = TenantContext.getCurrentTenantId();
 		Long classroomId = publicIdLookup.idOrNull(EntityRef.CLASSROOM, filter.classroomPublicId());
 		CourseworkReach reach = academicAccessGuard.courseworkReach(tenantId, classroomId);
+		ExamScheduleVisibility.Reach schedules = examScheduleVisibility.current(tenantId);
 		return examRepository.search(tenantId, reach.everyClassroom(), reach.classroomIds(), classroomId,
 				publicIdLookup.idOrNull(EntityRef.TERM, filter.termPublicId()),
-				publicIdLookup.idOrNull(EntityRef.SUBJECT, filter.subjectPublicId()), filter.status(), pageable);
+				publicIdLookup.idOrNull(EntityRef.SUBJECT, filter.subjectPublicId()), filter.status(),
+				schedules.everySchedule(), schedules.staffClassroomIds(), pageable);
 	}
 
 	@Transactional(readOnly = true)
@@ -76,30 +95,39 @@ public class ExamService {
 		Exam exam = examRepository.findByPublicIdAndTenantId(UUID.fromString(publicId), tenantId)
 				.orElseThrow(() -> new ResourceNotFoundException("Exam not found: " + publicId));
 		academicAccessGuard.assertCanViewCoursework(tenantId, exam.getClassroomId());
+		// An unpublished date is not announced; to a family the exam does not exist yet.
+		if (!examScheduleVisibility.current(tenantId).sees(exam)) {
+			throw new ResourceNotFoundException("Exam not found: " + publicId);
+		}
 		return exam;
 	}
 
 	@Transactional
-	public Exam schedule(String title, String subjectPublicId, String classroomPublicId,
-			LocalDateTime scheduledAt, BigDecimal maxMarks, String termPublicId, String examTypePublicId,
-			BigDecimal weightage) {
+	public Exam schedule(ExamDetails details, SlotRequest slot) {
 		Long tenantId = TenantContext.getCurrentTenantId();
 		Long classroomId = classroomRepository
-				.findByPublicIdAndTenantId(UUID.fromString(classroomPublicId), tenantId)
-				.orElseThrow(() -> new ResourceNotFoundException("Classroom not found: " + classroomPublicId))
+				.findByPublicIdAndTenantId(UUID.fromString(details.classroomPublicId()), tenantId)
+				.orElseThrow(() -> new ResourceNotFoundException("Classroom not found: " + details.classroomPublicId()))
 				.getId();
-		Long subjectId = subjectRepository.findByPublicIdAndTenantId(UUID.fromString(subjectPublicId), tenantId)
-				.orElseThrow(() -> new ResourceNotFoundException("Subject not found: " + subjectPublicId))
+		Long subjectId = subjectRepository
+				.findByPublicIdAndTenantId(UUID.fromString(details.subjectPublicId()), tenantId)
+				.orElseThrow(() -> new ResourceNotFoundException("Subject not found: " + details.subjectPublicId()))
 				.getId();
-		Long termId = termPublicId == null ? null : requireTermId(tenantId, termPublicId);
+		Long termId = details.termPublicId() == null ? null : requireTermId(tenantId, details.termPublicId());
 		Long examTypeId = examTypeDefinitionRepository
-				.findByPublicIdAndTenantId(UUID.fromString(examTypePublicId), tenantId)
-				.orElseThrow(() -> new ResourceNotFoundException("Exam type not found: " + examTypePublicId))
+				.findByPublicIdAndTenantId(UUID.fromString(details.examTypePublicId()), tenantId)
+				.orElseThrow(() -> new ResourceNotFoundException("Exam type not found: " + details.examTypePublicId()))
 				.getId();
-		Exam exam = Exam.create(title, subjectId, classroomId, scheduledAt, maxMarks, termId, examTypeId,
-				weightage == null ? Exam.FULL_WEIGHTAGE : weightage);
+		Exam exam = Exam.create(details.title(), subjectId, classroomId, slotOf(slot), details.maxMarks(), termId,
+				examTypeId, details.weightage() == null ? Exam.FULL_WEIGHTAGE : details.weightage());
 		requireWithinTermWeightage(tenantId, exam);
+		examClashGuard.assertNoClash(tenantId, exam);
 		return examRepository.save(exam);
+	}
+
+	private ExamSlot slotOf(SlotRequest slot) {
+		return new ExamSlot(slot.startsAt(), slot.durationMinutes(),
+				publicIdLookup.idOrNull(EntityRef.VENUE, slot.venuePublicId()));
 	}
 
 	private Long requireTermId(Long tenantId, String termPublicId) {
@@ -109,10 +137,11 @@ public class ExamService {
 	}
 
 	@Transactional
-	public Exam reschedule(String publicId, LocalDateTime scheduledAt, ExpectedVersion expectedVersion) {
+	public Exam reschedule(String publicId, SlotRequest slot, ExpectedVersion expectedVersion) {
 		Exam exam = findByPublicId(publicId);
 		expectedVersion.verify(exam);
-		exam.reschedule(scheduledAt);
+		exam.reschedule(slotOf(slot));
+		examClashGuard.assertNoClash(TenantContext.getCurrentTenantId(), exam);
 		return examRepository.save(exam);
 	}
 

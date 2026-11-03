@@ -137,7 +137,7 @@ class GradeCrudE2ETest extends SchoolIntegrationTestBase {
 				.contentType(ContentType.JSON)
 				.body("{\"title\":\"Midterm\",\"subjectPublicId\":\"" + publicIds.of(Subject.class, subjectId)
 						+ "\",\"classroomPublicId\":\"" + publicIds.of(Classroom.class, classroomId)
-						+ "\",\"scheduledAt\":\"2026-03-01T09:00:00\",\"maxMarks\":100,\"examTypePublicId\":\""
+						+ "\",\"scheduledAt\":\"2026-03-01T09:00:00\",\"durationMinutes\":60,\"maxMarks\":100,\"examTypePublicId\":\""
 						+ publicIds.of(ExamTypeDefinition.class, examTypeId)
 						+ "\"}")
 				.when()

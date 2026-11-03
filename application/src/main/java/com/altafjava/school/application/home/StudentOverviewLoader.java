@@ -132,7 +132,8 @@ class StudentOverviewLoader {
 
 	private List<Exam> upcomingExams(Long tenantId, Set<Long> classroomIds, HomeDay day) {
 		return classroomIds.isEmpty() ? List.of()
-				: examRepository.findInClassroomsBetween(tenantId, classroomIds, ExamStatus.SCHEDULED, day.now(),
+				: examRepository.findPublishedInClassroomsBetween(tenantId, classroomIds, ExamStatus.SCHEDULED,
+						day.now(),
 						day.now().plusDays(UPCOMING_EXAM_DAYS), ROW_LIMIT);
 	}
 
@@ -184,10 +185,7 @@ class StudentOverviewLoader {
 	}
 
 	private StudentOverview.Attendance attendanceOf(AttendanceStatus today, List<AttendanceTally> tallies) {
-		long marked = tallies.stream().mapToLong(AttendanceTally::days).sum();
-		long present = tallies.stream().filter(tally -> tally.status() == AttendanceStatus.PRESENT)
-				.mapToLong(AttendanceTally::days).sum();
-		AttendancePercentage percentage = attendancePercentageCalculator.calculate(present, marked);
+		AttendancePercentage percentage = attendancePercentageCalculator.calculate(AttendanceTally.byStatus(tallies));
 		return new StudentOverview.Attendance(today, percentage.presentDays(), percentage.totalMarkedDays(),
 				percentage.percentage());
 	}

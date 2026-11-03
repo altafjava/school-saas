@@ -2,6 +2,7 @@ package com.altafjava.school.domain.fee.repository;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -14,6 +15,8 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import com.altafjava.school.domain.fee.model.FeeCollectionRow;
 import com.altafjava.school.domain.fee.model.FeePayment;
+import com.altafjava.school.domain.fee.model.FeePaymentStatus;
+import com.altafjava.school.domain.fee.model.InvoicePayment;
 import com.altafjava.school.domain.fee.model.PaymentMode;
 import com.altafjava.school.domain.fee.model.PaymentSource;
 
@@ -99,4 +102,13 @@ public interface FeePaymentRepository extends JpaRepository<FeePayment, Long> {
 			""")
 	List<FeeCollectionRow> collectionByDayAndMode(@Param("tenantId") Long tenantId,
 			@Param("paidFrom") LocalDateTime paidFrom, @Param("paidBefore") LocalDateTime paidBefore);
+
+	@Query("""
+			SELECT new com.altafjava.school.domain.fee.model.InvoicePayment(fp.invoiceId, COALESCE(SUM(fp.paidAmount), 0))
+			FROM FeePayment fp
+			WHERE fp.tenantId = :tenantId AND fp.invoiceId IN :invoiceIds AND fp.status = :status
+			GROUP BY fp.invoiceId
+			""")
+	List<InvoicePayment> sumByInvoice(@Param("tenantId") Long tenantId,
+			@Param("invoiceIds") Collection<Long> invoiceIds, @Param("status") FeePaymentStatus status);
 }

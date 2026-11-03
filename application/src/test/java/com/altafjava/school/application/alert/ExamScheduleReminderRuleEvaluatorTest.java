@@ -27,6 +27,8 @@ import com.altafjava.school.application.time.TestSchoolClocks;
 import com.altafjava.school.domain.classroom.model.StudentClassroomLink;
 import com.altafjava.school.domain.classroom.repository.StudentClassroomLinkRepository;
 import com.altafjava.school.domain.exam.model.Exam;
+import com.altafjava.school.domain.exam.model.ExamSlot;
+import com.altafjava.school.domain.exam.model.ExamStatus;
 import com.altafjava.school.domain.exam.repository.ExamRepository;
 import com.altafjava.school.domain.notification.SchoolNotificationTypes;
 import com.altafjava.school.domain.student.model.Student;
@@ -71,7 +73,8 @@ class ExamScheduleReminderRuleEvaluatorTest {
 	}
 
 	private Exam examWithId(long id, long classroomId, long subjectId) {
-		Exam exam = Exam.create("Midterm", subjectId, classroomId, LocalDateTime.now().plusDays(1),
+		Exam exam = Exam.create("Midterm", subjectId, classroomId,
+				new ExamSlot(LocalDateTime.now().plusDays(1), 60, null),
 				BigDecimal.valueOf(100), null, 1L, Exam.FULL_WEIGHTAGE);
 		exam.setId(id);
 		return exam;
@@ -96,7 +99,8 @@ class ExamScheduleReminderRuleEvaluatorTest {
 		Subject subject = subjectWithId(5L, "Math");
 		Student student = studentWithId(1L);
 
-		when(examRepository.findUpcoming(eq(1L), any(), any())).thenReturn(List.of(exam));
+		when(examRepository.findPublishedBetween(eq(1L), eq(ExamStatus.SCHEDULED), any(), any()))
+				.thenReturn(List.of(exam));
 		when(subjectRepository.findByIdAndTenantId(5L, 1L)).thenReturn(Optional.of(subject));
 		when(studentClassroomLinkRepository.findAllByClassroomId(1L, 10L)).thenReturn(roster(1L));
 		when(studentRepository.findAllByIdInAndTenantId(List.of(1L), 1L)).thenReturn(List.of(student));
@@ -123,7 +127,8 @@ class ExamScheduleReminderRuleEvaluatorTest {
 		Student student1 = studentWithId(1L);
 		Student student2 = studentWithId(2L);
 
-		when(examRepository.findUpcoming(eq(1L), any(), any())).thenReturn(List.of(exam));
+		when(examRepository.findPublishedBetween(eq(1L), eq(ExamStatus.SCHEDULED), any(), any()))
+				.thenReturn(List.of(exam));
 		when(subjectRepository.findByIdAndTenantId(5L, 1L)).thenReturn(Optional.of(subject));
 		when(studentClassroomLinkRepository.findAllByClassroomId(1L, 10L)).thenReturn(roster(1L, 2L));
 		when(studentRepository.findAllByIdInAndTenantId(List.of(1L, 2L), 1L))
@@ -143,7 +148,8 @@ class ExamScheduleReminderRuleEvaluatorTest {
 	void evaluate_examWithMissingSubject_skipsWithoutError() {
 		newEvaluator();
 		Exam exam = examWithId(100L, 10L, 5L);
-		when(examRepository.findUpcoming(eq(1L), any(), any())).thenReturn(List.of(exam));
+		when(examRepository.findPublishedBetween(eq(1L), eq(ExamStatus.SCHEDULED), any(), any()))
+				.thenReturn(List.of(exam));
 		when(subjectRepository.findByIdAndTenantId(5L, 1L)).thenReturn(Optional.empty());
 
 		assertTrue(evaluator.evaluate(rule()).isEmpty());
@@ -153,8 +159,9 @@ class ExamScheduleReminderRuleEvaluatorTest {
 	@Test
 	void evaluate_noUpcomingExams_returnsNoTriggers() {
 		newEvaluator();
-		when(examRepository.findUpcoming(eq(1L), any(), any())).thenReturn(List.of());
+		when(examRepository.findPublishedBetween(eq(1L), eq(ExamStatus.SCHEDULED), any(), any())).thenReturn(List.of());
 
 		assertTrue(evaluator.evaluate(rule()).isEmpty());
 	}
+
 }

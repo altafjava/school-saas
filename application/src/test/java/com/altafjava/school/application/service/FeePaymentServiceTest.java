@@ -44,6 +44,7 @@ import com.altafjava.school.domain.fee.model.PaymentSource;
 import com.altafjava.school.domain.fee.repository.FeeAssignmentRepository;
 import com.altafjava.school.domain.fee.repository.FeeDiscountRepository;
 import com.altafjava.school.domain.fee.repository.FeeInstallmentRepository;
+import com.altafjava.school.domain.fee.repository.FeeInvoiceRepository;
 import com.altafjava.school.domain.fee.repository.FeePaymentRepository;
 import com.altafjava.school.domain.fee.repository.FeeRefundRepository;
 import com.altafjava.school.domain.fee.repository.FeeStructureRepository;
@@ -53,6 +54,8 @@ import com.altafjava.school.domain.student.repository.StudentRepository;
 @ExtendWith(MockitoExtension.class)
 class FeePaymentServiceTest {
 
+	@Mock
+	private FeeInvoiceRepository feeInvoiceRepository;
 	@Mock
 	private FeePaymentRepository feePaymentRepository;
 	@Mock
@@ -85,7 +88,7 @@ class FeePaymentServiceTest {
 		feePaymentService = new FeePaymentService(feePaymentRepository, studentRepository, feeStructureRepository,
 				feeAssignmentRepository, studentClassroomLinkRepository, studentDataAccessGuard,
 				numberSequenceService, feeDiscountRepository, feeInstallmentRepository, feeRefundRepository,
-				publicIdLookup, TestSchoolClocks.systemDefault(), documentIssuanceService);
+				publicIdLookup, TestSchoolClocks.systemDefault(), documentIssuanceService, feeInvoiceRepository);
 		TenantContext.ForTesting.setCurrentTenant(1L, null, null, TenantType.SHARED);
 	}
 

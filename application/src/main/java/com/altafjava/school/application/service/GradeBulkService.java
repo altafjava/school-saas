@@ -56,6 +56,7 @@ public class GradeBulkService {
 		if (exam.getStatus() == ExamStatus.CANCELLED) {
 			throw new BusinessException("Grades cannot be recorded for a cancelled exam");
 		}
+		exam.requireMarksOpen();
 
 		Map<String, Student> roster = classRoster.byPublicId(tenantId, exam.getClassroomId());
 		Sheet sheet = new Sheet(exam, gradingScaleService.resolveEffectiveThresholds(exam.getClassroomId()), gradedBy,

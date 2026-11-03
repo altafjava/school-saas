@@ -165,7 +165,7 @@ class ExamCrudE2ETest extends SchoolIntegrationTestBase {
 				.contentType(ContentType.JSON)
 				.body("{\"title\":\"Midterm\",\"subjectPublicId\":\"" + publicIds.of(Subject.class, subjectId)
 						+ "\",\"classroomPublicId\":\"" + publicIds.of(Classroom.class, classroomId)
-						+ "\",\"scheduledAt\":\"2026-03-01T09:00:00\",\"maxMarks\":100,\"examTypePublicId\":\""
+						+ "\",\"scheduledAt\":\"2026-03-01T09:00:00\",\"durationMinutes\":60,\"maxMarks\":100,\"examTypePublicId\":\""
 						+ publicIds.of(ExamTypeDefinition.class, examTypeIdFor("MIDTERM")) + "\"}")
 				.when()
 				.post("/api/v1/exams")
@@ -199,7 +199,7 @@ class ExamCrudE2ETest extends SchoolIntegrationTestBase {
 				.contentType(ContentType.JSON)
 				.body("{\"title\":\"Final\",\"subjectPublicId\":\"" + publicIds.of(Subject.class, subjectId)
 						+ "\",\"classroomPublicId\":\"" + publicIds.of(Classroom.class, classroomId)
-						+ "\",\"scheduledAt\":\"2026-05-01T09:00:00\",\"maxMarks\":100,\"examTypePublicId\":\""
+						+ "\",\"scheduledAt\":\"2026-05-01T09:00:00\",\"durationMinutes\":60,\"maxMarks\":100,\"examTypePublicId\":\""
 						+ publicIds.of(ExamTypeDefinition.class, examTypeIdFor("FINAL")) + "\"}")
 				.when()
 				.post("/api/v1/exams")
@@ -218,7 +218,7 @@ class ExamCrudE2ETest extends SchoolIntegrationTestBase {
 				.contentType(ContentType.JSON)
 				.body("{\"title\":\"Quiz\",\"subjectPublicId\":\"" + publicIds.of(Subject.class, subjectId)
 						+ "\",\"classroomPublicId\":\"" + publicIds.of(Classroom.class, classroomId)
-						+ "\",\"scheduledAt\":\"2026-04-01T09:00:00\",\"maxMarks\":50,\"examTypePublicId\":\""
+						+ "\",\"scheduledAt\":\"2026-04-01T09:00:00\",\"durationMinutes\":60,\"maxMarks\":50,\"examTypePublicId\":\""
 						+ publicIds.of(ExamTypeDefinition.class, examTypeIdFor("QUIZ")) + "\"}")
 				.when()
 				.post("/api/v1/exams")
@@ -253,7 +253,7 @@ class ExamCrudE2ETest extends SchoolIntegrationTestBase {
 				.contentType(ContentType.JSON)
 				.body("{\"title\":\"Unit Test\",\"subjectPublicId\":\"" + publicIds.of(Subject.class, subjectId)
 						+ "\",\"classroomPublicId\":\"" + publicIds.of(Classroom.class, classroomId)
-						+ "\",\"scheduledAt\":\"2026-03-05T09:00:00\",\"maxMarks\":50,\"examTypePublicId\":\""
+						+ "\",\"scheduledAt\":\"2026-03-05T09:00:00\",\"durationMinutes\":60,\"maxMarks\":50,\"examTypePublicId\":\""
 						+ publicIds.of(ExamTypeDefinition.class, examTypeIdFor("UNIT_TEST")) + "\"}")
 				.when()
 				.post("/api/v1/exams")
@@ -293,7 +293,7 @@ class ExamCrudE2ETest extends SchoolIntegrationTestBase {
 				.contentType(ContentType.JSON)
 				.body("{\"title\":\"Quiz\",\"subjectPublicId\":\"" + publicIds.of(Subject.class, subjectId)
 						+ "\",\"classroomPublicId\":\"" + publicIds.of(Classroom.class, classroomId)
-						+ "\",\"scheduledAt\":\"2026-03-06T09:00:00\",\"maxMarks\":50,\"examTypePublicId\":\""
+						+ "\",\"scheduledAt\":\"2026-03-06T09:00:00\",\"durationMinutes\":60,\"maxMarks\":50,\"examTypePublicId\":\""
 						+ publicIds.of(ExamTypeDefinition.class, examTypeIdFor("QUIZ")) + "\"}")
 				.when()
 				.post("/api/v1/exams")

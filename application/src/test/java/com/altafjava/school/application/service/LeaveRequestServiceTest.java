@@ -62,6 +62,7 @@ import com.altafjava.school.domain.leave.repository.LeaveApprovalRepository;
 import com.altafjava.school.domain.leave.repository.LeaveBalanceRepository;
 import com.altafjava.school.domain.leave.repository.LeaveRequestRepository;
 import com.altafjava.school.domain.leave.repository.LeaveTypeRepository;
+import com.altafjava.school.domain.staffattendance.repository.StaffAttendanceRepository;
 
 @ExtendWith(MockitoExtension.class)
 class LeaveRequestServiceTest {
@@ -94,6 +95,9 @@ class LeaveRequestServiceTest {
 	@Mock
 	private PublicIdLookup publicIdLookup;
 
+	@Mock
+	private StaffAttendanceRepository staffAttendanceRepository;
+
 	private LeaveRequestService leaveRequestService;
 
 	@BeforeEach
@@ -101,7 +105,7 @@ class LeaveRequestServiceTest {
 		leaveRequestService = new LeaveRequestService(leaveRequestRepository, leaveTypeRepository,
 				leaveBalanceRepository, employeeRepository, academicYearRepository, tenantAdminNotifier,
 				notificationService, holidayService, leaveApprovalRepository, departmentRepository,
-				leaveApprovalAuthorizer, publicIdLookup, TestSchoolClocks.systemDefault());
+				leaveApprovalAuthorizer, publicIdLookup, TestSchoolClocks.systemDefault(), staffAttendanceRepository);
 		TenantContext.ForTesting.setCurrentTenant(1L, null, null, TenantType.SHARED);
 	}
 

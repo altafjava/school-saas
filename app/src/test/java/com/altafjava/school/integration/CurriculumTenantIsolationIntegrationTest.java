@@ -48,6 +48,7 @@ import com.altafjava.school.domain.curriculum.model.Curriculum;
 import com.altafjava.school.domain.curriculum.model.GradeBand;
 import com.altafjava.school.domain.curriculum.model.GradingScale;
 import com.altafjava.school.domain.exam.model.Exam;
+import com.altafjava.school.domain.exam.model.ExamSlot;
 import com.altafjava.school.domain.exam.repository.ExamRepository;
 import com.altafjava.school.domain.exam.repository.ExamTypeDefinitionRepository;
 import com.altafjava.school.domain.grade.model.Grade;
@@ -215,7 +216,8 @@ class CurriculumTenantIsolationIntegrationTest extends SchoolIntegrationTestBase
 		Student student = studentService.enroll("STU-" + suffix, "Nora", "Kim",
 				"nora-" + suffix + "@school.test", LocalDate.of(2010, 4, 4));
 
-		Exam exam = Exam.create("Final", subject.getId(), classroom.getId(), LocalDateTime.now(),
+		Exam exam = Exam.create("Final", subject.getId(), classroom.getId(),
+				new ExamSlot(LocalDateTime.now(), 60, null),
 				BigDecimal.valueOf(100), null, examTypeIdFor("FINAL"), Exam.FULL_WEIGHTAGE);
 		exam = examRepository.save(exam);
 
@@ -246,7 +248,8 @@ class CurriculumTenantIsolationIntegrationTest extends SchoolIntegrationTestBase
 		Student student = studentService.enroll("STU-" + suffix, "Ravi", "Shah",
 				"ravi-" + suffix + "@school.test", LocalDate.of(2012, 1, 1));
 
-		Exam exam = Exam.create("Final", subject.getId(), classroom.getId(), LocalDateTime.now(),
+		Exam exam = Exam.create("Final", subject.getId(), classroom.getId(),
+				new ExamSlot(LocalDateTime.now(), 60, null),
 				BigDecimal.valueOf(100), null, examTypeIdFor("FINAL"), Exam.FULL_WEIGHTAGE);
 		exam = examRepository.save(exam);
 
@@ -276,10 +279,10 @@ class CurriculumTenantIsolationIntegrationTest extends SchoolIntegrationTestBase
 				"mia-" + suffix + "@school.test", LocalDate.of(2011, 6, 6));
 
 		Exam examA = examRepository.save(Exam.create("Test 1", subject.getId(), classroom.getId(),
-				LocalDateTime.of(2026, 5, 1, 9, 0), BigDecimal.valueOf(100), null,
+				new ExamSlot(LocalDateTime.of(2026, 5, 1, 9, 0), 60, null), BigDecimal.valueOf(100), null,
 				examTypeIdFor("UNIT_TEST"), Exam.FULL_WEIGHTAGE));
 		Exam examB = examRepository.save(Exam.create("Test 2", subject.getId(), classroom.getId(),
-				LocalDateTime.of(2026, 5, 2, 9, 0), BigDecimal.valueOf(100), null,
+				new ExamSlot(LocalDateTime.of(2026, 5, 2, 9, 0), 60, null), BigDecimal.valueOf(100), null,
 				examTypeIdFor("UNIT_TEST"), Exam.FULL_WEIGHTAGE));
 		gradeService.record(student.getPublicId().toString(), examA.getPublicId().toString(), BigDecimal.valueOf(95),
 				"teacher");

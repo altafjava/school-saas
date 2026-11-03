@@ -1,7 +1,5 @@
 package com.altafjava.school.api.controller;
 
-import java.io.IOException;
-import java.io.UncheckedIOException;
 import java.time.LocalDate;
 import java.util.List;
 import jakarta.validation.Valid;
@@ -19,12 +17,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.multipart.MultipartFile;
 import com.altafjava.platform.api.dto.response.ApiResponse;
 import com.altafjava.platform.application.security.annotation.RequiresPermission;
 import com.altafjava.platform.core.annotation.Command;
-import com.altafjava.platform.core.feature.annotation.FeatureEnabled;
-import com.altafjava.platform.core.idempotency.RequireIdempotencyKey;
 import com.altafjava.school.api.controller.api.StudentApi;
 import com.altafjava.school.api.dto.request.AddressRequest;
 import com.altafjava.school.api.dto.request.CreateStudentRequest;
@@ -34,7 +29,6 @@ import com.altafjava.school.api.dto.request.UpdatePhotoRequest;
 import com.altafjava.school.api.dto.request.UpdateStudentContactDetailsRequest;
 import com.altafjava.school.api.dto.response.AttendancePercentageResponse;
 import com.altafjava.school.api.dto.response.AttendanceResponse;
-import com.altafjava.school.api.dto.response.BulkImportResponse;
 import com.altafjava.school.api.dto.response.FeeBalanceResponse;
 import com.altafjava.school.api.dto.response.FeePaymentResponse;
 import com.altafjava.school.api.dto.response.GpaResponse;
@@ -45,7 +39,6 @@ import com.altafjava.school.api.dto.response.StudentResponse;
 import com.altafjava.school.api.mapper.AddressMapper;
 import com.altafjava.school.api.mapper.AttendanceMapper;
 import com.altafjava.school.api.mapper.AttendancePercentageMapper;
-import com.altafjava.school.api.mapper.BulkImportMapper;
 import com.altafjava.school.api.mapper.FeeBalanceMapper;
 import com.altafjava.school.api.mapper.FeePaymentMapper;
 import com.altafjava.school.api.mapper.GradeMapper;
@@ -59,7 +52,6 @@ import com.altafjava.school.api.support.StudentResponseAssembler;
 import com.altafjava.school.application.filter.StudentFilter;
 import com.altafjava.school.application.lifecycle.LifecycleChange;
 import com.altafjava.school.application.reference.ReferenceSummaries;
-import com.altafjava.school.application.security.SchoolFeatures;
 import com.altafjava.school.application.service.AttendanceService;
 import com.altafjava.school.application.service.FeeOnlinePaymentService;
 import com.altafjava.school.application.service.FeePaymentService;
@@ -67,7 +59,6 @@ import com.altafjava.school.application.service.GpaResult;
 import com.altafjava.school.application.service.GradeService;
 import com.altafjava.school.application.service.GuardianService;
 import com.altafjava.school.application.service.ReportCardService;
-import com.altafjava.school.application.service.StudentBulkImportService;
 import com.altafjava.school.application.service.StudentDirectory;
 import com.altafjava.school.application.service.StudentGpaService;
 import com.altafjava.school.application.service.StudentService;
@@ -100,8 +91,6 @@ public class StudentController implements StudentApi {
 	private final ReportCardService reportCardService;
 	private final ReportCardMapper reportCardMapper;
 	private final TermService termService;
-	private final StudentBulkImportService studentBulkImportService;
-	private final BulkImportMapper bulkImportMapper;
 	private final StudentGpaService studentGpaService;
 
 	private final SpringDataPageableResolver pageableResolver;
@@ -115,8 +104,7 @@ public class StudentController implements StudentApi {
 			GradeMapper gradeMapper, AttendanceService attendanceService, AttendanceMapper attendanceMapper,
 			AttendancePercentageMapper attendancePercentageMapper, FeePaymentService feePaymentService,
 			FeeBalanceMapper feeBalanceMapper, ReportCardService reportCardService, ReportCardMapper reportCardMapper,
-			TermService termService, StudentBulkImportService studentBulkImportService,
-			BulkImportMapper bulkImportMapper, StudentGpaService studentGpaService,
+			TermService termService, StudentGpaService studentGpaService,
 			SpringDataPageableResolver pageableResolver,
 			ReferenceSummaries referenceSummaries,
 			FeeOnlinePaymentService feeOnlinePaymentService, FeePaymentMapper feePaymentMapper) {
@@ -139,8 +127,6 @@ public class StudentController implements StudentApi {
 		this.reportCardService = reportCardService;
 		this.reportCardMapper = reportCardMapper;
 		this.termService = termService;
-		this.studentBulkImportService = studentBulkImportService;
-		this.bulkImportMapper = bulkImportMapper;
 		this.studentGpaService = studentGpaService;
 		this.pageableResolver = pageableResolver;
 	}
@@ -166,20 +152,6 @@ public class StudentController implements StudentApi {
 	@RequiresPermission({ SchoolPermissions.STUDENT_READ, SchoolPermissions.STUDENT_SELF_SERVICE_READ })
 	public ApiResponse<StudentResponse> get(@PathVariable String publicId) {
 		return ApiResponse.success(studentResponseAssembler.toResponse(studentDirectory.get(publicId)));
-	}
-
-	@Override
-	@PostMapping("/bulk-import")
-	@FeatureEnabled(SchoolFeatures.BULK_IMPORT)
-	@RequiresPermission(SchoolPermissions.STUDENT_MANAGE)
-	@RateLimited(key = "student-bulk-import", capacity = 5, periodMinutes = 60)
-	@RequireIdempotencyKey
-	public ApiResponse<BulkImportResponse> bulkImport(@RequestParam("file") MultipartFile file) {
-		try (var inputStream = file.getInputStream()) {
-			return ApiResponse.success(bulkImportMapper.toResponse(studentBulkImportService.importCsv(inputStream)));
-		} catch (IOException e) {
-			throw new UncheckedIOException("Failed to read uploaded CSV file", e);
-		}
 	}
 
 	@Override

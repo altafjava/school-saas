@@ -25,6 +25,7 @@ import com.altafjava.school.domain.academicyear.model.AcademicYear;
 import com.altafjava.school.domain.academicyear.repository.AcademicYearRepository;
 import com.altafjava.school.domain.curriculum.model.GradeBand;
 import com.altafjava.school.domain.exam.model.Exam;
+import com.altafjava.school.domain.exam.model.ExamSlot;
 import com.altafjava.school.domain.exam.repository.ExamRepository;
 import com.altafjava.school.domain.grade.model.Grade;
 import com.altafjava.school.domain.grade.repository.GradeRepository;
@@ -81,7 +82,8 @@ class StudentGpaServiceTest {
 	}
 
 	private Exam examScheduledAt(long id, long classroomId, LocalDateTime scheduledAt) {
-		Exam exam = Exam.create("Midterm", 5L, classroomId, scheduledAt, BigDecimal.valueOf(100), null,
+		Exam exam = Exam.create("Midterm", 5L, classroomId, new ExamSlot(scheduledAt, 60, null),
+				BigDecimal.valueOf(100), null,
 				1L, Exam.FULL_WEIGHTAGE);
 		exam.setId(id);
 		return exam;
@@ -175,10 +177,12 @@ class StudentGpaServiceTest {
 
 	@Test
 	void calculateCumulativeGpa_weightsGradePointsByExamWeightage() {
-		Exam heavy = Exam.create("Final", 5L, 10L, LocalDateTime.of(2026, 5, 1, 9, 0), BigDecimal.valueOf(100), null,
+		Exam heavy = Exam.create("Final", 5L, 10L, new ExamSlot(LocalDateTime.of(2026, 5, 1, 9, 0), 60, null),
+				BigDecimal.valueOf(100), null,
 				1L, new BigDecimal("80"));
 		heavy.setId(1L);
-		Exam light = Exam.create("Quiz", 5L, 10L, LocalDateTime.of(2026, 5, 2, 9, 0), BigDecimal.valueOf(100), null,
+		Exam light = Exam.create("Quiz", 5L, 10L, new ExamSlot(LocalDateTime.of(2026, 5, 2, 9, 0), 60, null),
+				BigDecimal.valueOf(100), null,
 				1L, new BigDecimal("20"));
 		light.setId(2L);
 		when(gradeRepository.findByStudentId(1L, 3L))
@@ -199,6 +203,8 @@ class StudentGpaServiceTest {
 		when(examResultVisibilityPolicy.canSeeUnpublishedResults()).thenReturn(false);
 		Exam published = examScheduledAt(1L, 10L, LocalDateTime.of(2026, 5, 1, 9, 0));
 		published.complete();
+		published.verifyMarks("checker");
+		published.lockMarks("registrar");
 		published.publishResults("registrar");
 		Exam unpublished = examScheduledAt(2L, 10L, LocalDateTime.of(2026, 5, 2, 9, 0));
 		when(gradeRepository.findByStudentId(1L, 3L))

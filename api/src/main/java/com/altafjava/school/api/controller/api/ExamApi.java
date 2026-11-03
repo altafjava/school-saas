@@ -39,7 +39,8 @@ public interface ExamApi {
 			+ "weightage (percent, default 100) is the exam's share of its subject's term result.")
 	public ApiResponse<ExamResponse> schedule(@Valid @RequestBody ScheduleExamRequest request);
 
-	@Operation(summary = "Reschedule")
+	@Operation(summary = "Reschedule", description = "Replaces the date, time, length and venue of a scheduled exam. "
+			+ "Refused when it would overlap another exam of the classroom or in the venue.")
 	public ApiResponse<ExamResponse> reschedule(@PathVariable String publicId,
 			@Valid @RequestBody RescheduleExamRequest request);
 
@@ -53,7 +54,7 @@ public interface ExamApi {
 			@Valid @RequestBody ReweightExamRequest request);
 
 	@Operation(summary = "Publish results", description = "Makes a completed exam's grades visible to students and guardians "
-			+ "and includes them in report cards and GPA. Requires at least one recorded grade.")
+			+ "and includes them in report cards and GPA. The marks must be verified and locked first.")
 	public ApiResponse<ExamResponse> publishResults(@PathVariable String publicId,
 			@AuthenticationPrincipal AuthenticatedUser user);
 
@@ -67,4 +68,20 @@ public interface ExamApi {
 
 	@Operation(summary = "Cancel")
 	public ApiResponse<ExamResponse> cancel(@PathVariable String publicId);
+
+	@Operation(summary = "Verify marks", description = "Freezes a completed exam's marks after a check by someone who "
+			+ "entered none of them.")
+	public ApiResponse<ExamResponse> verifyMarks(@PathVariable String publicId,
+			@AuthenticationPrincipal AuthenticatedUser user);
+
+	@Operation(summary = "Return marks for correction", description = "Reopens verified marks so they can be corrected.")
+	public ApiResponse<ExamResponse> returnMarks(@PathVariable String publicId);
+
+	@Operation(summary = "Lock marks", description = "Makes verified marks final. Results can be published only after this.")
+	public ApiResponse<ExamResponse> lockMarks(@PathVariable String publicId,
+			@AuthenticationPrincipal AuthenticatedUser user);
+
+	@Operation(summary = "Unlock marks", description = "Reopens locked marks for correction. Published results must be "
+			+ "withdrawn first.")
+	public ApiResponse<ExamResponse> unlockMarks(@PathVariable String publicId);
 }

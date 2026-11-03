@@ -17,6 +17,7 @@ import com.altafjava.platform.core.tenant.TenantContext;
 import com.altafjava.platform.core.tenant.TenantType;
 import com.altafjava.school.application.time.TestSchoolClocks;
 import com.altafjava.school.domain.attendance.model.AttendanceStatus;
+import com.altafjava.school.domain.attendance.model.AttendanceStatusCount;
 import com.altafjava.school.domain.attendance.repository.AttendanceRepository;
 
 @ExtendWith(MockitoExtension.class)
@@ -40,9 +41,9 @@ class AttendanceTrendDataProviderTest {
 
 	@Test
 	void fetchData_defaultPeriods_returnsEightWeeklyRows() {
-		when(attendanceRepository.countByTenantIdAndAttendanceDateBetween(eq(1L), any(), any())).thenReturn(10L);
-		when(attendanceRepository.countByTenantIdAndAttendanceDateBetweenAndStatus(eq(1L), any(), any(),
-				eq(AttendanceStatus.PRESENT))).thenReturn(8L);
+		when(attendanceRepository.countByStatus(eq(1L), any(), any())).thenReturn(List.of(
+				new AttendanceStatusCount(AttendanceStatus.PRESENT, 8L),
+				new AttendanceStatusCount(AttendanceStatus.ABSENT, 2L)));
 
 		List<Map<String, Object>> rows = provider.fetchData(Map.of());
 
@@ -52,7 +53,7 @@ class AttendanceTrendDataProviderTest {
 
 	@Test
 	void fetchData_explicitPeriods_returnsThatManyRows() {
-		when(attendanceRepository.countByTenantIdAndAttendanceDateBetween(eq(1L), any(), any())).thenReturn(0L);
+		when(attendanceRepository.countByStatus(eq(1L), any(), any())).thenReturn(List.of());
 
 		List<Map<String, Object>> rows = provider.fetchData(Map.of("periods", 3));
 
@@ -61,7 +62,7 @@ class AttendanceTrendDataProviderTest {
 
 	@Test
 	void fetchData_noAttendanceMarkedInAWeek_avoidsDivisionByZero() {
-		when(attendanceRepository.countByTenantIdAndAttendanceDateBetween(eq(1L), any(), any())).thenReturn(0L);
+		when(attendanceRepository.countByStatus(eq(1L), any(), any())).thenReturn(List.of());
 
 		List<Map<String, Object>> rows = provider.fetchData(Map.of("periods", 1));
 

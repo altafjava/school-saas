@@ -37,7 +37,7 @@ import com.altafjava.school.application.document.SchoolDocumentTypes;
 import com.altafjava.school.application.reportcard.ReportCardLine;
 import com.altafjava.school.application.security.StudentDataAccessGuard;
 import com.altafjava.school.domain.attendance.model.AttendancePercentage;
-import com.altafjava.school.domain.attendance.model.AttendanceStatus;
+import com.altafjava.school.domain.attendance.model.AttendanceTally;
 import com.altafjava.school.domain.attendance.repository.AttendanceRepository;
 import com.altafjava.school.domain.attendance.service.AttendancePercentageCalculator;
 import com.altafjava.school.domain.classroom.model.Classroom;
@@ -358,17 +358,8 @@ public class ReportCardService {
 		LocalDate to = term.getEndDate();
 		Set<LocalDate> holidayDates = holidayDateRangeResolver
 				.resolve(holidayRepository.findAllByTenantId(tenantId), from, to);
-		long totalMarkedDays = holidayDates.isEmpty()
-				? attendanceRepository.countByStudentIdAndTenantIdAndAttendanceDateBetween(studentId, tenantId, from,
-						to)
-				: attendanceRepository.countByStudentIdAndTenantIdAndAttendanceDateBetweenExcludingDates(studentId,
-						tenantId, from, to, holidayDates);
-		long presentDays = holidayDates.isEmpty()
-				? attendanceRepository.countByStudentIdAndTenantIdAndAttendanceDateBetweenAndStatus(studentId,
-						tenantId, from, to, AttendanceStatus.PRESENT)
-				: attendanceRepository.countByStudentIdAndTenantIdAndAttendanceDateBetweenAndStatusExcludingDates(
-						studentId, tenantId, from, to, AttendanceStatus.PRESENT, holidayDates);
-		return attendancePercentageCalculator.calculate(presentDays, totalMarkedDays);
+		return attendancePercentageCalculator.calculate(AttendanceTally.byStatus(attendanceRepository
+				.tallyByStudent(tenantId, List.of(studentId), from, to, holidayDates.isEmpty(), holidayDates)));
 	}
 
 	/**

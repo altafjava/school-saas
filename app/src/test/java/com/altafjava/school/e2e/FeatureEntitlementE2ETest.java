@@ -53,9 +53,7 @@ class FeatureEntitlementE2ETest extends SchoolIntegrationTestBase {
 
 	@Test
 	void bulkImportOutsideThePlan_isRefused() {
-		support.request(school).contentType("multipart/form-data").multiPart("file", "students.csv", new byte[] { 1 })
-				.header("Idempotency-Key", java.util.UUID.randomUUID().toString())
-				.post("/api/v1/students/bulk-import").then().statusCode(HttpStatus.FORBIDDEN.value())
+		support.request(school).get("/api/v1/imports/types").then().statusCode(HttpStatus.FORBIDDEN.value())
 				.body("error.code", equalTo("FEATURE_NOT_ENABLED"));
 	}
 

@@ -28,6 +28,7 @@
             <column name="due_date" type="DATE"/>
             <column name="grace_days" type="INT"/>
             <column name="late_fee_percentage" type="DECIMAL(5,2)"/>
+            <column name="amount" type="DECIMAL(12,2)"/>
             <column name="created_at" type="TIMESTAMP">
                 <constraints nullable="false"/>
             </column>

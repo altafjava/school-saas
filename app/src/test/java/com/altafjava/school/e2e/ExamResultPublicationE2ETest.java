@@ -83,7 +83,7 @@ class ExamResultPublicationE2ETest extends SchoolIntegrationTestBase {
 		examPublicId = support.request(school)
 				.body("{\"title\":\"Midterm\",\"subjectPublicId\":\"" + publicIds.of(Subject.class, subjectId)
 						+ "\",\"classroomPublicId\":\"" + publicIds.of(Classroom.class, classroomId)
-						+ "\",\"scheduledAt\":\"2026-03-01T09:00:00\",\"maxMarks\":100,\"examTypePublicId\":\""
+						+ "\",\"scheduledAt\":\"2026-03-01T09:00:00\",\"durationMinutes\":60,\"maxMarks\":100,\"examTypePublicId\":\""
 						+ publicIds.of(ExamTypeDefinition.class, examTypeId)
 						+ "\",\"weightage\":40}")
 				.post("/api/v1/exams")
@@ -131,6 +131,12 @@ class ExamResultPublicationE2ETest extends SchoolIntegrationTestBase {
 		support.request(school).post("/api/v1/exams/" + examPublicId + "/results/publish")
 				.then().statusCode(HttpStatus.BAD_REQUEST.value());
 		support.request(school).patch("/api/v1/exams/" + examPublicId + "/complete")
+				.then().statusCode(HttpStatus.OK.value());
+		support.request(school).post("/api/v1/exams/" + examPublicId + "/results/publish")
+				.then().statusCode(HttpStatus.BAD_REQUEST.value());
+		support.requestWithRole(school.tenantId(), "ACADEMIC").post("/api/v1/exams/" + examPublicId + "/marks/verify")
+				.then().statusCode(HttpStatus.OK.value());
+		support.request(school).post("/api/v1/exams/" + examPublicId + "/marks/lock")
 				.then().statusCode(HttpStatus.OK.value());
 		support.request(school).post("/api/v1/exams/" + examPublicId + "/results/publish")
 				.then().statusCode(HttpStatus.OK.value())

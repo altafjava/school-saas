@@ -27,6 +27,7 @@ import com.altafjava.school.domain.employee.model.Employee;
 import com.altafjava.school.domain.employee.repository.EmployeeRepository;
 import com.altafjava.school.domain.exam.model.Exam;
 import com.altafjava.school.domain.exam.model.ExamStatus;
+import com.altafjava.school.domain.exam.model.MarksStage;
 import com.altafjava.school.domain.exam.repository.ExamRepository;
 import com.altafjava.school.domain.grade.model.ExamGradeCount;
 import com.altafjava.school.domain.grade.repository.GradeRepository;
@@ -168,8 +169,8 @@ public class TeacherHomeService {
 			return List.of();
 		}
 		return examRepository
-				.findWithOpenResults(tenantId, teaching.classrooms().keySet(), ExamStatus.CANCELLED, day.now(),
-						PageRequest.of(0, EXAMS_SCANNED))
+				.findWithMarksInStage(tenantId, teaching.classrooms().keySet(), ExamStatus.CANCELLED, day.now(),
+						MarksStage.ENTERED, PageRequest.of(0, EXAMS_SCANNED))
 				.stream()
 				.filter(exam -> teaching.assignments().teachesSubject(exam.getClassroomId(), exam.getSubjectId()))
 				.toList();

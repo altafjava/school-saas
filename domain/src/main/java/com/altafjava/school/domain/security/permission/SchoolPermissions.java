@@ -50,6 +50,7 @@ public final class SchoolPermissions {
 	public static final String ASSIGNMENT_WRITE = "ASSIGNMENT_WRITE";
 	public static final String BOARD_READ = "BOARD_READ";
 	public static final String BOARD_WRITE = "BOARD_WRITE";
+	public static final String BULK_IMPORT_MANAGE = "BULK_IMPORT_MANAGE";
 	public static final String BOOK_MANAGE = "BOOK_MANAGE";
 	public static final String BOOK_READ = "BOOK_READ";
 	public static final String CERTIFICATE_MANAGE = "CERTIFICATE_MANAGE";
@@ -77,10 +78,12 @@ public final class SchoolPermissions {
 	public static final String EMPLOYEE_MANAGE = "EMPLOYEE_MANAGE";
 	public static final String EMPLOYEE_READ = "EMPLOYEE_READ";
 	public static final String EVENT_MANAGE = "EVENT_MANAGE";
+	public static final String ENQUIRY_MANAGE = "ENQUIRY_MANAGE";
 	public static final String EVENT_READ = "EVENT_READ";
 	public static final String EVENT_REGISTER = "EVENT_REGISTER";
 	public static final String EVENT_STAFF_MANAGE = "EVENT_STAFF_MANAGE";
 	public static final String EXAM_COMPLETE = "EXAM_COMPLETE";
+	public static final String EXAM_MARKS_VERIFY = "EXAM_MARKS_VERIFY";
 	public static final String EXAM_READ = "EXAM_READ";
 	public static final String EXAM_RESULT_PUBLISH = "EXAM_RESULT_PUBLISH";
 	public static final String EXAM_TYPE_MANAGE = "EXAM_TYPE_MANAGE";
@@ -88,6 +91,7 @@ public final class SchoolPermissions {
 	public static final String FEE_DISCOUNT_MANAGE = "FEE_DISCOUNT_MANAGE";
 	public static final String FEE_INSTALLMENT_MANAGE = "FEE_INSTALLMENT_MANAGE";
 	public static final String FEE_PAYMENT_MANAGE = "FEE_PAYMENT_MANAGE";
+	public static final String FEE_INVOICE_MANAGE = "FEE_INVOICE_MANAGE";
 	public static final String FEE_PAYMENT_SELF_SERVICE = "FEE_PAYMENT_SELF_SERVICE";
 	public static final String FEE_REFUND_MANAGE = "FEE_REFUND_MANAGE";
 	public static final String FEE_STRUCTURE_MANAGE = "FEE_STRUCTURE_MANAGE";
@@ -130,6 +134,9 @@ public final class SchoolPermissions {
 	public static final String ROOM_READ = "ROOM_READ";
 	public static final String ROOM_WRITE = "ROOM_WRITE";
 	public static final String SALARY_STRUCTURE_MANAGE = "SALARY_STRUCTURE_MANAGE";
+	public static final String STAFF_ATTENDANCE_MANAGE = "STAFF_ATTENDANCE_MANAGE";
+	public static final String STAFF_ATTENDANCE_READ = "STAFF_ATTENDANCE_READ";
+	public static final String STAFF_ATTENDANCE_SELF_SERVICE = "STAFF_ATTENDANCE_SELF_SERVICE";
 	public static final String STUDENT_ATTENDANCE_READ = "STUDENT_ATTENDANCE_READ";
 	public static final String STUDENT_ATTENDANCE_WRITE = "STUDENT_ATTENDANCE_WRITE";
 	public static final String STUDENT_DOCUMENT_MANAGE = "STUDENT_DOCUMENT_MANAGE";
@@ -189,6 +196,7 @@ public final class SchoolPermissions {
 			def(ASSIGNMENT_WRITE, "Create and reschedule assignments", CAT_ACADEMIC),
 			def(BOARD_READ, "View education boards", CAT_ACADEMIC),
 			def(BOARD_WRITE, "Manage education boards", CAT_ACADEMIC),
+			def(BULK_IMPORT_MANAGE, "Upload, dry-run and run CSV imports, and see their history", CAT_ADMISSIONS),
 			def(BOOK_MANAGE, "Manage the library catalog", CAT_LIBRARY),
 			def(BOOK_READ, "Browse the library catalog", CAT_LIBRARY),
 			def(CERTIFICATE_MANAGE, "Issue, download and revoke student certificates", CAT_CERTIFICATE),
@@ -215,10 +223,12 @@ public final class SchoolPermissions {
 			def(EMPLOYEE_MANAGE, "Hire, update and offboard staff", CAT_HR),
 			def(EMPLOYEE_READ, "View staff records", CAT_HR),
 			def(EVENT_MANAGE, "Create, edit, and cancel school events", CAT_COMMUNICATION),
+			def(ENQUIRY_MANAGE, "Receive, follow up, close and convert admission enquiries", CAT_ADMISSIONS),
 			def(EVENT_READ, "View school events", CAT_COMMUNICATION),
 			def(EVENT_REGISTER, "Register for and cancel event registration", CAT_COMMUNICATION),
 			def(EVENT_STAFF_MANAGE, "View and mark event registration attendance", CAT_COMMUNICATION),
 			def(EXAM_COMPLETE, "Mark an exam complete", CAT_ACADEMIC),
+			def(EXAM_MARKS_VERIFY, "Verify an exam's marks, or return them for correction", CAT_ACADEMIC),
 			def(EXAM_READ, "View the exam schedule within the caller's reach", CAT_ACADEMIC),
 			def(EXAM_RESULT_PUBLISH, "Publish or withdraw exam results", CAT_ACADEMIC),
 			def(EXAM_TYPE_MANAGE, "Manage tenant exam-type definitions", CAT_ACADEMIC),
@@ -226,6 +236,7 @@ public final class SchoolPermissions {
 			def(FEE_DISCOUNT_MANAGE, "Grant, revoke and view student fee discounts", CAT_FINANCE),
 			def(FEE_INSTALLMENT_MANAGE, "Set and view student fee installment plans", CAT_FINANCE),
 			def(FEE_PAYMENT_MANAGE, "View and record fee payments", CAT_FINANCE),
+			def(FEE_INVOICE_MANAGE, "Issue, view and cancel student fee invoices", CAT_FINANCE),
 			def(FEE_PAYMENT_SELF_SERVICE, "Pay fees and view own payment history", CAT_FINANCE),
 			def(FEE_REFUND_MANAGE, "Refund fee payments and view refunds", CAT_FINANCE),
 			def(FEE_STRUCTURE_MANAGE, "Manage fee structures and assignments", CAT_FINANCE),
@@ -269,6 +280,9 @@ public final class SchoolPermissions {
 			def(ROOM_READ, "View hostel rooms", CAT_FACILITIES),
 			def(ROOM_WRITE, "Manage hostel rooms", CAT_FACILITIES),
 			def(SALARY_STRUCTURE_MANAGE, "Manage staff salary structures", CAT_HR),
+			def(STAFF_ATTENDANCE_MANAGE, "Record and correct staff attendance, and set the workday", CAT_HR),
+			def(STAFF_ATTENDANCE_READ, "View staff attendance and the daily register", CAT_HR),
+			def(STAFF_ATTENDANCE_SELF_SERVICE, "Check in and out, and view own attendance", CAT_HR),
 			def(STUDENT_ATTENDANCE_READ, "View student attendance", CAT_ATTENDANCE),
 			def(STUDENT_ATTENDANCE_WRITE, "Mark and correct student attendance", CAT_ATTENDANCE),
 			def(STUDENT_DOCUMENT_READ, "View student record documents", CAT_ADMISSIONS),

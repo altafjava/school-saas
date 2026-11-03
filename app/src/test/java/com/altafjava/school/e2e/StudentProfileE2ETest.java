@@ -150,12 +150,14 @@ class StudentProfileE2ETest extends SchoolIntegrationTestBase {
 		String csv = "studentCode,firstName,lastName,email,dateOfBirth,gender\n" + code
 				+ ",Csv,Gender,,2011-01-01,female\n";
 
-		support.request(school)
-				.header("Idempotency-Key", UUID.randomUUID().toString())
-				.contentType("multipart/form-data")
+		String job = RestAssured.given().header("X-Tenant-ID", school.tenantId())
+				.header("Authorization", "Bearer " + school.adminToken())
 				.multiPart("file", "students.csv", csv.getBytes(StandardCharsets.UTF_8), "text/csv")
-				.post("/api/v1/students/bulk-import")
-				.then().statusCode(HttpStatus.OK.value()).body("data.successCount", equalTo(1));
+				.queryParam("type", "STUDENTS")
+				.post("/api/v1/imports")
+				.then().statusCode(HttpStatus.CREATED.value()).extract().path("data.publicId");
+		support.request(school).post("/api/v1/imports/" + job + "/execute")
+				.then().statusCode(HttpStatus.OK.value()).body("data.importedRows", equalTo(1));
 
 		support.request(school).queryParam("q", code).get("/api/v1/students")
 				.then().body("data.content[0].gender", equalTo("FEMALE"));

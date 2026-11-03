@@ -17,8 +17,8 @@ import com.altafjava.platform.domain.alert.model.AlertRule;
 import com.altafjava.school.application.scheduler.support.StudentNotificationRecipientResolver;
 import com.altafjava.school.application.time.TestSchoolClocks;
 import com.altafjava.school.domain.attendance.model.AttendanceStatus;
+import com.altafjava.school.domain.attendance.model.AttendanceTally;
 import com.altafjava.school.domain.attendance.repository.AttendanceRepository;
-import com.altafjava.school.domain.attendance.repository.AttendanceRepository.StudentAttendanceCount;
 import com.altafjava.school.domain.classroom.repository.StudentClassroomLinkRepository;
 import com.altafjava.school.domain.notification.SchoolNotificationTypes;
 import com.altafjava.school.domain.student.model.Student;
@@ -57,29 +57,14 @@ class LowAttendanceRuleEvaluatorTest {
 		return student;
 	}
 
-	private static StudentAttendanceCount count(long studentId, long total) {
-		return new StudentAttendanceCount() {
-			@Override
-			public Long getStudentId() {
-				return studentId;
-			}
-
-			@Override
-			public long getTotal() {
-				return total;
-			}
-		};
-	}
-
 	@Test
 	void evaluate_studentBelowThreshold_returnsTrigger() {
 		newEvaluator();
 		when(studentClassroomLinkRepository.findDistinctStudentIdsByTenantId(1L)).thenReturn(List.of(1L));
-		when(attendanceRepository.countByStudentIdsAndTenantIdAndAttendanceDateBetween(eq(List.of(1L)), eq(1L),
-				any(LocalDate.class), any(LocalDate.class))).thenReturn(List.of(count(1L, 20L)));
-		when(attendanceRepository.countByStudentIdsAndTenantIdAndAttendanceDateBetweenAndStatus(eq(List.of(1L)),
-				eq(1L), any(LocalDate.class), any(LocalDate.class), eq(AttendanceStatus.PRESENT)))
-				.thenReturn(List.of(count(1L, 10L)));
+		when(attendanceRepository.tallyByStudent(eq(1L), eq(List.of(1L)), any(LocalDate.class),
+				any(LocalDate.class), eq(true), any()))
+				.thenReturn(List.of(new AttendanceTally(1L, AttendanceStatus.PRESENT, 10L),
+						new AttendanceTally(1L, AttendanceStatus.ABSENT, 10L)));
 		Student student = studentWithId(1L);
 		when(studentRepository.findAllByIdInAndTenantId(List.of(1L), 1L)).thenReturn(List.of(student));
 		when(recipientResolver.resolve(1L, student)).thenReturn(java.util.Optional.of(77L));
@@ -98,11 +83,10 @@ class LowAttendanceRuleEvaluatorTest {
 	void evaluate_studentAtOrAboveThreshold_returnsNoTriggers() {
 		newEvaluator();
 		when(studentClassroomLinkRepository.findDistinctStudentIdsByTenantId(1L)).thenReturn(List.of(1L));
-		when(attendanceRepository.countByStudentIdsAndTenantIdAndAttendanceDateBetween(eq(List.of(1L)), eq(1L),
-				any(LocalDate.class), any(LocalDate.class))).thenReturn(List.of(count(1L, 20L)));
-		when(attendanceRepository.countByStudentIdsAndTenantIdAndAttendanceDateBetweenAndStatus(eq(List.of(1L)),
-				eq(1L), any(LocalDate.class), any(LocalDate.class), eq(AttendanceStatus.PRESENT)))
-				.thenReturn(List.of(count(1L, 16L)));
+		when(attendanceRepository.tallyByStudent(eq(1L), eq(List.of(1L)), any(LocalDate.class),
+				any(LocalDate.class), eq(true), any()))
+				.thenReturn(List.of(new AttendanceTally(1L, AttendanceStatus.PRESENT, 16L),
+						new AttendanceTally(1L, AttendanceStatus.ABSENT, 4L)));
 
 		assertTrue(evaluator.evaluate(ruleWithThreshold(75)).isEmpty());
 	}
@@ -111,11 +95,8 @@ class LowAttendanceRuleEvaluatorTest {
 	void evaluate_studentWithNoMarkedAttendance_skipsWithoutError() {
 		newEvaluator();
 		when(studentClassroomLinkRepository.findDistinctStudentIdsByTenantId(1L)).thenReturn(List.of(1L));
-		when(attendanceRepository.countByStudentIdsAndTenantIdAndAttendanceDateBetween(eq(List.of(1L)), eq(1L),
-				any(LocalDate.class), any(LocalDate.class))).thenReturn(List.of());
-		when(attendanceRepository.countByStudentIdsAndTenantIdAndAttendanceDateBetweenAndStatus(eq(List.of(1L)),
-				eq(1L), any(LocalDate.class), any(LocalDate.class), eq(AttendanceStatus.PRESENT)))
-				.thenReturn(List.of());
+		when(attendanceRepository.tallyByStudent(eq(1L), eq(List.of(1L)), any(LocalDate.class),
+				any(LocalDate.class), eq(true), any())).thenReturn(List.of());
 
 		assertTrue(evaluator.evaluate(ruleWithThreshold(75)).isEmpty());
 	}
@@ -124,11 +105,10 @@ class LowAttendanceRuleEvaluatorTest {
 	void evaluate_nullThreshold_usesDefaultSeventyFivePercent() {
 		newEvaluator();
 		when(studentClassroomLinkRepository.findDistinctStudentIdsByTenantId(1L)).thenReturn(List.of(1L));
-		when(attendanceRepository.countByStudentIdsAndTenantIdAndAttendanceDateBetween(eq(List.of(1L)), eq(1L),
-				any(LocalDate.class), any(LocalDate.class))).thenReturn(List.of(count(1L, 20L)));
-		when(attendanceRepository.countByStudentIdsAndTenantIdAndAttendanceDateBetweenAndStatus(eq(List.of(1L)),
-				eq(1L), any(LocalDate.class), any(LocalDate.class), eq(AttendanceStatus.PRESENT)))
-				.thenReturn(List.of(count(1L, 10L)));
+		when(attendanceRepository.tallyByStudent(eq(1L), eq(List.of(1L)), any(LocalDate.class),
+				any(LocalDate.class), eq(true), any()))
+				.thenReturn(List.of(new AttendanceTally(1L, AttendanceStatus.PRESENT, 10L),
+						new AttendanceTally(1L, AttendanceStatus.ABSENT, 10L)));
 		Student student = studentWithId(1L);
 		when(studentRepository.findAllByIdInAndTenantId(List.of(1L), 1L)).thenReturn(List.of(student));
 		when(recipientResolver.resolve(1L, student)).thenReturn(java.util.Optional.of(77L));

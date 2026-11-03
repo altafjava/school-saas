@@ -55,5 +55,9 @@
     <include file="db/domain/changesets/048-student-leave-requests.xml"/>
     <include file="db/domain/changesets/049-announcements.xml"/>
     <include file="db/domain/changesets/050-messaging.xml"/>
+    <include file="db/domain/changesets/051-staff-attendance.xml"/>
+    <include file="db/domain/changesets/052-fee-invoices.xml"/>
+    <include file="db/domain/changesets/053-enquiries.xml"/>
+    <include file="db/domain/changesets/054-import-jobs.xml"/>
 
 </databaseChangeLog>

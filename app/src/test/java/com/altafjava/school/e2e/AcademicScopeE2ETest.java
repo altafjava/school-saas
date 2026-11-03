@@ -102,6 +102,7 @@ class AcademicScopeE2ETest extends SchoolIntegrationTestBase {
 	private Long mathExamBId;
 	private String attendanceOfA;
 	private String attendanceOfB;
+	private int examsScheduled;
 
 	private Long classTeacherUser;
 	private Long mathTeacherUser;
@@ -150,6 +151,10 @@ class AcademicScopeE2ETest extends SchoolIntegrationTestBase {
 		mathExamAId = examId(createExam("Maths A", mathId, classroomAId));
 		englishExamAId = examId(createExam("English A", englishId, classroomAId));
 		mathExamBId = examId(createExam("Maths B", mathId, classroomBId));
+		for (String classroom : new String[] { classroomA, classroomB }) {
+			admin().post("/api/v1/classrooms/" + classroom + "/exam-timetable/publish").then()
+					.statusCode(HttpStatus.OK.value());
+		}
 		recordGrade(admin(), studentAId, mathExamAId).then().statusCode(HttpStatus.CREATED.value());
 		recordGrade(admin(), studentBId, mathExamBId).then().statusCode(HttpStatus.CREATED.value());
 		attendanceOfA = markAttendance(admin(), studentAId, classroomAId, "2026-02-02").then()
@@ -418,6 +423,9 @@ class AcademicScopeE2ETest extends SchoolIntegrationTestBase {
 				.statusCode(HttpStatus.OK.value()).extract().path("data.content.size()");
 
 		admin().patch("/api/v1/exams/" + mathExamC + "/complete").then().statusCode(HttpStatus.OK.value());
+		support.requestWithRole(school.tenantId(), "ACADEMIC").post("/api/v1/exams/" + mathExamC + "/marks/verify")
+				.then().statusCode(HttpStatus.OK.value());
+		admin().post("/api/v1/exams/" + mathExamC + "/marks/lock").then().statusCode(HttpStatus.OK.value());
 		admin().post("/api/v1/exams/" + mathExamC + "/results/publish").then().statusCode(HttpStatus.OK.value());
 
 		as(parentOfAUser, "PARENT").get("/api/v1/grades?size=100").then()
@@ -757,13 +765,19 @@ class AcademicScopeE2ETest extends SchoolIntegrationTestBase {
 				.statusCode(HttpStatus.CREATED.value());
 	}
 
+	// Each exam gets its own day, so a classroom's exams never overlap.
+	private String nextExamSlot() {
+		return LocalDate.of(2026, 3, 1).plusDays(examsScheduled++).atTime(9, 0).toString();
+	}
+
 	private String createExam(String title, Long subjectId, Long classroomId) {
 		Long examTypeId = support.inTenant(school.tenantId(), () -> examTypeDefinitionRepository
 				.findByCodeAndTenantId("MIDTERM", school.tenantId()).orElseThrow().getId());
 		return admin()
 				.body("{\"title\":\"" + title + "\",\"subjectPublicId\":\"" + publicIds.of(Subject.class, subjectId)
 						+ "\",\"classroomPublicId\":\"" + publicIds.of(Classroom.class, classroomId)
-						+ "\",\"scheduledAt\":\"2026-03-01T09:00:00\",\"maxMarks\":100,\"examTypePublicId\":\""
+						+ "\",\"scheduledAt\":\"" + nextExamSlot()
+						+ "\",\"durationMinutes\":60,\"maxMarks\":100,\"examTypePublicId\":\""
 						+ publicIds.of(ExamTypeDefinition.class, examTypeId)
 						+ "\",\"weightage\":10}")
 				.post("/api/v1/exams").then().statusCode(HttpStatus.CREATED.value()).extract()

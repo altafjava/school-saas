@@ -44,6 +44,7 @@ import com.altafjava.school.domain.classroom.model.StudentClassroomLink;
 import com.altafjava.school.domain.classroom.repository.ClassroomRepository;
 import com.altafjava.school.domain.classroom.repository.StudentClassroomLinkRepository;
 import com.altafjava.school.domain.exam.model.Exam;
+import com.altafjava.school.domain.exam.model.ExamSlot;
 import com.altafjava.school.domain.exam.repository.ExamRepository;
 import com.altafjava.school.domain.grade.model.Grade;
 import com.altafjava.school.domain.grade.repository.GradeRepository;
@@ -161,7 +162,8 @@ class ReportCardServiceTest {
 	}
 
 	private Exam unpublishedExamAt(long id, LocalDateTime scheduledAt, BigDecimal weightage) {
-		Exam exam = Exam.create("Midterm", 5L, 2L, scheduledAt, BigDecimal.valueOf(100), null, 1L, weightage);
+		Exam exam = Exam.create("Midterm", 5L, 2L, new ExamSlot(scheduledAt, 60, null), BigDecimal.valueOf(100), null,
+				1L, weightage);
 		exam.setId(id);
 		return exam;
 	}
@@ -173,6 +175,8 @@ class ReportCardServiceTest {
 	private Exam publishedExamAt(long id, LocalDateTime scheduledAt, BigDecimal weightage) {
 		Exam exam = unpublishedExamAt(id, scheduledAt, weightage);
 		exam.complete();
+		exam.verifyMarks("checker");
+		exam.lockMarks("registrar");
 		exam.publishResults("registrar");
 		return exam;
 	}

@@ -63,4 +63,6 @@ public interface GuardianRepository extends JpaRepository<Guardian, Long> {
 			WHERE g.tenantId = :tenantId AND g.publicId IN :publicIds AND g.userId IS NOT NULL
 			""")
 	List<Long> findUserIdsByPublicIds(@Param("tenantId") Long tenantId, @Param("publicIds") Collection<UUID> publicIds);
+
+	Optional<Guardian> findFirstByEmailAndTenantIdOrderByIdAsc(String email, Long tenantId);
 }

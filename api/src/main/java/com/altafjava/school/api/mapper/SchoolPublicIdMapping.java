@@ -84,9 +84,19 @@ public class SchoolPublicIdMapping {
 		return publicIdResolver.resolve(EntityRef.EXAM, id);
 	}
 
+	@Named("admission")
+	public String admission(Long id) {
+		return publicIdResolver.resolve(EntityRef.ADMISSION, id);
+	}
+
 	@Named("examType")
 	public String examType(Long id) {
 		return publicIdResolver.resolve(EntityRef.EXAM_TYPE, id);
+	}
+
+	@Named("feeInvoice")
+	public String feeInvoice(Long id) {
+		return publicIdResolver.resolve(EntityRef.FEE_INVOICE, id);
 	}
 
 	@Named("feeStructure")
@@ -242,6 +252,11 @@ public class SchoolPublicIdMapping {
 	@Named("examTypeSummary")
 	public ReferenceSummary examTypeSummary(Long id) {
 		return referenceSummaries.of(EntityRef.EXAM_TYPE, id);
+	}
+
+	@Named("feeInvoiceSummary")
+	public ReferenceSummary feeInvoiceSummary(Long id) {
+		return referenceSummaries.of(EntityRef.FEE_INVOICE, id);
 	}
 
 	@Named("feeStructureSummary")

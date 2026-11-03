@@ -25,6 +25,7 @@ import com.altafjava.school.api.mapper.ExamMapper;
 import com.altafjava.school.api.support.PlatformPageMapper;
 import com.altafjava.school.api.support.SortableBy;
 import com.altafjava.school.api.support.SpringDataPageableResolver;
+import com.altafjava.school.application.exam.ExamMarksService;
 import com.altafjava.school.application.filter.ExamFilter;
 import com.altafjava.school.application.reference.ReferenceSummaries;
 import com.altafjava.school.application.service.ExamService;
@@ -36,14 +37,16 @@ import com.altafjava.school.domain.security.permission.SchoolPermissions;
 public class ExamController implements ExamApi {
 
 	private final ExamService examService;
+	private final ExamMarksService examMarksService;
 	private final ExamMapper examMapper;
 
 	private final SpringDataPageableResolver pageableResolver;
 
 	private final ReferenceSummaries referenceSummaries;
 
-	public ExamController(ExamService examService, ExamMapper examMapper, SpringDataPageableResolver pageableResolver,
-			ReferenceSummaries referenceSummaries) {
+	public ExamController(ExamService examService, ExamMarksService examMarksService, ExamMapper examMapper,
+			SpringDataPageableResolver pageableResolver, ReferenceSummaries referenceSummaries) {
+		this.examMarksService = examMarksService;
 		this.referenceSummaries = referenceSummaries;
 		this.examService = examService;
 		this.examMapper = examMapper;
@@ -80,14 +83,10 @@ public class ExamController implements ExamApi {
 	@RequiresPermission(SchoolPermissions.EXAM_WRITE)
 	public ApiResponse<ExamResponse> schedule(@Valid @RequestBody ScheduleExamRequest request) {
 		return ApiResponse.success(examMapper.toResponse(examService.schedule(
-				request.title(),
-				request.subjectPublicId(),
-				request.classroomPublicId(),
-				request.scheduledAt(),
-				request.maxMarks(),
-				request.termPublicId(),
-				request.examTypePublicId(),
-				request.weightage())));
+				new ExamService.ExamDetails(request.title(), request.subjectPublicId(), request.classroomPublicId(),
+						request.maxMarks(), request.termPublicId(), request.examTypePublicId(), request.weightage()),
+				new ExamService.SlotRequest(request.scheduledAt(), request.durationMinutes(),
+						request.venuePublicId()))));
 	}
 
 	@Override
@@ -96,7 +95,8 @@ public class ExamController implements ExamApi {
 	public ApiResponse<ExamResponse> reschedule(@PathVariable String publicId,
 			@Valid @RequestBody RescheduleExamRequest request) {
 		return ApiResponse.success(examMapper
-				.toResponse(examService.reschedule(publicId, request.scheduledAt(), request.expectedVersion())));
+				.toResponse(examService.reschedule(publicId, new ExamService.SlotRequest(request.scheduledAt(),
+						request.durationMinutes(), request.venuePublicId()), request.expectedVersion())));
 	}
 
 	@Override
@@ -144,5 +144,35 @@ public class ExamController implements ExamApi {
 	@RequiresPermission(SchoolPermissions.EXAM_WRITE)
 	public ApiResponse<ExamResponse> cancel(@PathVariable String publicId) {
 		return ApiResponse.success(examMapper.toResponse(examService.cancel(publicId)));
+	}
+
+	@Override
+	@PostMapping("/{publicId}/marks/verify")
+	@RequiresPermission(SchoolPermissions.EXAM_MARKS_VERIFY)
+	public ApiResponse<ExamResponse> verifyMarks(@PathVariable String publicId,
+			@AuthenticationPrincipal AuthenticatedUser user) {
+		return ApiResponse.success(examMapper.toResponse(examMarksService.verify(publicId, user.getUsername())));
+	}
+
+	@Override
+	@PostMapping("/{publicId}/marks/return")
+	@RequiresPermission(SchoolPermissions.EXAM_MARKS_VERIFY)
+	public ApiResponse<ExamResponse> returnMarks(@PathVariable String publicId) {
+		return ApiResponse.success(examMapper.toResponse(examMarksService.returnForCorrection(publicId)));
+	}
+
+	@Override
+	@PostMapping("/{publicId}/marks/lock")
+	@RequiresPermission(SchoolPermissions.EXAM_RESULT_PUBLISH)
+	public ApiResponse<ExamResponse> lockMarks(@PathVariable String publicId,
+			@AuthenticationPrincipal AuthenticatedUser user) {
+		return ApiResponse.success(examMapper.toResponse(examMarksService.lock(publicId, user.getUsername())));
+	}
+
+	@Override
+	@PostMapping("/{publicId}/marks/unlock")
+	@RequiresPermission(SchoolPermissions.EXAM_RESULT_PUBLISH)
+	public ApiResponse<ExamResponse> unlockMarks(@PathVariable String publicId) {
+		return ApiResponse.success(examMapper.toResponse(examMarksService.unlock(publicId)));
 	}
 }
