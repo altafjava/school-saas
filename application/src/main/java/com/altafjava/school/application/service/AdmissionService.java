@@ -13,6 +13,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
+import org.springframework.web.util.HtmlUtils;
 import com.altafjava.platform.application.document.DocumentIssuanceService;
 import com.altafjava.platform.application.service.EmailService;
 import com.altafjava.platform.application.service.NumberSequenceService;
@@ -335,6 +336,7 @@ public class AdmissionService {
 		if (!StringUtils.hasText(admission.getGuardianEmail())) {
 			return;
 		}
-		emailService.sendEmail(admission.getGuardianEmail(), subject, "<p>" + message + "</p>");
+		// Applicant names come from a public form, so the text is escaped, never trusted as markup.
+		emailService.sendEmail(admission.getGuardianEmail(), subject, "<p>" + HtmlUtils.htmlEscape(message) + "</p>");
 	}
 }
