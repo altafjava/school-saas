@@ -70897,12 +70897,30 @@
         "required" : [ "emailVerified", "id" ]
       },
       "ValidationError" : {
+        "description" : "One rejected field: translate by code and params; message is the English fallback",
         "properties" : {
           "field" : {
-            "type" : "string"
+            "type" : "string",
+            "description" : "Field name, or the parameter name for a query or path value",
+            "example" : "subdomain"
+          },
+          "code" : {
+            "type" : "string",
+            "description" : "Rule that failed, e.g. NOT_BLANK, SIZE, PATTERN, INVALID_FORMAT",
+            "example" : "SIZE"
           },
           "message" : {
-            "type" : "string"
+            "type" : "string",
+            "description" : "English description of the failure",
+            "example" : "size must be between 3 and 63"
+          },
+          "params" : {
+            "type" : "object",
+            "additionalProperties" : {
+              "type" : "object",
+              "description" : "The rule's limits, e.g. min and max for SIZE; absent when it has none"
+            },
+            "description" : "The rule's limits, e.g. min and max for SIZE; absent when it has none"
           }
         }
       },
@@ -84716,7 +84734,8 @@
             "type" : "string"
           },
           "currency" : {
-            "type" : "string"
+            "type" : "string",
+            "pattern" : "[A-Z]{3}"
           },
           "language" : {
             "type" : "string"
@@ -84728,7 +84747,8 @@
             "type" : "string"
           },
           "firstDayOfWeek" : {
-            "type" : "string"
+            "type" : "string",
+            "enum" : [ "MONDAY", "TUESDAY", "WEDNESDAY", "THURSDAY", "FRIDAY", "SATURDAY", "SUNDAY" ]
           },
           "enableSmsNotifications" : {
             "type" : "boolean"
@@ -84819,7 +84839,8 @@
             "type" : "string"
           },
           "firstDayOfWeek" : {
-            "type" : "string"
+            "type" : "string",
+            "enum" : [ "MONDAY", "TUESDAY", "WEDNESDAY", "THURSDAY", "FRIDAY", "SATURDAY", "SUNDAY" ]
           },
           "enableSmsNotifications" : {
             "type" : "boolean"
@@ -86578,9 +86599,13 @@
           "totalElements" : {
             "type" : "integer",
             "format" : "int64"
+          },
+          "totalPages" : {
+            "type" : "integer",
+            "format" : "int32"
           }
         },
-        "required" : [ "pageNumber", "pageSize", "totalElements" ]
+        "required" : [ "pageNumber", "pageSize", "totalElements", "totalPages" ]
       },
       "ApiResponsePageVisitorLogResponse" : {
         "type" : "object",
@@ -86620,9 +86645,13 @@
           "totalElements" : {
             "type" : "integer",
             "format" : "int64"
+          },
+          "totalPages" : {
+            "type" : "integer",
+            "format" : "int32"
           }
         },
-        "required" : [ "pageNumber", "pageSize", "totalElements" ]
+        "required" : [ "pageNumber", "pageSize", "totalElements", "totalPages" ]
       },
       "ApiResponsePageVenueResponse" : {
         "type" : "object",
@@ -86662,9 +86691,13 @@
           "totalElements" : {
             "type" : "integer",
             "format" : "int64"
+          },
+          "totalPages" : {
+            "type" : "integer",
+            "format" : "int32"
           }
         },
-        "required" : [ "pageNumber", "pageSize", "totalElements" ]
+        "required" : [ "pageNumber", "pageSize", "totalElements", "totalPages" ]
       },
       "ApiResponsePageVehicleResponse" : {
         "type" : "object",
@@ -86704,9 +86737,13 @@
           "totalElements" : {
             "type" : "integer",
             "format" : "int64"
+          },
+          "totalPages" : {
+            "type" : "integer",
+            "format" : "int32"
           }
         },
-        "required" : [ "pageNumber", "pageSize", "totalElements" ]
+        "required" : [ "pageNumber", "pageSize", "totalElements", "totalPages" ]
       },
       "ApiResponsePageUserResponse" : {
         "type" : "object",
@@ -86746,9 +86783,13 @@
           "totalElements" : {
             "type" : "integer",
             "format" : "int64"
+          },
+          "totalPages" : {
+            "type" : "integer",
+            "format" : "int32"
           }
         },
-        "required" : [ "pageNumber", "pageSize", "totalElements" ]
+        "required" : [ "pageNumber", "pageSize", "totalElements", "totalPages" ]
       },
       "ActiveSessionResponse" : {
         "type" : "object",
@@ -87026,9 +87067,13 @@
           "totalElements" : {
             "type" : "integer",
             "format" : "int64"
+          },
+          "totalPages" : {
+            "type" : "integer",
+            "format" : "int32"
           }
         },
-        "required" : [ "pageNumber", "pageSize", "totalElements" ]
+        "required" : [ "pageNumber", "pageSize", "totalElements", "totalPages" ]
       },
       "ApiResponsePageSubstitutionResponse" : {
         "type" : "object",
@@ -87068,9 +87113,13 @@
           "totalElements" : {
             "type" : "integer",
             "format" : "int64"
+          },
+          "totalPages" : {
+            "type" : "integer",
+            "format" : "int32"
           }
         },
-        "required" : [ "pageNumber", "pageSize", "totalElements" ]
+        "required" : [ "pageNumber", "pageSize", "totalElements", "totalPages" ]
       },
       "ApiResponseListTimetableEntryResponse" : {
         "type" : "object",
@@ -87171,9 +87220,13 @@
           "totalElements" : {
             "type" : "integer",
             "format" : "int64"
+          },
+          "totalPages" : {
+            "type" : "integer",
+            "format" : "int32"
           }
         },
-        "required" : [ "pageNumber", "pageSize", "totalElements" ]
+        "required" : [ "pageNumber", "pageSize", "totalElements", "totalPages" ]
       },
       "ApiResponsePageTicketResponse" : {
         "type" : "object",
@@ -87213,9 +87266,13 @@
           "totalElements" : {
             "type" : "integer",
             "format" : "int64"
+          },
+          "totalPages" : {
+            "type" : "integer",
+            "format" : "int32"
           }
         },
-        "required" : [ "pageNumber", "pageSize", "totalElements" ]
+        "required" : [ "pageNumber", "pageSize", "totalElements", "totalPages" ]
       },
       "ApiResponsePageTermResponse" : {
         "type" : "object",
@@ -87255,9 +87312,13 @@
           "totalElements" : {
             "type" : "integer",
             "format" : "int64"
+          },
+          "totalPages" : {
+            "type" : "integer",
+            "format" : "int32"
           }
         },
-        "required" : [ "pageNumber", "pageSize", "totalElements" ]
+        "required" : [ "pageNumber", "pageSize", "totalElements", "totalPages" ]
       },
       "ApiResponseListDataResidencyRegion" : {
         "type" : "object",
@@ -87755,9 +87816,13 @@
           "totalElements" : {
             "type" : "integer",
             "format" : "int64"
+          },
+          "totalPages" : {
+            "type" : "integer",
+            "format" : "int32"
           }
         },
-        "required" : [ "pageNumber", "pageSize", "totalElements" ]
+        "required" : [ "pageNumber", "pageSize", "totalElements", "totalPages" ]
       },
       "ApiResponseListEntityChange" : {
         "type" : "object",
@@ -87845,9 +87910,13 @@
           "totalElements" : {
             "type" : "integer",
             "format" : "int64"
+          },
+          "totalPages" : {
+            "type" : "integer",
+            "format" : "int32"
           }
         },
-        "required" : [ "pageNumber", "pageSize", "totalElements" ]
+        "required" : [ "pageNumber", "pageSize", "totalElements", "totalPages" ]
       },
       "ApiResponsePageStudentResponse" : {
         "type" : "object",
@@ -87887,9 +87956,13 @@
           "totalElements" : {
             "type" : "integer",
             "format" : "int64"
+          },
+          "totalPages" : {
+            "type" : "integer",
+            "format" : "int32"
           }
         },
-        "required" : [ "pageNumber", "pageSize", "totalElements" ]
+        "required" : [ "pageNumber", "pageSize", "totalElements", "totalPages" ]
       },
       "ApiResponseListPickupAuthorizedGuardianResponse" : {
         "type" : "object",
@@ -88146,9 +88219,13 @@
           "totalElements" : {
             "type" : "integer",
             "format" : "int64"
+          },
+          "totalPages" : {
+            "type" : "integer",
+            "format" : "int32"
           }
         },
-        "required" : [ "pageNumber", "pageSize", "totalElements" ]
+        "required" : [ "pageNumber", "pageSize", "totalElements", "totalPages" ]
       },
       "ApiResponseListFeeDiscountResponse" : {
         "type" : "object",
@@ -88230,9 +88307,13 @@
           "totalElements" : {
             "type" : "integer",
             "format" : "int64"
+          },
+          "totalPages" : {
+            "type" : "integer",
+            "format" : "int32"
           }
         },
-        "required" : [ "pageNumber", "pageSize", "totalElements" ]
+        "required" : [ "pageNumber", "pageSize", "totalElements", "totalPages" ]
       },
       "ApiResponsePageIssuedDocumentResponse" : {
         "type" : "object",
@@ -88272,9 +88353,13 @@
           "totalElements" : {
             "type" : "integer",
             "format" : "int64"
+          },
+          "totalPages" : {
+            "type" : "integer",
+            "format" : "int32"
           }
         },
-        "required" : [ "pageNumber", "pageSize", "totalElements" ]
+        "required" : [ "pageNumber", "pageSize", "totalElements", "totalPages" ]
       },
       "ApiResponsePageReportCardResponse" : {
         "type" : "object",
@@ -88314,9 +88399,13 @@
           "totalElements" : {
             "type" : "integer",
             "format" : "int64"
+          },
+          "totalPages" : {
+            "type" : "integer",
+            "format" : "int32"
           }
         },
-        "required" : [ "pageNumber", "pageSize", "totalElements" ]
+        "required" : [ "pageNumber", "pageSize", "totalElements", "totalPages" ]
       },
       "ApiResponseListStudentGuardianResponse" : {
         "type" : "object",
@@ -88424,9 +88513,13 @@
           "totalElements" : {
             "type" : "integer",
             "format" : "int64"
+          },
+          "totalPages" : {
+            "type" : "integer",
+            "format" : "int32"
           }
         },
-        "required" : [ "pageNumber", "pageSize", "totalElements" ]
+        "required" : [ "pageNumber", "pageSize", "totalElements", "totalPages" ]
       },
       "ApiResponseGpaResponse" : {
         "type" : "object",
@@ -88497,9 +88590,13 @@
           "totalElements" : {
             "type" : "integer",
             "format" : "int64"
+          },
+          "totalPages" : {
+            "type" : "integer",
+            "format" : "int32"
           }
         },
-        "required" : [ "pageNumber", "pageSize", "totalElements" ]
+        "required" : [ "pageNumber", "pageSize", "totalElements", "totalPages" ]
       },
       "ApiResponseListFeeBalanceResponse" : {
         "type" : "object",
@@ -88634,9 +88731,13 @@
           "totalElements" : {
             "type" : "integer",
             "format" : "int64"
+          },
+          "totalPages" : {
+            "type" : "integer",
+            "format" : "int32"
           }
         },
-        "required" : [ "pageNumber", "pageSize", "totalElements" ]
+        "required" : [ "pageNumber", "pageSize", "totalElements", "totalPages" ]
       },
       "ApiResponseAttendancePercentageResponse" : {
         "type" : "object",
@@ -88710,9 +88811,13 @@
           "totalElements" : {
             "type" : "integer",
             "format" : "int64"
+          },
+          "totalPages" : {
+            "type" : "integer",
+            "format" : "int32"
           }
         },
-        "required" : [ "pageNumber", "pageSize", "totalElements" ]
+        "required" : [ "pageNumber", "pageSize", "totalElements", "totalPages" ]
       },
       "ApiResponsePageStaffAttendanceResponse" : {
         "type" : "object",
@@ -88752,9 +88857,13 @@
           "totalElements" : {
             "type" : "integer",
             "format" : "int64"
+          },
+          "totalPages" : {
+            "type" : "integer",
+            "format" : "int32"
           }
         },
-        "required" : [ "pageNumber", "pageSize", "totalElements" ]
+        "required" : [ "pageNumber", "pageSize", "totalElements", "totalPages" ]
       },
       "ApiResponsePageStaffRegisterEntryResponse" : {
         "type" : "object",
@@ -88794,9 +88903,13 @@
           "totalElements" : {
             "type" : "integer",
             "format" : "int64"
+          },
+          "totalPages" : {
+            "type" : "integer",
+            "format" : "int32"
           }
         },
-        "required" : [ "pageNumber", "pageSize", "totalElements" ]
+        "required" : [ "pageNumber", "pageSize", "totalElements", "totalPages" ]
       },
       "StaffRegisterEntryResponse" : {
         "type" : "object",
@@ -88916,9 +89029,13 @@
           "totalElements" : {
             "type" : "integer",
             "format" : "int64"
+          },
+          "totalPages" : {
+            "type" : "integer",
+            "format" : "int32"
           }
         },
-        "required" : [ "pageNumber", "pageSize", "totalElements" ]
+        "required" : [ "pageNumber", "pageSize", "totalElements", "totalPages" ]
       },
       "ApiResponsePageRouteResponse" : {
         "type" : "object",
@@ -88958,9 +89075,13 @@
           "totalElements" : {
             "type" : "integer",
             "format" : "int64"
+          },
+          "totalPages" : {
+            "type" : "integer",
+            "format" : "int32"
           }
         },
-        "required" : [ "pageNumber", "pageSize", "totalElements" ]
+        "required" : [ "pageNumber", "pageSize", "totalElements", "totalPages" ]
       },
       "ApiResponseListRouteStopResponse" : {
         "type" : "object",
@@ -89021,9 +89142,13 @@
           "totalElements" : {
             "type" : "integer",
             "format" : "int64"
+          },
+          "totalPages" : {
+            "type" : "integer",
+            "format" : "int32"
           }
         },
-        "required" : [ "pageNumber", "pageSize", "totalElements" ]
+        "required" : [ "pageNumber", "pageSize", "totalElements", "totalPages" ]
       },
       "ApiResponsePageRoomAllocationResponse" : {
         "type" : "object",
@@ -89063,9 +89188,13 @@
           "totalElements" : {
             "type" : "integer",
             "format" : "int64"
+          },
+          "totalPages" : {
+            "type" : "integer",
+            "format" : "int32"
           }
         },
-        "required" : [ "pageNumber", "pageSize", "totalElements" ]
+        "required" : [ "pageNumber", "pageSize", "totalElements", "totalPages" ]
       },
       "ApiResponseListRoleResponse" : {
         "type" : "object",
@@ -89182,9 +89311,13 @@
           "totalElements" : {
             "type" : "integer",
             "format" : "int64"
+          },
+          "totalPages" : {
+            "type" : "integer",
+            "format" : "int32"
           }
         },
-        "required" : [ "pageNumber", "pageSize", "totalElements" ]
+        "required" : [ "pageNumber", "pageSize", "totalElements", "totalPages" ]
       },
       "ApiResponsePageReportExecutionResponse" : {
         "type" : "object",
@@ -89224,9 +89357,13 @@
           "totalElements" : {
             "type" : "integer",
             "format" : "int64"
+          },
+          "totalPages" : {
+            "type" : "integer",
+            "format" : "int32"
           }
         },
-        "required" : [ "pageNumber", "pageSize", "totalElements" ]
+        "required" : [ "pageNumber", "pageSize", "totalElements", "totalPages" ]
       },
       "ApiResponseMapStringQuotaStatus" : {
         "type" : "object",
@@ -89408,9 +89545,13 @@
           "totalElements" : {
             "type" : "integer",
             "format" : "int64"
+          },
+          "totalPages" : {
+            "type" : "integer",
+            "format" : "int32"
           }
         },
-        "required" : [ "pageNumber", "pageSize", "totalElements" ]
+        "required" : [ "pageNumber", "pageSize", "totalElements", "totalPages" ]
       },
       "ApiResponseListConsentRecordResponse" : {
         "type" : "object",
@@ -89516,9 +89657,13 @@
           "totalElements" : {
             "type" : "integer",
             "format" : "int64"
+          },
+          "totalPages" : {
+            "type" : "integer",
+            "format" : "int32"
           }
         },
-        "required" : [ "pageNumber", "pageSize", "totalElements" ]
+        "required" : [ "pageNumber", "pageSize", "totalElements", "totalPages" ]
       },
       "ApiResponsePagePeriodAttendanceResponse" : {
         "type" : "object",
@@ -89558,9 +89703,13 @@
           "totalElements" : {
             "type" : "integer",
             "format" : "int64"
+          },
+          "totalPages" : {
+            "type" : "integer",
+            "format" : "int32"
           }
         },
-        "required" : [ "pageNumber", "pageSize", "totalElements" ]
+        "required" : [ "pageNumber", "pageSize", "totalElements", "totalPages" ]
       },
       "ApiResponsePagePayslipResponse" : {
         "type" : "object",
@@ -89600,9 +89749,13 @@
           "totalElements" : {
             "type" : "integer",
             "format" : "int64"
+          },
+          "totalPages" : {
+            "type" : "integer",
+            "format" : "int32"
           }
         },
-        "required" : [ "pageNumber", "pageSize", "totalElements" ]
+        "required" : [ "pageNumber", "pageSize", "totalElements", "totalPages" ]
       },
       "ApiResponseListPayComponentDefinitionResponse" : {
         "type" : "object",
@@ -89836,9 +89989,13 @@
           "totalElements" : {
             "type" : "integer",
             "format" : "int64"
+          },
+          "totalPages" : {
+            "type" : "integer",
+            "format" : "int32"
           }
         },
-        "required" : [ "pageNumber", "pageSize", "totalElements" ]
+        "required" : [ "pageNumber", "pageSize", "totalElements", "totalPages" ]
       },
       "ApiResponsePageNotificationResponse" : {
         "type" : "object",
@@ -89878,9 +90035,13 @@
           "totalElements" : {
             "type" : "integer",
             "format" : "int64"
+          },
+          "totalPages" : {
+            "type" : "integer",
+            "format" : "int32"
           }
         },
-        "required" : [ "pageNumber", "pageSize", "totalElements" ]
+        "required" : [ "pageNumber", "pageSize", "totalElements", "totalPages" ]
       },
       "ApiResponsePageNotificationTemplateResponse" : {
         "type" : "object",
@@ -89920,9 +90081,13 @@
           "totalElements" : {
             "type" : "integer",
             "format" : "int64"
+          },
+          "totalPages" : {
+            "type" : "integer",
+            "format" : "int32"
           }
         },
-        "required" : [ "pageNumber", "pageSize", "totalElements" ]
+        "required" : [ "pageNumber", "pageSize", "totalElements", "totalPages" ]
       },
       "SseEmitter" : {
         "type" : "object",
@@ -89992,9 +90157,13 @@
           "totalElements" : {
             "type" : "integer",
             "format" : "int64"
+          },
+          "totalPages" : {
+            "type" : "integer",
+            "format" : "int32"
           }
         },
-        "required" : [ "pageNumber", "pageSize", "totalElements" ]
+        "required" : [ "pageNumber", "pageSize", "totalElements", "totalPages" ]
       },
       "ApiResponseMeResponse" : {
         "type" : "object",
@@ -90091,6 +90260,31 @@
             "type" : "string",
             "format" : "date-time",
             "description" : "When a suspended tenant loses access; absent otherwise"
+          },
+          "timezone" : {
+            "type" : "string",
+            "description" : "IANA time zone the tenant's dates and \"today\" are in",
+            "example" : "Asia/Kolkata"
+          },
+          "locale" : {
+            "type" : "string",
+            "description" : "BCP 47 display locale",
+            "example" : "en-IN"
+          },
+          "dateFormat" : {
+            "type" : "string",
+            "description" : "Date display pattern; absent means follow the locale",
+            "example" : "dd/MM/yyyy"
+          },
+          "timeFormat" : {
+            "type" : "string",
+            "description" : "Time display pattern; absent means follow the locale",
+            "example" : "HH:mm"
+          },
+          "firstDayOfWeek" : {
+            "type" : "string",
+            "description" : "First day of the week; absent means follow the locale",
+            "enum" : [ "MONDAY", "TUESDAY", "WEDNESDAY", "THURSDAY", "FRIDAY", "SATURDAY", "SUNDAY" ]
           }
         },
         "required" : [ "id" ]
@@ -90828,9 +91022,13 @@
           "totalElements" : {
             "type" : "integer",
             "format" : "int64"
+          },
+          "totalPages" : {
+            "type" : "integer",
+            "format" : "int32"
           }
         },
-        "required" : [ "pageNumber", "pageSize", "totalElements" ]
+        "required" : [ "pageNumber", "pageSize", "totalElements", "totalPages" ]
       },
       "ApiResponsePageLeaveTypeResponse" : {
         "type" : "object",
@@ -90870,9 +91068,13 @@
           "totalElements" : {
             "type" : "integer",
             "format" : "int64"
+          },
+          "totalPages" : {
+            "type" : "integer",
+            "format" : "int32"
           }
         },
-        "required" : [ "pageNumber", "pageSize", "totalElements" ]
+        "required" : [ "pageNumber", "pageSize", "totalElements", "totalPages" ]
       },
       "ApiResponseListLeaveTypeResponse" : {
         "type" : "object",
@@ -90933,9 +91135,13 @@
           "totalElements" : {
             "type" : "integer",
             "format" : "int64"
+          },
+          "totalPages" : {
+            "type" : "integer",
+            "format" : "int32"
           }
         },
-        "required" : [ "pageNumber", "pageSize", "totalElements" ]
+        "required" : [ "pageNumber", "pageSize", "totalElements", "totalPages" ]
       },
       "ApiResponseListLeaveApprovalResponse" : {
         "type" : "object",
@@ -91176,9 +91382,13 @@
           "totalElements" : {
             "type" : "integer",
             "format" : "int64"
+          },
+          "totalPages" : {
+            "type" : "integer",
+            "format" : "int32"
           }
         },
-        "required" : [ "pageNumber", "pageSize", "totalElements" ]
+        "required" : [ "pageNumber", "pageSize", "totalElements", "totalPages" ]
       },
       "ApiResponsePageImportErrorResponse" : {
         "type" : "object",
@@ -91238,9 +91448,13 @@
           "totalElements" : {
             "type" : "integer",
             "format" : "int64"
+          },
+          "totalPages" : {
+            "type" : "integer",
+            "format" : "int32"
           }
         },
-        "required" : [ "pageNumber", "pageSize", "totalElements" ]
+        "required" : [ "pageNumber", "pageSize", "totalElements", "totalPages" ]
       },
       "ApiResponseListImportTypeResponse" : {
         "type" : "object",
@@ -91316,9 +91530,13 @@
           "totalElements" : {
             "type" : "integer",
             "format" : "int64"
+          },
+          "totalPages" : {
+            "type" : "integer",
+            "format" : "int32"
           }
         },
-        "required" : [ "pageNumber", "pageSize", "totalElements" ]
+        "required" : [ "pageNumber", "pageSize", "totalElements", "totalPages" ]
       },
       "ApiResponsePageHolidayResponse" : {
         "type" : "object",
@@ -91358,9 +91576,13 @@
           "totalElements" : {
             "type" : "integer",
             "format" : "int64"
+          },
+          "totalPages" : {
+            "type" : "integer",
+            "format" : "int32"
           }
         },
-        "required" : [ "pageNumber", "pageSize", "totalElements" ]
+        "required" : [ "pageNumber", "pageSize", "totalElements", "totalPages" ]
       },
       "ApiResponsePageHealthRecordCorrectionResponse" : {
         "type" : "object",
@@ -91444,9 +91666,13 @@
           "totalElements" : {
             "type" : "integer",
             "format" : "int64"
+          },
+          "totalPages" : {
+            "type" : "integer",
+            "format" : "int32"
           }
         },
-        "required" : [ "pageNumber", "pageSize", "totalElements" ]
+        "required" : [ "pageNumber", "pageSize", "totalElements", "totalPages" ]
       },
       "ApiResponsePageGuardianResponse" : {
         "type" : "object",
@@ -91486,9 +91712,13 @@
           "totalElements" : {
             "type" : "integer",
             "format" : "int64"
+          },
+          "totalPages" : {
+            "type" : "integer",
+            "format" : "int32"
           }
         },
-        "required" : [ "pageNumber", "pageSize", "totalElements" ]
+        "required" : [ "pageNumber", "pageSize", "totalElements", "totalPages" ]
       },
       "ApiResponseListGuardianConsentRecordResponse" : {
         "type" : "object",
@@ -91549,9 +91779,13 @@
           "totalElements" : {
             "type" : "integer",
             "format" : "int64"
+          },
+          "totalPages" : {
+            "type" : "integer",
+            "format" : "int32"
           }
         },
-        "required" : [ "pageNumber", "pageSize", "totalElements" ]
+        "required" : [ "pageNumber", "pageSize", "totalElements", "totalPages" ]
       },
       "ApiResponsePageGradeCorrectionResponse" : {
         "type" : "object",
@@ -91623,9 +91857,13 @@
           "totalElements" : {
             "type" : "integer",
             "format" : "int64"
+          },
+          "totalPages" : {
+            "type" : "integer",
+            "format" : "int32"
           }
         },
-        "required" : [ "pageNumber", "pageSize", "totalElements" ]
+        "required" : [ "pageNumber", "pageSize", "totalElements", "totalPages" ]
       },
       "ApiResponsePageFileMetadataResponse" : {
         "type" : "object",
@@ -91719,9 +91957,13 @@
           "totalElements" : {
             "type" : "integer",
             "format" : "int64"
+          },
+          "totalPages" : {
+            "type" : "integer",
+            "format" : "int32"
           }
         },
-        "required" : [ "pageNumber", "pageSize", "totalElements" ]
+        "required" : [ "pageNumber", "pageSize", "totalElements", "totalPages" ]
       },
       "ApiResponsePageFeeStructureResponse" : {
         "type" : "object",
@@ -91761,9 +92003,13 @@
           "totalElements" : {
             "type" : "integer",
             "format" : "int64"
+          },
+          "totalPages" : {
+            "type" : "integer",
+            "format" : "int32"
           }
         },
-        "required" : [ "pageNumber", "pageSize", "totalElements" ]
+        "required" : [ "pageNumber", "pageSize", "totalElements", "totalPages" ]
       },
       "ApiResponsePageFeeStructureRevisionResponse" : {
         "type" : "object",
@@ -91829,9 +92075,13 @@
           "totalElements" : {
             "type" : "integer",
             "format" : "int64"
+          },
+          "totalPages" : {
+            "type" : "integer",
+            "format" : "int32"
           }
         },
-        "required" : [ "pageNumber", "pageSize", "totalElements" ]
+        "required" : [ "pageNumber", "pageSize", "totalElements", "totalPages" ]
       },
       "ApiResponsePageFeeAssignmentResponse" : {
         "type" : "object",
@@ -91871,9 +92121,13 @@
           "totalElements" : {
             "type" : "integer",
             "format" : "int64"
+          },
+          "totalPages" : {
+            "type" : "integer",
+            "format" : "int32"
           }
         },
-        "required" : [ "pageNumber", "pageSize", "totalElements" ]
+        "required" : [ "pageNumber", "pageSize", "totalElements", "totalPages" ]
       },
       "ApiResponseListFeeCollectionRowResponse" : {
         "type" : "object",
@@ -91962,9 +92216,13 @@
           "totalElements" : {
             "type" : "integer",
             "format" : "int64"
+          },
+          "totalPages" : {
+            "type" : "integer",
+            "format" : "int32"
           }
         },
-        "required" : [ "pageNumber", "pageSize", "totalElements" ]
+        "required" : [ "pageNumber", "pageSize", "totalElements", "totalPages" ]
       },
       "ApiResponseListExamTypeDefinitionResponse" : {
         "type" : "object",
@@ -92025,9 +92283,13 @@
           "totalElements" : {
             "type" : "integer",
             "format" : "int64"
+          },
+          "totalPages" : {
+            "type" : "integer",
+            "format" : "int32"
           }
         },
-        "required" : [ "pageNumber", "pageSize", "totalElements" ]
+        "required" : [ "pageNumber", "pageSize", "totalElements", "totalPages" ]
       },
       "ApiResponsePageEventRegistrationResponse" : {
         "type" : "object",
@@ -92067,9 +92329,13 @@
           "totalElements" : {
             "type" : "integer",
             "format" : "int64"
+          },
+          "totalPages" : {
+            "type" : "integer",
+            "format" : "int32"
           }
         },
-        "required" : [ "pageNumber", "pageSize", "totalElements" ]
+        "required" : [ "pageNumber", "pageSize", "totalElements", "totalPages" ]
       },
       "ApiResponseListErrorCodeResponse" : {
         "type" : "object",
@@ -92146,9 +92412,13 @@
           "totalElements" : {
             "type" : "integer",
             "format" : "int64"
+          },
+          "totalPages" : {
+            "type" : "integer",
+            "format" : "int32"
           }
         },
-        "required" : [ "pageNumber", "pageSize", "totalElements" ]
+        "required" : [ "pageNumber", "pageSize", "totalElements", "totalPages" ]
       },
       "ApiResponsePageEnquiryFollowUpResponse" : {
         "type" : "object",
@@ -92188,9 +92458,13 @@
           "totalElements" : {
             "type" : "integer",
             "format" : "int64"
+          },
+          "totalPages" : {
+            "type" : "integer",
+            "format" : "int32"
           }
         },
-        "required" : [ "pageNumber", "pageSize", "totalElements" ]
+        "required" : [ "pageNumber", "pageSize", "totalElements", "totalPages" ]
       },
       "ApiResponsePageEmployeeResponse" : {
         "type" : "object",
@@ -92230,9 +92504,13 @@
           "totalElements" : {
             "type" : "integer",
             "format" : "int64"
+          },
+          "totalPages" : {
+            "type" : "integer",
+            "format" : "int32"
           }
         },
-        "required" : [ "pageNumber", "pageSize", "totalElements" ]
+        "required" : [ "pageNumber", "pageSize", "totalElements", "totalPages" ]
       },
       "ApiResponseDocumentVerificationResponse" : {
         "type" : "object",
@@ -92386,9 +92664,13 @@
           "totalElements" : {
             "type" : "integer",
             "format" : "int64"
+          },
+          "totalPages" : {
+            "type" : "integer",
+            "format" : "int32"
           }
         },
-        "required" : [ "pageNumber", "pageSize", "totalElements" ]
+        "required" : [ "pageNumber", "pageSize", "totalElements", "totalPages" ]
       },
       "ApiResponsePageDisciplineIncidentResponse" : {
         "type" : "object",
@@ -92428,9 +92710,13 @@
           "totalElements" : {
             "type" : "integer",
             "format" : "int64"
+          },
+          "totalPages" : {
+            "type" : "integer",
+            "format" : "int32"
           }
         },
-        "required" : [ "pageNumber", "pageSize", "totalElements" ]
+        "required" : [ "pageNumber", "pageSize", "totalElements", "totalPages" ]
       },
       "ApiResponsePageDepartmentResponse" : {
         "type" : "object",
@@ -92470,9 +92756,13 @@
           "totalElements" : {
             "type" : "integer",
             "format" : "int64"
+          },
+          "totalPages" : {
+            "type" : "integer",
+            "format" : "int32"
           }
         },
-        "required" : [ "pageNumber", "pageSize", "totalElements" ]
+        "required" : [ "pageNumber", "pageSize", "totalElements", "totalPages" ]
       },
       "ApiResponseListDataRetentionPolicyResponse" : {
         "type" : "object",
@@ -92845,9 +93135,13 @@
           "totalElements" : {
             "type" : "integer",
             "format" : "int64"
+          },
+          "totalPages" : {
+            "type" : "integer",
+            "format" : "int32"
           }
         },
-        "required" : [ "pageNumber", "pageSize", "totalElements" ]
+        "required" : [ "pageNumber", "pageSize", "totalElements", "totalPages" ]
       },
       "ApiResponseListCustomFieldDefinitionResponse" : {
         "type" : "object",
@@ -92908,9 +93202,13 @@
           "totalElements" : {
             "type" : "integer",
             "format" : "int64"
+          },
+          "totalPages" : {
+            "type" : "integer",
+            "format" : "int32"
           }
         },
-        "required" : [ "pageNumber", "pageSize", "totalElements" ]
+        "required" : [ "pageNumber", "pageSize", "totalElements", "totalPages" ]
       },
       "ApiResponseListCurrencyResponse" : {
         "type" : "object",
@@ -93001,9 +93299,13 @@
           "totalElements" : {
             "type" : "integer",
             "format" : "int64"
+          },
+          "totalPages" : {
+            "type" : "integer",
+            "format" : "int32"
           }
         },
-        "required" : [ "pageNumber", "pageSize", "totalElements" ]
+        "required" : [ "pageNumber", "pageSize", "totalElements", "totalPages" ]
       },
       "ApiResponsePageCounselingReferralResponse" : {
         "type" : "object",
@@ -93043,9 +93345,13 @@
           "totalElements" : {
             "type" : "integer",
             "format" : "int64"
+          },
+          "totalPages" : {
+            "type" : "integer",
+            "format" : "int32"
           }
         },
-        "required" : [ "pageNumber", "pageSize", "totalElements" ]
+        "required" : [ "pageNumber", "pageSize", "totalElements", "totalPages" ]
       },
       "ApiResponsePageConversationResponse" : {
         "type" : "object",
@@ -93085,9 +93391,13 @@
           "totalElements" : {
             "type" : "integer",
             "format" : "int64"
+          },
+          "totalPages" : {
+            "type" : "integer",
+            "format" : "int32"
           }
         },
-        "required" : [ "pageNumber", "pageSize", "totalElements" ]
+        "required" : [ "pageNumber", "pageSize", "totalElements", "totalPages" ]
       },
       "ApiResponsePageConversationMessageResponse" : {
         "type" : "object",
@@ -93127,9 +93437,13 @@
           "totalElements" : {
             "type" : "integer",
             "format" : "int64"
+          },
+          "totalPages" : {
+            "type" : "integer",
+            "format" : "int32"
           }
         },
-        "required" : [ "pageNumber", "pageSize", "totalElements" ]
+        "required" : [ "pageNumber", "pageSize", "totalElements", "totalPages" ]
       },
       "ApiResponseUnreadCountResponse" : {
         "type" : "object",
@@ -93197,9 +93511,13 @@
           "totalElements" : {
             "type" : "integer",
             "format" : "int64"
+          },
+          "totalPages" : {
+            "type" : "integer",
+            "format" : "int32"
           }
         },
-        "required" : [ "pageNumber", "pageSize", "totalElements" ]
+        "required" : [ "pageNumber", "pageSize", "totalElements", "totalPages" ]
       },
       "ApiResponsePageClassroomResponse" : {
         "type" : "object",
@@ -93239,9 +93557,13 @@
           "totalElements" : {
             "type" : "integer",
             "format" : "int64"
+          },
+          "totalPages" : {
+            "type" : "integer",
+            "format" : "int32"
           }
         },
-        "required" : [ "pageNumber", "pageSize", "totalElements" ]
+        "required" : [ "pageNumber", "pageSize", "totalElements", "totalPages" ]
       },
       "ApiResponsePromotionPreviewResponse" : {
         "type" : "object",
@@ -93348,9 +93670,13 @@
           "totalElements" : {
             "type" : "integer",
             "format" : "int64"
+          },
+          "totalPages" : {
+            "type" : "integer",
+            "format" : "int32"
           }
         },
-        "required" : [ "pageNumber", "pageSize", "totalElements" ]
+        "required" : [ "pageNumber", "pageSize", "totalElements", "totalPages" ]
       },
       "ApiResponsePageCertificateTypeResponse" : {
         "type" : "object",
@@ -93390,9 +93716,13 @@
           "totalElements" : {
             "type" : "integer",
             "format" : "int64"
+          },
+          "totalPages" : {
+            "type" : "integer",
+            "format" : "int32"
           }
         },
-        "required" : [ "pageNumber", "pageSize", "totalElements" ]
+        "required" : [ "pageNumber", "pageSize", "totalElements", "totalPages" ]
       },
       "ApiResponseListCertificateTypeResponse" : {
         "type" : "object",
@@ -93453,9 +93783,13 @@
           "totalElements" : {
             "type" : "integer",
             "format" : "int64"
+          },
+          "totalPages" : {
+            "type" : "integer",
+            "format" : "int32"
           }
         },
-        "required" : [ "pageNumber", "pageSize", "totalElements" ]
+        "required" : [ "pageNumber", "pageSize", "totalElements", "totalPages" ]
       },
       "ApiResponsePageBookCopyResponse" : {
         "type" : "object",
@@ -93495,9 +93829,13 @@
           "totalElements" : {
             "type" : "integer",
             "format" : "int64"
+          },
+          "totalPages" : {
+            "type" : "integer",
+            "format" : "int32"
           }
         },
-        "required" : [ "pageNumber", "pageSize", "totalElements" ]
+        "required" : [ "pageNumber", "pageSize", "totalElements", "totalPages" ]
       },
       "ApiResponsePageBookReservationResponse" : {
         "type" : "object",
@@ -93537,9 +93875,13 @@
           "totalElements" : {
             "type" : "integer",
             "format" : "int64"
+          },
+          "totalPages" : {
+            "type" : "integer",
+            "format" : "int32"
           }
         },
-        "required" : [ "pageNumber", "pageSize", "totalElements" ]
+        "required" : [ "pageNumber", "pageSize", "totalElements", "totalPages" ]
       },
       "ApiResponsePageBoardResponse" : {
         "type" : "object",
@@ -93579,9 +93921,13 @@
           "totalElements" : {
             "type" : "integer",
             "format" : "int64"
+          },
+          "totalPages" : {
+            "type" : "integer",
+            "format" : "int32"
           }
         },
-        "required" : [ "pageNumber", "pageSize", "totalElements" ]
+        "required" : [ "pageNumber", "pageSize", "totalElements", "totalPages" ]
       },
       "ApiResponseListUsageChargeResponse" : {
         "type" : "object",
@@ -93781,9 +94127,13 @@
           "totalElements" : {
             "type" : "integer",
             "format" : "int64"
+          },
+          "totalPages" : {
+            "type" : "integer",
+            "format" : "int32"
           }
         },
-        "required" : [ "pageNumber", "pageSize", "totalElements" ]
+        "required" : [ "pageNumber", "pageSize", "totalElements", "totalPages" ]
       },
       "PaymentReceiptResponse" : {
         "type" : "object",
@@ -93971,9 +94321,13 @@
           "totalElements" : {
             "type" : "integer",
             "format" : "int64"
+          },
+          "totalPages" : {
+            "type" : "integer",
+            "format" : "int32"
           }
         },
-        "required" : [ "pageNumber", "pageSize", "totalElements" ]
+        "required" : [ "pageNumber", "pageSize", "totalElements", "totalPages" ]
       },
       "ApiResponseListBillingContactResponse" : {
         "type" : "object",
@@ -94081,9 +94435,13 @@
           "totalElements" : {
             "type" : "integer",
             "format" : "int64"
+          },
+          "totalPages" : {
+            "type" : "integer",
+            "format" : "int32"
           }
         },
-        "required" : [ "pageNumber", "pageSize", "totalElements" ]
+        "required" : [ "pageNumber", "pageSize", "totalElements", "totalPages" ]
       },
       "ApiResponsePageAssignmentResponse" : {
         "type" : "object",
@@ -94123,9 +94481,13 @@
           "totalElements" : {
             "type" : "integer",
             "format" : "int64"
+          },
+          "totalPages" : {
+            "type" : "integer",
+            "format" : "int32"
           }
         },
-        "required" : [ "pageNumber", "pageSize", "totalElements" ]
+        "required" : [ "pageNumber", "pageSize", "totalElements", "totalPages" ]
       },
       "ApiResponsePageSubmissionResponse" : {
         "type" : "object",
@@ -94165,9 +94527,13 @@
           "totalElements" : {
             "type" : "integer",
             "format" : "int64"
+          },
+          "totalPages" : {
+            "type" : "integer",
+            "format" : "int32"
           }
         },
-        "required" : [ "pageNumber", "pageSize", "totalElements" ]
+        "required" : [ "pageNumber", "pageSize", "totalElements", "totalPages" ]
       },
       "ApiResponsePageAssetResponse" : {
         "type" : "object",
@@ -94207,9 +94573,13 @@
           "totalElements" : {
             "type" : "integer",
             "format" : "int64"
+          },
+          "totalPages" : {
+            "type" : "integer",
+            "format" : "int32"
           }
         },
-        "required" : [ "pageNumber", "pageSize", "totalElements" ]
+        "required" : [ "pageNumber", "pageSize", "totalElements", "totalPages" ]
       },
       "ApiResponsePageAssetAssignmentResponse" : {
         "type" : "object",
@@ -94249,9 +94619,13 @@
           "totalElements" : {
             "type" : "integer",
             "format" : "int64"
+          },
+          "totalPages" : {
+            "type" : "integer",
+            "format" : "int32"
           }
         },
-        "required" : [ "pageNumber", "pageSize", "totalElements" ]
+        "required" : [ "pageNumber", "pageSize", "totalElements", "totalPages" ]
       },
       "ApiResponseApprovalRequestResponse" : {
         "type" : "object",
@@ -94370,9 +94744,13 @@
           "totalElements" : {
             "type" : "integer",
             "format" : "int64"
+          },
+          "totalPages" : {
+            "type" : "integer",
+            "format" : "int32"
           }
         },
-        "required" : [ "pageNumber", "pageSize", "totalElements" ]
+        "required" : [ "pageNumber", "pageSize", "totalElements", "totalPages" ]
       },
       "ApiResponsePageApprovalWorkflowDefinitionResponse" : {
         "type" : "object",
@@ -94412,9 +94790,13 @@
           "totalElements" : {
             "type" : "integer",
             "format" : "int64"
+          },
+          "totalPages" : {
+            "type" : "integer",
+            "format" : "int32"
           }
         },
-        "required" : [ "pageNumber", "pageSize", "totalElements" ]
+        "required" : [ "pageNumber", "pageSize", "totalElements", "totalPages" ]
       },
       "ApiResponsePageAnnouncementResponse" : {
         "type" : "object",
@@ -94454,9 +94836,13 @@
           "totalElements" : {
             "type" : "integer",
             "format" : "int64"
+          },
+          "totalPages" : {
+            "type" : "integer",
+            "format" : "int32"
           }
         },
-        "required" : [ "pageNumber", "pageSize", "totalElements" ]
+        "required" : [ "pageNumber", "pageSize", "totalElements", "totalPages" ]
       },
       "AnnouncementRecipientResponse" : {
         "type" : "object",
@@ -94515,9 +94901,13 @@
           "totalElements" : {
             "type" : "integer",
             "format" : "int64"
+          },
+          "totalPages" : {
+            "type" : "integer",
+            "format" : "int32"
           }
         },
-        "required" : [ "pageNumber", "pageSize", "totalElements" ]
+        "required" : [ "pageNumber", "pageSize", "totalElements", "totalPages" ]
       },
       "AnnouncementDeliveryResponse" : {
         "type" : "object",
@@ -94657,9 +95047,13 @@
           "totalElements" : {
             "type" : "integer",
             "format" : "int64"
+          },
+          "totalPages" : {
+            "type" : "integer",
+            "format" : "int32"
           }
         },
-        "required" : [ "pageNumber", "pageSize", "totalElements" ]
+        "required" : [ "pageNumber", "pageSize", "totalElements", "totalPages" ]
       },
       "ApiResponseAnnouncementFeedItemResponse" : {
         "type" : "object",
@@ -94717,9 +95111,13 @@
           "totalElements" : {
             "type" : "integer",
             "format" : "int64"
+          },
+          "totalPages" : {
+            "type" : "integer",
+            "format" : "int32"
           }
         },
-        "required" : [ "pageNumber", "pageSize", "totalElements" ]
+        "required" : [ "pageNumber", "pageSize", "totalElements", "totalPages" ]
       },
       "ApiResponseListAlertRuleResponse" : {
         "type" : "object",
@@ -94780,9 +95178,13 @@
           "totalElements" : {
             "type" : "integer",
             "format" : "int64"
+          },
+          "totalPages" : {
+            "type" : "integer",
+            "format" : "int32"
           }
         },
-        "required" : [ "pageNumber", "pageSize", "totalElements" ]
+        "required" : [ "pageNumber", "pageSize", "totalElements", "totalPages" ]
       },
       "AdminUsageMetricResponse" : {
         "type" : "object",
@@ -94854,9 +95256,13 @@
           "totalElements" : {
             "type" : "integer",
             "format" : "int64"
+          },
+          "totalPages" : {
+            "type" : "integer",
+            "format" : "int32"
           }
         },
-        "required" : [ "pageNumber", "pageSize", "totalElements" ]
+        "required" : [ "pageNumber", "pageSize", "totalElements", "totalPages" ]
       },
       "ApiResponsePageImpersonationSessionResponse" : {
         "type" : "object",
@@ -94926,9 +95332,13 @@
           "totalElements" : {
             "type" : "integer",
             "format" : "int64"
+          },
+          "totalPages" : {
+            "type" : "integer",
+            "format" : "int32"
           }
         },
-        "required" : [ "pageNumber", "pageSize", "totalElements" ]
+        "required" : [ "pageNumber", "pageSize", "totalElements", "totalPages" ]
       },
       "ApiResponseListTenantHealthScore" : {
         "type" : "object",
@@ -95047,9 +95457,13 @@
           "totalElements" : {
             "type" : "integer",
             "format" : "int64"
+          },
+          "totalPages" : {
+            "type" : "integer",
+            "format" : "int32"
           }
         },
-        "required" : [ "pageNumber", "pageSize", "totalElements" ]
+        "required" : [ "pageNumber", "pageSize", "totalElements", "totalPages" ]
       },
       "TenantDeletionResponse" : {
         "type" : "object",
@@ -95527,9 +95941,13 @@
           "totalElements" : {
             "type" : "integer",
             "format" : "int64"
+          },
+          "totalPages" : {
+            "type" : "integer",
+            "format" : "int32"
           }
         },
-        "required" : [ "pageNumber", "pageSize", "totalElements" ]
+        "required" : [ "pageNumber", "pageSize", "totalElements", "totalPages" ]
       },
       "ApiResponseSchedulerHealthResponse" : {
         "type" : "object",
@@ -95681,9 +96099,13 @@
           "totalElements" : {
             "type" : "integer",
             "format" : "int64"
+          },
+          "totalPages" : {
+            "type" : "integer",
+            "format" : "int32"
           }
         },
-        "required" : [ "pageNumber", "pageSize", "totalElements" ]
+        "required" : [ "pageNumber", "pageSize", "totalElements", "totalPages" ]
       },
       "ApiResponsePageSagaLogResponse" : {
         "type" : "object",
@@ -95738,9 +96160,13 @@
           "totalElements" : {
             "type" : "integer",
             "format" : "int64"
+          },
+          "totalPages" : {
+            "type" : "integer",
+            "format" : "int32"
           }
         },
-        "required" : [ "pageNumber", "pageSize", "totalElements" ]
+        "required" : [ "pageNumber", "pageSize", "totalElements", "totalPages" ]
       },
       "SagaLogResponse" : {
         "type" : "object",
@@ -95921,9 +96347,13 @@
           "totalElements" : {
             "type" : "integer",
             "format" : "int64"
+          },
+          "totalPages" : {
+            "type" : "integer",
+            "format" : "int32"
           }
         },
-        "required" : [ "pageNumber", "pageSize", "totalElements" ]
+        "required" : [ "pageNumber", "pageSize", "totalElements", "totalPages" ]
       },
       "ApiResponseListCouponResponse" : {
         "type" : "object",
@@ -95984,9 +96414,13 @@
           "totalElements" : {
             "type" : "integer",
             "format" : "int64"
+          },
+          "totalPages" : {
+            "type" : "integer",
+            "format" : "int32"
           }
         },
-        "required" : [ "pageNumber", "pageSize", "totalElements" ]
+        "required" : [ "pageNumber", "pageSize", "totalElements", "totalPages" ]
       },
       "ApiResponseCampaignPerformanceResponse" : {
         "type" : "object",
@@ -96066,9 +96500,13 @@
           "totalElements" : {
             "type" : "integer",
             "format" : "int64"
+          },
+          "totalPages" : {
+            "type" : "integer",
+            "format" : "int32"
           }
         },
-        "required" : [ "pageNumber", "pageSize", "totalElements" ]
+        "required" : [ "pageNumber", "pageSize", "totalElements", "totalPages" ]
       },
       "SystemAuditLogResponse" : {
         "type" : "object",
@@ -96285,9 +96723,13 @@
           "totalElements" : {
             "type" : "integer",
             "format" : "int64"
+          },
+          "totalPages" : {
+            "type" : "integer",
+            "format" : "int32"
           }
         },
-        "required" : [ "pageNumber", "pageSize", "totalElements" ]
+        "required" : [ "pageNumber", "pageSize", "totalElements", "totalPages" ]
       },
       "ApiResponseAuditMetricsResponse" : {
         "type" : "object",
@@ -96364,9 +96806,13 @@
           "totalElements" : {
             "type" : "integer",
             "format" : "int64"
+          },
+          "totalPages" : {
+            "type" : "integer",
+            "format" : "int32"
           }
         },
-        "required" : [ "pageNumber", "pageSize", "totalElements" ]
+        "required" : [ "pageNumber", "pageSize", "totalElements", "totalPages" ]
       },
       "DeregisterDevicePushTokenRequest" : {
         "type" : "object",

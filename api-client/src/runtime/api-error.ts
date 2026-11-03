@@ -1,3 +1,13 @@
+/** One rejected field. Translate by `code` and `params`; `message` is the English fallback. */
+export interface FieldError {
+  field?: string;
+  /** The failed rule, e.g. `NOT_BLANK`, `SIZE`, `PATTERN`, `INVALID_FORMAT`. */
+  code?: string;
+  message?: string;
+  /** The rule's limits, e.g. `{ min: 3, max: 50 }` for `SIZE`; absent when it has none. */
+  params?: Record<string, unknown>;
+}
+
 /** Shape of the failure envelope every endpoint returns (`ApiErrorResponse` in the generated models). */
 export interface ApiErrorBody {
   success?: boolean;
@@ -5,7 +15,7 @@ export interface ApiErrorBody {
     code?: string;
     message?: string;
     traceId?: string;
-    details?: { field?: string; message?: string }[];
+    details?: FieldError[];
   };
 }
 
@@ -32,7 +42,7 @@ export class ApiError<TBody = unknown> extends Error {
   }
 
   /** Field-level validation failures, empty when the error is not a validation error. */
-  get fieldErrors(): { field?: string; message?: string }[] {
+  get fieldErrors(): FieldError[] {
     return asErrorBody(this.body)?.error?.details ?? [];
   }
 }
