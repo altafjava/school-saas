@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en">
+<head>
+<title>{{documentTitle}}</title>
+<style>
+  @page { size: A4; margin: 20mm 18mm 18mm 18mm; }
+  body { font-family: 'Noto Sans'; font-size: 10.5pt; color: #1f2933; line-height: 1.5; }
+  .header { border-bottom: 2pt solid #1e3a5f; padding-bottom: 4mm; margin-bottom: 8mm; }
+  .header td { vertical-align: middle; }
+  .logo { height: 16mm; }
+  .tenant { font-size: 15pt; font-weight: bold; color: #1e3a5f; }
+  h1 { font-size: 16pt; color: #1e3a5f; margin: 0 0 4mm 0; }
+  .facts td { padding: 0.8mm 6mm 0.8mm 0; }
+  .label { color: #52606d; }
+  table.lines { width: 100%; border-collapse: collapse; margin-top: 8mm; }
+  table.lines th { text-align: left; border-bottom: 1pt solid #1e3a5f; padding: 2mm 1mm; color: #1e3a5f; }
+  table.lines td { border-bottom: 0.5pt solid #cbd2d9; padding: 2mm 1mm; }
+  .amount { text-align: right; }
+  .total td { font-weight: bold; border-bottom: none; border-top: 1pt solid #1e3a5f; }
+  .footer { margin-top: 14mm; font-size: 8.5pt; color: #6e7781; }
+  .qr { width: 22mm; height: 22mm; }
+</style>
+</head>
+<body>
+<table class="header" style="width: 100%">
+  <tr>
+    {{#tenantLogo}}<td style="width: 20mm"><img class="logo" src="{{tenantLogo}}" alt="logo"/></td>{{/tenantLogo}}
+    <td><div class="tenant">{{tenantName}}</div></td>
+  </tr>
+</table>
+
+<h1>{{documentTitle}}</h1>
+<table class="facts">
+  <tr><td class="label">Invoice no.</td><td>{{invoiceNumber}}</td><td class="label">Issued</td><td>{{issueDate}}</td></tr>
+  <tr><td class="label">Student</td><td>{{studentName}}</td><td class="label">Due by</td><td>{{dueDate}}</td></tr>
+  <tr><td class="label">Admission no.</td><td>{{studentCode}}</td><td class="label">Period</td><td>{{period}}</td></tr>
+  <tr><td class="label">Class</td><td>{{className}}</td><td></td><td></td></tr>
+</table>
+
+<table class="lines">
+  <tr><th>Description</th><th class="amount">Amount</th></tr>
+  {{#lines}}<tr><td>{{description}}</td><td class="amount">{{amount}}</td></tr>{{/lines}}
+  <tr class="total"><td>Total</td><td class="amount">{{total}}</td></tr>
+</table>
+
+<table class="footer" style="width: 100%">
+  <tr>
+    <td>Please quote the invoice number with your payment.<br/>Verification code: {{verificationCode}}</td>
+    <td style="text-align: right">{{#verificationQr}}<img class="qr" src="{{verificationQr}}" alt="verification QR code"/>{{/verificationQr}}</td>
+  </tr>
+</table>
+</body>
+</html>

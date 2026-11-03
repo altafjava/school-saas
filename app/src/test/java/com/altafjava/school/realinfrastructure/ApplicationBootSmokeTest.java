@@ -109,7 +109,8 @@ class ApplicationBootSmokeTest extends SchoolInfrastructureTestBase {
 		String classroom = (String) seededExam.get("classroomPublicId");
 		String exam = sending(token, Map.of("title", "Smoke test", "subjectPublicId", seededExam.get("subjectPublicId"),
 				"classroomPublicId", classroom, "examTypePublicId", seededExam.get("examTypePublicId"),
-				"scheduledAt", Instant.now().plus(1, ChronoUnit.DAYS).toString(), "maxMarks", 100))
+				"scheduledAt", Instant.now().plus(1, ChronoUnit.DAYS).toString(), "durationMinutes", 60, "maxMarks",
+				100))
 				.post("/exams").then().statusCode(201).extract().jsonPath().getString("data.publicId");
 		Response roster = as(token).get("/classrooms/" + classroom + "/students");
 		List<String> students = roster.jsonPath().getList("data.content.publicId");

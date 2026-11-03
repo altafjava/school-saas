@@ -457,4 +457,38 @@
         <Method name="&lt;init&gt;"/>
         <Bug pattern="EI_EXPOSE_REP2"/>
     </Match>
+    <!--
+      Phase 6 (2026-11-03). Internal result records that carry JPA entities from the application layer to its
+      mapper, and the import service's injected collaborators: the same detector noise as the Phase 1/2 entries
+      above. The records live for one request and are never handed to untrusted callers.
+    -->
+    <Match>
+        <Class name="com.altafjava.school.application.importing.ImportJobView"/>
+        <Bug pattern="EI_EXPOSE_REP"/>
+    </Match>
+    <Match>
+        <Class name="com.altafjava.school.application.importing.ImportJobView"/>
+        <Bug pattern="EI_EXPOSE_REP2"/>
+    </Match>
+    <Match>
+        <Class name="com.altafjava.school.application.invoice.InvoiceView"/>
+        <Bug pattern="EI_EXPOSE_REP"/>
+    </Match>
+    <Match>
+        <Class name="com.altafjava.school.application.invoice.InvoiceView"/>
+        <Bug pattern="EI_EXPOSE_REP2"/>
+    </Match>
+    <Match>
+        <Class name="com.altafjava.school.application.staffattendance.RegisterEntry"/>
+        <Bug pattern="EI_EXPOSE_REP"/>
+    </Match>
+    <Match>
+        <Class name="com.altafjava.school.application.staffattendance.RegisterEntry"/>
+        <Bug pattern="EI_EXPOSE_REP2"/>
+    </Match>
+    <Match>
+        <Class name="com.altafjava.school.application.importing.ImportService"/>
+        <Method name="&lt;init&gt;"/>
+        <Bug pattern="EI_EXPOSE_REP2"/>
+    </Match>
 </FindBugsFilter>

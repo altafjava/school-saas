@@ -160,10 +160,14 @@
             <column name="term_id" type="BIGINT"/>
             <!-- DB-nullable; Exam.create() and ExamService.schedule() enforce it is present. -->
             <column name="exam_type_id" type="BIGINT"/>
+            <column name="venue_id" type="BIGINT"/>
             <column name="title" type="VARCHAR(200)">
                 <constraints nullable="false"/>
             </column>
             <column name="scheduled_at" type="TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="duration_minutes" type="INT">
                 <constraints nullable="false"/>
             </column>
             <column name="max_marks" type="DECIMAL(10,2)">
@@ -174,7 +178,15 @@
             </column>
             <column name="results_published_at" type="TIMESTAMP"/>
             <column name="results_published_by" type="VARCHAR(100)"/>
+            <column name="schedule_published_at" type="TIMESTAMP"/>
+            <column name="marks_verified_at" type="TIMESTAMP"/>
+            <column name="marks_verified_by" type="VARCHAR(100)"/>
+            <column name="marks_locked_at" type="TIMESTAMP"/>
+            <column name="marks_locked_by" type="VARCHAR(100)"/>
             <column name="status" type="VARCHAR(20)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="marks_stage" type="VARCHAR(20)">
                 <constraints nullable="false"/>
             </column>
             <column name="created_at" type="TIMESTAMP">
@@ -220,6 +232,9 @@
         </createIndex>
         <createIndex indexName="idx_exams_exam_type_id" tableName="exams">
             <column name="exam_type_id"/>
+        </createIndex>
+        <createIndex indexName="idx_exams_venue_id" tableName="exams">
+            <column name="venue_id"/>
         </createIndex>
         <createIndex indexName="idx_exams_tenant_classroom_subject_term" tableName="exams">
             <column name="tenant_id"/>
@@ -508,6 +523,7 @@
             <column name="fee_structure_id" type="BIGINT">
                 <constraints nullable="false"/>
             </column>
+            <column name="invoice_id" type="BIGINT"/>
             <column name="paid_amount" type="DECIMAL(12,2)">
                 <constraints nullable="false"/>
             </column>
@@ -572,6 +588,9 @@
         </createIndex>
         <createIndex indexName="idx_fee_payments_fee_structure_id" tableName="fee_payments">
             <column name="fee_structure_id"/>
+        </createIndex>
+        <createIndex indexName="idx_fee_payments_invoice_id" tableName="fee_payments">
+            <column name="invoice_id"/>
         </createIndex>
         <createIndex indexName="idx_fee_payments_gateway_charge_reference" tableName="fee_payments">
             <column name="gateway_charge_reference"/>

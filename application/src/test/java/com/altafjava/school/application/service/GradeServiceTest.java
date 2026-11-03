@@ -42,6 +42,7 @@ import com.altafjava.school.application.security.StudentDataAccessGuard;
 import com.altafjava.school.application.security.TeachingAssignments;
 import com.altafjava.school.domain.curriculum.model.GradeBand;
 import com.altafjava.school.domain.exam.model.Exam;
+import com.altafjava.school.domain.exam.model.ExamSlot;
 import com.altafjava.school.domain.exam.repository.ExamRepository;
 import com.altafjava.school.domain.grade.model.Grade;
 import com.altafjava.school.domain.grade.model.GradeCorrection;
@@ -117,7 +118,7 @@ class GradeServiceTest {
 
 	@Test
 	void record_duplicateForSameStudentExam_throwsIllegalArgument() {
-		Exam exam = Exam.create("Midterm", 5L, 10L, null, BigDecimal.valueOf(100), null,
+		Exam exam = Exam.create("Midterm", 5L, 10L, new ExamSlot(null, 60, null), BigDecimal.valueOf(100), null,
 				1L, Exam.FULL_WEIGHTAGE);
 		when(studentRepository.findByPublicIdAndTenantId(STUDENT_PUBLIC_ID, 1L))
 				.thenReturn(Optional.of(studentWithId(1L)));
@@ -132,7 +133,7 @@ class GradeServiceTest {
 
 	@Test
 	void record_withValidReferences_computesLetterGradeFromDefaultScale() {
-		Exam exam = Exam.create("Midterm", 5L, 10L, null, BigDecimal.valueOf(100), null,
+		Exam exam = Exam.create("Midterm", 5L, 10L, new ExamSlot(null, 60, null), BigDecimal.valueOf(100), null,
 				1L, Exam.FULL_WEIGHTAGE);
 		List<GradeBand> thresholds = List.of(
 				new GradeBand("A", new BigDecimal("90"), new BigDecimal("4.0")),
@@ -217,7 +218,8 @@ class GradeServiceTest {
 
 	@Test
 	void record_outsideCallersTeachingScope_throwsAccessDenied() {
-		Exam exam = Exam.create("Midterm", 5L, 10L, null, BigDecimal.valueOf(100), null, 1L, Exam.FULL_WEIGHTAGE);
+		Exam exam = Exam.create("Midterm", 5L, 10L, new ExamSlot(null, 60, null), BigDecimal.valueOf(100), null, 1L,
+				Exam.FULL_WEIGHTAGE);
 		when(studentRepository.findByPublicIdAndTenantId(STUDENT_PUBLIC_ID, 1L))
 				.thenReturn(Optional.of(studentWithId(1L)));
 		exam.setId(2L);
@@ -232,7 +234,8 @@ class GradeServiceTest {
 	}
 
 	private Exam examWithId(Long id, Long subjectId, Long classroomId) {
-		Exam exam = Exam.create("Midterm", subjectId, classroomId, null, BigDecimal.valueOf(100), null, 1L,
+		Exam exam = Exam.create("Midterm", subjectId, classroomId, new ExamSlot(null, 60, null),
+				BigDecimal.valueOf(100), null, 1L,
 				Exam.FULL_WEIGHTAGE);
 		exam.setId(id);
 		return exam;
@@ -256,7 +259,7 @@ class GradeServiceTest {
 		Grade grade = Grade.create(1L, 5L, 2L, BigDecimal.valueOf(60), "D", "teacher");
 		grade.setId(100L);
 		grade.setPublicId(java.util.UUID.fromString("11111111-1111-1111-1111-111111111111"));
-		Exam exam = Exam.create("Midterm", 5L, 10L, null, BigDecimal.valueOf(100), null,
+		Exam exam = Exam.create("Midterm", 5L, 10L, new ExamSlot(null, 60, null), BigDecimal.valueOf(100), null,
 				1L, Exam.FULL_WEIGHTAGE);
 		List<GradeBand> thresholds = List.of(
 				new GradeBand("A", new BigDecimal("90"), new BigDecimal("4.0")),
@@ -282,8 +285,11 @@ class GradeServiceTest {
 	}
 
 	private Exam publishedExam() {
-		Exam exam = Exam.create("Midterm", 5L, 10L, null, BigDecimal.valueOf(100), null, 1L, Exam.FULL_WEIGHTAGE);
+		Exam exam = Exam.create("Midterm", 5L, 10L, new ExamSlot(null, 60, null), BigDecimal.valueOf(100), null, 1L,
+				Exam.FULL_WEIGHTAGE);
 		exam.complete();
+		exam.verifyMarks("checker");
+		exam.lockMarks("registrar");
 		exam.publishResults("registrar");
 		return exam;
 	}
@@ -324,7 +330,8 @@ class GradeServiceTest {
 		UUID publicId = UUID.randomUUID();
 		Student student = Student.create("STU-1", "Alice", "Smith", "alice@school.test", null);
 		student.setPublicId(UUID.randomUUID());
-		Exam unpublished = Exam.create("Midterm", 5L, 10L, null, BigDecimal.valueOf(100), null, 1L,
+		Exam unpublished = Exam.create("Midterm", 5L, 10L, new ExamSlot(null, 60, null), BigDecimal.valueOf(100), null,
+				1L,
 				Exam.FULL_WEIGHTAGE);
 		when(gradeRepository.findByPublicIdAndTenantId(publicId, 1L)).thenReturn(Optional.of(gradeOf(publicId)));
 		when(studentRepository.findByIdAndTenantId(1L, 1L)).thenReturn(Optional.of(student));
@@ -361,7 +368,8 @@ class GradeServiceTest {
 
 	@Test
 	void record_forCancelledExam_throwsBusinessException() {
-		Exam exam = Exam.create("Midterm", 5L, 10L, null, BigDecimal.valueOf(100), null, 1L, Exam.FULL_WEIGHTAGE);
+		Exam exam = Exam.create("Midterm", 5L, 10L, new ExamSlot(null, 60, null), BigDecimal.valueOf(100), null, 1L,
+				Exam.FULL_WEIGHTAGE);
 		exam.cancel();
 		when(studentRepository.findByPublicIdAndTenantId(STUDENT_PUBLIC_ID, 1L))
 				.thenReturn(Optional.of(studentWithId(1L)));

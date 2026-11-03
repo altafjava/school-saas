@@ -24,7 +24,7 @@ public record StudentOverview(ReferenceSummary student, ReferenceSummary classro
 	}
 
 	/** {@code today} is absent until the register is marked; the percentage covers the year so far. */
-	public record Attendance(AttendanceStatus today, long presentDays, long markedDays, BigDecimal percentage) {
+	public record Attendance(AttendanceStatus today, BigDecimal presentDays, long markedDays, BigDecimal percentage) {
 	}
 
 	/** {@code nextDueDate} is absent when nothing is owed or the charge has no due date. */

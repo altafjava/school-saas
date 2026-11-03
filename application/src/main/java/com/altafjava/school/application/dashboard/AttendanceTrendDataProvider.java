@@ -1,7 +1,5 @@
 package com.altafjava.school.application.dashboard;
 
-import java.math.BigDecimal;
-import java.math.RoundingMode;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
@@ -12,8 +10,9 @@ import org.springframework.stereotype.Component;
 import com.altafjava.platform.application.service.report.provider.ReportDataProvider;
 import com.altafjava.platform.core.tenant.TenantContext;
 import com.altafjava.school.application.time.SchoolClock;
-import com.altafjava.school.domain.attendance.model.AttendanceStatus;
+import com.altafjava.school.domain.attendance.model.AttendanceStatusCount;
 import com.altafjava.school.domain.attendance.repository.AttendanceRepository;
+import com.altafjava.school.domain.attendance.service.AttendancePercentageCalculator;
 
 /**
  * Weekly attendance-percentage trend, one row per week — used by both the Principal and Academic
@@ -28,6 +27,7 @@ public class AttendanceTrendDataProvider implements ReportDataProvider {
 
 	private final AttendanceRepository attendanceRepository;
 	private final SchoolClock schoolClock;
+	private final AttendancePercentageCalculator attendancePercentageCalculator = new AttendancePercentageCalculator();
 
 	public AttendanceTrendDataProvider(AttendanceRepository attendanceRepository, SchoolClock schoolClock) {
 		this.attendanceRepository = attendanceRepository;
@@ -50,24 +50,13 @@ public class AttendanceTrendDataProvider implements ReportDataProvider {
 	}
 
 	private Map<String, Object> weekRow(Long tenantId, LocalDate from, LocalDate to) {
-		long marked = attendanceRepository.countByTenantIdAndAttendanceDateBetween(tenantId, from, to);
-		long present = attendanceRepository.countByTenantIdAndAttendanceDateBetweenAndStatus(tenantId, from, to,
-				AttendanceStatus.PRESENT);
-
 		Map<String, Object> row = new LinkedHashMap<>();
 		row.put("weekStart", from.format(WEEK_LABEL_FORMAT));
 		row.put("weekEnd", to.format(WEEK_LABEL_FORMAT));
-		row.put("attendancePercentage", attendancePercentage(marked, present));
+		row.put("attendancePercentage", attendancePercentageCalculator
+				.calculate(AttendanceStatusCount.byStatus(attendanceRepository.countByStatus(tenantId, from, to)))
+				.percentage());
 		return row;
-	}
-
-	private BigDecimal attendancePercentage(long marked, long present) {
-		if (marked == 0) {
-			return BigDecimal.ZERO;
-		}
-		return BigDecimal.valueOf(present)
-				.multiply(BigDecimal.valueOf(100))
-				.divide(BigDecimal.valueOf(marked), 2, RoundingMode.HALF_UP);
 	}
 
 	private int periodCount(Map<String, Object> parameters) {

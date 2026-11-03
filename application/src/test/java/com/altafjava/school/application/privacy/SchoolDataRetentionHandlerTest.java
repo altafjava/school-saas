@@ -23,6 +23,13 @@ import org.springframework.transaction.TransactionStatus;
 import com.altafjava.school.application.messaging.CommunicationDataEraser;
 import com.altafjava.school.domain.announcement.model.Announcement;
 import com.altafjava.school.domain.announcement.repository.AnnouncementRepository;
+import com.altafjava.school.domain.enquiry.model.Enquiry;
+import com.altafjava.school.domain.enquiry.model.EnquiryDetails;
+import com.altafjava.school.domain.enquiry.model.EnquiryFollowUp;
+import com.altafjava.school.domain.enquiry.model.EnquirySource;
+import com.altafjava.school.domain.enquiry.model.FollowUpChannel;
+import com.altafjava.school.domain.enquiry.repository.EnquiryFollowUpRepository;
+import com.altafjava.school.domain.enquiry.repository.EnquiryRepository;
 import com.altafjava.school.domain.messaging.model.Conversation;
 import com.altafjava.school.domain.messaging.repository.ConversationRepository;
 import com.altafjava.school.domain.student.model.EnrollmentStatus;
@@ -41,6 +48,10 @@ class SchoolDataRetentionHandlerTest {
 	@Mock
 	private CommunicationDataEraser communicationDataEraser;
 	@Mock
+	private EnquiryRepository enquiryRepository;
+	@Mock
+	private EnquiryFollowUpRepository enquiryFollowUpRepository;
+	@Mock
 	private PlatformTransactionManager transactionManager;
 
 	private SchoolDataRetentionHandler handler;
@@ -49,7 +60,7 @@ class SchoolDataRetentionHandlerTest {
 	void setUp() {
 		lenient().when(transactionManager.getTransaction(any())).thenReturn(mock(TransactionStatus.class));
 		handler = new SchoolDataRetentionHandler(studentRepository, announcementRepository, conversationRepository,
-				communicationDataEraser, transactionManager);
+				communicationDataEraser, enquiryRepository, enquiryFollowUpRepository, transactionManager);
 	}
 
 	private Student withdrawnStudent(long id) {
@@ -174,5 +185,24 @@ class SchoolDataRetentionHandlerTest {
 
 		org.junit.jupiter.api.Assertions.assertEquals("[erased]", announcement.getTitle());
 		org.junit.jupiter.api.Assertions.assertTrue(announcement.isDeleted());
+	}
+
+	@Test
+	void enforceRetention_onEnquiries_anonymisesFinishedOnesAndTheirFollowUps() {
+		Enquiry enquiry = Enquiry.receive(new EnquiryDetails("Noa", "Lee", null, "3", "Ola", "Lee", "ola@x.test", null),
+				EnquirySource.WEBSITE, "Asked about transport");
+		enquiry.setId(5L);
+		enquiry.close("Chose another school");
+		EnquiryFollowUp followUp = EnquiryFollowUp.record(5L, FollowUpChannel.CALL, "Spoke to Ola", null, 1L);
+		when(enquiryRepository.findFinishedBefore(eq(1L), any(), any())).thenReturn(List.of(enquiry));
+		when(enquiryFollowUpRepository.findAllByEnquiry(1L, 5L)).thenReturn(List.of(followUp));
+
+		int handled = handler.enforceRetention(1L, "ENQUIRY", java.time.Instant.now(), "ANONYMIZE");
+
+		org.junit.jupiter.api.Assertions.assertEquals(1, handled);
+		org.junit.jupiter.api.Assertions.assertEquals("erased", enquiry.getGuardianFirstName());
+		org.junit.jupiter.api.Assertions.assertNull(enquiry.getGuardianEmail());
+		org.junit.jupiter.api.Assertions.assertTrue(enquiry.isDeleted());
+		org.junit.jupiter.api.Assertions.assertEquals("erased", followUp.getNote());
 	}
 }

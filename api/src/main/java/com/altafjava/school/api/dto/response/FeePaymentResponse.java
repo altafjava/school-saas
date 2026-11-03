@@ -27,5 +27,7 @@ public record FeePaymentResponse(
 		String chequeBank,
 		FeePaymentStatus status,
 		LocalDateTime bouncedAt,
-		String bounceReason) {
+		String bounceReason,
+		String invoicePublicId,
+		ReferenceSummary invoice) {
 }

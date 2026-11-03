@@ -19,6 +19,7 @@ import com.altafjava.platform.core.tenant.TenantContextSnapshot;
 import com.altafjava.platform.domain.organization.model.Organization;
 import com.altafjava.platform.domain.tenant.model.Tenant;
 import com.altafjava.school.domain.attendance.model.AttendanceStatus;
+import com.altafjava.school.domain.attendance.model.AttendanceStatusCount;
 import com.altafjava.school.domain.attendance.repository.AttendanceRepository;
 import com.altafjava.school.domain.classroom.model.StudentClassroomLink;
 import com.altafjava.school.domain.classroom.repository.StudentClassroomLinkRepository;
@@ -115,16 +116,11 @@ public class OrganizationRollupService {
 	}
 
 	private AttendanceRollup buildAttendanceRollup(Long tenantId, LocalDate periodStart, LocalDate periodEnd) {
-		long present = countByStatus(tenantId, periodStart, periodEnd, AttendanceStatus.PRESENT);
-		long absent = countByStatus(tenantId, periodStart, periodEnd, AttendanceStatus.ABSENT);
-		long late = countByStatus(tenantId, periodStart, periodEnd, AttendanceStatus.LATE);
-		long excused = countByStatus(tenantId, periodStart, periodEnd, AttendanceStatus.EXCUSED);
-		return new AttendanceRollup(present, absent, late, excused);
-	}
-
-	private long countByStatus(Long tenantId, LocalDate periodStart, LocalDate periodEnd, AttendanceStatus status) {
-		return attendanceRepository.countByTenantIdAndAttendanceDateBetweenAndStatus(tenantId, periodStart, periodEnd,
-				status);
+		Map<AttendanceStatus, Long> days = AttendanceStatusCount
+				.byStatus(attendanceRepository.countByStatus(tenantId, periodStart, periodEnd));
+		return new AttendanceRollup(days.getOrDefault(AttendanceStatus.PRESENT, 0L),
+				days.getOrDefault(AttendanceStatus.HALF_DAY, 0L), days.getOrDefault(AttendanceStatus.ABSENT, 0L),
+				days.getOrDefault(AttendanceStatus.LATE, 0L), days.getOrDefault(AttendanceStatus.EXCUSED, 0L));
 	}
 
 	// Fee balance is a snapshot as of now (matching FeeBalanceCalculator/StudentController's own

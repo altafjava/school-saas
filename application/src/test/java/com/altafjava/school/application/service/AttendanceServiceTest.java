@@ -10,6 +10,7 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import java.time.LocalDate;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
@@ -39,6 +40,7 @@ import com.altafjava.school.application.security.TeachingAssignments;
 import com.altafjava.school.domain.attendance.model.Attendance;
 import com.altafjava.school.domain.attendance.model.AttendanceCorrection;
 import com.altafjava.school.domain.attendance.model.AttendanceStatus;
+import com.altafjava.school.domain.attendance.model.AttendanceTally;
 import com.altafjava.school.domain.attendance.repository.AttendanceCorrectionRepository;
 import com.altafjava.school.domain.attendance.repository.AttendanceRepository;
 import com.altafjava.school.domain.classroom.model.Classroom;
@@ -282,15 +284,15 @@ class AttendanceServiceTest {
 		LocalDate to = LocalDate.of(2026, 1, 31);
 		when(studentRepository.findByPublicIdAndTenantId(any(), any())).thenReturn(Optional.of(student));
 		org.mockito.Mockito.doNothing().when(studentDataAccessGuard).assertCanView(any(), any());
-		when(attendanceRepository.countByStudentIdAndTenantIdAndAttendanceDateBetween(42L, 1L, from, to))
-				.thenReturn(20L);
-		when(attendanceRepository.countByStudentIdAndTenantIdAndAttendanceDateBetweenAndStatus(42L, 1L, from, to,
-				AttendanceStatus.PRESENT)).thenReturn(18L);
+		when(attendanceRepository.tallyByStudent(1L, List.of(42L), from, to, true, Set.of())).thenReturn(List.of(
+				new AttendanceTally(42L, AttendanceStatus.PRESENT, 18L),
+				new AttendanceTally(42L, AttendanceStatus.ABSENT, 2L)));
 
 		var result = attendanceService.calculatePercentage(studentPublicId, from, to);
 
 		verify(studentDataAccessGuard).assertCanView(1L, studentPublicId);
-		org.junit.jupiter.api.Assertions.assertEquals(18L, result.presentDays());
+		org.junit.jupiter.api.Assertions.assertEquals(0,
+				java.math.BigDecimal.valueOf(18).compareTo(result.presentDays()));
 		org.junit.jupiter.api.Assertions.assertEquals(20L, result.totalMarkedDays());
 		org.junit.jupiter.api.Assertions.assertEquals(0,
 				java.math.BigDecimal.valueOf(90.00).compareTo(result.percentage()));
@@ -308,17 +310,15 @@ class AttendanceServiceTest {
 		when(studentRepository.findByPublicIdAndTenantId(any(), any())).thenReturn(Optional.of(student));
 		org.mockito.Mockito.doNothing().when(studentDataAccessGuard).assertCanView(any(), any());
 		when(holidayService.datesInRange(1L, from, to)).thenReturn(holidays);
-		when(attendanceRepository.countByStudentIdAndTenantIdAndAttendanceDateBetweenExcludingDates(43L, 1L, from, to,
-				holidays)).thenReturn(19L);
-		when(attendanceRepository.countByStudentIdAndTenantIdAndAttendanceDateBetweenAndStatusExcludingDates(43L, 1L,
-				from, to, AttendanceStatus.PRESENT, holidays)).thenReturn(17L);
+		when(attendanceRepository.tallyByStudent(1L, List.of(43L), from, to, false, holidays)).thenReturn(List.of(
+				new AttendanceTally(43L, AttendanceStatus.PRESENT, 17L),
+				new AttendanceTally(43L, AttendanceStatus.ABSENT, 2L)));
 
 		var result = attendanceService.calculatePercentage(studentPublicId, from, to);
 
-		org.junit.jupiter.api.Assertions.assertEquals(17L, result.presentDays());
+		org.junit.jupiter.api.Assertions.assertEquals(0,
+				java.math.BigDecimal.valueOf(17).compareTo(result.presentDays()));
 		org.junit.jupiter.api.Assertions.assertEquals(19L, result.totalMarkedDays());
-		verify(attendanceRepository, never()).countByStudentIdAndTenantIdAndAttendanceDateBetween(any(), any(), any(),
-				any());
 	}
 
 	@Test

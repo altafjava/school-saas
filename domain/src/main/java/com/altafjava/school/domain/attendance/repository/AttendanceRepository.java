@@ -13,6 +13,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import com.altafjava.school.domain.attendance.model.Attendance;
 import com.altafjava.school.domain.attendance.model.AttendanceStatus;
+import com.altafjava.school.domain.attendance.model.AttendanceStatusCount;
 import com.altafjava.school.domain.attendance.model.AttendanceTally;
 
 public interface AttendanceRepository extends JpaRepository<Attendance, Long> {
@@ -34,11 +35,6 @@ public interface AttendanceRepository extends JpaRepository<Attendance, Long> {
 			Long tenantId);
 
 	Page<Attendance> findByStudentIdAndTenantId(Long studentId, Long tenantId, Pageable pageable);
-
-	long countByTenantIdAndAttendanceDateBetweenAndStatus(Long tenantId, LocalDate from, LocalDate to,
-			AttendanceStatus status);
-
-	long countByTenantIdAndAttendanceDateBetween(Long tenantId, LocalDate from, LocalDate to);
 
 	/**
 	 * The attendance list. Scope first: every classroom, or only the classrooms the caller teaches plus the
@@ -68,54 +64,6 @@ public interface AttendanceRepository extends JpaRepository<Attendance, Long> {
 	List<Attendance> findVisibleUpdatedAfter(@Param("tenantId") Long tenantId, @Param("updatedAt") Instant updatedAt,
 			@Param("classroomIds") Collection<Long> classroomIds, @Param("studentIds") Collection<Long> studentIds);
 
-	long countByStudentIdAndTenantIdAndAttendanceDateBetween(Long studentId, Long tenantId, LocalDate from,
-			LocalDate to);
-
-	long countByStudentIdAndTenantIdAndAttendanceDateBetweenAndStatus(Long studentId, Long tenantId, LocalDate from,
-			LocalDate to, AttendanceStatus status);
-
-	/**
-	 * Same as {@link #countByStudentIdAndTenantIdAndAttendanceDateBetween}, excluding any date in
-	 * {@code excludedDates} (the tenant's holiday calendar) from both the range and the count —
-	 * only called when that set is non-empty, see {@code AttendanceService#calculatePercentage}.
-	 */
-	@Query("SELECT COUNT(a) FROM Attendance a WHERE a.studentId = :studentId AND a.tenantId = :tenantId "
-			+ "AND a.attendanceDate BETWEEN :from AND :to AND a.attendanceDate NOT IN :excludedDates")
-	long countByStudentIdAndTenantIdAndAttendanceDateBetweenExcludingDates(@Param("studentId") Long studentId,
-			@Param("tenantId") Long tenantId, @Param("from") LocalDate from, @Param("to") LocalDate to,
-			@Param("excludedDates") Collection<LocalDate> excludedDates);
-
-	/** Same as {@link #countByStudentIdAndTenantIdAndAttendanceDateBetweenExcludingDates}, filtered by status. */
-	@Query("SELECT COUNT(a) FROM Attendance a WHERE a.studentId = :studentId AND a.tenantId = :tenantId "
-			+ "AND a.attendanceDate BETWEEN :from AND :to AND a.status = :status "
-			+ "AND a.attendanceDate NOT IN :excludedDates")
-	long countByStudentIdAndTenantIdAndAttendanceDateBetweenAndStatusExcludingDates(
-			@Param("studentId") Long studentId, @Param("tenantId") Long tenantId, @Param("from") LocalDate from,
-			@Param("to") LocalDate to, @Param("status") AttendanceStatus status,
-			@Param("excludedDates") Collection<LocalDate> excludedDates);
-
-	/**
-	 * One row per {@code studentId} present in {@code studentIds} — batched alternative to calling
-	 * {@link #countByStudentIdAndTenantIdAndAttendanceDateBetween} once per student in a loop.
-	 */
-	@Query("SELECT a.studentId AS studentId, COUNT(a) AS total FROM Attendance a "
-			+ "WHERE a.tenantId = :tenantId AND a.studentId IN :studentIds AND a.attendanceDate BETWEEN :from AND :to "
-			+ "GROUP BY a.studentId")
-	List<StudentAttendanceCount> countByStudentIdsAndTenantIdAndAttendanceDateBetween(
-			@Param("studentIds") List<Long> studentIds, @Param("tenantId") Long tenantId,
-			@Param("from") LocalDate from, @Param("to") LocalDate to);
-
-	/**
-	 * Same as above, additionally filtered by {@code status} — batched alternative to
-	 * {@link #countByStudentIdAndTenantIdAndAttendanceDateBetweenAndStatus}.
-	 */
-	@Query("SELECT a.studentId AS studentId, COUNT(a) AS total FROM Attendance a "
-			+ "WHERE a.tenantId = :tenantId AND a.studentId IN :studentIds AND a.attendanceDate BETWEEN :from AND :to "
-			+ "AND a.status = :status GROUP BY a.studentId")
-	List<StudentAttendanceCount> countByStudentIdsAndTenantIdAndAttendanceDateBetweenAndStatus(
-			@Param("studentIds") List<Long> studentIds, @Param("tenantId") Long tenantId,
-			@Param("from") LocalDate from, @Param("to") LocalDate to, @Param("status") AttendanceStatus status);
-
 	/**
 	 * Batched alternative to calling {@link #existsByClassroomIdAndAttendanceDateAndTenantId} once
 	 * per classroom in a loop — the classroom ids (out of any candidate set) that already have
@@ -123,12 +71,6 @@ public interface AttendanceRepository extends JpaRepository<Attendance, Long> {
 	 */
 	@Query("SELECT DISTINCT a.classroomId FROM Attendance a WHERE a.tenantId = :tenantId AND a.attendanceDate = :date")
 	List<Long> findDistinctClassroomIdsMarkedOnDate(@Param("tenantId") Long tenantId, @Param("date") LocalDate date);
-
-	interface StudentAttendanceCount {
-		Long getStudentId();
-
-		long getTotal();
-	}
 
 	// Offline-sync delta pull. Soft-deleted rows are invisible to it, so other devices do not learn
 	// of a delete; only the device that deleted sees it, in its own sync response.
@@ -154,4 +96,13 @@ public interface AttendanceRepository extends JpaRepository<Attendance, Long> {
 	List<AttendanceTally> tallyByStudent(@Param("tenantId") Long tenantId,
 			@Param("studentIds") Collection<Long> studentIds, @Param("from") LocalDate from, @Param("to") LocalDate to,
 			@Param("everyDay") boolean everyDay, @Param("excludedDates") Collection<LocalDate> excludedDates);
+
+	@Query("""
+			SELECT new com.altafjava.school.domain.attendance.model.AttendanceStatusCount(a.status, COUNT(a))
+			FROM Attendance a
+			WHERE a.tenantId = :tenantId AND a.attendanceDate BETWEEN :from AND :to
+			GROUP BY a.status
+			""")
+	List<AttendanceStatusCount> countByStatus(@Param("tenantId") Long tenantId, @Param("from") LocalDate from,
+			@Param("to") LocalDate to);
 }

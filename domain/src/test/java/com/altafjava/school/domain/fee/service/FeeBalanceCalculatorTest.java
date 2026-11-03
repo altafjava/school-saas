@@ -119,4 +119,22 @@ class FeeBalanceCalculatorTest {
 
 		assertEquals(BigDecimal.ZERO, balance.lateFeeAmount());
 	}
+
+	@Test
+	void calculate_withAnIndividualAmount_billsThatInsteadOfTheStructure() {
+		FeeAssignment openingBalance = FeeAssignment.forStudent(1L, 7L);
+		openingBalance.chargeIndividually(new BigDecimal("2350.50"));
+
+		FeeBalance balance = calculator.calculate(feeStructure(BigDecimal.ZERO), openingBalance,
+				new BigDecimal("350.50"), TODAY);
+
+		assertEquals(0, new BigDecimal("2350.50").compareTo(balance.grossAmount()));
+		assertEquals(0, new BigDecimal("2000.00").compareTo(balance.outstandingBalance()));
+	}
+
+	@Test
+	void chargeIndividually_onAClassroomFee_throwsBusinessException() {
+		org.junit.jupiter.api.Assertions.assertThrows(com.altafjava.platform.core.exception.BusinessException.class,
+				() -> FeeAssignment.forClassroom(1L, 3L).chargeIndividually(BigDecimal.TEN));
+	}
 }

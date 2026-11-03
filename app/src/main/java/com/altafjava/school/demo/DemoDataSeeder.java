@@ -32,6 +32,8 @@ import com.altafjava.platform.domain.user.model.User;
 import com.altafjava.platform.domain.user.model.UserStatus;
 import com.altafjava.platform.domain.user.repository.RoleRepository;
 import com.altafjava.platform.domain.user.repository.UserRepository;
+import com.altafjava.school.application.exam.ExamMarksService;
+import com.altafjava.school.application.exam.ExamTimetableService;
 import com.altafjava.school.application.security.SchoolFeatures;
 import com.altafjava.school.application.security.SchoolRoles;
 import com.altafjava.school.application.service.AcademicYearService;
@@ -130,6 +132,8 @@ public class DemoDataSeeder {
 	private final FeePaymentService feePaymentService;
 	private final ExamTypeDefinitionService examTypeDefinitionService;
 	private final ExamService examService;
+	private final ExamMarksService examMarksService;
+	private final ExamTimetableService examTimetableService;
 	private final GradeService gradeService;
 	private final AttendanceService attendanceService;
 	private final FeatureFlagService featureFlagService;
@@ -346,29 +350,39 @@ public class DemoDataSeeder {
 	private void seedExamsAndGrades(Random random, Term term, List<Subject> subjects, List<Classroom> classrooms,
 			List<Student> students) {
 		ExamTypeDefinition type = examTypeDefinitionService.listActive().getFirst();
-		LocalDateTime when = schoolClock.now().minusDays(14);
+		LocalDateTime when = schoolClock.now().minusDays(14).withHour(9).withMinute(0).withSecond(0).withNano(0);
 		for (int c = 0; c < classrooms.size(); c++) {
 			Classroom classroom = classrooms.get(c);
+			List<Exam> unitTests = new ArrayList<>();
 			for (int s = 0; s < 2; s++) {
 				Subject subject = subjects.get((c + s) % subjects.size());
-				Exam exam = examService.schedule(subject.getName() + " unit test", subject.getPublicId().toString(),
-						classroom.getPublicId().toString(),
-						when, new BigDecimal("50"), term.getPublicId().toString(), type.getPublicId().toString(),
-						new BigDecimal("20"));
+				unitTests.add(scheduleExam(subject.getName() + " unit test", subject, classroom, term, type,
+						new ExamService.SlotRequest(when.plusDays(s), 60, null), "50", "20"));
+			}
+			for (Exam exam : unitTests) {
 				for (int n = 0; n < STUDENTS_PER_CLASS; n++) {
 					Student student = students.get(c * STUDENTS_PER_CLASS + n);
 					gradeService.record(student.getPublicId().toString(), exam.getPublicId().toString(),
-							BigDecimal.valueOf(20 + random.nextInt(31)),
-							"demo-seed");
+							BigDecimal.valueOf(20 + random.nextInt(31)), "demo-seed");
 				}
-				examService.complete(exam.getPublicId().toString());
-				examService.publishResults(exam.getPublicId().toString(), "demo-seed");
+				String examId = exam.getPublicId().toString();
+				examService.complete(examId);
+				examMarksService.verify(examId, "demo-verifier");
+				examMarksService.lock(examId, "demo-verifier");
+				examService.publishResults(examId, "demo-seed");
 			}
 			Subject next = subjects.get(c % subjects.size());
-			examService.schedule(next.getName() + " term exam", next.getPublicId().toString(),
-					classroom.getPublicId().toString(), schoolClock.now().plusDays(10), new BigDecimal("100"),
-					term.getPublicId().toString(), type.getPublicId().toString(), new BigDecimal("80"));
+			scheduleExam(next.getName() + " term exam", next, classroom, term, type,
+					new ExamService.SlotRequest(when.plusDays(24), 120, null), "100", "80");
+			examTimetableService.publish(classroom.getPublicId().toString(), null);
 		}
+	}
+
+	private Exam scheduleExam(String title, Subject subject, Classroom classroom, Term term, ExamTypeDefinition type,
+			ExamService.SlotRequest slot, String maxMarks, String weightage) {
+		return examService.schedule(new ExamService.ExamDetails(title, subject.getPublicId().toString(),
+				classroom.getPublicId().toString(), new BigDecimal(maxMarks), term.getPublicId().toString(),
+				type.getPublicId().toString(), new BigDecimal(weightage)), slot);
 	}
 
 	private void seedAttendance(Random random, List<Classroom> classrooms, List<Student> students, LocalDate today) {

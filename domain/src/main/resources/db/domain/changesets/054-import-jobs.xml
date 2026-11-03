@@ -1,0 +1,145 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                            http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-5.0.xsd">
+
+    <changeSet id="school-205-import-jobs" author="school">
+        <createTable tableName="import_jobs">
+            <column name="id" type="BIGINT" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="public_id" type="UUID">
+                <constraints nullable="false" unique="true"/>
+            </column>
+            <column name="tenant_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="uploaded_by_user_id" type="BIGINT"/>
+            <column name="file_name" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="content" type="CLOB">
+                <constraints nullable="false"/>
+            </column>
+            <column name="column_mapping" type="VARCHAR(4000)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="total_rows" type="INT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="valid_rows" type="INT"/>
+            <column name="invalid_rows" type="INT"/>
+            <column name="imported_rows" type="INT"/>
+            <column name="failed_rows" type="INT"/>
+            <column name="validated_at" type="TIMESTAMP"/>
+            <column name="completed_at" type="TIMESTAMP"/>
+            <column name="import_type" type="VARCHAR(30)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="status" type="VARCHAR(20)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_at" type="TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_by" type="VARCHAR(100)"/>
+            <column name="updated_at" type="TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="updated_by" type="VARCHAR(100)"/>
+            <column name="deleted" type="BOOLEAN" defaultValueBoolean="false">
+                <constraints nullable="false"/>
+            </column>
+            <column name="deleted_at" type="TIMESTAMP"/>
+            <column name="deleted_by" type="VARCHAR(100)"/>
+            <column name="deleted_token" type="BIGINT" defaultValueNumeric="0">
+                <constraints nullable="false"/>
+            </column>
+            <column name="version" type="BIGINT" defaultValueNumeric="0">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+        <createIndex indexName="idx_import_jobs_tenant_id" tableName="import_jobs">
+            <column name="tenant_id"/>
+        </createIndex>
+        <createIndex indexName="idx_import_jobs_import_type" tableName="import_jobs">
+            <column name="import_type"/>
+        </createIndex>
+        <createIndex indexName="idx_import_jobs_status" tableName="import_jobs">
+            <column name="status"/>
+        </createIndex>
+        <createIndex indexName="idx_import_jobs_deleted" tableName="import_jobs">
+            <column name="deleted"/>
+        </createIndex>
+        <createIndex indexName="idx_import_jobs_created_at" tableName="import_jobs">
+            <column name="created_at"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet id="school-206-import-job-errors" author="school">
+        <createTable tableName="import_job_errors">
+            <column name="id" type="BIGINT" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="public_id" type="UUID">
+                <constraints nullable="false" unique="true"/>
+            </column>
+            <column name="tenant_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="import_job_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="line_number" type="INT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="field" type="VARCHAR(100)"/>
+            <column name="message" type="VARCHAR(1000)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="phase" type="VARCHAR(20)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_at" type="TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_by" type="VARCHAR(100)"/>
+            <column name="updated_at" type="TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="updated_by" type="VARCHAR(100)"/>
+            <column name="deleted" type="BOOLEAN" defaultValueBoolean="false">
+                <constraints nullable="false"/>
+            </column>
+            <column name="deleted_at" type="TIMESTAMP"/>
+            <column name="deleted_by" type="VARCHAR(100)"/>
+            <column name="deleted_token" type="BIGINT" defaultValueNumeric="0">
+                <constraints nullable="false"/>
+            </column>
+            <column name="version" type="BIGINT" defaultValueNumeric="0">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+        <addForeignKeyConstraint constraintName="fk_import_job_errors_import_job"
+                baseTableName="import_job_errors" baseColumnNames="import_job_id"
+                referencedTableName="import_jobs" referencedColumnNames="id"/>
+        <createIndex indexName="idx_import_job_errors_tenant_id" tableName="import_job_errors">
+            <column name="tenant_id"/>
+        </createIndex>
+        <createIndex indexName="idx_import_job_errors_import_job_id" tableName="import_job_errors">
+            <column name="import_job_id"/>
+        </createIndex>
+        <createIndex indexName="idx_import_job_errors_phase" tableName="import_job_errors">
+            <column name="phase"/>
+        </createIndex>
+        <createIndex indexName="idx_import_job_errors_deleted" tableName="import_job_errors">
+            <column name="deleted"/>
+        </createIndex>
+        <createIndex indexName="idx_import_job_errors_created_at" tableName="import_job_errors">
+            <column name="created_at"/>
+        </createIndex>
+    </changeSet>
+
+</databaseChangeLog>

@@ -7,7 +7,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.multipart.MultipartFile;
 import com.altafjava.platform.api.dto.response.ApiResponse;
 import com.altafjava.school.api.dto.request.AddressRequest;
 import com.altafjava.school.api.dto.request.CreateStudentRequest;
@@ -17,7 +16,6 @@ import com.altafjava.school.api.dto.request.UpdatePhotoRequest;
 import com.altafjava.school.api.dto.request.UpdateStudentContactDetailsRequest;
 import com.altafjava.school.api.dto.response.AttendancePercentageResponse;
 import com.altafjava.school.api.dto.response.AttendanceResponse;
-import com.altafjava.school.api.dto.response.BulkImportResponse;
 import com.altafjava.school.api.dto.response.FeeBalanceResponse;
 import com.altafjava.school.api.dto.response.FeePaymentResponse;
 import com.altafjava.school.api.dto.response.GpaResponse;
@@ -50,9 +48,6 @@ public interface StudentApi {
 
 	@Operation(summary = "Guardians of a student", description = "Every guardian linked to the student with the relationship, primary-contact flag, pickup authorization and custody restriction. Staff-facing: carries contact details.")
 	public ApiResponse<List<StudentGuardianResponse>> guardians(@PathVariable String publicId);
-
-	@Operation(summary = "Bulk import")
-	public ApiResponse<BulkImportResponse> bulkImport(@RequestParam("file") MultipartFile file);
 
 	@Operation(summary = "Enroll")
 	public ApiResponse<StudentResponse> enroll(@Valid @RequestBody CreateStudentRequest request);

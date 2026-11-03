@@ -46,6 +46,7 @@ import com.altafjava.school.domain.fee.model.PaymentMode;
 import com.altafjava.school.domain.fee.repository.FeeAssignmentRepository;
 import com.altafjava.school.domain.fee.repository.FeeDiscountRepository;
 import com.altafjava.school.domain.fee.repository.FeeInstallmentRepository;
+import com.altafjava.school.domain.fee.repository.FeeInvoiceRepository;
 import com.altafjava.school.domain.fee.repository.FeePaymentRepository;
 import com.altafjava.school.domain.fee.repository.FeeRefundRepository;
 import com.altafjava.school.domain.fee.repository.FeeStructureRepository;
@@ -75,6 +76,7 @@ public class FeePaymentService {
 	private final PublicIdLookup publicIdLookup;
 	private final SchoolClock schoolClock;
 	private final DocumentIssuanceService documentIssuanceService;
+	private final FeeInvoiceRepository feeInvoiceRepository;
 	private final FeeBalanceCalculator feeBalanceCalculator = new FeeBalanceCalculator();
 
 	@Transactional(readOnly = true)
@@ -283,6 +285,14 @@ public class FeePaymentService {
 	@Audited(action = AuditAction.CREATE, resourceType = "FeePayment", details = "Fee payment recorded")
 	public FeePayment record(String studentPublicId, String feeStructurePublicId, BigDecimal paidAmount,
 			LocalDateTime paidAt, String receiptNumber, PaymentInstrument instrument) {
+		return record(studentPublicId, feeStructurePublicId, paidAmount, paidAt, receiptNumber, instrument, null);
+	}
+
+	/** As above, settling part of the given invoice when {@code invoicePublicId} is set. */
+	@Transactional
+	@Audited(action = AuditAction.CREATE, resourceType = "FeePayment", details = "Fee payment recorded")
+	public FeePayment record(String studentPublicId, String feeStructurePublicId, BigDecimal paidAmount,
+			LocalDateTime paidAt, String receiptNumber, PaymentInstrument instrument, String invoicePublicId) {
 		// Gateway payments arrive signed through FeeOnlinePaymentService; nobody may type one in.
 		if (instrument.mode() == PaymentMode.GATEWAY) {
 			throw new BusinessException("Gateway payments are recorded by the payment gateway");
@@ -301,6 +311,10 @@ public class FeePaymentService {
 		}
 		FeePayment payment = FeePayment.create(studentId, feeStructureId, paidAmount, paidAt, resolvedReceiptNumber,
 				instrument);
+		if (invoicePublicId != null) {
+			payment.applyTo(feeInvoiceRepository.findByPublicIdAndTenantId(UUID.fromString(invoicePublicId), tenantId)
+					.orElseThrow(() -> new ResourceNotFoundException("Invoice not found: " + invoicePublicId)));
+		}
 		return feePaymentRepository.save(payment);
 	}
 

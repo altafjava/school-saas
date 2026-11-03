@@ -1,7 +1,5 @@
 package com.altafjava.school.application.dashboard;
 
-import java.math.BigDecimal;
-import java.math.RoundingMode;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.LinkedHashMap;
@@ -19,8 +17,9 @@ import com.altafjava.school.application.alert.FeePaymentReminderRuleEvaluator;
 import com.altafjava.school.application.alert.LibraryOverdueRuleEvaluator;
 import com.altafjava.school.application.alert.LowAttendanceRuleEvaluator;
 import com.altafjava.school.application.time.SchoolClock;
-import com.altafjava.school.domain.attendance.model.AttendanceStatus;
+import com.altafjava.school.domain.attendance.model.AttendanceStatusCount;
 import com.altafjava.school.domain.attendance.repository.AttendanceRepository;
+import com.altafjava.school.domain.attendance.service.AttendancePercentageCalculator;
 import com.altafjava.school.domain.event.repository.EventRepository;
 import com.altafjava.school.domain.student.model.EnrollmentStatus;
 import com.altafjava.school.domain.student.repository.StudentRepository;
@@ -47,6 +46,7 @@ public class PrincipalDashboardDataProvider implements ReportDataProvider {
 
 	private final StudentRepository studentRepository;
 	private final AttendanceRepository attendanceRepository;
+	private final AttendancePercentageCalculator attendancePercentageCalculator = new AttendancePercentageCalculator();
 	private final EventRepository eventRepository;
 	private final AlertDispatchService alertDispatchService;
 	private final SchoolClock schoolClock;
@@ -70,15 +70,14 @@ public class PrincipalDashboardDataProvider implements ReportDataProvider {
 
 		long activeStudentCount = studentRepository.countByEnrollmentStatusAndTenantId(EnrollmentStatus.ACTIVE,
 				tenantId);
-		long markedCount = attendanceRepository.countByTenantIdAndAttendanceDateBetween(tenantId, windowStart, today);
-		long presentCount = attendanceRepository.countByTenantIdAndAttendanceDateBetweenAndStatus(tenantId,
-				windowStart, today, AttendanceStatus.PRESENT);
 		long upcomingEventCount = eventRepository.countByTenantIdAndActiveTrueAndEventDateAfter(tenantId,
 				now);
 
 		Map<String, Object> row = new LinkedHashMap<>();
 		row.put("activeStudentCount", activeStudentCount);
-		row.put("attendancePercentageLast30Days", attendancePercentage(markedCount, presentCount));
+		row.put("attendancePercentageLast30Days", attendancePercentageCalculator.calculate(
+				AttendanceStatusCount.byStatus(attendanceRepository.countByStatus(tenantId, windowStart, today)))
+				.percentage());
 		row.put("upcomingEventCount", upcomingEventCount);
 		row.put("activeAlertCounts", activeAlertCounts(tenantId));
 		return List.of(row);
@@ -91,14 +90,5 @@ public class PrincipalDashboardDataProvider implements ReportDataProvider {
 			counts.put(ruleType, alertDispatchService.evaluate(tenantId, ruleType).size());
 		}
 		return counts;
-	}
-
-	private BigDecimal attendancePercentage(long markedCount, long presentCount) {
-		if (markedCount == 0) {
-			return BigDecimal.ZERO;
-		}
-		return BigDecimal.valueOf(presentCount)
-				.multiply(BigDecimal.valueOf(100))
-				.divide(BigDecimal.valueOf(markedCount), 2, RoundingMode.HALF_UP);
 	}
 }

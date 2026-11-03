@@ -18,6 +18,10 @@ public interface ExamMapper {
 	@Mapping(target = "classroom", source = "classroomId", qualifiedByName = "classroomSummary")
 	@Mapping(target = "termPublicId", source = "termId", qualifiedByName = "term")
 	@Mapping(target = "term", source = "termId", qualifiedByName = "termSummary")
+	@Mapping(target = "endsAt", expression = "java(exam.endsAt())")
+	@Mapping(target = "schedulePublished", expression = "java(exam.isSchedulePublished())")
+	@Mapping(target = "venuePublicId", source = "venueId", qualifiedByName = "venue")
+	@Mapping(target = "venue", source = "venueId", qualifiedByName = "venueSummary")
 	@Mapping(target = "examTypePublicId", source = "examTypeId", qualifiedByName = "examType")
 	@Mapping(target = "examType", source = "examTypeId", qualifiedByName = "examTypeSummary")
 	ExamResponse toResponse(Exam exam);

@@ -54,6 +54,10 @@ public class FeeAssignment extends SoftDeletableEntity {
 	@Column(name = "late_fee_percentage", precision = 5, scale = 2)
 	private BigDecimal lateFeePercentage;
 
+	// A student-specific amount in place of the structure's, such as a carried-over opening balance.
+	@Column(name = "amount", precision = 12, scale = 2)
+	private BigDecimal amount;
+
 	public static FeeAssignment forStudent(Long feeStructureId, Long studentId) {
 		return FeeAssignment.builder()
 				.feeStructureId(feeStructureId)
@@ -68,6 +72,17 @@ public class FeeAssignment extends SoftDeletableEntity {
 				.scope(FeeAssignmentScope.CLASSROOM)
 				.classroomId(classroomId)
 				.build();
+	}
+
+	/** Charges this student {@code amount} for the structure instead of the structure's own amount. */
+	public void chargeIndividually(BigDecimal amount) {
+		if (scope != FeeAssignmentScope.STUDENT) {
+			throw new BusinessException("Only a student's own fee can carry an individual amount");
+		}
+		if (amount == null || amount.signum() <= 0 || amount.scale() > 2) {
+			throw new BusinessException("An individual amount must be positive with at most 2 decimals");
+		}
+		this.amount = amount;
 	}
 
 	public void configureDueDate(LocalDate dueDate, Integer graceDays, BigDecimal lateFeePercentage) {

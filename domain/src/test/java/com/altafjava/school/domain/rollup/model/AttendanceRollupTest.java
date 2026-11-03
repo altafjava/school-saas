@@ -8,19 +8,19 @@ class AttendanceRollupTest {
 
 	@Test
 	void total_sumsAllFourStatuses() {
-		AttendanceRollup rollup = new AttendanceRollup(10, 2, 1, 3);
+		AttendanceRollup rollup = new AttendanceRollup(10, 0, 2, 1, 3);
 
 		assertEquals(16, rollup.total());
 	}
 
 	@Test
 	void sum_combinesMultipleCampusesFieldByField() {
-		AttendanceRollup campusA = new AttendanceRollup(10, 2, 1, 3);
-		AttendanceRollup campusB = new AttendanceRollup(20, 0, 4, 1);
+		AttendanceRollup campusA = new AttendanceRollup(10, 0, 2, 1, 3);
+		AttendanceRollup campusB = new AttendanceRollup(20, 0, 0, 4, 1);
 
 		AttendanceRollup total = AttendanceRollup.sum(List.of(campusA, campusB));
 
-		assertEquals(new AttendanceRollup(30, 2, 5, 4), total);
+		assertEquals(new AttendanceRollup(30, 0, 2, 5, 4), total);
 	}
 
 	@Test

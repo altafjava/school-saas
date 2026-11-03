@@ -361,6 +361,9 @@
     "name" : "Usage Management",
     "description" : "APIs for managing Usage operations.\n\n**Tenant Scope**: All endpoints are tenant-scoped via X-Tenant-ID header.\n**Auth**: JWT Bearer token required on all endpoints unless marked public."
   }, {
+    "name" : "Enquiries",
+    "description" : "Admission enquiries, their follow-ups, and conversion into applications."
+  }, {
     "name" : "Leave Request",
     "description" : "APIs for managing Leave Request operations.\n\n**Tenant Scope**: All endpoints are tenant-scoped via X-Tenant-ID header.\n**Auth**: JWT Bearer token required on all endpoints unless marked public."
   }, {
@@ -390,6 +393,9 @@
   }, {
     "name" : "AdminIntegrationProvider Management",
     "description" : "Platform default providers for virus scanning, tax and exchange rates.\n\n**Auth**: Super Admin only."
+  }, {
+    "name" : "Bulk import",
+    "description" : "CSV imports in steps: upload, map columns, dry run, import, with history and an error report. Each type also needs the permission to create that kind of record."
   }, {
     "name" : "AdminCoupon Management",
     "description" : "APIs for managing AdminCoupon operations.\n\n**Tenant Scope**: All endpoints are tenant-scoped via X-Tenant-ID header.\n**Auth**: JWT Bearer token required on all endpoints unless marked public."
@@ -435,6 +441,9 @@
   }, {
     "name" : "Payment Gateways (Admin)",
     "description" : "Platform-wide default payment gateway configuration"
+  }, {
+    "name" : "Staff attendance",
+    "description" : "Staff check-in and check-out, the daily register and the workday rules."
   }, {
     "name" : "Tenant Settings",
     "description" : "Endpoints for managing general tenant preferences (e.g., locale, currency, branding)"
@@ -529,8 +538,14 @@
     "name" : "Notification Templates",
     "description" : "Manage notification templates"
   }, {
+    "name" : "Fee invoices",
+    "description" : "Period invoices per student, with a verifiable PDF."
+  }, {
     "name" : "Search",
     "description" : "Global Search API"
+  }, {
+    "name" : "Exam timetable",
+    "description" : "A classroom's exam dates, and their publication to its families."
   }, {
     "name" : "Visitor Log",
     "description" : "APIs for managing Visitor Log operations.\n\n**Tenant Scope**: All endpoints are tenant-scoped via X-Tenant-ID header.\n**Auth**: JWT Bearer token required on all endpoints unless marked public."
@@ -3528,6 +3543,233 @@
         } ]
       }
     },
+    "/api/v1/staff-attendance/workday" : {
+      "get" : {
+        "tags" : [ "Staff attendance" ],
+        "summary" : "Workday",
+        "operationId" : "staffAttendanceWorkday",
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiResponseStaffWorkdayResponse"
+                }
+              }
+            }
+          },
+          "401" : {
+            "description" : "Missing, expired or revoked access token",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "403" : {
+            "description" : "The caller lacks the required permission",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "500" : {
+            "description" : "Unexpected error; quote error.traceId when reporting it",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "security" : [ {
+          "bearerAuth" : [ ]
+        }, {
+          "tenantHeader" : [ ]
+        } ]
+      },
+      "put" : {
+        "tags" : [ "Staff attendance" ],
+        "summary" : "Update workday",
+        "operationId" : "staffAttendanceUpdateWorkday",
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/UpdateStaffWorkdayRequest"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiResponseStaffWorkdayResponse"
+                }
+              }
+            }
+          },
+          "400" : {
+            "description" : "Validation failed or a business rule rejected the request",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "401" : {
+            "description" : "Missing, expired or revoked access token",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "403" : {
+            "description" : "The caller lacks the required permission",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "500" : {
+            "description" : "Unexpected error; quote error.traceId when reporting it",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "security" : [ {
+          "bearerAuth" : [ ]
+        }, {
+          "tenantHeader" : [ ]
+        } ]
+      }
+    },
+    "/api/v1/staff-attendance/employees/{employeePublicId}/days/{date}" : {
+      "put" : {
+        "tags" : [ "Staff attendance" ],
+        "summary" : "Record a day",
+        "description" : "Records or corrects one employee's day. Late, early and half day follow from the times and the school's workday.",
+        "operationId" : "staffAttendanceRecord",
+        "parameters" : [ {
+          "name" : "employeePublicId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "name" : "date",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "string",
+            "format" : "date"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/RecordStaffAttendanceRequest"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiResponseStaffAttendanceResponse"
+                }
+              }
+            }
+          },
+          "400" : {
+            "description" : "Validation failed or a business rule rejected the request",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "401" : {
+            "description" : "Missing, expired or revoked access token",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "403" : {
+            "description" : "The caller lacks the required permission",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "404" : {
+            "description" : "The resource does not exist in the caller's tenant",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "500" : {
+            "description" : "Unexpected error; quote error.traceId when reporting it",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "security" : [ {
+          "bearerAuth" : [ ]
+        }, {
+          "tenantHeader" : [ ]
+        } ]
+      }
+    },
     "/api/v1/roles/{id}" : {
       "get" : {
         "tags" : [ "role-controller" ],
@@ -4688,6 +4930,99 @@
         } ]
       }
     },
+    "/api/v1/imports/{publicId}/mapping" : {
+      "put" : {
+        "tags" : [ "Bulk import" ],
+        "summary" : "Map columns",
+        "description" : "Replaces the mapping; any earlier dry run no longer counts.",
+        "operationId" : "importRemap",
+        "parameters" : [ {
+          "name" : "publicId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/UpdateImportMappingRequest"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiResponseImportJobResponse"
+                }
+              }
+            }
+          },
+          "400" : {
+            "description" : "Validation failed or a business rule rejected the request",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "401" : {
+            "description" : "Missing, expired or revoked access token",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "403" : {
+            "description" : "The caller lacks the required permission",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "404" : {
+            "description" : "The resource does not exist in the caller's tenant",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "500" : {
+            "description" : "Unexpected error; quote error.traceId when reporting it",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "security" : [ {
+          "bearerAuth" : [ ]
+        }, {
+          "tenantHeader" : [ ]
+        } ]
+      }
+    },
     "/api/v1/health-records/students/{studentPublicId}" : {
       "get" : {
         "tags" : [ "Health Record" ],
@@ -4950,6 +5285,99 @@
           },
           "403" : {
             "description" : "The caller lacks the required permission",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "500" : {
+            "description" : "Unexpected error; quote error.traceId when reporting it",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "security" : [ {
+          "bearerAuth" : [ ]
+        }, {
+          "tenantHeader" : [ ]
+        } ]
+      }
+    },
+    "/api/v1/enquiries/{publicId}/assignee" : {
+      "put" : {
+        "tags" : [ "Enquiries" ],
+        "summary" : "Assign",
+        "description" : "Hands an open enquiry to an active staff member.",
+        "operationId" : "enquiryAssign",
+        "parameters" : [ {
+          "name" : "publicId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/AssignEnquiryRequest"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiResponseEnquiryResponse"
+                }
+              }
+            }
+          },
+          "400" : {
+            "description" : "Validation failed or a business rule rejected the request",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "401" : {
+            "description" : "Missing, expired or revoked access token",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "403" : {
+            "description" : "The caller lacks the required permission",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "404" : {
+            "description" : "The resource does not exist in the caller's tenant",
             "content" : {
               "application/json" : {
                 "schema" : {
@@ -14553,95 +14981,6 @@
         }
       }
     },
-    "/api/v1/students/bulk-import" : {
-      "post" : {
-        "tags" : [ "Student" ],
-        "summary" : "Bulk import",
-        "operationId" : "studentBulkImport",
-        "parameters" : [ {
-          "name" : "Idempotency-Key",
-          "in" : "header",
-          "description" : "Unique per logical request; a retry carrying the same key is applied once",
-          "required" : true,
-          "schema" : {
-            "type" : "string"
-          }
-        } ],
-        "requestBody" : {
-          "content" : {
-            "application/json" : {
-              "schema" : {
-                "type" : "object",
-                "properties" : {
-                  "file" : {
-                    "type" : "string",
-                    "format" : "binary"
-                  }
-                },
-                "required" : [ "file" ]
-              }
-            }
-          }
-        },
-        "responses" : {
-          "200" : {
-            "description" : "OK",
-            "content" : {
-              "application/json" : {
-                "schema" : {
-                  "$ref" : "#/components/schemas/ApiResponseBulkImportResponse"
-                }
-              }
-            }
-          },
-          "400" : {
-            "description" : "Validation failed or a business rule rejected the request",
-            "content" : {
-              "application/json" : {
-                "schema" : {
-                  "$ref" : "#/components/schemas/ApiErrorResponse"
-                }
-              }
-            }
-          },
-          "401" : {
-            "description" : "Missing, expired or revoked access token",
-            "content" : {
-              "application/json" : {
-                "schema" : {
-                  "$ref" : "#/components/schemas/ApiErrorResponse"
-                }
-              }
-            }
-          },
-          "403" : {
-            "description" : "The caller lacks the required permission",
-            "content" : {
-              "application/json" : {
-                "schema" : {
-                  "$ref" : "#/components/schemas/ApiErrorResponse"
-                }
-              }
-            }
-          },
-          "500" : {
-            "description" : "Unexpected error; quote error.traceId when reporting it",
-            "content" : {
-              "application/json" : {
-                "schema" : {
-                  "$ref" : "#/components/schemas/ApiErrorResponse"
-                }
-              }
-            }
-          }
-        },
-        "security" : [ {
-          "bearerAuth" : [ ]
-        }, {
-          "tenantHeader" : [ ]
-        } ]
-      }
-    },
     "/api/v1/student-leave-requests" : {
       "get" : {
         "tags" : [ "Student Leave Request" ],
@@ -14805,6 +15144,116 @@
               "application/json" : {
                 "schema" : {
                   "$ref" : "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "401" : {
+            "description" : "Missing, expired or revoked access token",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "403" : {
+            "description" : "The caller lacks the required permission",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "500" : {
+            "description" : "Unexpected error; quote error.traceId when reporting it",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "security" : [ {
+          "bearerAuth" : [ ]
+        }, {
+          "tenantHeader" : [ ]
+        } ]
+      }
+    },
+    "/api/v1/staff-attendance/me/check-out" : {
+      "post" : {
+        "tags" : [ "Staff attendance" ],
+        "summary" : "Check out",
+        "description" : "Records the caller's departure at the school's current time.",
+        "operationId" : "staffAttendanceCheckOut",
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiResponseStaffAttendanceResponse"
+                }
+              }
+            }
+          },
+          "401" : {
+            "description" : "Missing, expired or revoked access token",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "403" : {
+            "description" : "The caller lacks the required permission",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "500" : {
+            "description" : "Unexpected error; quote error.traceId when reporting it",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "security" : [ {
+          "bearerAuth" : [ ]
+        }, {
+          "tenantHeader" : [ ]
+        } ]
+      }
+    },
+    "/api/v1/staff-attendance/me/check-in" : {
+      "post" : {
+        "tags" : [ "Staff attendance" ],
+        "summary" : "Check in",
+        "description" : "Records the caller's arrival at the school's current time. Refused on a day of approved leave or once the day is recorded.",
+        "operationId" : "staffAttendanceCheckIn",
+        "responses" : {
+          "201" : {
+            "description" : "Created",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiResponseStaffAttendanceResponse"
                 }
               }
             }
@@ -16883,7 +17332,7 @@
           "required" : false,
           "schema" : {
             "type" : "string",
-            "enum" : [ "PRESENT", "ABSENT", "LATE", "EXCUSED" ]
+            "enum" : [ "PRESENT", "ABSENT", "LATE", "EXCUSED", "HALF_DAY" ]
           }
         }, {
           "name" : "sort",
@@ -18700,6 +19149,350 @@
           },
           "403" : {
             "description" : "The caller lacks the required permission",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "500" : {
+            "description" : "Unexpected error; quote error.traceId when reporting it",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "security" : [ {
+          "bearerAuth" : [ ]
+        }, {
+          "tenantHeader" : [ ]
+        } ]
+      }
+    },
+    "/api/v1/imports" : {
+      "get" : {
+        "tags" : [ "Bulk import" ],
+        "summary" : "Import history",
+        "operationId" : "importList",
+        "parameters" : [ {
+          "name" : "page",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int32",
+            "default" : 0
+          }
+        }, {
+          "name" : "size",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int32",
+            "default" : 20
+          }
+        }, {
+          "name" : "type",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "type" : "string",
+            "enum" : [ "STUDENTS", "STAFF", "GUARDIANS", "OPENING_FEE_BALANCES" ]
+          }
+        }, {
+          "name" : "status",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "type" : "string",
+            "enum" : [ "UPLOADED", "VALIDATED", "IMPORTING", "COMPLETED" ]
+          }
+        }, {
+          "name" : "sort",
+          "in" : "query",
+          "description" : "Repeatable, `field` or `field,asc|desc`, at most 3 fields. Sortable: createdAt, importType, status, updatedAt.",
+          "required" : false,
+          "schema" : {
+            "type" : "array",
+            "items" : {
+              "type" : "string"
+            }
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiResponsePageImportJobSummaryResponse"
+                }
+              }
+            }
+          },
+          "400" : {
+            "description" : "Validation failed or a business rule rejected the request",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "401" : {
+            "description" : "Missing, expired or revoked access token",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "403" : {
+            "description" : "The caller lacks the required permission",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "500" : {
+            "description" : "Unexpected error; quote error.traceId when reporting it",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "security" : [ {
+          "bearerAuth" : [ ]
+        }, {
+          "tenantHeader" : [ ]
+        } ]
+      },
+      "post" : {
+        "tags" : [ "Bulk import" ],
+        "summary" : "Upload a file",
+        "description" : "A UTF-8 CSV whose first line names the columns, up to 1 MB and 5000 rows. Columns whose names match a field are mapped already.",
+        "operationId" : "importUpload",
+        "parameters" : [ {
+          "name" : "type",
+          "in" : "query",
+          "required" : true,
+          "schema" : {
+            "type" : "string",
+            "enum" : [ "STUDENTS", "STAFF", "GUARDIANS", "OPENING_FEE_BALANCES" ]
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "multipart/form-data" : {
+              "schema" : {
+                "type" : "object",
+                "properties" : {
+                  "file" : {
+                    "type" : "string",
+                    "format" : "binary"
+                  }
+                },
+                "required" : [ "file" ]
+              }
+            }
+          }
+        },
+        "responses" : {
+          "201" : {
+            "description" : "Created",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiResponseImportJobResponse"
+                }
+              }
+            }
+          },
+          "400" : {
+            "description" : "Validation failed or a business rule rejected the request",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "401" : {
+            "description" : "Missing, expired or revoked access token",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "403" : {
+            "description" : "The caller lacks the required permission",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "500" : {
+            "description" : "Unexpected error; quote error.traceId when reporting it",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "security" : [ {
+          "bearerAuth" : [ ]
+        }, {
+          "tenantHeader" : [ ]
+        } ]
+      }
+    },
+    "/api/v1/imports/{publicId}/execute" : {
+      "post" : {
+        "tags" : [ "Bulk import" ],
+        "summary" : "Import",
+        "description" : "Imports the file once, in batches of 100 rows that each go in whole or not at all. Rows the last dry run rejected are skipped.",
+        "operationId" : "importExecute",
+        "parameters" : [ {
+          "name" : "publicId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiResponseImportJobResponse"
+                }
+              }
+            }
+          },
+          "401" : {
+            "description" : "Missing, expired or revoked access token",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "403" : {
+            "description" : "The caller lacks the required permission",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "404" : {
+            "description" : "The resource does not exist in the caller's tenant",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "500" : {
+            "description" : "Unexpected error; quote error.traceId when reporting it",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "security" : [ {
+          "bearerAuth" : [ ]
+        }, {
+          "tenantHeader" : [ ]
+        } ]
+      }
+    },
+    "/api/v1/imports/{publicId}/dry-run" : {
+      "post" : {
+        "tags" : [ "Bulk import" ],
+        "summary" : "Dry run",
+        "description" : "Checks every row as the import would, writes nothing, and keeps the error report.",
+        "operationId" : "importDryRun",
+        "parameters" : [ {
+          "name" : "publicId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiResponseImportJobResponse"
+                }
+              }
+            }
+          },
+          "401" : {
+            "description" : "Missing, expired or revoked access token",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "403" : {
+            "description" : "The caller lacks the required permission",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "404" : {
+            "description" : "The resource does not exist in the caller's tenant",
             "content" : {
               "application/json" : {
                 "schema" : {
@@ -21275,6 +22068,373 @@
         } ]
       }
     },
+    "/api/v1/fee-invoices" : {
+      "get" : {
+        "tags" : [ "Fee invoices" ],
+        "summary" : "Invoices",
+        "description" : "Every filter is optional; the dates match overlapping periods.",
+        "operationId" : "feeInvoiceList",
+        "parameters" : [ {
+          "name" : "page",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int32",
+            "default" : 0
+          }
+        }, {
+          "name" : "size",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int32",
+            "default" : 20
+          }
+        }, {
+          "name" : "studentPublicId",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "name" : "status",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "type" : "string",
+            "enum" : [ "ISSUED", "CANCELLED" ]
+          }
+        }, {
+          "name" : "from",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "type" : "string",
+            "format" : "date"
+          }
+        }, {
+          "name" : "to",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "type" : "string",
+            "format" : "date"
+          }
+        }, {
+          "name" : "sort",
+          "in" : "query",
+          "description" : "Repeatable, `field` or `field,asc|desc`, at most 3 fields. Sortable: createdAt, dueDate, invoiceNumber, issueDate, periodStart, totalAmount, updatedAt.",
+          "required" : false,
+          "schema" : {
+            "type" : "array",
+            "items" : {
+              "type" : "string"
+            }
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiResponsePageFeeInvoiceResponse"
+                }
+              }
+            }
+          },
+          "400" : {
+            "description" : "Validation failed or a business rule rejected the request",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "401" : {
+            "description" : "Missing, expired or revoked access token",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "403" : {
+            "description" : "The caller lacks the required permission",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "500" : {
+            "description" : "Unexpected error; quote error.traceId when reporting it",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "security" : [ {
+          "bearerAuth" : [ ]
+        }, {
+          "tenantHeader" : [ ]
+        } ]
+      },
+      "post" : {
+        "tags" : [ "Fee invoices" ],
+        "summary" : "Issue an invoice",
+        "description" : "Bills the student every installment, or whole fee without installments, that falls due in the period and is not on another live invoice.",
+        "operationId" : "feeInvoiceIssue",
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/IssueFeeInvoiceRequest"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "201" : {
+            "description" : "Created",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiResponseFeeInvoiceResponse"
+                }
+              }
+            }
+          },
+          "400" : {
+            "description" : "Validation failed or a business rule rejected the request",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "401" : {
+            "description" : "Missing, expired or revoked access token",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "403" : {
+            "description" : "The caller lacks the required permission",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "500" : {
+            "description" : "Unexpected error; quote error.traceId when reporting it",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "security" : [ {
+          "bearerAuth" : [ ]
+        }, {
+          "tenantHeader" : [ ]
+        } ]
+      }
+    },
+    "/api/v1/fee-invoices/{publicId}/cancel" : {
+      "post" : {
+        "tags" : [ "Fee invoices" ],
+        "summary" : "Cancel an invoice",
+        "description" : "Refused while payments stand against it. Its charges can then be billed again.",
+        "operationId" : "feeInvoiceCancel",
+        "parameters" : [ {
+          "name" : "publicId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/CancelFeeInvoiceRequest"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiResponseFeeInvoiceResponse"
+                }
+              }
+            }
+          },
+          "400" : {
+            "description" : "Validation failed or a business rule rejected the request",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "401" : {
+            "description" : "Missing, expired or revoked access token",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "403" : {
+            "description" : "The caller lacks the required permission",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "404" : {
+            "description" : "The resource does not exist in the caller's tenant",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "500" : {
+            "description" : "Unexpected error; quote error.traceId when reporting it",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "security" : [ {
+          "bearerAuth" : [ ]
+        }, {
+          "tenantHeader" : [ ]
+        } ]
+      }
+    },
+    "/api/v1/fee-invoices/classroom-runs" : {
+      "post" : {
+        "tags" : [ "Fee invoices" ],
+        "summary" : "Invoice a classroom",
+        "description" : "Issues an invoice to every student of the classroom with something due in the period, and lists the students skipped with the reason.",
+        "operationId" : "feeInvoiceIssueForClassroom",
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/IssueClassroomInvoicesRequest"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiResponseInvoiceBatchResponse"
+                }
+              }
+            }
+          },
+          "400" : {
+            "description" : "Validation failed or a business rule rejected the request",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "401" : {
+            "description" : "Missing, expired or revoked access token",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "403" : {
+            "description" : "The caller lacks the required permission",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "500" : {
+            "description" : "Unexpected error; quote error.traceId when reporting it",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "security" : [ {
+          "bearerAuth" : [ ]
+        }, {
+          "tenantHeader" : [ ]
+        } ]
+      }
+    },
     "/api/v1/exams" : {
       "get" : {
         "tags" : [ "Exam" ],
@@ -21548,8 +22708,300 @@
       "post" : {
         "tags" : [ "Exam" ],
         "summary" : "Publish results",
-        "description" : "Makes a completed exam's grades visible to students and guardians and includes them in report cards and GPA. Requires at least one recorded grade.",
+        "description" : "Makes a completed exam's grades visible to students and guardians and includes them in report cards and GPA. The marks must be verified and locked first.",
         "operationId" : "examPublishResults",
+        "parameters" : [ {
+          "name" : "publicId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiResponseExamResponse"
+                }
+              }
+            }
+          },
+          "401" : {
+            "description" : "Missing, expired or revoked access token",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "403" : {
+            "description" : "The caller lacks the required permission",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "404" : {
+            "description" : "The resource does not exist in the caller's tenant",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "500" : {
+            "description" : "Unexpected error; quote error.traceId when reporting it",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "security" : [ {
+          "bearerAuth" : [ ]
+        }, {
+          "tenantHeader" : [ ]
+        } ]
+      }
+    },
+    "/api/v1/exams/{publicId}/marks/verify" : {
+      "post" : {
+        "tags" : [ "Exam" ],
+        "summary" : "Verify marks",
+        "description" : "Freezes a completed exam's marks after a check by someone who entered none of them.",
+        "operationId" : "examVerifyMarks",
+        "parameters" : [ {
+          "name" : "publicId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiResponseExamResponse"
+                }
+              }
+            }
+          },
+          "401" : {
+            "description" : "Missing, expired or revoked access token",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "403" : {
+            "description" : "The caller lacks the required permission",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "404" : {
+            "description" : "The resource does not exist in the caller's tenant",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "500" : {
+            "description" : "Unexpected error; quote error.traceId when reporting it",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "security" : [ {
+          "bearerAuth" : [ ]
+        }, {
+          "tenantHeader" : [ ]
+        } ]
+      }
+    },
+    "/api/v1/exams/{publicId}/marks/unlock" : {
+      "post" : {
+        "tags" : [ "Exam" ],
+        "summary" : "Unlock marks",
+        "description" : "Reopens locked marks for correction. Published results must be withdrawn first.",
+        "operationId" : "examUnlockMarks",
+        "parameters" : [ {
+          "name" : "publicId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiResponseExamResponse"
+                }
+              }
+            }
+          },
+          "401" : {
+            "description" : "Missing, expired or revoked access token",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "403" : {
+            "description" : "The caller lacks the required permission",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "404" : {
+            "description" : "The resource does not exist in the caller's tenant",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "500" : {
+            "description" : "Unexpected error; quote error.traceId when reporting it",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "security" : [ {
+          "bearerAuth" : [ ]
+        }, {
+          "tenantHeader" : [ ]
+        } ]
+      }
+    },
+    "/api/v1/exams/{publicId}/marks/return" : {
+      "post" : {
+        "tags" : [ "Exam" ],
+        "summary" : "Return marks for correction",
+        "description" : "Reopens verified marks so they can be corrected.",
+        "operationId" : "examReturnMarks",
+        "parameters" : [ {
+          "name" : "publicId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiResponseExamResponse"
+                }
+              }
+            }
+          },
+          "401" : {
+            "description" : "Missing, expired or revoked access token",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "403" : {
+            "description" : "The caller lacks the required permission",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "404" : {
+            "description" : "The resource does not exist in the caller's tenant",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "500" : {
+            "description" : "Unexpected error; quote error.traceId when reporting it",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "security" : [ {
+          "bearerAuth" : [ ]
+        }, {
+          "tenantHeader" : [ ]
+        } ]
+      }
+    },
+    "/api/v1/exams/{publicId}/marks/lock" : {
+      "post" : {
+        "tags" : [ "Exam" ],
+        "summary" : "Lock marks",
+        "description" : "Makes verified marks final. Results can be published only after this.",
+        "operationId" : "examLockMarks",
         "parameters" : [ {
           "name" : "publicId",
           "in" : "path",
@@ -22073,6 +23525,670 @@
               "application/json" : {
                 "schema" : {
                   "$ref" : "#/components/schemas/ApiResponseEventRegistrationResponse"
+                }
+              }
+            }
+          },
+          "400" : {
+            "description" : "Validation failed or a business rule rejected the request",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "401" : {
+            "description" : "Missing, expired or revoked access token",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "403" : {
+            "description" : "The caller lacks the required permission",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "404" : {
+            "description" : "The resource does not exist in the caller's tenant",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "500" : {
+            "description" : "Unexpected error; quote error.traceId when reporting it",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "security" : [ {
+          "bearerAuth" : [ ]
+        }, {
+          "tenantHeader" : [ ]
+        } ]
+      }
+    },
+    "/api/v1/enquiries" : {
+      "get" : {
+        "tags" : [ "Enquiries" ],
+        "summary" : "Enquiries",
+        "description" : "Every filter is optional. followUpDueBy lists open enquiries due a follow-up on or before that date; q matches the child's or guardian's name.",
+        "operationId" : "enquiryList",
+        "parameters" : [ {
+          "name" : "page",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int32",
+            "default" : 0
+          }
+        }, {
+          "name" : "size",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int32",
+            "default" : 20
+          }
+        }, {
+          "name" : "status",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "type" : "string",
+            "enum" : [ "NEW", "IN_PROGRESS", "CONVERTED", "CLOSED" ]
+          }
+        }, {
+          "name" : "source",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "type" : "string",
+            "enum" : [ "WALK_IN", "PHONE", "WEBSITE", "EMAIL", "REFERRAL", "SOCIAL_MEDIA", "ADVERTISEMENT", "EVENT", "OTHER" ]
+          }
+        }, {
+          "name" : "assignedEmployeePublicId",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "name" : "followUpDueBy",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "type" : "string",
+            "format" : "date"
+          }
+        }, {
+          "name" : "q",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "name" : "sort",
+          "in" : "query",
+          "description" : "Repeatable, `field` or `field,asc|desc`, at most 3 fields. Sortable: createdAt, gradeSought, nextFollowUpOn, status, updatedAt.",
+          "required" : false,
+          "schema" : {
+            "type" : "array",
+            "items" : {
+              "type" : "string"
+            }
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiResponsePageEnquiryResponse"
+                }
+              }
+            }
+          },
+          "400" : {
+            "description" : "Validation failed or a business rule rejected the request",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "401" : {
+            "description" : "Missing, expired or revoked access token",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "403" : {
+            "description" : "The caller lacks the required permission",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "500" : {
+            "description" : "Unexpected error; quote error.traceId when reporting it",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "security" : [ {
+          "bearerAuth" : [ ]
+        }, {
+          "tenantHeader" : [ ]
+        } ]
+      },
+      "post" : {
+        "tags" : [ "Enquiries" ],
+        "summary" : "Receive an enquiry",
+        "operationId" : "enquiryReceive",
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/ReceiveEnquiryRequest"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "201" : {
+            "description" : "Created",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiResponseEnquiryResponse"
+                }
+              }
+            }
+          },
+          "400" : {
+            "description" : "Validation failed or a business rule rejected the request",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "401" : {
+            "description" : "Missing, expired or revoked access token",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "403" : {
+            "description" : "The caller lacks the required permission",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "500" : {
+            "description" : "Unexpected error; quote error.traceId when reporting it",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "security" : [ {
+          "bearerAuth" : [ ]
+        }, {
+          "tenantHeader" : [ ]
+        } ]
+      }
+    },
+    "/api/v1/enquiries/{publicId}/reopen" : {
+      "post" : {
+        "tags" : [ "Enquiries" ],
+        "summary" : "Reopen",
+        "operationId" : "enquiryReopen",
+        "parameters" : [ {
+          "name" : "publicId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiResponseEnquiryResponse"
+                }
+              }
+            }
+          },
+          "401" : {
+            "description" : "Missing, expired or revoked access token",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "403" : {
+            "description" : "The caller lacks the required permission",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "404" : {
+            "description" : "The resource does not exist in the caller's tenant",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "500" : {
+            "description" : "Unexpected error; quote error.traceId when reporting it",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "security" : [ {
+          "bearerAuth" : [ ]
+        }, {
+          "tenantHeader" : [ ]
+        } ]
+      }
+    },
+    "/api/v1/enquiries/{publicId}/follow-ups" : {
+      "get" : {
+        "tags" : [ "Enquiries" ],
+        "summary" : "Follow-ups",
+        "operationId" : "enquiryFollowUps",
+        "parameters" : [ {
+          "name" : "publicId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "name" : "page",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int32",
+            "default" : 0
+          }
+        }, {
+          "name" : "size",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int32",
+            "default" : 20
+          }
+        }, {
+          "name" : "sort",
+          "in" : "query",
+          "description" : "Repeatable, `field` or `field,asc|desc`, at most 3 fields. Sortable: createdAt, followedUpAt, updatedAt.",
+          "required" : false,
+          "schema" : {
+            "type" : "array",
+            "items" : {
+              "type" : "string"
+            }
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiResponsePageEnquiryFollowUpResponse"
+                }
+              }
+            }
+          },
+          "400" : {
+            "description" : "Validation failed or a business rule rejected the request",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "401" : {
+            "description" : "Missing, expired or revoked access token",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "403" : {
+            "description" : "The caller lacks the required permission",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "404" : {
+            "description" : "The resource does not exist in the caller's tenant",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "500" : {
+            "description" : "Unexpected error; quote error.traceId when reporting it",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "security" : [ {
+          "bearerAuth" : [ ]
+        }, {
+          "tenantHeader" : [ ]
+        } ]
+      },
+      "post" : {
+        "tags" : [ "Enquiries" ],
+        "summary" : "Record a follow-up",
+        "description" : "The first follow-up takes a new enquiry into progress.",
+        "operationId" : "enquiryRecordFollowUp",
+        "parameters" : [ {
+          "name" : "publicId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/RecordFollowUpRequest"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "201" : {
+            "description" : "Created",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiResponseEnquiryFollowUpResponse"
+                }
+              }
+            }
+          },
+          "400" : {
+            "description" : "Validation failed or a business rule rejected the request",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "401" : {
+            "description" : "Missing, expired or revoked access token",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "403" : {
+            "description" : "The caller lacks the required permission",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "404" : {
+            "description" : "The resource does not exist in the caller's tenant",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "500" : {
+            "description" : "Unexpected error; quote error.traceId when reporting it",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "security" : [ {
+          "bearerAuth" : [ ]
+        }, {
+          "tenantHeader" : [ ]
+        } ]
+      }
+    },
+    "/api/v1/enquiries/{publicId}/convert" : {
+      "post" : {
+        "tags" : [ "Enquiries" ],
+        "summary" : "Convert into an application",
+        "description" : "Submits an admission application with the family's details from the enquiry, and links the two.",
+        "operationId" : "enquiryConvert",
+        "parameters" : [ {
+          "name" : "publicId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/ConvertEnquiryRequest"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiResponseEnquiryResponse"
+                }
+              }
+            }
+          },
+          "400" : {
+            "description" : "Validation failed or a business rule rejected the request",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "401" : {
+            "description" : "Missing, expired or revoked access token",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "403" : {
+            "description" : "The caller lacks the required permission",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "404" : {
+            "description" : "The resource does not exist in the caller's tenant",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "500" : {
+            "description" : "Unexpected error; quote error.traceId when reporting it",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "security" : [ {
+          "bearerAuth" : [ ]
+        }, {
+          "tenantHeader" : [ ]
+        } ]
+      }
+    },
+    "/api/v1/enquiries/{publicId}/close" : {
+      "post" : {
+        "tags" : [ "Enquiries" ],
+        "summary" : "Close",
+        "operationId" : "enquiryClose",
+        "parameters" : [ {
+          "name" : "publicId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/CloseEnquiryRequest"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiResponseEnquiryResponse"
                 }
               }
             }
@@ -25005,6 +27121,96 @@
               "application/json" : {
                 "schema" : {
                   "$ref" : "#/components/schemas/ApiResponseListPromotionResultResponse"
+                }
+              }
+            }
+          },
+          "400" : {
+            "description" : "Validation failed or a business rule rejected the request",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "401" : {
+            "description" : "Missing, expired or revoked access token",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "403" : {
+            "description" : "The caller lacks the required permission",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "404" : {
+            "description" : "The resource does not exist in the caller's tenant",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "500" : {
+            "description" : "Unexpected error; quote error.traceId when reporting it",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "security" : [ {
+          "bearerAuth" : [ ]
+        }, {
+          "tenantHeader" : [ ]
+        } ]
+      }
+    },
+    "/api/v1/classrooms/{classroomPublicId}/exam-timetable/publish" : {
+      "post" : {
+        "tags" : [ "Exam timetable" ],
+        "summary" : "Publish exam timetable",
+        "description" : "Makes every scheduled, unpublished exam of the classroom visible to its students and guardians, and tells them. The term narrows it when given.",
+        "operationId" : "classroomExamTimetablePublish",
+        "parameters" : [ {
+          "name" : "classroomPublicId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "name" : "termPublicId",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiResponseListExamResponse"
                 }
               }
             }
@@ -28683,7 +30889,7 @@
           "required" : false,
           "schema" : {
             "type" : "string",
-            "enum" : [ "PRESENT", "ABSENT", "LATE", "EXCUSED" ]
+            "enum" : [ "PRESENT", "ABSENT", "LATE", "EXCUSED", "HALF_DAY" ]
           }
         }, {
           "name" : "sort",
@@ -42389,6 +44595,7 @@
       "patch" : {
         "tags" : [ "Exam" ],
         "summary" : "Reschedule",
+        "description" : "Replaces the date, time, length and venue of a scheduled exam. Refused when it would overlap another exam of the classroom or in the venue.",
         "operationId" : "examReschedule",
         "parameters" : [ {
           "name" : "publicId",
@@ -53073,6 +55280,198 @@
         } ]
       }
     },
+    "/api/v1/students/{studentPublicId}/fee-invoices" : {
+      "get" : {
+        "tags" : [ "Fee invoices" ],
+        "summary" : "A student's invoices",
+        "description" : "For the student, their guardians and fee staff.",
+        "operationId" : "feeInvoiceListForStudent",
+        "parameters" : [ {
+          "name" : "studentPublicId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "name" : "page",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int32",
+            "default" : 0
+          }
+        }, {
+          "name" : "size",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int32",
+            "default" : 20
+          }
+        }, {
+          "name" : "sort",
+          "in" : "query",
+          "description" : "Repeatable, `field` or `field,asc|desc`, at most 3 fields. Sortable: createdAt, dueDate, issueDate, periodStart, updatedAt.",
+          "required" : false,
+          "schema" : {
+            "type" : "array",
+            "items" : {
+              "type" : "string"
+            }
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiResponsePageFeeInvoiceResponse"
+                }
+              }
+            }
+          },
+          "400" : {
+            "description" : "Validation failed or a business rule rejected the request",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "401" : {
+            "description" : "Missing, expired or revoked access token",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "403" : {
+            "description" : "The caller lacks the required permission",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "404" : {
+            "description" : "The resource does not exist in the caller's tenant",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "500" : {
+            "description" : "Unexpected error; quote error.traceId when reporting it",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "security" : [ {
+          "bearerAuth" : [ ]
+        }, {
+          "tenantHeader" : [ ]
+        } ]
+      }
+    },
+    "/api/v1/students/{studentPublicId}/fee-invoices/{publicId}/pdf" : {
+      "get" : {
+        "tags" : [ "Fee invoices" ],
+        "summary" : "A student's invoice PDF",
+        "operationId" : "feeInvoiceStudentPdf",
+        "parameters" : [ {
+          "name" : "studentPublicId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "name" : "publicId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "type" : "string",
+                  "format" : "byte"
+                }
+              }
+            }
+          },
+          "401" : {
+            "description" : "Missing, expired or revoked access token",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "403" : {
+            "description" : "The caller lacks the required permission",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "404" : {
+            "description" : "The resource does not exist in the caller's tenant",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "500" : {
+            "description" : "Unexpected error; quote error.traceId when reporting it",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "security" : [ {
+          "bearerAuth" : [ ]
+        }, {
+          "tenantHeader" : [ ]
+        } ]
+      }
+    },
     "/api/v1/students/{studentPublicId}/certificates/{certificatePublicId}/download" : {
       "get" : {
         "tags" : [ "Certificate" ],
@@ -54178,6 +56577,353 @@
           },
           "404" : {
             "description" : "The resource does not exist in the caller's tenant",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "500" : {
+            "description" : "Unexpected error; quote error.traceId when reporting it",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "security" : [ {
+          "bearerAuth" : [ ]
+        }, {
+          "tenantHeader" : [ ]
+        } ]
+      }
+    },
+    "/api/v1/staff-attendance" : {
+      "get" : {
+        "tags" : [ "Staff attendance" ],
+        "summary" : "Staff attendance",
+        "description" : "Recorded days; every filter is optional.",
+        "operationId" : "staffAttendanceList",
+        "parameters" : [ {
+          "name" : "page",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int32",
+            "default" : 0
+          }
+        }, {
+          "name" : "size",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int32",
+            "default" : 20
+          }
+        }, {
+          "name" : "employeePublicId",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "name" : "status",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "type" : "string",
+            "enum" : [ "PRESENT", "HALF_DAY", "ABSENT" ]
+          }
+        }, {
+          "name" : "from",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "type" : "string",
+            "format" : "date"
+          }
+        }, {
+          "name" : "to",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "type" : "string",
+            "format" : "date"
+          }
+        }, {
+          "name" : "sort",
+          "in" : "query",
+          "description" : "Repeatable, `field` or `field,asc|desc`, at most 3 fields. Sortable: attendanceDate, createdAt, status, updatedAt.",
+          "required" : false,
+          "schema" : {
+            "type" : "array",
+            "items" : {
+              "type" : "string"
+            }
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiResponsePageStaffAttendanceResponse"
+                }
+              }
+            }
+          },
+          "400" : {
+            "description" : "Validation failed or a business rule rejected the request",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "401" : {
+            "description" : "Missing, expired or revoked access token",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "403" : {
+            "description" : "The caller lacks the required permission",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "500" : {
+            "description" : "Unexpected error; quote error.traceId when reporting it",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "security" : [ {
+          "bearerAuth" : [ ]
+        }, {
+          "tenantHeader" : [ ]
+        } ]
+      }
+    },
+    "/api/v1/staff-attendance/register" : {
+      "get" : {
+        "tags" : [ "Staff attendance" ],
+        "summary" : "Daily register",
+        "description" : "Every active employee's line for the day, including approved leave.",
+        "operationId" : "staffAttendanceRegister",
+        "parameters" : [ {
+          "name" : "date",
+          "in" : "query",
+          "required" : true,
+          "schema" : {
+            "type" : "string",
+            "format" : "date"
+          }
+        }, {
+          "name" : "page",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int32",
+            "default" : 0
+          }
+        }, {
+          "name" : "size",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int32",
+            "default" : 20
+          }
+        }, {
+          "name" : "sort",
+          "in" : "query",
+          "description" : "Repeatable, `field` or `field,asc|desc`, at most 3 fields. Sortable: createdAt, employeeCode, firstName, lastName, updatedAt.",
+          "required" : false,
+          "schema" : {
+            "type" : "array",
+            "items" : {
+              "type" : "string"
+            }
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiResponsePageStaffRegisterEntryResponse"
+                }
+              }
+            }
+          },
+          "400" : {
+            "description" : "Validation failed or a business rule rejected the request",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "401" : {
+            "description" : "Missing, expired or revoked access token",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "403" : {
+            "description" : "The caller lacks the required permission",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "500" : {
+            "description" : "Unexpected error; quote error.traceId when reporting it",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "security" : [ {
+          "bearerAuth" : [ ]
+        }, {
+          "tenantHeader" : [ ]
+        } ]
+      }
+    },
+    "/api/v1/staff-attendance/me" : {
+      "get" : {
+        "tags" : [ "Staff attendance" ],
+        "summary" : "My attendance",
+        "operationId" : "staffAttendanceMine",
+        "parameters" : [ {
+          "name" : "page",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int32",
+            "default" : 0
+          }
+        }, {
+          "name" : "size",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int32",
+            "default" : 20
+          }
+        }, {
+          "name" : "status",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "type" : "string",
+            "enum" : [ "PRESENT", "HALF_DAY", "ABSENT" ]
+          }
+        }, {
+          "name" : "from",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "type" : "string",
+            "format" : "date"
+          }
+        }, {
+          "name" : "to",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "type" : "string",
+            "format" : "date"
+          }
+        }, {
+          "name" : "sort",
+          "in" : "query",
+          "description" : "Repeatable, `field` or `field,asc|desc`, at most 3 fields. Sortable: attendanceDate, createdAt, status, updatedAt.",
+          "required" : false,
+          "schema" : {
+            "type" : "array",
+            "items" : {
+              "type" : "string"
+            }
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiResponsePageStaffAttendanceResponse"
+                }
+              }
+            }
+          },
+          "400" : {
+            "description" : "Validation failed or a business rule rejected the request",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "401" : {
+            "description" : "Missing, expired or revoked access token",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "403" : {
+            "description" : "The caller lacks the required permission",
             "content" : {
               "application/json" : {
                 "schema" : {
@@ -56618,6 +59364,327 @@
         } ]
       }
     },
+    "/api/v1/imports/{publicId}" : {
+      "get" : {
+        "tags" : [ "Bulk import" ],
+        "summary" : "Import",
+        "operationId" : "importGet",
+        "parameters" : [ {
+          "name" : "publicId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiResponseImportJobResponse"
+                }
+              }
+            }
+          },
+          "401" : {
+            "description" : "Missing, expired or revoked access token",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "403" : {
+            "description" : "The caller lacks the required permission",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "404" : {
+            "description" : "The resource does not exist in the caller's tenant",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "500" : {
+            "description" : "Unexpected error; quote error.traceId when reporting it",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "security" : [ {
+          "bearerAuth" : [ ]
+        }, {
+          "tenantHeader" : [ ]
+        } ]
+      }
+    },
+    "/api/v1/imports/{publicId}/errors" : {
+      "get" : {
+        "tags" : [ "Bulk import" ],
+        "summary" : "Row errors",
+        "description" : "The latest report: the import's once it has run, otherwise the dry run's. The phase picks one.",
+        "operationId" : "importErrors",
+        "parameters" : [ {
+          "name" : "publicId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "name" : "page",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int32",
+            "default" : 0
+          }
+        }, {
+          "name" : "size",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int32",
+            "default" : 20
+          }
+        }, {
+          "name" : "phase",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "type" : "string",
+            "enum" : [ "DRY_RUN", "IMPORT" ]
+          }
+        }, {
+          "name" : "sort",
+          "in" : "query",
+          "description" : "Repeatable, `field` or `field,asc|desc`, at most 3 fields. Sortable: createdAt, lineNumber, updatedAt.",
+          "required" : false,
+          "schema" : {
+            "type" : "array",
+            "items" : {
+              "type" : "string"
+            }
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiResponsePageImportErrorResponse"
+                }
+              }
+            }
+          },
+          "400" : {
+            "description" : "Validation failed or a business rule rejected the request",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "401" : {
+            "description" : "Missing, expired or revoked access token",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "403" : {
+            "description" : "The caller lacks the required permission",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "404" : {
+            "description" : "The resource does not exist in the caller's tenant",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "500" : {
+            "description" : "Unexpected error; quote error.traceId when reporting it",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "security" : [ {
+          "bearerAuth" : [ ]
+        }, {
+          "tenantHeader" : [ ]
+        } ]
+      }
+    },
+    "/api/v1/imports/{publicId}/error-report" : {
+      "get" : {
+        "tags" : [ "Bulk import" ],
+        "summary" : "Error report",
+        "description" : "The latest row errors as CSV.",
+        "operationId" : "importErrorReport",
+        "parameters" : [ {
+          "name" : "publicId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "type" : "string",
+                  "format" : "byte"
+                }
+              }
+            }
+          },
+          "401" : {
+            "description" : "Missing, expired or revoked access token",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "403" : {
+            "description" : "The caller lacks the required permission",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "404" : {
+            "description" : "The resource does not exist in the caller's tenant",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "500" : {
+            "description" : "Unexpected error; quote error.traceId when reporting it",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "security" : [ {
+          "bearerAuth" : [ ]
+        }, {
+          "tenantHeader" : [ ]
+        } ]
+      }
+    },
+    "/api/v1/imports/types" : {
+      "get" : {
+        "tags" : [ "Bulk import" ],
+        "summary" : "Import types",
+        "description" : "What can be imported, and the fields each row carries.",
+        "operationId" : "importTypes",
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiResponseListImportTypeResponse"
+                }
+              }
+            }
+          },
+          "401" : {
+            "description" : "Missing, expired or revoked access token",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "403" : {
+            "description" : "The caller lacks the required permission",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "500" : {
+            "description" : "Unexpected error; quote error.traceId when reporting it",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "security" : [ {
+          "bearerAuth" : [ ]
+        }, {
+          "tenantHeader" : [ ]
+        } ]
+      }
+    },
     "/api/v1/health-records/students/{studentPublicId}/corrections" : {
       "get" : {
         "tags" : [ "Health Record" ],
@@ -57959,6 +61026,151 @@
         } ]
       }
     },
+    "/api/v1/fee-invoices/{publicId}" : {
+      "get" : {
+        "tags" : [ "Fee invoices" ],
+        "summary" : "Invoice",
+        "operationId" : "feeInvoiceGet",
+        "parameters" : [ {
+          "name" : "publicId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiResponseFeeInvoiceResponse"
+                }
+              }
+            }
+          },
+          "401" : {
+            "description" : "Missing, expired or revoked access token",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "403" : {
+            "description" : "The caller lacks the required permission",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "404" : {
+            "description" : "The resource does not exist in the caller's tenant",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "500" : {
+            "description" : "Unexpected error; quote error.traceId when reporting it",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "security" : [ {
+          "bearerAuth" : [ ]
+        }, {
+          "tenantHeader" : [ ]
+        } ]
+      }
+    },
+    "/api/v1/fee-invoices/{publicId}/pdf" : {
+      "get" : {
+        "tags" : [ "Fee invoices" ],
+        "summary" : "Invoice PDF",
+        "operationId" : "feeInvoicePdf",
+        "parameters" : [ {
+          "name" : "publicId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "*/*" : {
+                "schema" : {
+                  "type" : "string",
+                  "format" : "byte"
+                }
+              }
+            }
+          },
+          "401" : {
+            "description" : "Missing, expired or revoked access token",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "403" : {
+            "description" : "The caller lacks the required permission",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "404" : {
+            "description" : "The resource does not exist in the caller's tenant",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "500" : {
+            "description" : "Unexpected error; quote error.traceId when reporting it",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "security" : [ {
+          "bearerAuth" : [ ]
+        }, {
+          "tenantHeader" : [ ]
+        } ]
+      }
+    },
     "/api/v1/exams/{publicId}" : {
       "get" : {
         "tags" : [ "Exam" ],
@@ -58124,6 +61336,78 @@
             }
           }
         }
+      }
+    },
+    "/api/v1/enquiries/{publicId}" : {
+      "get" : {
+        "tags" : [ "Enquiries" ],
+        "summary" : "Enquiry",
+        "operationId" : "enquiryGet",
+        "parameters" : [ {
+          "name" : "publicId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiResponseEnquiryResponse"
+                }
+              }
+            }
+          },
+          "401" : {
+            "description" : "Missing, expired or revoked access token",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "403" : {
+            "description" : "The caller lacks the required permission",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "404" : {
+            "description" : "The resource does not exist in the caller's tenant",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "500" : {
+            "description" : "Unexpected error; quote error.traceId when reporting it",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "security" : [ {
+          "bearerAuth" : [ ]
+        }, {
+          "tenantHeader" : [ ]
+        } ]
       }
     },
     "/api/v1/employees/{publicId}" : {
@@ -60337,6 +63621,96 @@
               "application/json" : {
                 "schema" : {
                   "$ref" : "#/components/schemas/ApiResponsePromotionPreviewResponse"
+                }
+              }
+            }
+          },
+          "400" : {
+            "description" : "Validation failed or a business rule rejected the request",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "401" : {
+            "description" : "Missing, expired or revoked access token",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "403" : {
+            "description" : "The caller lacks the required permission",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "404" : {
+            "description" : "The resource does not exist in the caller's tenant",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "500" : {
+            "description" : "Unexpected error; quote error.traceId when reporting it",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "security" : [ {
+          "bearerAuth" : [ ]
+        }, {
+          "tenantHeader" : [ ]
+        } ]
+      }
+    },
+    "/api/v1/classrooms/{classroomPublicId}/exam-timetable" : {
+      "get" : {
+        "tags" : [ "Exam timetable" ],
+        "summary" : "Exam timetable",
+        "description" : "The classroom's live exams in date order. Students and guardians see only published dates. The term narrows the list when given.",
+        "operationId" : "classroomExamTimetableTimetable",
+        "parameters" : [ {
+          "name" : "classroomPublicId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "name" : "termPublicId",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiResponseListExamResponse"
                 }
               }
             }
@@ -68435,6 +71809,179 @@
         },
         "required" : [ "priority", "publicId" ]
       },
+      "UpdateStaffWorkdayRequest" : {
+        "type" : "object",
+        "properties" : {
+          "start" : {
+            "type" : "string",
+            "format" : "time-local"
+          },
+          "end" : {
+            "type" : "string",
+            "format" : "time-local"
+          },
+          "lateGraceMinutes" : {
+            "type" : "integer",
+            "format" : "int32",
+            "maximum" : 240,
+            "minimum" : 0
+          },
+          "halfDayMinutes" : {
+            "type" : "integer",
+            "format" : "int32",
+            "maximum" : 720,
+            "minimum" : 1
+          }
+        },
+        "required" : [ "end", "halfDayMinutes", "lateGraceMinutes", "start" ]
+      },
+      "ApiResponseStaffWorkdayResponse" : {
+        "type" : "object",
+        "properties" : {
+          "success" : {
+            "type" : "boolean"
+          },
+          "data" : {
+            "$ref" : "#/components/schemas/StaffWorkdayResponse"
+          },
+          "error" : {
+            "$ref" : "#/components/schemas/ApiErrorDetail"
+          },
+          "meta" : {
+            "$ref" : "#/components/schemas/ApiResponseMeta"
+          }
+        },
+        "required" : [ "success" ]
+      },
+      "StaffWorkdayResponse" : {
+        "type" : "object",
+        "description" : "The school's staff workday: arriving after start plus the grace is late, leaving before end is early, and working fewer than the half-day minutes makes a half day.",
+        "properties" : {
+          "start" : {
+            "type" : "string",
+            "format" : "time-local"
+          },
+          "end" : {
+            "type" : "string",
+            "format" : "time-local"
+          },
+          "lateGraceMinutes" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "halfDayMinutes" : {
+            "type" : "integer",
+            "format" : "int32"
+          }
+        },
+        "required" : [ "halfDayMinutes", "lateGraceMinutes" ]
+      },
+      "RecordStaffAttendanceRequest" : {
+        "type" : "object",
+        "description" : "Records or corrects a day. The times are optional, and must fall on the day being recorded.",
+        "properties" : {
+          "status" : {
+            "type" : "string",
+            "enum" : [ "PRESENT", "HALF_DAY", "ABSENT" ]
+          },
+          "checkInAt" : {
+            "type" : "string",
+            "format" : "date-time"
+          },
+          "checkOutAt" : {
+            "type" : "string",
+            "format" : "date-time"
+          },
+          "note" : {
+            "type" : "string",
+            "maxLength" : 500,
+            "minLength" : 0
+          }
+        },
+        "required" : [ "status" ]
+      },
+      "ApiResponseStaffAttendanceResponse" : {
+        "type" : "object",
+        "properties" : {
+          "success" : {
+            "type" : "boolean"
+          },
+          "data" : {
+            "$ref" : "#/components/schemas/StaffAttendanceResponse"
+          },
+          "error" : {
+            "$ref" : "#/components/schemas/ApiErrorDetail"
+          },
+          "meta" : {
+            "$ref" : "#/components/schemas/ApiResponseMeta"
+          }
+        },
+        "required" : [ "success" ]
+      },
+      "ReferenceSummary" : {
+        "type" : "object",
+        "properties" : {
+          "publicId" : {
+            "type" : "string"
+          },
+          "name" : {
+            "type" : "string"
+          },
+          "code" : {
+            "type" : "string"
+          }
+        },
+        "required" : [ "publicId" ]
+      },
+      "StaffAttendanceResponse" : {
+        "type" : "object",
+        "description" : "One staff member's recorded day. Times are the school's local time.",
+        "properties" : {
+          "publicId" : {
+            "type" : "string"
+          },
+          "version" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "employeePublicId" : {
+            "type" : "string"
+          },
+          "employee" : {
+            "$ref" : "#/components/schemas/ReferenceSummary"
+          },
+          "date" : {
+            "type" : "string",
+            "format" : "date"
+          },
+          "status" : {
+            "type" : "string",
+            "enum" : [ "PRESENT", "HALF_DAY", "ABSENT" ]
+          },
+          "checkInAt" : {
+            "type" : "string",
+            "format" : "date-time"
+          },
+          "checkOutAt" : {
+            "type" : "string",
+            "format" : "date-time"
+          },
+          "late" : {
+            "type" : "boolean"
+          },
+          "leftEarly" : {
+            "type" : "boolean"
+          },
+          "workedMinutes" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "note" : {
+            "type" : "string"
+          }
+        },
+        "required" : [ "late", "leftEarly", "publicId", "workedMinutes" ]
+      },
       "UpdateRoleRequest" : {
         "type" : "object",
         "properties" : {
@@ -68881,6 +72428,138 @@
         },
         "required" : [ "enabled" ]
       },
+      "UpdateImportMappingRequest" : {
+        "type" : "object",
+        "properties" : {
+          "mapping" : {
+            "type" : "object",
+            "additionalProperties" : {
+              "type" : "string"
+            },
+            "description" : "Target field to file column; a blank column leaves an optional field unmapped"
+          }
+        },
+        "required" : [ "mapping" ]
+      },
+      "ApiResponseImportJobResponse" : {
+        "type" : "object",
+        "properties" : {
+          "success" : {
+            "type" : "boolean"
+          },
+          "data" : {
+            "$ref" : "#/components/schemas/ImportJobResponse"
+          },
+          "error" : {
+            "$ref" : "#/components/schemas/ApiErrorDetail"
+          },
+          "meta" : {
+            "$ref" : "#/components/schemas/ApiResponseMeta"
+          }
+        },
+        "required" : [ "success" ]
+      },
+      "ImportFieldResponse" : {
+        "type" : "object",
+        "properties" : {
+          "name" : {
+            "type" : "string"
+          },
+          "required" : {
+            "type" : "boolean"
+          },
+          "description" : {
+            "type" : "string"
+          }
+        },
+        "required" : [ "required" ]
+      },
+      "ImportJobResponse" : {
+        "type" : "object",
+        "description" : "One uploaded file: its columns, the field-to-column mapping, the first rows, and what the dry run and the import made of it. Line numbers count the header as line 1.",
+        "properties" : {
+          "publicId" : {
+            "type" : "string"
+          },
+          "version" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "importType" : {
+            "type" : "string",
+            "enum" : [ "STUDENTS", "STAFF", "GUARDIANS", "OPENING_FEE_BALANCES" ]
+          },
+          "fileName" : {
+            "type" : "string"
+          },
+          "status" : {
+            "type" : "string",
+            "enum" : [ "UPLOADED", "VALIDATED", "IMPORTING", "COMPLETED" ]
+          },
+          "totalRows" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "validRows" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "invalidRows" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "importedRows" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "failedRows" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "uploadedAt" : {
+            "type" : "string",
+            "format" : "date-time"
+          },
+          "validatedAt" : {
+            "type" : "string",
+            "format" : "date-time"
+          },
+          "completedAt" : {
+            "type" : "string",
+            "format" : "date-time"
+          },
+          "headers" : {
+            "type" : "array",
+            "items" : {
+              "type" : "string"
+            }
+          },
+          "fields" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/ImportFieldResponse"
+            }
+          },
+          "mapping" : {
+            "type" : "object",
+            "additionalProperties" : {
+              "type" : "string"
+            },
+            "description" : "Target field to the file column it reads"
+          },
+          "preview" : {
+            "type" : "array",
+            "description" : "Up to the first ten rows, by column",
+            "items" : {
+              "type" : "object",
+              "additionalProperties" : {
+                "type" : "string"
+              }
+            }
+          }
+        },
+        "required" : [ "publicId", "totalRows" ]
+      },
       "UpsertHealthRecordRequest" : {
         "type" : "object",
         "properties" : {
@@ -68959,21 +72638,6 @@
         },
         "required" : [ "publicId" ]
       },
-      "ReferenceSummary" : {
-        "type" : "object",
-        "properties" : {
-          "publicId" : {
-            "type" : "string"
-          },
-          "name" : {
-            "type" : "string"
-          },
-          "code" : {
-            "type" : "string"
-          }
-        },
-        "required" : [ "publicId" ]
-      },
       "UpdateGuardianRegistrationSettingsRequest" : {
         "type" : "object",
         "properties" : {
@@ -69010,6 +72674,108 @@
             "enum" : [ "CLAIM_ONLY", "OPEN" ]
           }
         }
+      },
+      "AssignEnquiryRequest" : {
+        "type" : "object",
+        "properties" : {
+          "employeePublicId" : {
+            "type" : "string",
+            "minLength" : 1
+          }
+        },
+        "required" : [ "employeePublicId" ]
+      },
+      "ApiResponseEnquiryResponse" : {
+        "type" : "object",
+        "properties" : {
+          "success" : {
+            "type" : "boolean"
+          },
+          "data" : {
+            "$ref" : "#/components/schemas/EnquiryResponse"
+          },
+          "error" : {
+            "$ref" : "#/components/schemas/ApiErrorDetail"
+          },
+          "meta" : {
+            "$ref" : "#/components/schemas/ApiResponseMeta"
+          }
+        },
+        "required" : [ "success" ]
+      },
+      "EnquiryResponse" : {
+        "type" : "object",
+        "description" : "A family's admission enquiry and where its follow-up stands.",
+        "properties" : {
+          "publicId" : {
+            "type" : "string"
+          },
+          "version" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "childFirstName" : {
+            "type" : "string"
+          },
+          "childLastName" : {
+            "type" : "string"
+          },
+          "childDateOfBirth" : {
+            "type" : "string",
+            "format" : "date"
+          },
+          "gradeSought" : {
+            "type" : "string"
+          },
+          "guardianFirstName" : {
+            "type" : "string"
+          },
+          "guardianLastName" : {
+            "type" : "string"
+          },
+          "guardianEmail" : {
+            "type" : "string"
+          },
+          "guardianPhone" : {
+            "type" : "string"
+          },
+          "notes" : {
+            "type" : "string"
+          },
+          "source" : {
+            "type" : "string",
+            "enum" : [ "WALK_IN", "PHONE", "WEBSITE", "EMAIL", "REFERRAL", "SOCIAL_MEDIA", "ADVERTISEMENT", "EVENT", "OTHER" ]
+          },
+          "status" : {
+            "type" : "string",
+            "enum" : [ "NEW", "IN_PROGRESS", "CONVERTED", "CLOSED" ]
+          },
+          "assignedEmployeePublicId" : {
+            "type" : "string"
+          },
+          "assignedEmployee" : {
+            "$ref" : "#/components/schemas/ReferenceSummary"
+          },
+          "nextFollowUpOn" : {
+            "type" : "string",
+            "format" : "date"
+          },
+          "admissionPublicId" : {
+            "type" : "string"
+          },
+          "closedAt" : {
+            "type" : "string",
+            "format" : "date-time"
+          },
+          "closeReason" : {
+            "type" : "string"
+          },
+          "createdAt" : {
+            "type" : "string",
+            "format" : "date-time"
+          }
+        },
+        "required" : [ "publicId" ]
       },
       "ApiResponseDocumentTemplateResponse" : {
         "type" : "object",
@@ -72501,64 +76267,6 @@
         },
         "required" : [ "publicId" ]
       },
-      "ApiResponseBulkImportResponse" : {
-        "type" : "object",
-        "properties" : {
-          "success" : {
-            "type" : "boolean"
-          },
-          "data" : {
-            "$ref" : "#/components/schemas/BulkImportResponse"
-          },
-          "error" : {
-            "$ref" : "#/components/schemas/ApiErrorDetail"
-          },
-          "meta" : {
-            "$ref" : "#/components/schemas/ApiResponseMeta"
-          }
-        },
-        "required" : [ "success" ]
-      },
-      "BulkImportResponse" : {
-        "type" : "object",
-        "properties" : {
-          "totalRows" : {
-            "type" : "integer",
-            "format" : "int32"
-          },
-          "successCount" : {
-            "type" : "integer",
-            "format" : "int32"
-          },
-          "failureCount" : {
-            "type" : "integer",
-            "format" : "int32"
-          },
-          "failures" : {
-            "type" : "array",
-            "items" : {
-              "$ref" : "#/components/schemas/RowFailureResponse"
-            }
-          }
-        },
-        "required" : [ "failureCount", "successCount", "totalRows" ]
-      },
-      "RowFailureResponse" : {
-        "type" : "object",
-        "properties" : {
-          "rowNumber" : {
-            "type" : "integer",
-            "format" : "int32"
-          },
-          "studentCode" : {
-            "type" : "string"
-          },
-          "error" : {
-            "type" : "string"
-          }
-        },
-        "required" : [ "rowNumber" ]
-      },
       "SubmitStudentLeaveRequest" : {
         "type" : "object",
         "properties" : {
@@ -73436,7 +77144,7 @@
           },
           "status" : {
             "type" : "string",
-            "enum" : [ "PRESENT", "ABSENT", "LATE", "EXCUSED" ]
+            "enum" : [ "PRESENT", "ABSENT", "LATE", "EXCUSED", "HALF_DAY" ]
           }
         },
         "required" : [ "attendanceDate", "status", "studentPublicId", "timetableEntryPublicId" ]
@@ -75132,6 +78840,9 @@
             "type" : "string",
             "maxLength" : 100,
             "minLength" : 0
+          },
+          "invoicePublicId" : {
+            "type" : "string"
           }
         },
         "required" : [ "feeStructurePublicId", "paidAmount", "paidAt", "paymentMode", "studentPublicId" ]
@@ -75220,6 +78931,12 @@
           },
           "bounceReason" : {
             "type" : "string"
+          },
+          "invoicePublicId" : {
+            "type" : "string"
+          },
+          "invoice" : {
+            "$ref" : "#/components/schemas/ReferenceSummary"
           }
         },
         "required" : [ "publicId" ]
@@ -75376,6 +79093,217 @@
         },
         "required" : [ "feeStructurePublicId", "studentPublicId" ]
       },
+      "IssueFeeInvoiceRequest" : {
+        "type" : "object",
+        "properties" : {
+          "studentPublicId" : {
+            "type" : "string",
+            "minLength" : 1
+          },
+          "periodStart" : {
+            "type" : "string",
+            "format" : "date"
+          },
+          "periodEnd" : {
+            "type" : "string",
+            "format" : "date"
+          },
+          "dueDate" : {
+            "type" : "string",
+            "format" : "date"
+          }
+        },
+        "required" : [ "dueDate", "periodEnd", "periodStart", "studentPublicId" ]
+      },
+      "ApiResponseFeeInvoiceResponse" : {
+        "type" : "object",
+        "properties" : {
+          "success" : {
+            "type" : "boolean"
+          },
+          "data" : {
+            "$ref" : "#/components/schemas/FeeInvoiceResponse"
+          },
+          "error" : {
+            "$ref" : "#/components/schemas/ApiErrorDetail"
+          },
+          "meta" : {
+            "$ref" : "#/components/schemas/ApiResponseMeta"
+          }
+        },
+        "required" : [ "success" ]
+      },
+      "FeeInvoiceResponse" : {
+        "type" : "object",
+        "description" : "A fee invoice for one student and period. Paid and outstanding come from cleared payments made against it; a bounced cheque no longer counts.",
+        "properties" : {
+          "publicId" : {
+            "type" : "string"
+          },
+          "version" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "invoiceNumber" : {
+            "type" : "string"
+          },
+          "studentPublicId" : {
+            "type" : "string"
+          },
+          "student" : {
+            "$ref" : "#/components/schemas/ReferenceSummary"
+          },
+          "periodStart" : {
+            "type" : "string",
+            "format" : "date"
+          },
+          "periodEnd" : {
+            "type" : "string",
+            "format" : "date"
+          },
+          "issueDate" : {
+            "type" : "string",
+            "format" : "date"
+          },
+          "dueDate" : {
+            "type" : "string",
+            "format" : "date"
+          },
+          "lines" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/Line"
+            }
+          },
+          "totalAmount" : {
+            "type" : "number"
+          },
+          "paidAmount" : {
+            "type" : "number"
+          },
+          "outstandingAmount" : {
+            "type" : "number"
+          },
+          "settlement" : {
+            "type" : "string",
+            "enum" : [ "UNPAID", "PARTIALLY_PAID", "PAID", "CANCELLED" ]
+          },
+          "status" : {
+            "type" : "string",
+            "enum" : [ "ISSUED", "CANCELLED" ]
+          },
+          "cancelledAt" : {
+            "type" : "string",
+            "format" : "date-time"
+          },
+          "cancellationReason" : {
+            "type" : "string"
+          }
+        },
+        "required" : [ "publicId" ]
+      },
+      "Line" : {
+        "type" : "object",
+        "description" : "One charge. The installment number is absent for a whole fee.",
+        "properties" : {
+          "feeStructurePublicId" : {
+            "type" : "string"
+          },
+          "feeStructure" : {
+            "$ref" : "#/components/schemas/ReferenceSummary"
+          },
+          "installmentNumber" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "description" : {
+            "type" : "string"
+          },
+          "amount" : {
+            "type" : "number"
+          }
+        }
+      },
+      "CancelFeeInvoiceRequest" : {
+        "type" : "object",
+        "properties" : {
+          "reason" : {
+            "type" : "string",
+            "maxLength" : 500,
+            "minLength" : 0
+          }
+        },
+        "required" : [ "reason" ]
+      },
+      "IssueClassroomInvoicesRequest" : {
+        "type" : "object",
+        "properties" : {
+          "classroomPublicId" : {
+            "type" : "string",
+            "minLength" : 1
+          },
+          "periodStart" : {
+            "type" : "string",
+            "format" : "date"
+          },
+          "periodEnd" : {
+            "type" : "string",
+            "format" : "date"
+          },
+          "dueDate" : {
+            "type" : "string",
+            "format" : "date"
+          }
+        },
+        "required" : [ "classroomPublicId", "dueDate", "periodEnd", "periodStart" ]
+      },
+      "ApiResponseInvoiceBatchResponse" : {
+        "type" : "object",
+        "properties" : {
+          "success" : {
+            "type" : "boolean"
+          },
+          "data" : {
+            "$ref" : "#/components/schemas/InvoiceBatchResponse"
+          },
+          "error" : {
+            "$ref" : "#/components/schemas/ApiErrorDetail"
+          },
+          "meta" : {
+            "$ref" : "#/components/schemas/ApiResponseMeta"
+          }
+        },
+        "required" : [ "success" ]
+      },
+      "InvoiceBatchResponse" : {
+        "type" : "object",
+        "description" : "The invoices a classroom run issued, and each student it skipped with the reason.",
+        "properties" : {
+          "issued" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/FeeInvoiceResponse"
+            }
+          },
+          "skipped" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/Skipped"
+            }
+          }
+        }
+      },
+      "Skipped" : {
+        "type" : "object",
+        "properties" : {
+          "studentPublicId" : {
+            "type" : "string"
+          },
+          "reason" : {
+            "type" : "string"
+          }
+        }
+      },
       "ScheduleExamRequest" : {
         "type" : "object",
         "properties" : {
@@ -75396,6 +79324,15 @@
             "type" : "string",
             "format" : "date-time"
           },
+          "durationMinutes" : {
+            "type" : "integer",
+            "format" : "int32",
+            "maximum" : 720,
+            "minimum" : 5
+          },
+          "venuePublicId" : {
+            "type" : "string"
+          },
           "maxMarks" : {
             "type" : "number",
             "minimum" : 1.0
@@ -75413,7 +79350,7 @@
             "minimum" : 0.01
           }
         },
-        "required" : [ "classroomPublicId", "examTypePublicId", "maxMarks", "scheduledAt", "subjectPublicId", "title" ]
+        "required" : [ "classroomPublicId", "durationMinutes", "examTypePublicId", "maxMarks", "scheduledAt", "subjectPublicId", "title" ]
       },
       "ApiResponseExamResponse" : {
         "type" : "object",
@@ -75462,6 +79399,27 @@
             "type" : "string",
             "format" : "date-time"
           },
+          "durationMinutes" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "endsAt" : {
+            "type" : "string",
+            "format" : "date-time"
+          },
+          "venuePublicId" : {
+            "type" : "string"
+          },
+          "venue" : {
+            "$ref" : "#/components/schemas/ReferenceSummary"
+          },
+          "schedulePublished" : {
+            "type" : "boolean"
+          },
+          "schedulePublishedAt" : {
+            "type" : "string",
+            "format" : "date-time"
+          },
           "maxMarks" : {
             "type" : "number"
           },
@@ -75489,9 +79447,21 @@
           "resultsPublishedAt" : {
             "type" : "string",
             "format" : "date-time"
+          },
+          "marksStage" : {
+            "type" : "string",
+            "enum" : [ "ENTERED", "VERIFIED", "LOCKED" ]
+          },
+          "marksVerifiedAt" : {
+            "type" : "string",
+            "format" : "date-time"
+          },
+          "marksLockedAt" : {
+            "type" : "string",
+            "format" : "date-time"
           }
         },
-        "required" : [ "publicId", "resultsPublished" ]
+        "required" : [ "durationMinutes", "publicId", "resultsPublished", "schedulePublished" ]
       },
       "CreateExamTypeDefinitionRequest" : {
         "type" : "object",
@@ -75697,6 +79667,151 @@
           }
         },
         "required" : [ "publicId" ]
+      },
+      "ReceiveEnquiryRequest" : {
+        "type" : "object",
+        "description" : "A new enquiry. A phone number or an email address is required to follow it up.",
+        "properties" : {
+          "childFirstName" : {
+            "type" : "string",
+            "maxLength" : 100,
+            "minLength" : 0
+          },
+          "childLastName" : {
+            "type" : "string",
+            "maxLength" : 100,
+            "minLength" : 0
+          },
+          "childDateOfBirth" : {
+            "type" : "string",
+            "format" : "date"
+          },
+          "gradeSought" : {
+            "type" : "string",
+            "maxLength" : 20,
+            "minLength" : 0
+          },
+          "guardianFirstName" : {
+            "type" : "string",
+            "maxLength" : 100,
+            "minLength" : 0
+          },
+          "guardianLastName" : {
+            "type" : "string",
+            "maxLength" : 100,
+            "minLength" : 0
+          },
+          "guardianEmail" : {
+            "type" : "string",
+            "format" : "email",
+            "maxLength" : 255,
+            "minLength" : 0
+          },
+          "guardianPhone" : {
+            "type" : "string",
+            "maxLength" : 30,
+            "minLength" : 0
+          },
+          "source" : {
+            "type" : "string",
+            "enum" : [ "WALK_IN", "PHONE", "WEBSITE", "EMAIL", "REFERRAL", "SOCIAL_MEDIA", "ADVERTISEMENT", "EVENT", "OTHER" ]
+          },
+          "notes" : {
+            "type" : "string",
+            "maxLength" : 2000,
+            "minLength" : 0
+          },
+          "assignedEmployeePublicId" : {
+            "type" : "string"
+          }
+        },
+        "required" : [ "childFirstName", "childLastName", "gradeSought", "guardianFirstName", "guardianLastName", "source" ]
+      },
+      "RecordFollowUpRequest" : {
+        "type" : "object",
+        "properties" : {
+          "channel" : {
+            "type" : "string",
+            "enum" : [ "CALL", "VISIT", "EMAIL", "SMS", "WHATSAPP", "MEETING", "OTHER" ]
+          },
+          "note" : {
+            "type" : "string",
+            "maxLength" : 2000,
+            "minLength" : 0
+          },
+          "nextFollowUpOn" : {
+            "type" : "string",
+            "format" : "date"
+          }
+        },
+        "required" : [ "channel", "note" ]
+      },
+      "ApiResponseEnquiryFollowUpResponse" : {
+        "type" : "object",
+        "properties" : {
+          "success" : {
+            "type" : "boolean"
+          },
+          "data" : {
+            "$ref" : "#/components/schemas/EnquiryFollowUpResponse"
+          },
+          "error" : {
+            "$ref" : "#/components/schemas/ApiErrorDetail"
+          },
+          "meta" : {
+            "$ref" : "#/components/schemas/ApiResponseMeta"
+          }
+        },
+        "required" : [ "success" ]
+      },
+      "EnquiryFollowUpResponse" : {
+        "type" : "object",
+        "properties" : {
+          "publicId" : {
+            "type" : "string"
+          },
+          "channel" : {
+            "type" : "string",
+            "enum" : [ "CALL", "VISIT", "EMAIL", "SMS", "WHATSAPP", "MEETING", "OTHER" ]
+          },
+          "note" : {
+            "type" : "string"
+          },
+          "followedUpAt" : {
+            "type" : "string",
+            "format" : "date-time"
+          },
+          "nextFollowUpOn" : {
+            "type" : "string",
+            "format" : "date"
+          }
+        },
+        "required" : [ "publicId" ]
+      },
+      "ConvertEnquiryRequest" : {
+        "type" : "object",
+        "description" : "Details the application needs beyond the enquiry. Both are optional.",
+        "properties" : {
+          "childDateOfBirth" : {
+            "type" : "string",
+            "format" : "date"
+          },
+          "childGender" : {
+            "type" : "string",
+            "enum" : [ "MALE", "FEMALE", "OTHER", "NOT_SPECIFIED" ]
+          }
+        }
+      },
+      "CloseEnquiryRequest" : {
+        "type" : "object",
+        "properties" : {
+          "reason" : {
+            "type" : "string",
+            "maxLength" : 500,
+            "minLength" : 0
+          }
+        },
+        "required" : [ "reason" ]
       },
       "CreateEmployeeRequest" : {
         "type" : "object",
@@ -76999,6 +81114,27 @@
             "$ref" : "#/components/schemas/ReferenceSummary"
           }
         }
+      },
+      "ApiResponseListExamResponse" : {
+        "type" : "object",
+        "properties" : {
+          "success" : {
+            "type" : "boolean"
+          },
+          "data" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/ExamResponse"
+            }
+          },
+          "error" : {
+            "$ref" : "#/components/schemas/ApiErrorDetail"
+          },
+          "meta" : {
+            "$ref" : "#/components/schemas/ApiResponseMeta"
+          }
+        },
+        "required" : [ "success" ]
       },
       "CheckoutBookRequest" : {
         "type" : "object",
@@ -78415,7 +82551,7 @@
           },
           "status" : {
             "type" : "string",
-            "enum" : [ "PRESENT", "ABSENT", "LATE", "EXCUSED" ]
+            "enum" : [ "PRESENT", "ABSENT", "LATE", "EXCUSED", "HALF_DAY" ]
           }
         },
         "required" : [ "attendanceDate", "classroomPublicId", "status", "studentPublicId" ]
@@ -81418,17 +85554,27 @@
       },
       "RescheduleExamRequest" : {
         "type" : "object",
+        "description" : "Replaces the exam's slot. Leaving out the venue takes the exam out of its room.",
         "properties" : {
           "scheduledAt" : {
             "type" : "string",
             "format" : "date-time"
+          },
+          "durationMinutes" : {
+            "type" : "integer",
+            "format" : "int32",
+            "maximum" : 720,
+            "minimum" : 5
+          },
+          "venuePublicId" : {
+            "type" : "string"
           },
           "version" : {
             "type" : "integer",
             "format" : "int64"
           }
         },
-        "required" : [ "scheduledAt", "version" ]
+        "required" : [ "durationMinutes", "scheduledAt", "version" ]
       },
       "UpdateExamTypeDefinitionRequest" : {
         "type" : "object",
@@ -81898,7 +86044,7 @@
         "properties" : {
           "status" : {
             "type" : "string",
-            "enum" : [ "PRESENT", "ABSENT", "LATE", "EXCUSED" ]
+            "enum" : [ "PRESENT", "ABSENT", "LATE", "EXCUSED", "HALF_DAY" ]
           },
           "version" : {
             "type" : "integer",
@@ -83962,6 +88108,48 @@
         },
         "required" : [ "success" ]
       },
+      "ApiResponsePageFeeInvoiceResponse" : {
+        "type" : "object",
+        "properties" : {
+          "success" : {
+            "type" : "boolean"
+          },
+          "data" : {
+            "$ref" : "#/components/schemas/PageFeeInvoiceResponse"
+          },
+          "error" : {
+            "$ref" : "#/components/schemas/ApiErrorDetail"
+          },
+          "meta" : {
+            "$ref" : "#/components/schemas/ApiResponseMeta"
+          }
+        },
+        "required" : [ "success" ]
+      },
+      "PageFeeInvoiceResponse" : {
+        "type" : "object",
+        "properties" : {
+          "content" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/FeeInvoiceResponse"
+            }
+          },
+          "pageNumber" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "pageSize" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "totalElements" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        },
+        "required" : [ "pageNumber", "pageSize", "totalElements" ]
+      },
       "ApiResponseListFeeDiscountResponse" : {
         "type" : "object",
         "properties" : {
@@ -84472,8 +88660,7 @@
         "type" : "object",
         "properties" : {
           "presentDays" : {
-            "type" : "integer",
-            "format" : "int64"
+            "type" : "number"
           },
           "totalMarkedDays" : {
             "type" : "integer",
@@ -84483,7 +88670,7 @@
             "type" : "number"
           }
         },
-        "required" : [ "presentDays", "totalMarkedDays" ]
+        "required" : [ "totalMarkedDays" ]
       },
       "ApiResponsePageStudentLeaveRequestResponse" : {
         "type" : "object",
@@ -84526,6 +88713,127 @@
           }
         },
         "required" : [ "pageNumber", "pageSize", "totalElements" ]
+      },
+      "ApiResponsePageStaffAttendanceResponse" : {
+        "type" : "object",
+        "properties" : {
+          "success" : {
+            "type" : "boolean"
+          },
+          "data" : {
+            "$ref" : "#/components/schemas/PageStaffAttendanceResponse"
+          },
+          "error" : {
+            "$ref" : "#/components/schemas/ApiErrorDetail"
+          },
+          "meta" : {
+            "$ref" : "#/components/schemas/ApiResponseMeta"
+          }
+        },
+        "required" : [ "success" ]
+      },
+      "PageStaffAttendanceResponse" : {
+        "type" : "object",
+        "properties" : {
+          "content" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/StaffAttendanceResponse"
+            }
+          },
+          "pageNumber" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "pageSize" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "totalElements" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        },
+        "required" : [ "pageNumber", "pageSize", "totalElements" ]
+      },
+      "ApiResponsePageStaffRegisterEntryResponse" : {
+        "type" : "object",
+        "properties" : {
+          "success" : {
+            "type" : "boolean"
+          },
+          "data" : {
+            "$ref" : "#/components/schemas/PageStaffRegisterEntryResponse"
+          },
+          "error" : {
+            "$ref" : "#/components/schemas/ApiErrorDetail"
+          },
+          "meta" : {
+            "$ref" : "#/components/schemas/ApiResponseMeta"
+          }
+        },
+        "required" : [ "success" ]
+      },
+      "PageStaffRegisterEntryResponse" : {
+        "type" : "object",
+        "properties" : {
+          "content" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/StaffRegisterEntryResponse"
+            }
+          },
+          "pageNumber" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "pageSize" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "totalElements" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        },
+        "required" : [ "pageNumber", "pageSize", "totalElements" ]
+      },
+      "StaffRegisterEntryResponse" : {
+        "type" : "object",
+        "description" : "One employee's line on the day's register. NOT_MARKED means nothing is recorded yet.",
+        "properties" : {
+          "employeePublicId" : {
+            "type" : "string"
+          },
+          "employee" : {
+            "$ref" : "#/components/schemas/ReferenceSummary"
+          },
+          "status" : {
+            "type" : "string",
+            "enum" : [ "PRESENT", "HALF_DAY", "ABSENT", "ON_LEAVE", "NOT_MARKED" ]
+          },
+          "attendancePublicId" : {
+            "type" : "string"
+          },
+          "checkInAt" : {
+            "type" : "string",
+            "format" : "date-time"
+          },
+          "checkOutAt" : {
+            "type" : "string",
+            "format" : "date-time"
+          },
+          "late" : {
+            "type" : "boolean"
+          },
+          "leftEarly" : {
+            "type" : "boolean"
+          },
+          "leaveRequestPublicId" : {
+            "type" : "string"
+          }
+        },
+        "required" : [ "late", "leftEarly" ]
       },
       "ApiResponseSearchResultMapStringObject" : {
         "type" : "object",
@@ -85363,6 +89671,10 @@
             "type" : "integer",
             "format" : "int64"
           },
+          "halfDay" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
           "absent" : {
             "type" : "integer",
             "format" : "int64"
@@ -85380,7 +89692,7 @@
             "format" : "int64"
           }
         },
-        "required" : [ "absent", "excused", "late", "present", "total" ]
+        "required" : [ "absent", "excused", "halfDay", "late", "present", "total" ]
       },
       "CampusRollupResponse" : {
         "type" : "object",
@@ -86185,11 +90497,11 @@
           "today" : {
             "type" : "string",
             "description" : "Absent until today's register is marked",
-            "enum" : [ "PRESENT", "ABSENT", "LATE", "EXCUSED" ]
+            "enum" : [ "PRESENT", "ABSENT", "LATE", "EXCUSED", "HALF_DAY" ]
           },
           "presentDays" : {
-            "type" : "integer",
-            "format" : "int64"
+            "type" : "number",
+            "description" : "A half day counts as half"
           },
           "markedDays" : {
             "type" : "integer",
@@ -86200,7 +90512,7 @@
             "description" : "Present days as a percentage of marked days this academic year"
           }
         },
-        "required" : [ "markedDays", "presentDays" ]
+        "required" : [ "markedDays" ]
       },
       "Fees" : {
         "type" : "object",
@@ -86777,6 +91089,194 @@
           }
         },
         "required" : [ "isRtl" ]
+      },
+      "ApiResponsePageImportJobSummaryResponse" : {
+        "type" : "object",
+        "properties" : {
+          "success" : {
+            "type" : "boolean"
+          },
+          "data" : {
+            "$ref" : "#/components/schemas/PageImportJobSummaryResponse"
+          },
+          "error" : {
+            "$ref" : "#/components/schemas/ApiErrorDetail"
+          },
+          "meta" : {
+            "$ref" : "#/components/schemas/ApiResponseMeta"
+          }
+        },
+        "required" : [ "success" ]
+      },
+      "ImportJobSummaryResponse" : {
+        "type" : "object",
+        "properties" : {
+          "publicId" : {
+            "type" : "string"
+          },
+          "importType" : {
+            "type" : "string",
+            "enum" : [ "STUDENTS", "STAFF", "GUARDIANS", "OPENING_FEE_BALANCES" ]
+          },
+          "fileName" : {
+            "type" : "string"
+          },
+          "status" : {
+            "type" : "string",
+            "enum" : [ "UPLOADED", "VALIDATED", "IMPORTING", "COMPLETED" ]
+          },
+          "totalRows" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "validRows" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "invalidRows" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "importedRows" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "failedRows" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "uploadedAt" : {
+            "type" : "string",
+            "format" : "date-time"
+          },
+          "completedAt" : {
+            "type" : "string",
+            "format" : "date-time"
+          }
+        },
+        "required" : [ "publicId", "totalRows" ]
+      },
+      "PageImportJobSummaryResponse" : {
+        "type" : "object",
+        "properties" : {
+          "content" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/ImportJobSummaryResponse"
+            }
+          },
+          "pageNumber" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "pageSize" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "totalElements" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        },
+        "required" : [ "pageNumber", "pageSize", "totalElements" ]
+      },
+      "ApiResponsePageImportErrorResponse" : {
+        "type" : "object",
+        "properties" : {
+          "success" : {
+            "type" : "boolean"
+          },
+          "data" : {
+            "$ref" : "#/components/schemas/PageImportErrorResponse"
+          },
+          "error" : {
+            "$ref" : "#/components/schemas/ApiErrorDetail"
+          },
+          "meta" : {
+            "$ref" : "#/components/schemas/ApiResponseMeta"
+          }
+        },
+        "required" : [ "success" ]
+      },
+      "ImportErrorResponse" : {
+        "type" : "object",
+        "properties" : {
+          "lineNumber" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "field" : {
+            "type" : "string"
+          },
+          "message" : {
+            "type" : "string"
+          },
+          "phase" : {
+            "type" : "string",
+            "enum" : [ "DRY_RUN", "IMPORT" ]
+          }
+        },
+        "required" : [ "lineNumber" ]
+      },
+      "PageImportErrorResponse" : {
+        "type" : "object",
+        "properties" : {
+          "content" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/ImportErrorResponse"
+            }
+          },
+          "pageNumber" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "pageSize" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "totalElements" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        },
+        "required" : [ "pageNumber", "pageSize", "totalElements" ]
+      },
+      "ApiResponseListImportTypeResponse" : {
+        "type" : "object",
+        "properties" : {
+          "success" : {
+            "type" : "boolean"
+          },
+          "data" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/ImportTypeResponse"
+            }
+          },
+          "error" : {
+            "$ref" : "#/components/schemas/ApiErrorDetail"
+          },
+          "meta" : {
+            "$ref" : "#/components/schemas/ApiResponseMeta"
+          }
+        },
+        "required" : [ "success" ]
+      },
+      "ImportTypeResponse" : {
+        "type" : "object",
+        "properties" : {
+          "type" : {
+            "type" : "string",
+            "enum" : [ "STUDENTS", "STAFF", "GUARDIANS", "OPENING_FEE_BALANCES" ]
+          },
+          "fields" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/ImportFieldResponse"
+            }
+          }
+        }
       },
       "ApiResponsePageHostelBuildingResponse" : {
         "type" : "object",
@@ -87607,6 +92107,90 @@
           }
         },
         "required" : [ "httpStatus" ]
+      },
+      "ApiResponsePageEnquiryResponse" : {
+        "type" : "object",
+        "properties" : {
+          "success" : {
+            "type" : "boolean"
+          },
+          "data" : {
+            "$ref" : "#/components/schemas/PageEnquiryResponse"
+          },
+          "error" : {
+            "$ref" : "#/components/schemas/ApiErrorDetail"
+          },
+          "meta" : {
+            "$ref" : "#/components/schemas/ApiResponseMeta"
+          }
+        },
+        "required" : [ "success" ]
+      },
+      "PageEnquiryResponse" : {
+        "type" : "object",
+        "properties" : {
+          "content" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/EnquiryResponse"
+            }
+          },
+          "pageNumber" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "pageSize" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "totalElements" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        },
+        "required" : [ "pageNumber", "pageSize", "totalElements" ]
+      },
+      "ApiResponsePageEnquiryFollowUpResponse" : {
+        "type" : "object",
+        "properties" : {
+          "success" : {
+            "type" : "boolean"
+          },
+          "data" : {
+            "$ref" : "#/components/schemas/PageEnquiryFollowUpResponse"
+          },
+          "error" : {
+            "$ref" : "#/components/schemas/ApiErrorDetail"
+          },
+          "meta" : {
+            "$ref" : "#/components/schemas/ApiResponseMeta"
+          }
+        },
+        "required" : [ "success" ]
+      },
+      "PageEnquiryFollowUpResponse" : {
+        "type" : "object",
+        "properties" : {
+          "content" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/EnquiryFollowUpResponse"
+            }
+          },
+          "pageNumber" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "pageSize" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "totalElements" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        },
+        "required" : [ "pageNumber", "pageSize", "totalElements" ]
       },
       "ApiResponsePageEmployeeResponse" : {
         "type" : "object",

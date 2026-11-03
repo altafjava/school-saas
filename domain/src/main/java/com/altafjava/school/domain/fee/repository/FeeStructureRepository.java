@@ -32,4 +32,6 @@ public interface FeeStructureRepository extends JpaRepository<FeeStructure, Long
 	boolean existsByNameAndTenantId(String name, Long tenantId);
 
 	boolean existsByIdAndTenantId(Long id, Long tenantId);
+
+	Optional<FeeStructure> findFirstByPlanTypeAndTenantIdOrderByIdAsc(String planType, Long tenantId);
 }

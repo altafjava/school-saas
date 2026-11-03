@@ -42,6 +42,7 @@ import com.altafjava.school.domain.classroom.model.StudentClassroomLink;
 import com.altafjava.school.domain.classroom.repository.ClassroomRepository;
 import com.altafjava.school.domain.classroom.repository.StudentClassroomLinkRepository;
 import com.altafjava.school.domain.exam.model.Exam;
+import com.altafjava.school.domain.exam.model.ExamSlot;
 import com.altafjava.school.domain.exam.model.ExamTypeDefinition;
 import com.altafjava.school.domain.exam.repository.ExamRepository;
 import com.altafjava.school.domain.exam.repository.ExamTypeDefinitionRepository;
@@ -234,7 +235,10 @@ class HomeScreensE2ETest extends SchoolIntegrationTestBase {
 		examTypeId = examTypeDefinitionRepository.findByCodeAndTenantId("MIDTERM", tenantId)
 				.map(ExamTypeDefinition::getId).orElseThrow();
 		LocalDateTime now = LocalDateTime.now();
-		exam("Next week test", homeroom, now.plusDays(7), 10);
+		Exam nextWeek = exam("Next week test", homeroom, now.plusDays(7), 10);
+		nextWeek.publishSchedule();
+		examRepository.save(nextWeek);
+		exam("Unannounced test", homeroom, now.plusDays(8), 10);
 		Exam needsMarks = exam("Sat yesterday", homeroom, now.minusDays(1), 10);
 		gradeRepository.save(Grade.create(ada.getId(), maths.getId(), needsMarks.getId(), BigDecimal.TEN, "B", "t"));
 		exam("Promoted class exam", promotedClass, now.minusDays(1), 10);
@@ -245,6 +249,8 @@ class HomeScreensE2ETest extends SchoolIntegrationTestBase {
 		gradeRepository
 				.save(Grade.create(ben.getId(), maths.getId(), published.getId(), BigDecimal.valueOf(60), "C", "t"));
 		published.complete();
+		published.verifyMarks("checker");
+		published.lockMarks("registrar");
 		published.publishResults("principal");
 		examRepository.save(published);
 
@@ -381,6 +387,7 @@ class HomeScreensE2ETest extends SchoolIntegrationTestBase {
 				.body(childCard("Ada Family", "attendance.markedDays"), equalTo(1))
 				.body(childCard("Ada Family", "attendance.percentage"), equalTo(100.00F))
 				.body(childCard("Ada Family", "upcomingExams.title"), contains("Next week test"))
+				.body(childCard("Ada Family", "upcomingExams.title"), not(hasItem("Unannounced test")))
 				.body(childCard("Ada Family", "homework.title"), contains("Fractions"))
 				.body(childCard("Ben Family", "homework.title"), contains("Decimals"))
 				.body(childCard("Ben Family", "fees.outstanding"), equalTo(0))
@@ -556,8 +563,9 @@ class HomeScreensE2ETest extends SchoolIntegrationTestBase {
 	}
 
 	private Exam exam(String title, Classroom classroom, LocalDateTime scheduledAt, int weightage) {
-		return examRepository.save(Exam.create(title, maths.getId(), classroom.getId(), scheduledAt,
-				BigDecimal.valueOf(100), null, examTypeId, BigDecimal.valueOf(weightage)));
+		return examRepository
+				.save(Exam.create(title, maths.getId(), classroom.getId(), new ExamSlot(scheduledAt, 60, null),
+						BigDecimal.valueOf(100), null, examTypeId, BigDecimal.valueOf(weightage)));
 	}
 
 	private static String suffix() {

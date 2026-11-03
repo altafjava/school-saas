@@ -25,7 +25,7 @@ public record StudentOverviewResponse(ReferenceSummary student,
 	}
 
 	public record Attendance(@Schema(description = "Absent until today's register is marked") AttendanceStatus today,
-			long presentDays, long markedDays,
+			@Schema(description = "A half day counts as half") BigDecimal presentDays, long markedDays,
 			@Schema(description = "Present days as a percentage of marked days this academic year") BigDecimal percentage) {
 	}
 

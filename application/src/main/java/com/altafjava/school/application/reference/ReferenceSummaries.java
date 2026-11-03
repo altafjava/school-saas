@@ -44,6 +44,7 @@ public class ReferenceSummaries {
 			Map.entry(EntityRef.EVENT, Label.named("title")),
 			Map.entry(EntityRef.EXAM, Label.named("title")),
 			Map.entry(EntityRef.EXAM_TYPE, new Label(List.of("name"), "code")),
+			Map.entry(EntityRef.FEE_INVOICE, Label.named("invoice_number")),
 			Map.entry(EntityRef.FEE_STRUCTURE, Label.named("name")),
 			Map.entry(EntityRef.GRADING_SCALE, Label.named("name")),
 			Map.entry(EntityRef.GUARDIAN, Label.named(PERSON_NAME)),

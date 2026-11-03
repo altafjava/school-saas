@@ -45,6 +45,8 @@ import com.altafjava.school.domain.leave.repository.LeaveRequestRepository;
 import com.altafjava.school.domain.leave.repository.LeaveTypeRepository;
 import com.altafjava.school.domain.leave.service.LeaveDayCalculator;
 import com.altafjava.school.domain.notification.SchoolNotificationTypes;
+import com.altafjava.school.domain.staffattendance.model.StaffAttendanceStatus;
+import com.altafjava.school.domain.staffattendance.repository.StaffAttendanceRepository;
 
 @Service
 public class LeaveRequestService {
@@ -63,14 +65,17 @@ public class LeaveRequestService {
 	private final LeaveDayCalculator leaveDayCalculator = new LeaveDayCalculator();
 	private final PublicIdLookup publicIdLookup;
 	private final SchoolClock schoolClock;
+	private final StaffAttendanceRepository staffAttendanceRepository;
 
 	public LeaveRequestService(LeaveRequestRepository leaveRequestRepository, LeaveTypeRepository leaveTypeRepository,
 			LeaveBalanceRepository leaveBalanceRepository, EmployeeRepository employeeRepository,
 			AcademicYearRepository academicYearRepository, TenantAdminNotifier tenantAdminNotifier,
 			NotificationService notificationService, HolidayService holidayService,
 			LeaveApprovalRepository leaveApprovalRepository, DepartmentRepository departmentRepository,
-			LeaveApprovalAuthorizer leaveApprovalAuthorizer, PublicIdLookup publicIdLookup, SchoolClock schoolClock) {
+			LeaveApprovalAuthorizer leaveApprovalAuthorizer, PublicIdLookup publicIdLookup, SchoolClock schoolClock,
+			StaffAttendanceRepository staffAttendanceRepository) {
 		this.publicIdLookup = publicIdLookup;
+		this.staffAttendanceRepository = staffAttendanceRepository;
 		this.leaveRequestRepository = leaveRequestRepository;
 		this.leaveTypeRepository = leaveTypeRepository;
 		this.leaveBalanceRepository = leaveBalanceRepository;
@@ -182,6 +187,11 @@ public class LeaveRequestService {
 						request.getLeaveTypeId(), request.getAcademicYearId(), tenantId)
 				.orElseThrow(() -> new BusinessException(
 						"No leave balance allocated for employee " + request.getEmployeeId()));
+		if (stage == LeaveApprovalStage.ADMINISTRATOR && staffAttendanceRepository.existsWorkedBetween(tenantId,
+				request.getEmployeeId(), StaffAttendanceStatus.ABSENT, request.getStartDate(), request.getEndDate())) {
+			throw new BusinessException("The employee was at work on a day this leave covers; correct the attendance "
+					+ "or the dates first");
+		}
 		leaveApprovalRepository.save(LeaveApproval.approved(request.getId(), stage, actorUserId));
 		request.approve(actorUserId, schoolClock.now(tenantId));
 		if (request.getStatus() == LeaveRequestStatus.APPROVED) {

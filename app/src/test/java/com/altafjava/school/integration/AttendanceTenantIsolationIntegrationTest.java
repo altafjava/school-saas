@@ -191,7 +191,7 @@ class AttendanceTenantIsolationIntegrationTest extends SchoolIntegrationTestBase
 		AttendancePercentage result = attendanceService.calculatePercentage(student.getPublicId().toString(), day1,
 				day3);
 
-		assertEquals(2, result.presentDays());
+		assertEquals(0, java.math.BigDecimal.valueOf(2).compareTo(result.presentDays()));
 		assertEquals(3, result.totalMarkedDays());
 	}
 

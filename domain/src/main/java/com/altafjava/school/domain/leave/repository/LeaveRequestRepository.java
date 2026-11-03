@@ -95,4 +95,13 @@ public interface LeaveRequestRepository extends JpaRepository<LeaveRequest, Long
 			@Param("tenantId") Long tenantId, @Param("status") LeaveRequestStatus status,
 			@Param("leaveTypeIds") List<Long> leaveTypeIds, @Param("monthStart") LocalDate monthStart,
 			@Param("monthEnd") LocalDate monthEnd);
+
+	// Approved leave covering one day, for the given employees.
+	@Query("""
+			SELECT lr FROM LeaveRequest lr
+			WHERE lr.tenantId = :tenantId AND lr.status = :status AND lr.employeeId IN :employeeIds
+			  AND lr.startDate <= :date AND lr.endDate >= :date
+			""")
+	List<LeaveRequest> findCovering(@Param("tenantId") Long tenantId, @Param("status") LeaveRequestStatus status,
+			@Param("employeeIds") Collection<Long> employeeIds, @Param("date") LocalDate date);
 }

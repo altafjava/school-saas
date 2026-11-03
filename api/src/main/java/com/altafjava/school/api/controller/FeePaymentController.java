@@ -100,7 +100,8 @@ public class FeePaymentController implements FeePaymentApi {
 				request.paidAmount(),
 				request.paidAt(),
 				request.receiptNumber(),
-				request.instrument())));
+				request.instrument(),
+				request.invoicePublicId())));
 	}
 
 	@Override

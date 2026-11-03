@@ -101,4 +101,7 @@ public interface GradeRepository extends JpaRepository<Grade, Long> {
 			""")
 	List<PublishedResult> findPublishedSince(@Param("tenantId") Long tenantId,
 			@Param("studentIds") Collection<Long> studentIds, @Param("since") Instant since, Pageable pageable);
+
+	// Maker-checker: whoever entered any of an exam's marks may not verify them.
+	boolean existsByExamIdAndGradedByAndTenantId(Long examId, String gradedBy, Long tenantId);
 }

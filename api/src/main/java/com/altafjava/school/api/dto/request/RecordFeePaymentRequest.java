@@ -11,7 +11,8 @@ import com.altafjava.school.domain.fee.model.PaymentInstrument;
 import com.altafjava.school.domain.fee.model.PaymentMode;
 
 // receiptNumber is an explicit-override path — omit it (null/blank) to have the tenant's
-// configured numbering sequence generate one; see FeePaymentService#record.
+// configured numbering sequence generate one; see FeePaymentService#record. invoicePublicId is optional
+// and names the invoice the payment settles.
 public record RecordFeePaymentRequest(
 		@NotBlank String studentPublicId,
 		@NotBlank String feeStructurePublicId,
@@ -22,7 +23,8 @@ public record RecordFeePaymentRequest(
 		@Size(max = 100) String transactionReference,
 		@Size(max = 50) String chequeNumber,
 		LocalDate chequeDate,
-		@Size(max = 100) String chequeBank) {
+		@Size(max = 100) String chequeBank,
+		String invoicePublicId) {
 
 	public PaymentInstrument instrument() {
 		return new PaymentInstrument(paymentMode, transactionReference, chequeNumber, chequeDate, chequeBank);

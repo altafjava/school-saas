@@ -22,6 +22,7 @@ import com.altafjava.platform.core.tenant.TenantType;
 import com.altafjava.platform.domain.organization.model.Organization;
 import com.altafjava.platform.domain.tenant.model.Tenant;
 import com.altafjava.school.domain.attendance.model.AttendanceStatus;
+import com.altafjava.school.domain.attendance.model.AttendanceStatusCount;
 import com.altafjava.school.domain.attendance.repository.AttendanceRepository;
 import com.altafjava.school.domain.classroom.model.StudentClassroomLink;
 import com.altafjava.school.domain.classroom.repository.StudentClassroomLinkRepository;
@@ -98,14 +99,11 @@ class OrganizationRollupServiceTest {
 	}
 
 	private void mockAttendance(Long tenantId, long present, long absent, long late, long excused) {
-		when(attendanceRepository.countByTenantIdAndAttendanceDateBetweenAndStatus(eq(tenantId), any(), any(),
-				eq(AttendanceStatus.PRESENT))).thenReturn(present);
-		when(attendanceRepository.countByTenantIdAndAttendanceDateBetweenAndStatus(eq(tenantId), any(), any(),
-				eq(AttendanceStatus.ABSENT))).thenReturn(absent);
-		when(attendanceRepository.countByTenantIdAndAttendanceDateBetweenAndStatus(eq(tenantId), any(), any(),
-				eq(AttendanceStatus.LATE))).thenReturn(late);
-		when(attendanceRepository.countByTenantIdAndAttendanceDateBetweenAndStatus(eq(tenantId), any(), any(),
-				eq(AttendanceStatus.EXCUSED))).thenReturn(excused);
+		when(attendanceRepository.countByStatus(eq(tenantId), any(), any())).thenReturn(List.of(
+				new AttendanceStatusCount(AttendanceStatus.PRESENT, present),
+				new AttendanceStatusCount(AttendanceStatus.ABSENT, absent),
+				new AttendanceStatusCount(AttendanceStatus.LATE, late),
+				new AttendanceStatusCount(AttendanceStatus.EXCUSED, excused)));
 	}
 
 	@Test
@@ -157,7 +155,7 @@ class OrganizationRollupServiceTest {
 
 		assertEquals(2, report.campuses().size());
 		assertEquals(3, report.totals().activeStudentCount());
-		assertEquals(new AttendanceRollup(130, 10, 8, 2), report.totals().attendance());
+		assertEquals(new AttendanceRollup(130, 0, 10, 8, 2), report.totals().attendance());
 		// Campus A due = 100 (student 101, classroom-scoped tuition) + 50 (student 102,
 		// student-scoped transport) = 150, NOT (100+50) x 2 = 300. Campus B due = 200. Total 350.
 		assertEquals(BigDecimal.valueOf(350), report.totals().fees().totalDue());

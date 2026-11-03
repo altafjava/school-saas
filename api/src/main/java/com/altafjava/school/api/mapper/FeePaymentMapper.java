@@ -14,5 +14,7 @@ public interface FeePaymentMapper {
 	@Mapping(target = "student", source = "studentId", qualifiedByName = "studentSummary")
 	@Mapping(target = "feeStructurePublicId", source = "feeStructureId", qualifiedByName = "feeStructure")
 	@Mapping(target = "feeStructure", source = "feeStructureId", qualifiedByName = "feeStructureSummary")
+	@Mapping(target = "invoicePublicId", source = "invoiceId", qualifiedByName = "feeInvoice")
+	@Mapping(target = "invoice", source = "invoiceId", qualifiedByName = "feeInvoiceSummary")
 	FeePaymentResponse toResponse(FeePayment feePayment);
 }

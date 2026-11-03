@@ -109,4 +109,6 @@ public interface StudentRepository extends JpaRepository<Student, Long> {
 			  AND s.enrollmentStatus = com.altafjava.school.domain.student.model.EnrollmentStatus.ACTIVE
 			""")
 	java.util.List<Long> findEnrolledUserIds(@Param("tenantId") Long tenantId);
+
+	Optional<Student> findByStudentCodeAndTenantId(String studentCode, Long tenantId);
 }

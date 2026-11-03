@@ -69,4 +69,6 @@ public interface EmployeeRepository extends JpaRepository<Employee, Long> {
 			  AND e.status = com.altafjava.school.domain.employee.model.EmployeeStatus.ACTIVE
 			""")
 	List<Long> findActiveUserIds(@Param("tenantId") Long tenantId);
+
+	Page<Employee> findAllByTenantIdAndStatus(Long tenantId, EmployeeStatus status, Pageable pageable);
 }

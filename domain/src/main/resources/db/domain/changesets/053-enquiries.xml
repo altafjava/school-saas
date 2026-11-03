@@ -1,0 +1,169 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                            http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-5.0.xsd">
+
+    <changeSet id="school-203-enquiries" author="school">
+        <createTable tableName="enquiries">
+            <column name="id" type="BIGINT" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="public_id" type="UUID">
+                <constraints nullable="false" unique="true"/>
+            </column>
+            <column name="tenant_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="assigned_employee_id" type="BIGINT"/>
+            <column name="admission_id" type="BIGINT"/>
+            <column name="child_first_name" type="VARCHAR(100)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="child_last_name" type="VARCHAR(100)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="child_date_of_birth" type="DATE"/>
+            <column name="grade_sought" type="VARCHAR(20)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="guardian_first_name" type="VARCHAR(100)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="guardian_last_name" type="VARCHAR(100)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="guardian_email" type="VARCHAR(255)"/>
+            <column name="guardian_phone" type="VARCHAR(30)"/>
+            <column name="notes" type="VARCHAR(2000)"/>
+            <column name="next_follow_up_on" type="DATE"/>
+            <column name="closed_at" type="TIMESTAMP"/>
+            <column name="close_reason" type="VARCHAR(500)"/>
+            <column name="source" type="VARCHAR(30)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="status" type="VARCHAR(20)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_at" type="TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_by" type="VARCHAR(100)"/>
+            <column name="updated_at" type="TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="updated_by" type="VARCHAR(100)"/>
+            <column name="deleted" type="BOOLEAN" defaultValueBoolean="false">
+                <constraints nullable="false"/>
+            </column>
+            <column name="deleted_at" type="TIMESTAMP"/>
+            <column name="deleted_by" type="VARCHAR(100)"/>
+            <column name="deleted_token" type="BIGINT" defaultValueNumeric="0">
+                <constraints nullable="false"/>
+            </column>
+            <column name="version" type="BIGINT" defaultValueNumeric="0">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+        <addForeignKeyConstraint constraintName="fk_enquiries_assigned_employee"
+                baseTableName="enquiries" baseColumnNames="assigned_employee_id"
+                referencedTableName="employees" referencedColumnNames="id"/>
+        <addForeignKeyConstraint constraintName="fk_enquiries_admission"
+                baseTableName="enquiries" baseColumnNames="admission_id"
+                referencedTableName="admissions" referencedColumnNames="id"/>
+        <createIndex indexName="idx_enquiries_tenant_id" tableName="enquiries">
+            <column name="tenant_id"/>
+        </createIndex>
+        <createIndex indexName="idx_enquiries_assigned_employee_id" tableName="enquiries">
+            <column name="assigned_employee_id"/>
+        </createIndex>
+        <createIndex indexName="idx_enquiries_admission_id" tableName="enquiries">
+            <column name="admission_id"/>
+        </createIndex>
+        <createIndex indexName="idx_enquiries_source" tableName="enquiries">
+            <column name="source"/>
+        </createIndex>
+        <createIndex indexName="idx_enquiries_status" tableName="enquiries">
+            <column name="status"/>
+        </createIndex>
+        <createIndex indexName="idx_enquiries_deleted" tableName="enquiries">
+            <column name="deleted"/>
+        </createIndex>
+        <createIndex indexName="idx_enquiries_created_at" tableName="enquiries">
+            <column name="created_at"/>
+        </createIndex>
+        <createIndex indexName="idx_enquiries_next_follow_up_on" tableName="enquiries">
+            <column name="next_follow_up_on"/>
+        </createIndex>
+        <createIndex indexName="idx_enquiries_updated_at" tableName="enquiries">
+            <column name="updated_at"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet id="school-204-enquiry-follow-ups" author="school">
+        <createTable tableName="enquiry_follow_ups">
+            <column name="id" type="BIGINT" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="public_id" type="UUID">
+                <constraints nullable="false" unique="true"/>
+            </column>
+            <column name="tenant_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="enquiry_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="recorded_by_user_id" type="BIGINT"/>
+            <column name="followed_up_at" type="TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="note" type="VARCHAR(2000)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="next_follow_up_on" type="DATE"/>
+            <column name="channel" type="VARCHAR(20)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_at" type="TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_by" type="VARCHAR(100)"/>
+            <column name="updated_at" type="TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="updated_by" type="VARCHAR(100)"/>
+            <column name="deleted" type="BOOLEAN" defaultValueBoolean="false">
+                <constraints nullable="false"/>
+            </column>
+            <column name="deleted_at" type="TIMESTAMP"/>
+            <column name="deleted_by" type="VARCHAR(100)"/>
+            <column name="deleted_token" type="BIGINT" defaultValueNumeric="0">
+                <constraints nullable="false"/>
+            </column>
+            <column name="version" type="BIGINT" defaultValueNumeric="0">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+        <addForeignKeyConstraint constraintName="fk_enquiry_follow_ups_enquiry"
+                baseTableName="enquiry_follow_ups" baseColumnNames="enquiry_id"
+                referencedTableName="enquiries" referencedColumnNames="id"/>
+        <createIndex indexName="idx_enquiry_follow_ups_tenant_id" tableName="enquiry_follow_ups">
+            <column name="tenant_id"/>
+        </createIndex>
+        <createIndex indexName="idx_enquiry_follow_ups_enquiry_id" tableName="enquiry_follow_ups">
+            <column name="enquiry_id"/>
+        </createIndex>
+        <createIndex indexName="idx_enquiry_follow_ups_channel" tableName="enquiry_follow_ups">
+            <column name="channel"/>
+        </createIndex>
+        <createIndex indexName="idx_enquiry_follow_ups_deleted" tableName="enquiry_follow_ups">
+            <column name="deleted"/>
+        </createIndex>
+        <createIndex indexName="idx_enquiry_follow_ups_created_at" tableName="enquiry_follow_ups">
+            <column name="created_at"/>
+        </createIndex>
+    </changeSet>
+
+</databaseChangeLog>

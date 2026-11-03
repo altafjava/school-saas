@@ -51,7 +51,8 @@ public class FeeBalanceCalculator {
 	 */
 	public FeeBalance calculate(FeeStructure feeStructure, FeeAssignment assignment, BigDecimal totalPaid,
 			Adjustments adjustments, LocalDate asOf) {
-		BigDecimal gross = feeStructure.getAmount();
+		BigDecimal gross = assignment != null && assignment.getAmount() != null ? assignment.getAmount()
+				: feeStructure.getAmount();
 		BigDecimal discount = adjustments.discounts().stream()
 				.filter(FeeDiscount::isActive)
 				.map(d -> d.amountOn(gross))

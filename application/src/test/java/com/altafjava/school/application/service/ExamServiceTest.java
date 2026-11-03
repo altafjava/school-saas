@@ -33,6 +33,8 @@ import com.altafjava.platform.core.exception.BusinessException;
 import com.altafjava.platform.core.exception.ResourceNotFoundException;
 import com.altafjava.platform.core.tenant.TenantContext;
 import com.altafjava.platform.core.tenant.TenantType;
+import com.altafjava.school.application.exam.ExamClashGuard;
+import com.altafjava.school.application.exam.ExamScheduleVisibility;
 import com.altafjava.school.application.filter.ExamFilter;
 import com.altafjava.school.application.reference.EntityRef;
 import com.altafjava.school.application.reference.PublicIdLookup;
@@ -42,6 +44,7 @@ import com.altafjava.school.domain.classroom.model.Classroom;
 import com.altafjava.school.domain.classroom.repository.ClassroomRepository;
 import com.altafjava.school.domain.exam.event.ExamResultsPublishedEvent;
 import com.altafjava.school.domain.exam.model.Exam;
+import com.altafjava.school.domain.exam.model.ExamSlot;
 import com.altafjava.school.domain.exam.model.ExamStatus;
 import com.altafjava.school.domain.exam.model.ExamTypeDefinition;
 import com.altafjava.school.domain.exam.repository.ExamRepository;
@@ -73,13 +76,19 @@ class ExamServiceTest {
 	private AcademicAccessGuard academicAccessGuard;
 	@Mock
 	private PublicIdLookup publicIdLookup;
+	@Mock
+	private ExamClashGuard examClashGuard;
+	@Mock
+	private ExamScheduleVisibility examScheduleVisibility;
 
 	private ExamService examService;
 
 	@BeforeEach
 	void setUp() {
 		examService = new ExamService(examRepository, classroomRepository, subjectRepository, termRepository,
-				examTypeDefinitionRepository, gradeRepository, eventPublisher, academicAccessGuard, publicIdLookup);
+				examTypeDefinitionRepository, gradeRepository, eventPublisher, academicAccessGuard, publicIdLookup,
+				examClashGuard, examScheduleVisibility);
+		lenient().when(examScheduleVisibility.current(1L)).thenReturn(new ExamScheduleVisibility.Reach(true, Set.of()));
 		TenantContext.ForTesting.setCurrentTenant(1L, null, null, TenantType.SHARED);
 	}
 
@@ -93,8 +102,8 @@ class ExamServiceTest {
 		when(classroomRepository.findByPublicIdAndTenantId(publicId("classroom", 99), 1L)).thenReturn(Optional.empty());
 
 		assertThrows(ResourceNotFoundException.class,
-				() -> examService.schedule("Midterm", publicId("subject", 5).toString(), publicId("classroom", 99).toString(), LocalDateTime.now().plusDays(7),
-						BigDecimal.valueOf(100), null, publicId("examType", 1).toString(), Exam.FULL_WEIGHTAGE));
+				() -> examService.schedule(new ExamService.ExamDetails("Midterm", publicId("subject", 5).toString(), publicId("classroom", 99).toString(), BigDecimal.valueOf(100), null, publicId("examType", 1).toString(), Exam.FULL_WEIGHTAGE),
+				new ExamService.SlotRequest(LocalDateTime.now().plusDays(7), 60, null)));
 
 		verify(examRepository, never()).save(any());
 	}
@@ -105,8 +114,8 @@ class ExamServiceTest {
 		when(subjectRepository.findByPublicIdAndTenantId(publicId("subject", 99), 1L)).thenReturn(Optional.empty());
 
 		assertThrows(ResourceNotFoundException.class,
-				() -> examService.schedule("Midterm", publicId("subject", 99).toString(), publicId("classroom", 10).toString(), LocalDateTime.now().plusDays(7),
-						BigDecimal.valueOf(100), null, publicId("examType", 1).toString(), Exam.FULL_WEIGHTAGE));
+				() -> examService.schedule(new ExamService.ExamDetails("Midterm", publicId("subject", 99).toString(), publicId("classroom", 10).toString(), BigDecimal.valueOf(100), null, publicId("examType", 1).toString(), Exam.FULL_WEIGHTAGE),
+				new ExamService.SlotRequest(LocalDateTime.now().plusDays(7), 60, null)));
 
 		verify(examRepository, never()).save(any());
 	}
@@ -118,8 +127,8 @@ class ExamServiceTest {
 		when(examTypeDefinitionRepository.findByPublicIdAndTenantId(publicId("examType", 1), 1L)).thenReturn(Optional.of(withId(ExamTypeDefinition.class, 1L)));
 		when(examRepository.save(any(Exam.class))).thenAnswer(inv -> inv.getArgument(0));
 
-		assertDoesNotThrow(() -> examService.schedule("Midterm", publicId("subject", 5).toString(), publicId("classroom", 10).toString(), LocalDateTime.now().plusDays(7),
-				BigDecimal.valueOf(100), null, publicId("examType", 1).toString(), Exam.FULL_WEIGHTAGE));
+		assertDoesNotThrow(() -> examService.schedule(new ExamService.ExamDetails("Midterm", publicId("subject", 5).toString(), publicId("classroom", 10).toString(), BigDecimal.valueOf(100), null, publicId("examType", 1).toString(), Exam.FULL_WEIGHTAGE),
+				new ExamService.SlotRequest(LocalDateTime.now().plusDays(7), 60, null)));
 	}
 
 	@Test
@@ -129,8 +138,8 @@ class ExamServiceTest {
 		when(termRepository.findByPublicIdAndTenantId(publicId("term", 99), 1L)).thenReturn(Optional.empty());
 
 		assertThrows(ResourceNotFoundException.class,
-				() -> examService.schedule("Midterm", publicId("subject", 5).toString(), publicId("classroom", 10).toString(), LocalDateTime.now().plusDays(7),
-						BigDecimal.valueOf(100), publicId("term", 99).toString(), publicId("examType", 1).toString(), Exam.FULL_WEIGHTAGE));
+				() -> examService.schedule(new ExamService.ExamDetails("Midterm", publicId("subject", 5).toString(), publicId("classroom", 10).toString(), BigDecimal.valueOf(100), publicId("term", 99).toString(), publicId("examType", 1).toString(), Exam.FULL_WEIGHTAGE),
+				new ExamService.SlotRequest(LocalDateTime.now().plusDays(7), 60, null)));
 
 		verify(examRepository, never()).save(any());
 	}
@@ -142,14 +151,15 @@ class ExamServiceTest {
 		when(examTypeDefinitionRepository.findByPublicIdAndTenantId(publicId("examType", 99), 1L)).thenReturn(Optional.empty());
 
 		assertThrows(ResourceNotFoundException.class,
-				() -> examService.schedule("Midterm", publicId("subject", 5).toString(), publicId("classroom", 10).toString(), LocalDateTime.now().plusDays(7),
-						BigDecimal.valueOf(100), null, publicId("examType", 99).toString(), Exam.FULL_WEIGHTAGE));
+				() -> examService.schedule(new ExamService.ExamDetails("Midterm", publicId("subject", 5).toString(), publicId("classroom", 10).toString(), BigDecimal.valueOf(100), null, publicId("examType", 99).toString(), Exam.FULL_WEIGHTAGE),
+				new ExamService.SlotRequest(LocalDateTime.now().plusDays(7), 60, null)));
 
 		verify(examRepository, never()).save(any());
 	}
 
 	private Exam examWithPublicId(UUID publicId) {
-		Exam exam = Exam.create("Midterm", 5L, 10L, LocalDateTime.now().plusDays(7), BigDecimal.valueOf(100), null,
+		Exam exam = Exam.create("Midterm", 5L, 10L, new ExamSlot(LocalDateTime.now().plusDays(7), 60, null),
+				BigDecimal.valueOf(100), null,
 				1L, Exam.FULL_WEIGHTAGE);
 		exam.setPublicId(publicId);
 		return exam;
@@ -163,7 +173,8 @@ class ExamServiceTest {
 		when(examRepository.findByPublicIdAndTenantId(publicId, 1L)).thenReturn(Optional.of(exam));
 		when(examRepository.save(any(Exam.class))).thenAnswer(inv -> inv.getArgument(0));
 
-		Exam rescheduled = examService.reschedule(publicId.toString(), newTime, ExpectedVersion.any());
+		Exam rescheduled = examService.reschedule(publicId.toString(), new ExamService.SlotRequest(newTime, 60, null),
+				ExpectedVersion.any());
 
 		assertEquals(newTime, rescheduled.getScheduledAt());
 	}
@@ -216,9 +227,11 @@ class ExamServiceTest {
 				.thenReturn(BigDecimal.ZERO);
 		when(examRepository.save(any(Exam.class))).thenAnswer(inv -> inv.getArgument(0));
 
-		Exam exam = examService.schedule("Midterm", publicId("subject", 5).toString(),
-				publicId("classroom", 10).toString(), LocalDateTime.now().plusDays(7),
-				BigDecimal.valueOf(100), publicId("term", 7).toString(), publicId("examType", 1).toString(), null);
+		Exam exam = examService.schedule(
+				new ExamService.ExamDetails("Midterm", publicId("subject", 5).toString(),
+						publicId("classroom", 10).toString(), BigDecimal.valueOf(100), publicId("term", 7).toString(),
+						publicId("examType", 1).toString(), null),
+				new ExamService.SlotRequest(LocalDateTime.now().plusDays(7), 60, null));
 
 		assertEquals(0, Exam.FULL_WEIGHTAGE.compareTo(exam.getWeightage()));
 	}
@@ -230,10 +243,11 @@ class ExamServiceTest {
 				.thenReturn(new BigDecimal("70"));
 		when(examRepository.save(any(Exam.class))).thenAnswer(inv -> inv.getArgument(0));
 
-		Exam exam = examService.schedule("Quiz", publicId("subject", 5).toString(),
-				publicId("classroom", 10).toString(), LocalDateTime.now().plusDays(7),
-				BigDecimal.valueOf(20), publicId("term", 7).toString(), publicId("examType", 1).toString(),
-				new BigDecimal("30"));
+		Exam exam = examService.schedule(
+				new ExamService.ExamDetails("Quiz", publicId("subject", 5).toString(),
+						publicId("classroom", 10).toString(), BigDecimal.valueOf(20), publicId("term", 7).toString(),
+						publicId("examType", 1).toString(), new BigDecimal("30")),
+				new ExamService.SlotRequest(LocalDateTime.now().plusDays(7), 60, null));
 
 		assertEquals(0, new BigDecimal("30").compareTo(exam.getWeightage()));
 	}
@@ -245,10 +259,10 @@ class ExamServiceTest {
 				.thenReturn(new BigDecimal("80"));
 
 		assertThrows(BusinessException.class,
-				() -> examService.schedule("Quiz", publicId("subject", 5).toString(),
-						publicId("classroom", 10).toString(),
-						LocalDateTime.now().plusDays(7), BigDecimal.valueOf(20), publicId("term", 7).toString(),
-						publicId("examType", 1).toString(), new BigDecimal("30")));
+				() -> examService.schedule(new ExamService.ExamDetails("Quiz", publicId("subject", 5).toString(),
+						publicId("classroom", 10).toString(), BigDecimal.valueOf(20), publicId("term", 7).toString(),
+						publicId("examType", 1).toString(), new BigDecimal("30")),
+						new ExamService.SlotRequest(LocalDateTime.now().plusDays(7), 60, null)));
 
 		verify(examRepository, never()).save(any());
 	}
@@ -258,9 +272,11 @@ class ExamServiceTest {
 		stubValidReferences();
 		when(examRepository.save(any(Exam.class))).thenAnswer(inv -> inv.getArgument(0));
 
-		examService.schedule("Quiz", publicId("subject", 5).toString(), publicId("classroom", 10).toString(),
-				LocalDateTime.now().plusDays(7), BigDecimal.valueOf(20), null, publicId("examType", 1).toString(),
-				Exam.FULL_WEIGHTAGE);
+		examService.schedule(
+				new ExamService.ExamDetails("Quiz", publicId("subject", 5).toString(),
+						publicId("classroom", 10).toString(), BigDecimal.valueOf(20), null,
+						publicId("examType", 1).toString(), Exam.FULL_WEIGHTAGE),
+				new ExamService.SlotRequest(LocalDateTime.now().plusDays(7), 60, null));
 
 		verify(examRepository, never()).sumWeightageOfOtherExams(any(), any(), any(), any(), any(), any());
 	}
@@ -268,7 +284,8 @@ class ExamServiceTest {
 	@Test
 	void reweight_updatesWeightageWithinTheTermCap() {
 		UUID publicId = UUID.randomUUID();
-		Exam exam = Exam.create("Midterm", 5L, 10L, LocalDateTime.now().plusDays(7), BigDecimal.valueOf(100), 7L, 1L,
+		Exam exam = Exam.create("Midterm", 5L, 10L, new ExamSlot(LocalDateTime.now().plusDays(7), 60, null),
+				BigDecimal.valueOf(100), 7L, 1L,
 				Exam.FULL_WEIGHTAGE);
 		exam.setId(42L);
 		exam.setPublicId(publicId);
@@ -288,6 +305,8 @@ class ExamServiceTest {
 		Exam exam = examWithPublicId(publicId);
 		exam.setId(42L);
 		exam.complete();
+		exam.verifyMarks("checker");
+		exam.lockMarks("registrar");
 		when(examRepository.findByPublicIdAndTenantId(publicId, 1L)).thenReturn(Optional.of(exam));
 		when(gradeRepository.existsByExamIdAndTenantId(42L, 1L)).thenReturn(true);
 		when(examRepository.save(any(Exam.class))).thenAnswer(inv -> inv.getArgument(0));
@@ -318,6 +337,8 @@ class ExamServiceTest {
 		UUID publicId = UUID.randomUUID();
 		Exam exam = examWithPublicId(publicId);
 		exam.complete();
+		exam.verifyMarks("checker");
+		exam.lockMarks("registrar");
 		exam.publishResults("registrar");
 		when(examRepository.findByPublicIdAndTenantId(publicId, 1L)).thenReturn(Optional.of(exam));
 		when(examRepository.save(any(Exam.class))).thenAnswer(inv -> inv.getArgument(0));
@@ -403,13 +424,13 @@ class ExamServiceTest {
 		when(publicIdLookup.idOrNull(EntityRef.TERM, "term-public")).thenReturn(4L);
 		when(publicIdLookup.idOrNull(EntityRef.SUBJECT, "subject-public")).thenReturn(5L);
 		when(academicAccessGuard.courseworkReach(1L, 3L)).thenReturn(CourseworkReach.ALL);
-		when(examRepository.search(1L, true, Set.of(), 3L, 4L, 5L, ExamStatus.SCHEDULED, pageable))
+		when(examRepository.search(1L, true, Set.of(), 3L, 4L, 5L, ExamStatus.SCHEDULED, true, Set.of(), pageable))
 				.thenReturn(Page.empty());
 
 		examService.listExams(new ExamFilter("classroom-public", "term-public", "subject-public", ExamStatus.SCHEDULED),
 				pageable);
 
-		verify(examRepository).search(1L, true, Set.of(), 3L, 4L, 5L, ExamStatus.SCHEDULED, pageable);
+		verify(examRepository).search(1L, true, Set.of(), 3L, 4L, 5L, ExamStatus.SCHEDULED, true, Set.of(), pageable);
 	}
 
 	@Test
@@ -417,11 +438,12 @@ class ExamServiceTest {
 		PageRequest pageable = PageRequest.of(0, 20);
 		when(publicIdLookup.idOrNull(any(), any())).thenReturn(null);
 		when(academicAccessGuard.courseworkReach(1L, null)).thenReturn(CourseworkReach.ALL);
-		when(examRepository.search(1L, true, Set.of(), null, null, null, null, pageable)).thenReturn(Page.empty());
+		when(examRepository.search(1L, true, Set.of(), null, null, null, null, true, Set.of(), pageable))
+				.thenReturn(Page.empty());
 
 		examService.listExams(ExamFilter.NONE, pageable);
 
-		verify(examRepository).search(1L, true, Set.of(), null, null, null, null, pageable);
+		verify(examRepository).search(1L, true, Set.of(), null, null, null, null, true, Set.of(), pageable);
 	}
 
 	@Test
@@ -429,11 +451,11 @@ class ExamServiceTest {
 		PageRequest pageable = PageRequest.of(0, 20);
 		when(publicIdLookup.idOrNull(any(), any())).thenReturn(null);
 		when(academicAccessGuard.courseworkReach(1L, null)).thenReturn(new CourseworkReach(false, Set.of(3L)));
-		when(examRepository.search(1L, false, Set.of(3L), null, null, null, null, pageable))
+		when(examRepository.search(1L, false, Set.of(3L), null, null, null, null, true, Set.of(), pageable))
 				.thenReturn(Page.empty());
 
 		examService.listExams(ExamFilter.NONE, pageable);
 
-		verify(examRepository).search(1L, false, Set.of(3L), null, null, null, null, pageable);
+		verify(examRepository).search(1L, false, Set.of(3L), null, null, null, null, true, Set.of(), pageable);
 	}
 }

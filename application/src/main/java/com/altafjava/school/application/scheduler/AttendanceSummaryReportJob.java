@@ -11,6 +11,7 @@ import com.altafjava.platform.domain.scheduler.model.JobExecutionResult;
 import com.altafjava.school.application.scheduler.support.TenantAdminNotifier;
 import com.altafjava.school.application.time.SchoolClock;
 import com.altafjava.school.domain.attendance.model.AttendanceStatus;
+import com.altafjava.school.domain.attendance.model.AttendanceStatusCount;
 import com.altafjava.school.domain.attendance.repository.AttendanceRepository;
 import lombok.extern.slf4j.Slf4j;
 
@@ -56,24 +57,23 @@ public class AttendanceSummaryReportJob implements JobExecutionStrategy {
 
 		LocalDate to = schoolClock.today(tenantId);
 		LocalDate from = to.minusDays(7);
-		long present = countByStatus(tenantId, from, to, AttendanceStatus.PRESENT);
-		long absent = countByStatus(tenantId, from, to, AttendanceStatus.ABSENT);
-		long late = countByStatus(tenantId, from, to, AttendanceStatus.LATE);
-		long excused = countByStatus(tenantId, from, to, AttendanceStatus.EXCUSED);
+		Map<AttendanceStatus, Long> days = AttendanceStatusCount
+				.byStatus(attendanceRepository.countByStatus(tenantId, from, to));
+		long present = days.getOrDefault(AttendanceStatus.PRESENT, 0L);
+		long absent = days.getOrDefault(AttendanceStatus.ABSENT, 0L);
+		long late = days.getOrDefault(AttendanceStatus.LATE, 0L);
+		long excused = days.getOrDefault(AttendanceStatus.EXCUSED, 0L);
+		long halfDay = days.getOrDefault(AttendanceStatus.HALF_DAY, 0L);
 
 		String message = String.format(
-				"Attendance summary for %s to %s — Present: %d, Absent: %d, Late: %d, Excused: %d.",
-				from, to, present, absent, late, excused);
+				"Attendance summary for %s to %s — Present: %d, Half day: %d, Absent: %d, Late: %d, Excused: %d.",
+				from, to, present, halfDay, absent, late, excused);
 		int notifiedCount = tenantAdminNotifier.notifyAll(tenantId, "Weekly Attendance Summary", message);
 
 		log.info("action=attendance-summary-report-complete tenantId={} notifiedCount={}", tenantId, notifiedCount);
 		return new JobExecutionResult.Success(
-				Map.of("present", present, "absent", absent, "late", late, "excused", excused,
+				Map.of("present", present, "halfDay", halfDay, "absent", absent, "late", late, "excused", excused,
 						"notifiedCount", notifiedCount),
 				null);
-	}
-
-	private long countByStatus(Long tenantId, LocalDate from, LocalDate to, AttendanceStatus status) {
-		return attendanceRepository.countByTenantIdAndAttendanceDateBetweenAndStatus(tenantId, from, to, status);
 	}
 }

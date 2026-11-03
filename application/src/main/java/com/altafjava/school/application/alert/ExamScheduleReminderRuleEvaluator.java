@@ -19,6 +19,7 @@ import com.altafjava.school.application.time.SchoolClock;
 import com.altafjava.school.domain.classroom.model.StudentClassroomLink;
 import com.altafjava.school.domain.classroom.repository.StudentClassroomLinkRepository;
 import com.altafjava.school.domain.exam.model.Exam;
+import com.altafjava.school.domain.exam.model.ExamStatus;
 import com.altafjava.school.domain.exam.repository.ExamRepository;
 import com.altafjava.school.domain.student.model.Student;
 import com.altafjava.school.domain.student.repository.StudentRepository;
@@ -70,7 +71,8 @@ public class ExamScheduleReminderRuleEvaluator implements AlertRuleEvaluator {
 		LocalDateTime now = schoolClock.now(tenantId);
 
 		List<AlertTrigger> triggers = new ArrayList<>();
-		for (Exam exam : examRepository.findUpcoming(tenantId, now, now.plusDays(daysBefore))) {
+		for (Exam exam : examRepository.findPublishedBetween(tenantId, ExamStatus.SCHEDULED, now,
+				now.plusDays(daysBefore))) {
 			triggers.addAll(triggersForExam(tenantId, exam));
 		}
 		return triggers;
@@ -82,7 +84,7 @@ public class ExamScheduleReminderRuleEvaluator implements AlertRuleEvaluator {
 			return List.of();
 		}
 		List<Long> studentIds = studentClassroomLinkRepository.findAllByClassroomId(tenantId, exam.getClassroomId())
-				.stream().map(StudentClassroomLink::getStudentId).toList();
+				.stream().map(StudentClassroomLink::getStudentId).distinct().toList();
 		Map<Long, Student> studentsById = studentRepository.findAllByIdInAndTenantId(studentIds, tenantId).stream()
 				.collect(Collectors.toMap(Student::getId, Function.identity()));
 

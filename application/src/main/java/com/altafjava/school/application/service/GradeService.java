@@ -142,6 +142,7 @@ public class GradeService {
 		if (exam.getStatus() == ExamStatus.CANCELLED) {
 			throw new BusinessException("Grades cannot be recorded for a cancelled exam");
 		}
+		exam.requireMarksOpen();
 		List<GradeBand> thresholds = gradingScaleService.resolveEffectiveThresholds(exam.getClassroomId());
 		String gradeLetter = gradeCalculator.calculateLetterGrade(marks, exam.getMaxMarks(), thresholds);
 		// The subject always comes from the exam, so a grade can never disagree with its exam.
@@ -164,6 +165,7 @@ public class GradeService {
 		Exam exam = examRepository.findByIdAndTenantId(grade.getExamId(), tenantId)
 				.orElseThrow(() -> new ResourceNotFoundException("Exam not found: " + grade.getExamId()));
 		academicAccessGuard.assertCanWriteSubject(tenantId, exam.getClassroomId(), exam.getSubjectId());
+		exam.requireMarksOpen();
 		List<GradeBand> thresholds = gradingScaleService.resolveEffectiveThresholds(exam.getClassroomId());
 		String newGradeLetter = gradeCalculator.calculateLetterGrade(marks, exam.getMaxMarks(), thresholds);
 
