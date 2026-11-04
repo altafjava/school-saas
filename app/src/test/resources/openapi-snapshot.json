@@ -277,6 +277,9 @@
     "name" : "Guardian Pickup",
     "description" : "APIs for authorizing who may collect a student and for restricting a guardian's custody. Every change is audited and kept in an append-only history.\n\n**Tenant Scope**: All endpoints are tenant-scoped via X-Tenant-ID header.\n**Auth**: JWT Bearer token required on all endpoints."
   }, {
+    "name" : "Admin Queues",
+    "description" : "Message Queue Administration"
+  }, {
     "name" : "Room",
     "description" : "APIs for managing Room operations.\n\n**Tenant Scope**: All endpoints are tenant-scoped via X-Tenant-ID header.\n**Auth**: JWT Bearer token required on all endpoints unless marked public."
   }, {
@@ -10403,7 +10406,7 @@
         "tags" : [ "User Management" ],
         "operationId" : "userGetUsers",
         "parameters" : [ {
-          "name" : "query",
+          "name" : "q",
           "in" : "query",
           "required" : false,
           "schema" : {
@@ -35143,6 +35146,148 @@
         } ]
       }
     },
+    "/api/v1/admin/queues/{queueName}/replay" : {
+      "post" : {
+        "tags" : [ "Admin Queues" ],
+        "operationId" : "queueAdminReplayDlq",
+        "parameters" : [ {
+          "name" : "queueName",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiResponseVoid"
+                }
+              }
+            }
+          },
+          "401" : {
+            "description" : "Missing, expired or revoked access token",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "403" : {
+            "description" : "The caller lacks the required permission",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "404" : {
+            "description" : "The resource does not exist in the caller's tenant",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "500" : {
+            "description" : "Unexpected error; quote error.traceId when reporting it",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "security" : [ {
+          "bearerAuth" : [ ]
+        }, {
+          "tenantHeader" : [ ]
+        } ]
+      }
+    },
+    "/api/v1/admin/queues/{queueName}/purge" : {
+      "post" : {
+        "tags" : [ "Admin Queues" ],
+        "operationId" : "queueAdminPurgeQueue",
+        "parameters" : [ {
+          "name" : "queueName",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiResponseVoid"
+                }
+              }
+            }
+          },
+          "401" : {
+            "description" : "Missing, expired or revoked access token",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "403" : {
+            "description" : "The caller lacks the required permission",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "404" : {
+            "description" : "The resource does not exist in the caller's tenant",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "500" : {
+            "description" : "Unexpected error; quote error.traceId when reporting it",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "security" : [ {
+          "bearerAuth" : [ ]
+        }, {
+          "tenantHeader" : [ ]
+        } ]
+      }
+    },
     "/api/v1/admin/privacy/retention/cleanup" : {
       "post" : {
         "tags" : [ "AdminPrivacy Management" ],
@@ -57233,7 +57378,7 @@
             "type" : "string"
           }
         }, {
-          "name" : "query",
+          "name" : "q",
           "in" : "query",
           "required" : false,
           "schema" : {
@@ -68230,6 +68375,150 @@
         } ]
       }
     },
+    "/api/v1/admin/queues" : {
+      "get" : {
+        "tags" : [ "Admin Queues" ],
+        "operationId" : "queueAdminListQueues",
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiResponseListQueueStatistics"
+                }
+              }
+            }
+          },
+          "401" : {
+            "description" : "Missing, expired or revoked access token",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "403" : {
+            "description" : "The caller lacks the required permission",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "500" : {
+            "description" : "Unexpected error; quote error.traceId when reporting it",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "security" : [ {
+          "bearerAuth" : [ ]
+        }, {
+          "tenantHeader" : [ ]
+        } ]
+      }
+    },
+    "/api/v1/admin/queues/{queueName}/messages" : {
+      "get" : {
+        "tags" : [ "Admin Queues" ],
+        "summary" : "View messages in queue",
+        "operationId" : "queueAdminPeekMessages",
+        "parameters" : [ {
+          "name" : "queueName",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "name" : "count",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int32",
+            "default" : 10
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiResponseListString"
+                }
+              }
+            }
+          },
+          "400" : {
+            "description" : "Validation failed or a business rule rejected the request",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "401" : {
+            "description" : "Missing, expired or revoked access token",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "403" : {
+            "description" : "The caller lacks the required permission",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "404" : {
+            "description" : "The resource does not exist in the caller's tenant",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "500" : {
+            "description" : "Unexpected error; quote error.traceId when reporting it",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "security" : [ {
+          "bearerAuth" : [ ]
+        }, {
+          "tenantHeader" : [ ]
+        } ]
+      }
+    },
     "/api/v1/admin/push-providers" : {
       "get" : {
         "tags" : [ "Push Providers (Admin)" ],
@@ -71354,6 +71643,11 @@
           },
           "webhookVerifyToken" : {
             "type" : "string"
+          },
+          "version" : {
+            "type" : "integer",
+            "format" : "int64",
+            "description" : "The version read with this config; omit when creating it"
           }
         }
       },
@@ -71409,6 +71703,10 @@
           "updatedAt" : {
             "type" : "string",
             "format" : "date-time"
+          },
+          "version" : {
+            "type" : "integer",
+            "format" : "int64"
           }
         },
         "required" : [ "accessTokenConfigured", "active", "appSecretConfigured", "publicId", "webhookVerifyTokenConfigured" ]
@@ -71506,6 +71804,11 @@
           },
           "secret" : {
             "type" : "string"
+          },
+          "version" : {
+            "type" : "integer",
+            "format" : "int64",
+            "description" : "The version read with this config; omit when creating it"
           }
         }
       },
@@ -71552,6 +71855,10 @@
           "updatedAt" : {
             "type" : "string",
             "format" : "date-time"
+          },
+          "version" : {
+            "type" : "integer",
+            "format" : "int64"
           }
         },
         "required" : [ "active", "publicId", "secretConfigured" ]
@@ -71634,6 +71941,11 @@
           },
           "secret" : {
             "type" : "string"
+          },
+          "version" : {
+            "type" : "integer",
+            "format" : "int64",
+            "description" : "The version read with this config; omit when creating it"
           }
         }
       },
@@ -71686,6 +71998,10 @@
           "updatedAt" : {
             "type" : "string",
             "format" : "date-time"
+          },
+          "version" : {
+            "type" : "integer",
+            "format" : "int64"
           }
         },
         "required" : [ "active", "publicId", "secretConfigured" ]
@@ -71705,6 +72021,11 @@
             "additionalProperties" : {
               "type" : "string"
             }
+          },
+          "version" : {
+            "type" : "integer",
+            "format" : "int64",
+            "description" : "The version read with this config; omit when creating it"
           }
         }
       },
@@ -71757,6 +72078,10 @@
           "updatedAt" : {
             "type" : "string",
             "format" : "date-time"
+          },
+          "version" : {
+            "type" : "integer",
+            "format" : "int64"
           }
         },
         "required" : [ "active", "publicId" ]
@@ -71790,6 +72115,11 @@
             "type" : "string",
             "maxLength" : 2000,
             "minLength" : 0
+          },
+          "version" : {
+            "type" : "integer",
+            "format" : "int64",
+            "description" : "The version read with this config; omit when creating it"
           }
         }
       },
@@ -71848,6 +72178,10 @@
           "updatedAt" : {
             "type" : "string",
             "format" : "date-time"
+          },
+          "version" : {
+            "type" : "integer",
+            "format" : "int64"
           }
         },
         "required" : [ "active", "id", "secretConfigured" ]
@@ -71879,6 +72213,11 @@
           },
           "secret" : {
             "type" : "string"
+          },
+          "version" : {
+            "type" : "integer",
+            "format" : "int64",
+            "description" : "The version read with this config; omit when creating it"
           }
         }
       },
@@ -71941,6 +72280,10 @@
           "updatedAt" : {
             "type" : "string",
             "format" : "date-time"
+          },
+          "version" : {
+            "type" : "integer",
+            "format" : "int64"
           }
         },
         "required" : [ "active", "publicId", "secretConfigured" ]
@@ -96919,6 +97262,51 @@
             "type" : "string"
           }
         }
+      },
+      "ApiResponseListQueueStatistics" : {
+        "type" : "object",
+        "properties" : {
+          "success" : {
+            "type" : "boolean"
+          },
+          "data" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/QueueStatistics"
+            }
+          },
+          "error" : {
+            "$ref" : "#/components/schemas/ApiErrorDetail"
+          },
+          "meta" : {
+            "$ref" : "#/components/schemas/ApiResponseMeta"
+          }
+        },
+        "required" : [ "success" ]
+      },
+      "QueueStatistics" : {
+        "type" : "object",
+        "properties" : {
+          "queueName" : {
+            "type" : "string"
+          },
+          "messageCount" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "consumerCount" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "hasDlq" : {
+            "type" : "boolean"
+          },
+          "dlqMessageCount" : {
+            "type" : "integer",
+            "format" : "int32"
+          }
+        },
+        "required" : [ "consumerCount", "dlqMessageCount", "hasDlq", "messageCount" ]
       },
       "ApiResponseMapStringObject" : {
         "type" : "object",

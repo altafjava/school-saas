@@ -173,7 +173,7 @@ public class DemoDataSeeder {
 		TenantContext.runAsTenant(new TenantContextSnapshot(tenant.getId(), tenant.getPublicId(),
 				tenant.getSubdomain(), tenant.getType(), null),
 				() -> runAsTenantAdmin(tenant.getId(), () -> {
-					if (userRepository.existsByEmail(LAST_SEEDED_EMAIL)) {
+					if (userRepository.existsByEmail(LAST_SEEDED_EMAIL, tenant.getId())) {
 						log.info("action=demo_seed_skipped reason=already-seeded subdomain={}", subdomain);
 						return;
 					}
@@ -303,7 +303,8 @@ public class DemoDataSeeder {
 		seedLogins(teachers.get(0), students.get(0), guardians.get(0));
 
 		DemoSchool school = new DemoSchool(TenantContext.getCurrentTenantId(),
-				userRepository.findByEmail(ADMIN_EMAIL).orElseThrow().getId(), today, year, teachers, staff, students,
+				userRepository.findByEmail(ADMIN_EMAIL, TenantContext.getCurrentTenantId()).orElseThrow().getId(),
+				today, year, teachers, staff, students,
 				guardians);
 		librarySeeder.seed(school);
 		admissionsSeeder.seed(school);

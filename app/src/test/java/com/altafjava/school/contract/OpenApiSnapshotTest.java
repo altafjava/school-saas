@@ -43,7 +43,9 @@ import tools.jackson.databind.ObjectMapper;
  * {@code src/test/resources/openapi-snapshot.json}.
  */
 @Import({ TestRedisConfig.class, TestPaymentConfig.class })
-@TestPropertySource(properties = { "security.swagger.public=true", "springdoc.api-docs.enabled=true" })
+// RabbitMQ is on, as in production, so broker-backed endpoints such as queue admin are in the contract.
+@TestPropertySource(properties = { "security.swagger.public=true", "springdoc.api-docs.enabled=true",
+		"spring.rabbitmq.enabled=true", "spring.autoconfigure.exclude=" })
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class OpenApiSnapshotTest extends SchoolIntegrationTestBase {
 

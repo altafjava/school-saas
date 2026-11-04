@@ -131,7 +131,7 @@ class ReportCardGenerationJobIntegrationTest extends SchoolIntegrationTestBase {
 						.getTotalElements(),
 				"A real ReportCard row must be persisted for student 2");
 
-		User admin = userRepository.findByEmail(adminEmail)
+		User admin = userRepository.findByEmail(adminEmail, tenant.getId())
 				.orElseThrow(() -> new IllegalStateException("Admin user not found: " + adminEmail));
 		Page<Notification> notifications = notificationRepository.findByUserId(admin.getId(), Pageable.of(0, 10));
 
@@ -152,7 +152,7 @@ class ReportCardGenerationJobIntegrationTest extends SchoolIntegrationTestBase {
 
 		assertTrue(result instanceof JobExecutionResult.Success, "Job must report success: " + result);
 
-		User admin = userRepository.findByEmail(adminEmail)
+		User admin = userRepository.findByEmail(adminEmail, tenant.getId())
 				.orElseThrow(() -> new IllegalStateException("Admin user not found: " + adminEmail));
 		Page<Notification> notifications = notificationRepository.findByUserId(admin.getId(), Pageable.of(0, 10));
 
