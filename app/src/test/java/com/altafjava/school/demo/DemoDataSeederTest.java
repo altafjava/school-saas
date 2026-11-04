@@ -3,6 +3,7 @@ package com.altafjava.school.demo;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
@@ -72,7 +73,7 @@ class DemoDataSeederTest {
 
 	@Test
 	void seed_alreadyFinished_doesNothing() {
-		when(userRepository.existsByEmail("parent@demo.school")).thenReturn(true);
+		when(userRepository.existsByEmail(eq("parent@demo.school"), any())).thenReturn(true);
 
 		assertSame(tenant, seeder.seed());
 
