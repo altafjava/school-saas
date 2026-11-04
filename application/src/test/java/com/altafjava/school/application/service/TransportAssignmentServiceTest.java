@@ -15,6 +15,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import com.altafjava.platform.core.exception.BusinessException;
+import com.altafjava.platform.core.exception.ResourceNotFoundException;
 import com.altafjava.platform.core.tenant.TenantContext;
 import com.altafjava.platform.core.tenant.TenantType;
 import com.altafjava.school.domain.student.model.Student;
@@ -108,7 +109,7 @@ class TransportAssignmentServiceTest {
 	}
 
 	@Test
-	void assign_stopNotBelongingToRoute_throwsBusinessException() {
+	void assign_stopNotBelongingToRoute_isNotFound() {
 		when(studentRepository.findByPublicIdAndTenantId(STUDENT_PUBLIC_ID, 1L))
 				.thenReturn(Optional.of(studentWithId(10L)));
 		when(routeRepository.findByPublicIdAndTenantId(ROUTE_PUBLIC_ID, 1L))
@@ -118,7 +119,7 @@ class TransportAssignmentServiceTest {
 		when(routeStopRepository.findByPublicIdAndTenantId(STOP_PUBLIC_ID, 1L))
 				.thenReturn(Optional.of(stopWithId(40L, 999L)));
 
-		assertThrows(BusinessException.class, () -> transportAssignmentService.assign(STUDENT_PUBLIC_ID.toString(),
+		assertThrows(ResourceNotFoundException.class, () -> transportAssignmentService.assign(STUDENT_PUBLIC_ID.toString(),
 				ROUTE_PUBLIC_ID.toString(), VEHICLE_PUBLIC_ID.toString(), STOP_PUBLIC_ID.toString(),
 				LocalDate.of(2026, 4, 1)));
 	}

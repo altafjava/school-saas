@@ -6,6 +6,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import com.altafjava.platform.core.concurrency.ExpectedVersion;
 import com.altafjava.platform.core.exception.BusinessException;
+import com.altafjava.platform.core.exception.PlatformErrorCode;
 import com.altafjava.platform.core.exception.ResourceNotFoundException;
 import com.altafjava.platform.core.tenant.TenantContext;
 import com.altafjava.school.domain.payroll.model.PayComponentDefinition;
@@ -44,7 +45,7 @@ public class PayComponentDefinitionService {
 	public PayComponentDefinition create(String code, String name, PayComponentType type, int displayOrder) {
 		Long tenantId = TenantContext.getCurrentTenantId();
 		if (payComponentDefinitionRepository.existsByCodeAndTenantId(code, tenantId)) {
-			throw new BusinessException("Pay component already exists: " + code);
+			throw new BusinessException(PlatformErrorCode.DUPLICATE_RESOURCE, "Pay component already exists: " + code);
 		}
 		return payComponentDefinitionRepository.save(PayComponentDefinition.create(code, name, type, displayOrder));
 	}

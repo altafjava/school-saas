@@ -116,7 +116,7 @@ class FeeReceiptE2ETest extends SchoolIntegrationTestBase {
 				.when()
 				.get("/api/v1/fee-payments/" + paymentPublicId + "/receipt")
 				.then()
-				.statusCode(HttpStatus.BAD_REQUEST.value())
+				.statusCode(HttpStatus.CONFLICT.value())
 				.body("error.message", containsString("bounced"));
 	}
 

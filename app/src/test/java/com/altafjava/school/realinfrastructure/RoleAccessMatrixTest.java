@@ -4,6 +4,7 @@ import static io.restassured.RestAssured.given;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Stream;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -39,6 +40,7 @@ class RoleAccessMatrixTest extends SchoolInfrastructureTestBase {
 
 	private static final List<Rule> MATRIX = List.of(
 			new Rule("/me", Set.copyOf(EVERYONE)),
+			new Rule("/me/tenants", Set.copyOf(EVERYONE)),
 			new Rule("/dashboards/principal", Set.of(ADMIN, PRINCIPAL)),
 			new Rule("/dashboards/finance", Set.of(ADMIN, FINANCE)),
 			new Rule("/dashboards/hr", Set.of(ADMIN, HR)),
@@ -60,7 +62,8 @@ class RoleAccessMatrixTest extends SchoolInfrastructureTestBase {
 			new Rule("/billing/tax-id", Set.of(ADMIN)),
 			new Rule("/tenant-settings/integration-providers", Set.of(ADMIN)),
 			new Rule("/admin/tenant-deletions", Set.of()),
-			new Rule("/admin/integration-providers", Set.of()));
+			new Rule("/admin/integration-providers", Set.of()),
+			new Rule("/admin/product", Set.of()));
 
 	@LocalServerPort
 	private int port;
@@ -70,6 +73,8 @@ class RoleAccessMatrixTest extends SchoolInfrastructureTestBase {
 	private StringRedisTemplate redis;
 
 	private Long tenantId;
+	// One sign-in per role: 200 logins would drain the anonymous per-client bucket the whole suite shares.
+	private static final Map<String, String> TOKENS = new ConcurrentHashMap<>();
 
 	@BeforeEach
 	void resolveTenant() {
@@ -86,7 +91,7 @@ class RoleAccessMatrixTest extends SchoolInfrastructureTestBase {
 	@MethodSource("matrix")
 	void role_getsExactlyTheAccessItShould(String email, String path, boolean allowed) {
 		given().baseUri("http://localhost").port(port).header("X-Tenant-ID", tenantId)
-				.header("Authorization", "Bearer " + signIn(email))
+				.header("Authorization", "Bearer " + TOKENS.computeIfAbsent(email, this::signIn))
 				.when().get("/api/v1" + path)
 				.then().statusCode(allowed ? 200 : 403);
 	}

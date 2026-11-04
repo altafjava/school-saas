@@ -3,6 +3,7 @@ package com.altafjava.school.domain.leave.model;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.Map;
 import java.util.Optional;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -13,7 +14,9 @@ import jakarta.persistence.PreUpdate;
 import jakarta.persistence.Table;
 import org.hibernate.annotations.SQLRestriction;
 import com.altafjava.platform.core.exception.BusinessException;
+import com.altafjava.platform.core.exception.PlatformErrorCode;
 import com.altafjava.platform.core.model.SoftDeletableEntity;
+import com.altafjava.school.domain.error.StaffErrorCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -80,14 +83,15 @@ public class LeaveRequest extends SoftDeletableEntity {
 	private void assertConsistent() {
 		if (approvalsRequired < 1 || approvalsRequired > 2 || approvalsGranted < 0
 				|| approvalsGranted > approvalsRequired) {
-			throw new BusinessException("Leave approvals are out of range");
+			throw new BusinessException(PlatformErrorCode.INTERNAL_ERROR, "Leave approvals are out of range");
 		}
 	}
 
 	public static LeaveRequest submit(Long employeeId, Long leaveTypeId, Long academicYearId, LocalDate startDate,
 			LocalDate endDate, String reason, BigDecimal daysRequested, int approvalsRequired) {
 		if (endDate.isBefore(startDate)) {
-			throw new BusinessException("Leave end date cannot be before the start date");
+			throw new BusinessException(StaffErrorCode.LEAVE_DATES_INVALID,
+					"Leave end date cannot be before the start date");
 		}
 		return LeaveRequest.builder()
 				.employeeId(employeeId)
@@ -133,17 +137,20 @@ public class LeaveRequest extends SoftDeletableEntity {
 
 	public void cancel(LocalDate today) {
 		if (this.status == LeaveRequestStatus.REJECTED || this.status == LeaveRequestStatus.CANCELLED) {
-			throw new BusinessException("Cannot cancel a leave request that is already " + this.status);
+			throw new BusinessException(StaffErrorCode.LEAVE_REQUEST_STATUS_INVALID,
+					"Cannot cancel a leave request that is already " + this.status, Map.of("status", this.status));
 		}
 		if (this.startDate.isBefore(today)) {
-			throw new BusinessException("Cannot cancel a leave request that has already started");
+			throw new BusinessException(StaffErrorCode.LEAVE_ALREADY_STARTED,
+					"Cannot cancel a leave request that has already started");
 		}
 		this.status = LeaveRequestStatus.CANCELLED;
 	}
 
 	private void requireStatus(LeaveRequestStatus required, String action) {
 		if (this.status != required) {
-			throw new BusinessException("Cannot " + action + " a leave request in status " + this.status);
+			throw new BusinessException(StaffErrorCode.LEAVE_REQUEST_STATUS_INVALID,
+					"Cannot " + action + " a leave request in status " + this.status, Map.of("status", this.status));
 		}
 	}
 }

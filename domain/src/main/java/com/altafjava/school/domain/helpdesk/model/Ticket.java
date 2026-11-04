@@ -1,5 +1,6 @@
 package com.altafjava.school.domain.helpdesk.model;
 
+import java.util.Map;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -8,6 +9,7 @@ import jakarta.persistence.Table;
 import org.hibernate.annotations.SQLRestriction;
 import com.altafjava.platform.core.exception.BusinessException;
 import com.altafjava.platform.core.model.SoftDeletableEntity;
+import com.altafjava.school.domain.error.SchoolErrorCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -67,7 +69,8 @@ public class Ticket extends SoftDeletableEntity {
 
 	public void assign(Long assignedToUserId) {
 		if (this.status == TicketStatus.CLOSED) {
-			throw new BusinessException("Cannot assign a closed ticket");
+			throw new BusinessException(SchoolErrorCode.TICKET_STATUS_INVALID, "Cannot assign a closed ticket",
+					Map.of("status", this.status));
 		}
 		this.assignedToUserId = assignedToUserId;
 		this.status = TicketStatus.IN_PROGRESS;
@@ -75,7 +78,8 @@ public class Ticket extends SoftDeletableEntity {
 
 	public void resolve(String resolutionText) {
 		if (this.status != TicketStatus.OPEN && this.status != TicketStatus.IN_PROGRESS) {
-			throw new BusinessException("Cannot resolve a ticket in status " + this.status);
+			throw new BusinessException(SchoolErrorCode.TICKET_STATUS_INVALID,
+					"Cannot resolve a ticket in status " + this.status, Map.of("status", this.status));
 		}
 		this.status = TicketStatus.RESOLVED;
 		this.resolution = resolutionText;
@@ -83,15 +87,18 @@ public class Ticket extends SoftDeletableEntity {
 
 	public void close() {
 		if (this.status != TicketStatus.RESOLVED) {
-			throw new BusinessException("Cannot close a ticket that is not resolved (current status: "
-					+ this.status + ")");
+			throw new BusinessException(SchoolErrorCode.TICKET_STATUS_INVALID,
+					"Cannot close a ticket that is not resolved (current status: "
+							+ this.status + ")",
+					Map.of("status", this.status));
 		}
 		this.status = TicketStatus.CLOSED;
 	}
 
 	public void reopen() {
 		if (this.status != TicketStatus.RESOLVED && this.status != TicketStatus.CLOSED) {
-			throw new BusinessException("Cannot reopen a ticket in status " + this.status);
+			throw new BusinessException(SchoolErrorCode.TICKET_STATUS_INVALID,
+					"Cannot reopen a ticket in status " + this.status, Map.of("status", this.status));
 		}
 		this.status = TicketStatus.OPEN;
 		this.resolution = null;

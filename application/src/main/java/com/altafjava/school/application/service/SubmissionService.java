@@ -22,6 +22,7 @@ import com.altafjava.school.application.scheduler.support.StudentNotificationRec
 import com.altafjava.school.application.security.AcademicAccessGuard;
 import com.altafjava.school.application.time.SchoolClock;
 import com.altafjava.school.domain.classroom.repository.StudentClassroomLinkRepository;
+import com.altafjava.school.domain.error.AcademicErrorCode;
 import com.altafjava.school.domain.lms.model.Assignment;
 import com.altafjava.school.domain.lms.model.Submission;
 import com.altafjava.school.domain.lms.repository.AssignmentRepository;
@@ -72,7 +73,7 @@ public class SubmissionService {
 		}
 		if (submissionRepository.existsByAssignmentIdAndStudentIdAndTenantId(assignment.getId(), student.getId(),
 				tenantId)) {
-			throw new BusinessException(
+			throw new BusinessException(AcademicErrorCode.SUBMISSION_EXISTS,
 					"A submission already exists for student " + student.getId() + " on assignment "
 							+ assignmentPublicId);
 		}

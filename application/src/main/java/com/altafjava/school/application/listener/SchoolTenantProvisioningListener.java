@@ -14,6 +14,7 @@ import com.altafjava.platform.application.event.events.TenantCreatedEvent;
 import com.altafjava.platform.application.service.approval.ApprovalWorkflowDefinitionService;
 import com.altafjava.platform.application.service.privacy.DataRetentionPolicyService;
 import com.altafjava.platform.core.exception.BusinessException;
+import com.altafjava.platform.core.exception.PlatformErrorCode;
 import com.altafjava.platform.core.tenant.TenantContext;
 import com.altafjava.platform.core.tenant.TenantContextSnapshot;
 import com.altafjava.platform.domain.approval.repository.ApprovalWorkflowDefinitionRepository;
@@ -381,7 +382,8 @@ public class SchoolTenantProvisioningListener {
 		try {
 			return objectMapper.writeValueAsString(variableNames);
 		} catch (JacksonException e) {
-			throw new BusinessException("Failed to serialize notification template variables");
+			throw new BusinessException(PlatformErrorCode.INTERNAL_ERROR,
+					"Failed to serialize notification template variables");
 		}
 	}
 

@@ -12,7 +12,9 @@ import jakarta.persistence.PreUpdate;
 import jakarta.persistence.Table;
 import org.hibernate.annotations.SQLRestriction;
 import com.altafjava.platform.core.exception.BusinessException;
+import com.altafjava.platform.core.exception.PlatformErrorCode;
 import com.altafjava.platform.core.model.SoftDeletableEntity;
+import com.altafjava.school.domain.error.AttendanceErrorCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
@@ -60,10 +62,10 @@ public class StaffAttendance extends SoftDeletableEntity {
 	@PreUpdate
 	private void assertConsistent() {
 		if (checkOutAt != null && (checkInAt == null || checkOutAt.isBefore(checkInAt))) {
-			throw new BusinessException("A check-out needs an earlier check-in");
+			throw new BusinessException(PlatformErrorCode.INTERNAL_ERROR, "A check-out needs an earlier check-in");
 		}
 		if (status == StaffAttendanceStatus.ABSENT && checkInAt != null) {
-			throw new BusinessException("An absent day has no check-in");
+			throw new BusinessException(PlatformErrorCode.INTERNAL_ERROR, "An absent day has no check-in");
 		}
 	}
 
@@ -88,13 +90,13 @@ public class StaffAttendance extends SoftDeletableEntity {
 
 	public void checkOut(LocalDateTime at, StaffWorkday workday) {
 		if (checkInAt == null) {
-			throw new BusinessException("Check in before checking out");
+			throw new BusinessException(AttendanceErrorCode.CHECK_IN_REQUIRED, "Check in before checking out");
 		}
 		if (checkOutAt != null) {
-			throw new BusinessException("Already checked out today");
+			throw new BusinessException(AttendanceErrorCode.ALREADY_CHECKED_OUT, "Already checked out today");
 		}
 		if (!at.isAfter(checkInAt)) {
-			throw new BusinessException("Check-out must come after check-in");
+			throw new BusinessException(AttendanceErrorCode.CHECK_TIMES_INVALID, "Check-out must come after check-in");
 		}
 		this.checkOutAt = at;
 		applyDeparture(workday);
@@ -132,14 +134,16 @@ public class StaffAttendance extends SoftDeletableEntity {
 
 		void requireConsistentWith(LocalDate date) {
 			if (status == null) {
-				throw new BusinessException("A status is required");
+				throw new BusinessException(AttendanceErrorCode.ATTENDANCE_STATUS_REQUIRED, "A status is required");
 			}
 			if (checkInAt != null && !checkInAt.toLocalDate().equals(date)
 					|| checkOutAt != null && !checkOutAt.toLocalDate().equals(date)) {
-				throw new BusinessException("Check-in and check-out must fall on " + date);
+				throw new BusinessException(AttendanceErrorCode.CHECK_TIMES_INVALID,
+						"Check-in and check-out must fall on " + date);
 			}
 			if (status == StaffAttendanceStatus.ABSENT && (checkInAt != null || checkOutAt != null)) {
-				throw new BusinessException("An absent day has no check-in or check-out");
+				throw new BusinessException(AttendanceErrorCode.ABSENT_WITH_TIMES,
+						"An absent day has no check-in or check-out");
 			}
 		}
 	}

@@ -72,7 +72,7 @@ class EnquiryE2ETest extends SchoolIntegrationTestBase {
 		admin().get("/api/v1/admissions/" + admission).then().statusCode(HttpStatus.OK.value())
 				.body("data.applicantFirstName", equalTo("Noa"))
 				.body("data.appliedGrade", equalTo("3"));
-		admin().body("{}").post(BASE + "/" + enquiry + "/convert").then().statusCode(HttpStatus.BAD_REQUEST.value());
+		admin().body("{}").post(BASE + "/" + enquiry + "/convert").then().statusCode(HttpStatus.CONFLICT.value());
 		admin().get(BASE + "?followUpDueBy=" + next + "&size=100").then()
 				.body("data.content.publicId", not(hasItem(enquiry)));
 	}
@@ -83,7 +83,7 @@ class EnquiryE2ETest extends SchoolIntegrationTestBase {
 
 		admin().body("{\"reason\":\"Moved city\"}").post(BASE + "/" + enquiry + "/close").then()
 				.statusCode(HttpStatus.OK.value()).body("data.status", equalTo("CLOSED"));
-		admin().body("{}").post(BASE + "/" + enquiry + "/convert").then().statusCode(HttpStatus.BAD_REQUEST.value());
+		admin().body("{}").post(BASE + "/" + enquiry + "/convert").then().statusCode(HttpStatus.CONFLICT.value());
 		admin().post(BASE + "/" + enquiry + "/reopen").then().statusCode(HttpStatus.OK.value())
 				.body("data.status", equalTo("IN_PROGRESS"));
 	}

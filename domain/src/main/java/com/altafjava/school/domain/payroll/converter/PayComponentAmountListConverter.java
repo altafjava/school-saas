@@ -4,6 +4,7 @@ import java.util.List;
 import jakarta.persistence.AttributeConverter;
 import jakarta.persistence.Converter;
 import com.altafjava.platform.core.exception.BusinessException;
+import com.altafjava.platform.core.exception.PlatformErrorCode;
 import com.altafjava.school.domain.payroll.model.PayComponentAmount;
 import tools.jackson.core.JacksonException;
 import tools.jackson.core.type.TypeReference;
@@ -25,7 +26,7 @@ public class PayComponentAmountListConverter implements AttributeConverter<List<
 		try {
 			return OBJECT_MAPPER.writeValueAsString(attribute == null ? List.of() : attribute);
 		} catch (JacksonException e) {
-			throw new BusinessException("Failed to serialize pay component amounts");
+			throw new BusinessException(PlatformErrorCode.INTERNAL_ERROR, "Failed to serialize pay component amounts");
 		}
 	}
 
@@ -37,7 +38,8 @@ public class PayComponentAmountListConverter implements AttributeConverter<List<
 		try {
 			return OBJECT_MAPPER.readValue(dbData, LIST_TYPE);
 		} catch (JacksonException e) {
-			throw new BusinessException("Failed to deserialize pay component amounts");
+			throw new BusinessException(PlatformErrorCode.INTERNAL_ERROR,
+					"Failed to deserialize pay component amounts");
 		}
 	}
 }

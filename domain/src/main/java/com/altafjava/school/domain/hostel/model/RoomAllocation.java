@@ -6,6 +6,7 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.Table;
 import org.hibernate.annotations.SQLRestriction;
 import com.altafjava.platform.core.exception.BusinessException;
+import com.altafjava.platform.core.exception.PlatformErrorCode;
 import com.altafjava.platform.core.model.SoftDeletableEntity;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -49,10 +50,12 @@ public class RoomAllocation extends SoftDeletableEntity {
 
 	public void vacate(LocalDate allocatedUntil) {
 		if (this.allocatedUntil != null) {
-			throw new BusinessException("Room allocation already vacated on " + this.allocatedUntil);
+			throw new BusinessException(PlatformErrorCode.CONFLICT,
+					"Room allocation already vacated on " + this.allocatedUntil);
 		}
 		if (allocatedUntil.isBefore(this.allocatedFrom)) {
-			throw new BusinessException("Allocated-until date cannot be before the allocated-from date");
+			throw new BusinessException(PlatformErrorCode.INVALID_ARGUMENT,
+					"Allocated-until date cannot be before the allocated-from date");
 		}
 		this.allocatedUntil = allocatedUntil;
 	}

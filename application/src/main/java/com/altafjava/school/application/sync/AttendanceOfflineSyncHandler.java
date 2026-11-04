@@ -10,6 +10,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 import com.altafjava.platform.core.concurrency.ExpectedVersion;
 import com.altafjava.platform.core.exception.BusinessException;
+import com.altafjava.platform.core.exception.PlatformErrorCode;
 import com.altafjava.platform.core.sync.EntityChange;
 import com.altafjava.platform.core.sync.OfflineSyncEntityHandler;
 import com.altafjava.platform.core.tenant.TenantContext;
@@ -98,7 +99,8 @@ public class AttendanceOfflineSyncHandler implements OfflineSyncEntityHandler {
 		try {
 			return objectMapper.readValue(json, type);
 		} catch (JacksonException e) {
-			throw new BusinessException("Invalid sync payload for attendance: " + e.getMessage());
+			throw new BusinessException(PlatformErrorCode.INVALID_ARGUMENT,
+					"Invalid sync payload for attendance: " + e.getMessage());
 		}
 	}
 

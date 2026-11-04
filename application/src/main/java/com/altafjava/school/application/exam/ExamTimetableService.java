@@ -16,6 +16,7 @@ import com.altafjava.school.application.reference.PublicIdLookup;
 import com.altafjava.school.application.security.AcademicAccessGuard;
 import com.altafjava.school.domain.classroom.model.Classroom;
 import com.altafjava.school.domain.classroom.repository.ClassroomRepository;
+import com.altafjava.school.domain.error.AcademicErrorCode;
 import com.altafjava.school.domain.exam.event.ExamSchedulePublishedEvent;
 import com.altafjava.school.domain.exam.model.Exam;
 import com.altafjava.school.domain.exam.model.ExamStatus;
@@ -62,7 +63,8 @@ public class ExamTimetableService {
 				.filter(exam -> exam.getStatus() == ExamStatus.SCHEDULED && !exam.isSchedulePublished())
 				.toList();
 		if (unpublished.isEmpty()) {
-			throw new BusinessException("This classroom has no scheduled exam waiting to be published");
+			throw new BusinessException(AcademicErrorCode.EXAM_TIMETABLE_NOTHING_TO_PUBLISH,
+					"This classroom has no scheduled exam waiting to be published");
 		}
 		unpublished.forEach(Exam::publishSchedule);
 		List<Exam> saved = examRepository.saveAll(unpublished);

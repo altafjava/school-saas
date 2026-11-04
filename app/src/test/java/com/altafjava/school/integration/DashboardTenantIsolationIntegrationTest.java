@@ -148,7 +148,8 @@ class DashboardTenantIsolationIntegrationTest extends SchoolIntegrationTestBase 
 
 		// Seeding happens inside the @Async TenantCreatedEvent listener — poll rather than assert
 		// immediately, since registerTenant() in @BeforeEach returns before that listener runs.
-		await().atMost(Duration.ofSeconds(5)).untilAsserted(() -> {
+		// Poll on this thread: the tenant context is thread-bound, and another thread would read every tenant's rows.
+		await().atMost(Duration.ofSeconds(5)).pollInSameThread().untilAsserted(() -> {
 			Set<String> seededNames = currentTenantDashboardReportNames();
 			assertTrue(seededNames.containsAll(EXPECTED_DASHBOARD_REPORT_NAMES),
 					"Expected all four dashboard report definitions to be seeded, found: " + seededNames);

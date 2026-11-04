@@ -1,6 +1,7 @@
 package com.altafjava.school.domain.fee.model;
 
 import java.math.BigDecimal;
+import java.util.Map;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -9,7 +10,9 @@ import jakarta.persistence.PrePersist;
 import jakarta.persistence.PreUpdate;
 import jakarta.persistence.Table;
 import com.altafjava.platform.core.exception.BusinessException;
+import com.altafjava.platform.core.exception.PlatformErrorCode;
 import com.altafjava.platform.core.model.TenantEntity;
+import com.altafjava.school.domain.error.FeeErrorCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
@@ -71,14 +74,14 @@ public class FeeRefund extends TenantEntity {
 	@PreUpdate
 	private void assertConsistent() {
 		if (amount.signum() <= 0) {
-			throw new BusinessException("A refund must be positive");
+			throw new BusinessException(PlatformErrorCode.INTERNAL_ERROR, "A refund must be positive");
 		}
 	}
 
 	public static FeeRefund reserve(FeePayment payment, BigDecimal amount, String reason, RefundMethod method,
 			String creditNoteNumber, Long refundedByUserId) {
 		if (amount == null || amount.signum() <= 0) {
-			throw new BusinessException("Refund amount must be greater than zero");
+			throw new BusinessException(FeeErrorCode.AMOUNT_INVALID, "Refund amount must be greater than zero");
 		}
 		return FeeRefund.builder()
 				.feePaymentId(payment.getId())
@@ -112,7 +115,8 @@ public class FeeRefund extends TenantEntity {
 
 	private void requirePending() {
 		if (status != RefundStatus.PENDING) {
-			throw new BusinessException("Only a pending refund can be settled, was " + status);
+			throw new BusinessException(FeeErrorCode.REFUND_NOT_PENDING,
+					"Only a pending refund can be settled, was " + status, Map.of("status", status));
 		}
 	}
 }

@@ -12,6 +12,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import com.altafjava.platform.core.concurrency.ExpectedVersion;
 import com.altafjava.platform.core.exception.BusinessException;
+import com.altafjava.platform.core.exception.PlatformErrorCode;
 import com.altafjava.platform.core.exception.ResourceNotFoundException;
 import com.altafjava.platform.core.search.LikePattern;
 import com.altafjava.platform.core.tenant.TenantContext;
@@ -24,6 +25,8 @@ import com.altafjava.school.domain.curriculum.model.GradingScaleThreshold;
 import com.altafjava.school.domain.curriculum.repository.CurriculumRepository;
 import com.altafjava.school.domain.curriculum.repository.GradingScaleRepository;
 import com.altafjava.school.domain.curriculum.repository.GradingScaleThresholdRepository;
+import com.altafjava.school.domain.error.AcademicErrorCode;
+import com.altafjava.school.domain.error.SchoolErrorCode;
 
 /**
  * CRUD over tenant-defined, named grading scales and their thresholds, plus the resolution logic
@@ -81,7 +84,7 @@ public class GradingScaleService {
 	public GradingScale create(String name, List<GradingScaleThresholdInput> thresholds, boolean isDefault) {
 		Long tenantId = TenantContext.getCurrentTenantId();
 		if (gradingScaleRepository.existsByNameAndTenantId(name, tenantId)) {
-			throw new BusinessException("Grading scale already exists: " + name);
+			throw new BusinessException(SchoolErrorCode.CODE_TAKEN, "Grading scale already exists: " + name);
 		}
 		validateCoverage(thresholds);
 		if (isDefault) {
@@ -123,7 +126,8 @@ public class GradingScaleService {
 	public GradingScale deactivate(String publicId) {
 		GradingScale scale = findByPublicId(publicId);
 		if (scale.isDefault()) {
-			throw new BusinessException("Cannot deactivate the tenant's default grading scale");
+			throw new BusinessException(AcademicErrorCode.DEFAULT_GRADING_SCALE,
+					"Cannot deactivate the tenant's default grading scale");
 		}
 		scale.deactivate();
 		return gradingScaleRepository.save(scale);
@@ -137,7 +141,8 @@ public class GradingScaleService {
 		List<GradingScaleThreshold> thresholds = gradingScaleThresholdRepository
 				.findAllByGradingScaleIdAndTenantId(gradingScaleId, tenantId);
 		if (thresholds.isEmpty()) {
-			throw new BusinessException("Grading scale " + gradingScaleId + " has no thresholds configured");
+			throw new BusinessException(PlatformErrorCode.INTERNAL_ERROR,
+					"Grading scale " + gradingScaleId + " has no thresholds configured");
 		}
 		return thresholds.stream().map(GradeBand::of).toList();
 	}
@@ -153,7 +158,8 @@ public class GradingScaleService {
 		}
 		return gradingScaleRepository.findByIsDefaultTrueAndTenantId(tenantId)
 				.map(GradingScale::getId)
-				.orElseThrow(() -> new BusinessException("No default grading scale configured for this tenant"));
+				.orElseThrow(() -> new BusinessException(AcademicErrorCode.NO_DEFAULT_GRADING_SCALE,
+						"No default grading scale configured for this tenant"));
 	}
 
 	private void unmarkExistingDefault(Long tenantId) {
@@ -170,14 +176,16 @@ public class GradingScaleService {
 
 	private void validateCoverage(List<GradingScaleThresholdInput> thresholds) {
 		if (thresholds == null || thresholds.isEmpty()) {
-			throw new BusinessException("Grading scale must contain at least one threshold");
+			throw new BusinessException(AcademicErrorCode.GRADING_SCALE_INCOMPLETE,
+					"Grading scale must contain at least one threshold");
 		}
 		BigDecimal lowestMinPercentage = thresholds.stream()
 				.map(GradingScaleThresholdInput::minPercentage)
 				.min(Comparator.naturalOrder())
 				.orElseThrow();
 		if (lowestMinPercentage.compareTo(BigDecimal.ZERO) > 0) {
-			throw new BusinessException("Grading scale must cover down to 0%");
+			throw new BusinessException(AcademicErrorCode.GRADING_SCALE_INCOMPLETE,
+					"Grading scale must cover down to 0%");
 		}
 	}
 }

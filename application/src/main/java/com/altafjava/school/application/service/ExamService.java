@@ -2,6 +2,7 @@ package com.altafjava.school.application.service;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.Map;
 import java.util.UUID;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -22,6 +23,7 @@ import com.altafjava.school.application.reference.PublicIdLookup;
 import com.altafjava.school.application.security.AcademicAccessGuard;
 import com.altafjava.school.application.security.CourseworkReach;
 import com.altafjava.school.domain.classroom.repository.ClassroomRepository;
+import com.altafjava.school.domain.error.AcademicErrorCode;
 import com.altafjava.school.domain.exam.event.ExamResultsPublishedEvent;
 import com.altafjava.school.domain.exam.model.Exam;
 import com.altafjava.school.domain.exam.model.ExamSlot;
@@ -170,7 +172,8 @@ public class ExamService {
 		Exam exam = findByPublicId(publicId);
 		Long tenantId = TenantContext.getCurrentTenantId();
 		if (!gradeRepository.existsByExamIdAndTenantId(exam.getId(), tenantId)) {
-			throw new BusinessException("Results cannot be published before any grade is recorded");
+			throw new BusinessException(AcademicErrorCode.RESULTS_HAVE_NO_GRADES,
+					"Results cannot be published before any grade is recorded");
 		}
 		exam.publishResults(publishedBy);
 		Exam saved = examRepository.save(exam);
@@ -197,9 +200,10 @@ public class ExamService {
 						exam.getTermId(), ExamStatus.CANCELLED, exam.getId());
 		BigDecimal total = claimed.add(exam.getWeightage());
 		if (total.compareTo(Exam.FULL_WEIGHTAGE) > 0) {
-			throw new BusinessException(
+			throw new BusinessException(AcademicErrorCode.TERM_WEIGHTAGE_EXCEEDED,
 					"The exams of this subject in the term would weigh " + total.stripTrailingZeros().toPlainString()
-							+ "%, above the 100% a subject's term result can carry");
+							+ "%, above the 100% a subject's term result can carry",
+					Map.of("total", total.stripTrailingZeros().toPlainString()));
 		}
 	}
 

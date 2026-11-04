@@ -18,6 +18,7 @@ import org.springframework.transaction.annotation.Transactional;
 import com.altafjava.platform.application.event.publisher.EventPublisher;
 import com.altafjava.platform.core.concurrency.ExpectedVersion;
 import com.altafjava.platform.core.exception.BusinessException;
+import com.altafjava.platform.core.exception.IdentityErrorCode;
 import com.altafjava.platform.core.exception.ResourceNotFoundException;
 import com.altafjava.platform.core.search.LikePattern;
 import com.altafjava.platform.core.security.AuthenticatedUser;
@@ -75,7 +76,7 @@ public class GuardianService {
 	@Transactional
 	public Guardian create(String firstName, String lastName, String email, String phone, String userPublicId) {
 		if (!phoneNumberValidator.isValid(phone, null)) {
-			throw new BusinessException("Invalid phone number: " + phone);
+			throw new BusinessException(IdentityErrorCode.PHONE_INVALID, "Invalid phone number: " + phone);
 		}
 		Long userId = userPublicId == null ? null : userReferenceResolver.requireUserId(userPublicId);
 		Guardian guardian = Guardian.create(firstName, lastName, email, phone, userId);
@@ -96,7 +97,7 @@ public class GuardianService {
 		expectedVersion.verify(guardian);
 		String defaultRegion = guardian.getAddress() != null ? guardian.getAddress().getCountryCode() : null;
 		if (!phoneNumberValidator.isValid(phone, defaultRegion)) {
-			throw new BusinessException("Invalid phone number: " + phone);
+			throw new BusinessException(IdentityErrorCode.PHONE_INVALID, "Invalid phone number: " + phone);
 		}
 		guardian.updatePhone(phone);
 		return guardianRepository.save(guardian);

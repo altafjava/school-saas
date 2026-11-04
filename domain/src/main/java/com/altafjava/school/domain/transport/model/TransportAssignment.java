@@ -6,6 +6,7 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.Table;
 import org.hibernate.annotations.SQLRestriction;
 import com.altafjava.platform.core.exception.BusinessException;
+import com.altafjava.platform.core.exception.PlatformErrorCode;
 import com.altafjava.platform.core.model.SoftDeletableEntity;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -52,10 +53,12 @@ public class TransportAssignment extends SoftDeletableEntity {
 
 	public void end(LocalDate effectiveTo) {
 		if (this.effectiveTo != null) {
-			throw new BusinessException("Transport assignment already ended on " + this.effectiveTo);
+			throw new BusinessException(PlatformErrorCode.CONFLICT,
+					"Transport assignment already ended on " + this.effectiveTo);
 		}
 		if (effectiveTo.isBefore(this.effectiveFrom)) {
-			throw new BusinessException("Effective-to date cannot be before the effective-from date");
+			throw new BusinessException(PlatformErrorCode.INVALID_ARGUMENT,
+					"Effective-to date cannot be before the effective-from date");
 		}
 		this.effectiveTo = effectiveTo;
 	}

@@ -6,11 +6,13 @@ import java.util.Set;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import com.altafjava.platform.core.exception.BusinessException;
+import com.altafjava.platform.core.exception.IdentityErrorCode;
 import com.altafjava.platform.core.tenant.TenantContext;
 import com.altafjava.platform.domain.user.model.User;
 import com.altafjava.platform.domain.user.service.UserDomainService;
 import com.altafjava.school.application.security.SchoolRoles;
 import com.altafjava.school.domain.common.service.PhoneNumberValidator;
+import com.altafjava.school.domain.error.StudentErrorCode;
 import com.altafjava.school.domain.guardian.model.Guardian;
 import com.altafjava.school.domain.guardian.model.GuardianSelfRegistrationMode;
 import com.altafjava.school.domain.guardian.model.StudentGuardianLink;
@@ -70,14 +72,14 @@ public class GuardianSelfRegistrationService {
 			String lastName, String phone) {
 		GuardianSelfRegistrationMode mode = guardianRegistrationSettingsService.getMode(tenantId);
 		if (mode == GuardianSelfRegistrationMode.CLAIM_ONLY) {
-			throw new BusinessException(
+			throw new BusinessException(StudentErrorCode.GUARDIAN_NOT_INVITED,
 					"No pending guardian record found for this email — contact the school office");
 		}
 		// Zero roles here, matching AuthController.register()'s convention exactly — unlike the
 		// claim path above, there is no pre-existing trusted binding to a student; an admin must
 		// separately link this guardian to a student and grant PARENT access.
 		if (!phoneNumberValidator.isValid(phone, null)) {
-			throw new BusinessException("Invalid phone number: " + phone);
+			throw new BusinessException(IdentityErrorCode.PHONE_INVALID, "Invalid phone number: " + phone);
 		}
 		User user = userService.createUser(tenantId, email, password, firstName, lastName, Set.of());
 		Guardian guardian = Guardian.create(firstName, lastName, email, phone, user.getId());

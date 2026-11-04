@@ -29,6 +29,7 @@ import com.altafjava.school.domain.enquiry.model.EnquiryStatus;
 import com.altafjava.school.domain.enquiry.model.FollowUpChannel;
 import com.altafjava.school.domain.enquiry.repository.EnquiryFollowUpRepository;
 import com.altafjava.school.domain.enquiry.repository.EnquiryRepository;
+import com.altafjava.school.domain.error.AdmissionErrorCode;
 import lombok.RequiredArgsConstructor;
 
 /**
@@ -118,7 +119,8 @@ public class EnquiryService {
 	public Enquiry convert(String publicId, Conversion conversion) {
 		Enquiry enquiry = require(TenantContext.getCurrentTenantId(), publicId);
 		if (!enquiry.getStatus().canMoveTo(EnquiryStatus.CONVERTED)) {
-			throw new BusinessException("Only an open enquiry can be converted into an application");
+			throw new BusinessException(AdmissionErrorCode.ENQUIRY_NOT_OPEN,
+					"Only an open enquiry can be converted into an application");
 		}
 		LocalDate dateOfBirth = conversion.childDateOfBirth() != null ? conversion.childDateOfBirth()
 				: enquiry.getChildDateOfBirth();
@@ -134,7 +136,8 @@ public class EnquiryService {
 				.findByPublicIdAndTenantId(UUID.fromString(employeePublicId), TenantContext.getCurrentTenantId())
 				.orElseThrow(() -> new ResourceNotFoundException("Employee not found: " + employeePublicId));
 		if (employee.getStatus() != EmployeeStatus.ACTIVE) {
-			throw new BusinessException("Only an active staff member can follow up an enquiry");
+			throw new BusinessException(AdmissionErrorCode.ENQUIRY_OWNER_INACTIVE,
+					"Only an active staff member can follow up an enquiry");
 		}
 		return employee;
 	}

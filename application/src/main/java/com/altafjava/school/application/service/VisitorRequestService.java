@@ -21,6 +21,7 @@ import com.altafjava.school.application.security.VisitorRequestAuthorizer;
 import com.altafjava.school.application.time.SchoolClock;
 import com.altafjava.school.domain.employee.model.Employee;
 import com.altafjava.school.domain.employee.repository.EmployeeRepository;
+import com.altafjava.school.domain.error.SchoolErrorCode;
 import com.altafjava.school.domain.visitor.model.VisitorRequest;
 import com.altafjava.school.domain.visitor.model.VisitorRequestStatus;
 import com.altafjava.school.domain.visitor.repository.VisitorRequestRepository;
@@ -75,7 +76,7 @@ public class VisitorRequestService {
 		Employee host = employeeRepository.findByPublicIdAndTenantId(UUID.fromString(hostPublicId), tenantId)
 				.orElseThrow(() -> new ResourceNotFoundException("Host not found: " + hostPublicId));
 		if (!host.isActive()) {
-			throw new BusinessException("The host has left the school");
+			throw new BusinessException(SchoolErrorCode.VISITOR_HOST_LEFT, "The host has left the school");
 		}
 		authorizer.assertMayRaiseFor(tenantId, host, actorUserId);
 		LocalDate today = schoolClock.today(tenantId);

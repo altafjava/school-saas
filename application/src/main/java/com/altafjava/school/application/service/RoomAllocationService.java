@@ -7,6 +7,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import com.altafjava.platform.core.exception.BusinessException;
+import com.altafjava.platform.core.exception.PlatformErrorCode;
 import com.altafjava.platform.core.exception.ResourceNotFoundException;
 import com.altafjava.platform.core.tenant.TenantContext;
 import com.altafjava.school.domain.hostel.model.Room;
@@ -46,12 +47,13 @@ public class RoomAllocationService {
 				.orElseThrow(() -> new ResourceNotFoundException("Room not found: " + roomPublicId));
 
 		if (roomAllocationRepository.existsByStudentIdAndTenantIdAndAllocatedUntilIsNull(student.getId(), tenantId)) {
-			throw new BusinessException("Student " + studentPublicId + " already has an active room allocation");
+			throw new BusinessException(PlatformErrorCode.CONFLICT,
+					"Student " + studentPublicId + " already has an active room allocation");
 		}
 		long occupantCount = roomAllocationRepository.countByRoomIdAndTenantIdAndAllocatedUntilIsNull(room.getId(),
 				tenantId);
 		if (occupantCount >= room.getCapacity()) {
-			throw new BusinessException("Room " + roomPublicId + " is at full capacity");
+			throw new BusinessException(PlatformErrorCode.CONFLICT, "Room " + roomPublicId + " is at full capacity");
 		}
 
 		RoomAllocation allocation = RoomAllocation.create(student.getId(), room.getId(), allocatedFrom);

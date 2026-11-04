@@ -13,7 +13,7 @@ public interface ReportCardRepository extends JpaRepository<ReportCard, Long> {
 
 	Page<ReportCard> findByStudentIdAndTenantId(Long studentId, Long tenantId, Pageable pageable);
 
-	Optional<ReportCard> findByPublicIdAndTenantId(UUID publicId, Long tenantId);
+	Optional<ReportCard> findByPublicIdAndStudentIdAndTenantId(UUID publicId, Long studentId, Long tenantId);
 
 	boolean existsByStudentIdAndTermIdAndTenantId(Long studentId, Long termId, Long tenantId);
 

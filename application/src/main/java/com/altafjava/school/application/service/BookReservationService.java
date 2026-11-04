@@ -15,6 +15,7 @@ import com.altafjava.school.application.library.ReservationAllocator;
 import com.altafjava.school.application.reference.EntityRef;
 import com.altafjava.school.application.reference.PublicIdLookup;
 import com.altafjava.school.application.time.SchoolClock;
+import com.altafjava.school.domain.error.LibraryErrorCode;
 import com.altafjava.school.domain.library.model.Book;
 import com.altafjava.school.domain.library.model.BookCopy;
 import com.altafjava.school.domain.library.model.BookCopyStatus;
@@ -96,26 +97,31 @@ public class BookReservationService {
 
 	private void requireEligible(Long tenantId, Book book, Student student) {
 		if (!book.isActive()) {
-			throw new BusinessException("Book is no longer in the catalog: " + book.getTitle());
+			throw new BusinessException(LibraryErrorCode.BOOK_WITHDRAWN,
+					"Book is no longer in the catalog: " + book.getTitle());
 		}
 		if (student.getEnrollmentStatus() != EnrollmentStatus.ACTIVE) {
-			throw new BusinessException("Only an active student can reserve a book");
+			throw new BusinessException(LibraryErrorCode.BORROWER_NOT_ACTIVE,
+					"Only an active student can reserve a book");
 		}
 		if (bookReservationRepository.existsLiveFor(tenantId, book.getId(), student.getId())) {
-			throw new BusinessException("The student already has a reservation for this book");
+			throw new BusinessException(LibraryErrorCode.RESERVATION_EXISTS,
+					"The student already has a reservation for this book");
 		}
 		if (circulationRepository.hasTitleOut(tenantId, book.getId(), student.getId())) {
-			throw new BusinessException("The student already has a copy of this book");
+			throw new BusinessException(LibraryErrorCode.BOOK_ALREADY_BORROWED,
+					"The student already has a copy of this book");
 		}
 		if (bookCopyRepository.existsByBookIdAndStatusAndTenantId(book.getId(), BookCopyStatus.AVAILABLE, tenantId)) {
-			throw new BusinessException("A copy is on the shelf — check it out instead of reserving");
+			throw new BusinessException(LibraryErrorCode.BOOK_ON_SHELF,
+					"A copy is on the shelf — check it out instead of reserving");
 		}
 		boolean aCopyWillComeBack = bookCopyRepository.existsByBookIdAndStatusAndTenantId(book.getId(),
 				BookCopyStatus.CHECKED_OUT, tenantId)
 				|| bookCopyRepository.existsByBookIdAndStatusAndTenantId(book.getId(), BookCopyStatus.ON_HOLD,
 						tenantId);
 		if (!aCopyWillComeBack) {
-			throw new BusinessException("No copy of this book can become available");
+			throw new BusinessException(LibraryErrorCode.BOOK_UNAVAILABLE, "No copy of this book can become available");
 		}
 	}
 

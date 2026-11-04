@@ -20,6 +20,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import com.altafjava.platform.core.exception.BusinessException;
+import com.altafjava.platform.core.exception.PlatformErrorCode;
 import com.altafjava.platform.core.tenant.TenantContext;
 import com.altafjava.platform.core.tenant.TenantType;
 import com.altafjava.platform.domain.scheduler.model.JobExecutionContext;
@@ -80,7 +81,7 @@ class PayslipGenerationJobTest {
 	@Test
 	void execute_skipsEmployeeWithoutActiveSalaryStructureRatherThanFailing() {
 		when(employeeRepository.findAllEmployedSince(org.mockito.ArgumentMatchers.eq(1L), org.mockito.ArgumentMatchers.any())).thenReturn(List.of(employee(10L), employee(11L)));
-		doThrow(new BusinessException("No active salary structure for employee 10")).when(payslipService)
+		doThrow(new BusinessException(PlatformErrorCode.CONFLICT, "No active salary structure for employee 10")).when(payslipService)
 				.generate(eq(10L), any(YearMonth.class));
 
 		JobExecutionResult result = job.execute(context());

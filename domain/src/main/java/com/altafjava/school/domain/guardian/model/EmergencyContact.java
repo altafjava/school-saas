@@ -7,6 +7,7 @@ import org.hibernate.annotations.SQLRestriction;
 import com.altafjava.platform.core.exception.BusinessException;
 import com.altafjava.platform.core.model.SoftDeletableEntity;
 import com.altafjava.platform.core.security.annotation.Pii;
+import com.altafjava.school.domain.error.StudentErrorCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
@@ -49,7 +50,8 @@ public class EmergencyContact extends SoftDeletableEntity {
 	public static EmergencyContact create(Long studentId, String name, String relationship, String phone,
 			String alternatePhone, int priority) {
 		if (priority < 1) {
-			throw new BusinessException("Emergency contact priority must be 1 or greater");
+			throw new BusinessException(StudentErrorCode.EMERGENCY_CONTACT_PRIORITY_INVALID,
+					"Emergency contact priority must be 1 or greater");
 		}
 		return EmergencyContact.builder()
 				.studentId(studentId)
@@ -63,7 +65,8 @@ public class EmergencyContact extends SoftDeletableEntity {
 
 	public void update(String name, String relationship, String phone, String alternatePhone, int priority) {
 		if (priority < 1) {
-			throw new BusinessException("Emergency contact priority must be 1 or greater");
+			throw new BusinessException(StudentErrorCode.EMERGENCY_CONTACT_PRIORITY_INVALID,
+					"Emergency contact priority must be 1 or greater");
 		}
 		this.name = name;
 		this.relationship = relationship;

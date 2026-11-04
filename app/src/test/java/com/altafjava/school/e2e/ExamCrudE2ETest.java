@@ -279,7 +279,7 @@ class ExamCrudE2ETest extends SchoolIntegrationTestBase {
 				.when()
 				.patch("/api/v1/exams/" + publicId + "/cancel")
 				.then()
-				.statusCode(HttpStatus.BAD_REQUEST.value());
+				.statusCode(HttpStatus.CONFLICT.value());
 	}
 
 	@Test

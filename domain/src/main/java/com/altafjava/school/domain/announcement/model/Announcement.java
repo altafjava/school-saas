@@ -20,6 +20,7 @@ import org.hibernate.annotations.BatchSize;
 import org.hibernate.annotations.SQLRestriction;
 import com.altafjava.platform.core.exception.BusinessException;
 import com.altafjava.platform.core.model.SoftDeletableEntity;
+import com.altafjava.school.domain.error.CommunicationErrorCode;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -133,10 +134,12 @@ public class Announcement extends SoftDeletableEntity {
 
 	private void apply(Content content) {
 		if (content.audienceType() != AudienceType.SCHOOL && content.targets().isEmpty()) {
-			throw new BusinessException("Choose at least one target for this audience");
+			throw new BusinessException(CommunicationErrorCode.AUDIENCE_TARGETS_REQUIRED,
+					"Choose at least one target for this audience");
 		}
 		if (content.channels().isEmpty()) {
-			throw new BusinessException("Choose at least one delivery channel");
+			throw new BusinessException(CommunicationErrorCode.CHANNELS_REQUIRED,
+					"Choose at least one delivery channel");
 		}
 		this.title = content.title();
 		this.body = content.body();
@@ -163,7 +166,8 @@ public class Announcement extends SoftDeletableEntity {
 	public void schedule(Instant publishAt, Instant now) {
 		assertEditable();
 		if (!publishAt.isAfter(now)) {
-			throw new BusinessException("The publish time must be in the future");
+			throw new BusinessException(CommunicationErrorCode.PUBLISH_TIME_NOT_IN_FUTURE,
+					"The publish time must be in the future");
 		}
 		assertNotExpiredAt(publishAt);
 		this.publishAt = publishAt;
@@ -202,13 +206,15 @@ public class Announcement extends SoftDeletableEntity {
 
 	private void assertEditable() {
 		if (status != AnnouncementStatus.DRAFT && status != AnnouncementStatus.SCHEDULED) {
-			throw new BusinessException("Only a draft or scheduled announcement can be changed");
+			throw new BusinessException(CommunicationErrorCode.ANNOUNCEMENT_NOT_EDITABLE,
+					"Only a draft or scheduled announcement can be changed");
 		}
 	}
 
 	private void assertNotExpiredAt(Instant moment) {
 		if (expiresAt != null && !expiresAt.isAfter(moment)) {
-			throw new BusinessException("The announcement would already have expired");
+			throw new BusinessException(CommunicationErrorCode.ANNOUNCEMENT_ALREADY_EXPIRED,
+					"The announcement would already have expired");
 		}
 	}
 }

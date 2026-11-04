@@ -1,6 +1,7 @@
 package com.altafjava.school.application.service;
 
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -16,6 +17,7 @@ import com.altafjava.school.domain.customfield.model.CustomFieldType;
 import com.altafjava.school.domain.customfield.model.CustomFieldValidationRule;
 import com.altafjava.school.domain.customfield.model.CustomFieldVisibilityCondition;
 import com.altafjava.school.domain.customfield.repository.CustomFieldDefinitionRepository;
+import com.altafjava.school.domain.error.SchoolErrorCode;
 
 // Tenant-admin CRUD for the custom-field "schema" — same shape as LeaveTypeService/
 // CertificateTemplateService. Field *values* are handled separately by CustomFieldValueService.
@@ -56,8 +58,8 @@ public class CustomFieldDefinitionService {
 		Long tenantId = TenantContext.getCurrentTenantId();
 		if (customFieldDefinitionRepository.existsByTenantIdAndEntityTypeAndFieldKey(tenantId, entityType,
 				fieldKey)) {
-			throw new BusinessException(
-					"Custom field already defined for " + entityType + ": " + fieldKey);
+			throw new BusinessException(SchoolErrorCode.CUSTOM_FIELD_EXISTS,
+					"Custom field already defined for " + entityType + ": " + fieldKey, Map.of("field", fieldKey));
 		}
 		requireOptionsForSelectTypes(fieldType, validationRule);
 		CustomFieldDefinition definition = CustomFieldDefinition.create(entityType, fieldKey, label, fieldType,
@@ -87,7 +89,8 @@ public class CustomFieldDefinitionService {
 		boolean needsOptions = fieldType == CustomFieldType.SELECT || fieldType == CustomFieldType.MULTI_SELECT;
 		boolean hasOptions = validationRule != null && !validationRule.optionList().isEmpty();
 		if (needsOptions && !hasOptions) {
-			throw new BusinessException(fieldType + " custom fields require at least one option");
+			throw new BusinessException(SchoolErrorCode.CUSTOM_FIELD_OPTIONS_REQUIRED,
+					fieldType + " custom fields require at least one option");
 		}
 	}
 

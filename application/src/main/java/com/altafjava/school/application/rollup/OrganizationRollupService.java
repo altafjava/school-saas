@@ -23,6 +23,7 @@ import com.altafjava.school.domain.attendance.model.AttendanceStatusCount;
 import com.altafjava.school.domain.attendance.repository.AttendanceRepository;
 import com.altafjava.school.domain.classroom.model.StudentClassroomLink;
 import com.altafjava.school.domain.classroom.repository.StudentClassroomLinkRepository;
+import com.altafjava.school.domain.error.SchoolErrorCode;
 import com.altafjava.school.domain.fee.model.FeeAssignment;
 import com.altafjava.school.domain.fee.model.FeeStructure;
 import com.altafjava.school.domain.fee.repository.FeeAssignmentRepository;
@@ -91,10 +92,12 @@ public class OrganizationRollupService {
 
 	private void validateRange(LocalDate periodStart, LocalDate periodEnd) {
 		if (periodEnd.isBefore(periodStart)) {
-			throw new BusinessException("'to' date must not be before 'from' date");
+			throw new BusinessException(SchoolErrorCode.DATE_RANGE_INVALID, "'to' date must not be before 'from' date");
 		}
 		if (ChronoUnit.DAYS.between(periodStart, periodEnd) > MAX_REPORT_RANGE_DAYS) {
-			throw new BusinessException("Report period must not exceed " + MAX_REPORT_RANGE_DAYS + " days");
+			throw new BusinessException(SchoolErrorCode.DATE_RANGE_TOO_LONG,
+					"Report period must not exceed " + MAX_REPORT_RANGE_DAYS + " days",
+					Map.of("maxDays", MAX_REPORT_RANGE_DAYS));
 		}
 	}
 

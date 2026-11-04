@@ -18,6 +18,7 @@ import com.altafjava.school.domain.attendance.model.Attendance;
 import com.altafjava.school.domain.attendance.model.AttendanceStatus;
 import com.altafjava.school.domain.attendance.repository.AttendanceRepository;
 import com.altafjava.school.domain.classroom.model.Classroom;
+import com.altafjava.school.domain.error.AttendanceErrorCode;
 import com.altafjava.school.domain.student.model.EnrollmentStatus;
 import com.altafjava.school.domain.student.model.Student;
 import com.altafjava.school.domain.student.repository.StudentRepository;
@@ -46,10 +47,12 @@ public class AttendanceScanService {
 		Student student = studentHolding(tenantId, qrPayload);
 		LocalDate today = schoolClock.today(tenantId);
 		if (!holidayService.datesInRange(tenantId, today, today).isEmpty()) {
-			throw new BusinessException("Today is a school holiday — attendance is not taken");
+			throw new BusinessException(AttendanceErrorCode.SCHOOL_HOLIDAY,
+					"Today is a school holiday — attendance is not taken");
 		}
 		Placement placement = placementResolver.resolve(tenantId, student.getId())
-				.orElseThrow(() -> new BusinessException("The student is not enrolled in any classroom"));
+				.orElseThrow(() -> new BusinessException(AttendanceErrorCode.STUDENT_NOT_ENROLLED,
+						"The student is not enrolled in any classroom"));
 		Classroom classroom = placement.classroom().orElseThrow(
 				() -> new ResourceNotFoundException("Classroom not found: " + placement.link().getClassroomId()));
 
@@ -66,15 +69,17 @@ public class AttendanceScanService {
 	private Student studentHolding(Long tenantId, String qrPayload) {
 		DocumentIssuance card = documentIssuanceService.verify(tenantId, qrPayloadReader.verificationCodeOf(qrPayload));
 		if (!SchoolDocumentTypes.STUDENT_ID_CARD.equals(card.getDocumentType())) {
-			throw new BusinessException("Only a student ID card can mark student attendance");
+			throw new BusinessException(AttendanceErrorCode.ID_CARD_NOT_STUDENT,
+					"Only a student ID card can mark student attendance");
 		}
 		if (card.isRevoked()) {
-			throw new BusinessException("This ID card has been revoked");
+			throw new BusinessException(AttendanceErrorCode.ID_CARD_REVOKED, "This ID card has been revoked");
 		}
 		Student student = studentRepository.findByIdAndTenantId(card.getOwnerEntityId(), tenantId)
 				.orElseThrow(() -> new ResourceNotFoundException("Student not found for this ID card"));
 		if (student.getEnrollmentStatus() != EnrollmentStatus.ACTIVE) {
-			throw new BusinessException("The cardholder is not currently enrolled");
+			throw new BusinessException(AttendanceErrorCode.STUDENT_NOT_ENROLLED,
+					"The cardholder is not currently enrolled");
 		}
 		return student;
 	}

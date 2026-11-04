@@ -9,6 +9,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import com.altafjava.platform.core.concurrency.ExpectedVersion;
 import com.altafjava.platform.core.exception.BusinessException;
+import com.altafjava.platform.core.exception.PlatformErrorCode;
 import com.altafjava.platform.core.exception.ResourceNotFoundException;
 import com.altafjava.platform.core.search.LikePattern;
 import com.altafjava.platform.core.tenant.TenantContext;
@@ -51,7 +52,7 @@ public class RouteService {
 	public Route create(String name, String code, String description) {
 		Long tenantId = TenantContext.getCurrentTenantId();
 		if (routeRepository.existsByCodeAndTenantId(code, tenantId)) {
-			throw new BusinessException("Route code already exists: " + code);
+			throw new BusinessException(PlatformErrorCode.DUPLICATE_RESOURCE, "Route code already exists: " + code);
 		}
 		return routeRepository.save(Route.create(name, code, description));
 	}

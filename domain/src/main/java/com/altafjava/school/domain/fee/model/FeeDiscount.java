@@ -12,7 +12,9 @@ import jakarta.persistence.PreUpdate;
 import jakarta.persistence.Table;
 import org.hibernate.annotations.SQLRestriction;
 import com.altafjava.platform.core.exception.BusinessException;
+import com.altafjava.platform.core.exception.PlatformErrorCode;
 import com.altafjava.platform.core.model.SoftDeletableEntity;
+import com.altafjava.school.domain.error.FeeErrorCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
@@ -37,7 +39,7 @@ public class FeeDiscount extends SoftDeletableEntity {
 	@PreUpdate
 	private void assertConsistent() {
 		if (discountValue.signum() <= 0) {
-			throw new BusinessException("A discount must be positive");
+			throw new BusinessException(PlatformErrorCode.INTERNAL_ERROR, "A discount must be positive");
 		}
 	}
 
@@ -77,10 +79,11 @@ public class FeeDiscount extends SoftDeletableEntity {
 	public static FeeDiscount grant(Long studentId, Long feeStructureId, DiscountType discountType,
 			BigDecimal discountValue, String category, String reason, Long grantedByUserId) {
 		if (discountValue == null || discountValue.signum() <= 0) {
-			throw new BusinessException("Discount value must be greater than zero");
+			throw new BusinessException(FeeErrorCode.AMOUNT_INVALID, "Discount value must be greater than zero");
 		}
 		if (discountType == DiscountType.PERCENTAGE && discountValue.compareTo(ONE_HUNDRED) > 0) {
-			throw new BusinessException("A percentage discount cannot exceed 100");
+			throw new BusinessException(FeeErrorCode.DISCOUNT_PERCENT_TOO_HIGH,
+					"A percentage discount cannot exceed 100");
 		}
 		return FeeDiscount.builder()
 				.studentId(studentId)
@@ -99,7 +102,7 @@ public class FeeDiscount extends SoftDeletableEntity {
 
 	public void revoke(String reason) {
 		if (!isActive()) {
-			throw new BusinessException("Discount is already revoked");
+			throw new BusinessException(FeeErrorCode.DISCOUNT_ALREADY_REVOKED, "Discount is already revoked");
 		}
 		this.revokedAt = Instant.now();
 		this.revocationReason = reason;

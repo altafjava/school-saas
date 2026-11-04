@@ -1,5 +1,6 @@
 package com.altafjava.school.domain.event.model;
 
+import java.util.Map;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -8,6 +9,7 @@ import jakarta.persistence.Table;
 import org.hibernate.annotations.SQLRestriction;
 import com.altafjava.platform.core.exception.BusinessException;
 import com.altafjava.platform.core.model.SoftDeletableEntity;
+import com.altafjava.school.domain.error.SchoolErrorCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -42,14 +44,17 @@ public class EventRegistration extends SoftDeletableEntity {
 
 	public void cancel() {
 		if (this.status != EventRegistrationStatus.REGISTERED) {
-			throw new BusinessException("Cannot cancel a registration in status " + this.status);
+			throw new BusinessException(SchoolErrorCode.EVENT_REGISTRATION_STATUS_INVALID,
+					"Cannot cancel a registration in status " + this.status, Map.of("status", this.status));
 		}
 		this.status = EventRegistrationStatus.CANCELLED;
 	}
 
 	public void markAttended() {
 		if (this.status != EventRegistrationStatus.REGISTERED) {
-			throw new BusinessException("Cannot mark attendance for a registration in status " + this.status);
+			throw new BusinessException(SchoolErrorCode.EVENT_REGISTRATION_STATUS_INVALID,
+					"Cannot mark attendance for a registration in status " + this.status,
+					Map.of("status", this.status));
 		}
 		this.status = EventRegistrationStatus.ATTENDED;
 	}

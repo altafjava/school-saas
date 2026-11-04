@@ -11,6 +11,7 @@ import org.springframework.transaction.annotation.Transactional;
 import com.altafjava.platform.core.audit.AuditAction;
 import com.altafjava.platform.core.audit.annotation.Audited;
 import com.altafjava.platform.core.exception.BusinessException;
+import com.altafjava.platform.core.exception.PlatformErrorCode;
 import com.altafjava.platform.core.exception.ResourceNotFoundException;
 import com.altafjava.platform.core.tenant.TenantContext;
 import com.altafjava.school.application.filter.PayslipFilter;
@@ -83,12 +84,13 @@ public class PayslipService {
 		Long tenantId = TenantContext.getCurrentTenantId();
 		if (payslipRepository.existsByEmployeeIdAndPayYearAndPayMonthAndTenantId(employeeId, payMonth.getYear(),
 				payMonth.getMonthValue(), tenantId)) {
-			throw new BusinessException(
+			throw new BusinessException(PlatformErrorCode.DUPLICATE_RESOURCE,
 					"Payslip already exists for employee " + employeeId + " for " + payMonth);
 		}
 		SalaryStructure structure = salaryStructureRepository.findByEmployeeIdAndActiveTrueAndTenantId(employeeId,
 				tenantId).orElseThrow(
-						() -> new BusinessException("No active salary structure for employee " + employeeId));
+						() -> new BusinessException(PlatformErrorCode.CONFLICT,
+								"No active salary structure for employee " + employeeId));
 
 		List<LeaveRequest> unpaidApprovedLeave = findUnpaidApprovedLeaveInMonth(tenantId, employeeId, payMonth);
 		PayrollComputation computation = payrollCalculator.compute(structure.toSnapshot(), payMonth,

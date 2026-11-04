@@ -25,6 +25,7 @@ import com.altafjava.school.domain.classroom.model.PromotionOutcome;
 import com.altafjava.school.domain.classroom.model.StudentClassroomLink;
 import com.altafjava.school.domain.classroom.repository.ClassroomRepository;
 import com.altafjava.school.domain.classroom.repository.StudentClassroomLinkRepository;
+import com.altafjava.school.domain.error.AcademicErrorCode;
 import com.altafjava.school.domain.student.model.EnrollmentStatus;
 import com.altafjava.school.domain.student.model.Student;
 import com.altafjava.school.domain.student.repository.StudentRepository;
@@ -96,7 +97,7 @@ public class StudentPromotionService {
 		for (Decision decision : decisions) {
 			Student student = rosterByPublicId.get(decision.studentPublicId());
 			if (student == null) {
-				throw new BusinessException(
+				throw new BusinessException(AcademicErrorCode.PROMOTION_STUDENT_NOT_IN_CLASSROOM,
 						"Student " + decision.studentPublicId() + " is not in classroom " + sourceClassroomPublicId);
 			}
 			results.add(apply(tenantId, source, student, decision, defaultTargetClassroomPublicId));
@@ -117,8 +118,9 @@ public class StudentPromotionService {
 			return new ResultRow(student.getId(), studentPublicId, decision.outcome(), null, null);
 		}
 		if (student.getEnrollmentStatus() != EnrollmentStatus.ACTIVE) {
-			throw new BusinessException("Only an active student can move up, " + student.getPublicId() + " is "
-					+ student.getEnrollmentStatus());
+			throw new BusinessException(AcademicErrorCode.PROMOTION_STUDENT_NOT_ACTIVE,
+					"Only an active student can move up, " + student.getPublicId() + " is "
+							+ student.getEnrollmentStatus());
 		}
 		Classroom target = requireClassroom(tenantId, targetFor(decision, defaultTargetClassroomPublicId));
 		requireLaterYear(tenantId, source, target);
@@ -135,7 +137,8 @@ public class StudentPromotionService {
 		if (decision.outcome() == PromotionOutcome.PROMOTE && defaultTargetClassroomPublicId != null) {
 			return defaultTargetClassroomPublicId;
 		}
-		throw new BusinessException("Student " + decision.studentPublicId() + " needs a target classroom");
+		throw new BusinessException(AcademicErrorCode.PROMOTION_TARGET_REQUIRED,
+				"Student " + decision.studentPublicId() + " needs a target classroom");
 	}
 
 	private void seat(Long tenantId, Classroom source, Student student, Classroom target, Decision decision,
@@ -184,7 +187,8 @@ public class StudentPromotionService {
 		AcademicYear from = requireYear(tenantId, source.getAcademicYearId());
 		AcademicYear to = requireYear(tenantId, target.getAcademicYearId());
 		if (!to.getStartDate().isAfter(from.getStartDate())) {
-			throw new BusinessException("The target classroom must belong to a later academic year than the source");
+			throw new BusinessException(AcademicErrorCode.PROMOTION_TARGET_NOT_LATER,
+					"The target classroom must belong to a later academic year than the source");
 		}
 	}
 

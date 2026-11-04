@@ -13,6 +13,7 @@ import com.altafjava.platform.core.search.LikePattern;
 import com.altafjava.platform.core.tenant.TenantContext;
 import com.altafjava.school.domain.certificate.model.CertificateType;
 import com.altafjava.school.domain.certificate.repository.CertificateTypeRepository;
+import com.altafjava.school.domain.error.SchoolErrorCode;
 import lombok.RequiredArgsConstructor;
 
 @Service
@@ -42,10 +43,10 @@ public class CertificateTypeService {
 	public CertificateType create(String code, String name, String wording) {
 		Long tenantId = TenantContext.getCurrentTenantId();
 		if (certificateTypeRepository.existsByCodeAndTenantId(code, tenantId)) {
-			throw new BusinessException("Certificate type code already exists: " + code);
+			throw new BusinessException(SchoolErrorCode.CODE_TAKEN, "Certificate type code already exists: " + code);
 		}
 		if (certificateTypeRepository.existsByNameAndTenantId(name, tenantId)) {
-			throw new BusinessException("Certificate type already exists: " + name);
+			throw new BusinessException(SchoolErrorCode.CODE_TAKEN, "Certificate type already exists: " + name);
 		}
 		return certificateTypeRepository.save(CertificateType.create(code, name, wording));
 	}

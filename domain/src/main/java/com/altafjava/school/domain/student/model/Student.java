@@ -2,6 +2,7 @@ package com.altafjava.school.domain.student.model;
 
 import java.time.Instant;
 import java.time.LocalDate;
+import java.util.Map;
 import java.util.UUID;
 import jakarta.persistence.Column;
 import jakarta.persistence.Embedded;
@@ -15,6 +16,7 @@ import com.altafjava.platform.core.model.SoftDeletableEntity;
 import com.altafjava.platform.core.security.annotation.Pii;
 import com.altafjava.school.domain.common.model.Address;
 import com.altafjava.school.domain.common.model.Gender;
+import com.altafjava.school.domain.error.StudentErrorCode;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -120,28 +122,36 @@ public class Student extends SoftDeletableEntity {
 
 	public void graduate() {
 		if (this.enrollmentStatus != EnrollmentStatus.ACTIVE) {
-			throw new BusinessException("Only an active student can graduate, was " + this.enrollmentStatus);
+			throw new BusinessException(StudentErrorCode.STUDENT_STATUS_INVALID,
+					"Only an active student can graduate, was " + this.enrollmentStatus,
+					Map.of("status", this.enrollmentStatus));
 		}
 		moveTo(EnrollmentStatus.GRADUATED);
 	}
 
 	public void suspend() {
 		if (this.enrollmentStatus != EnrollmentStatus.ACTIVE) {
-			throw new BusinessException("Only an active student can be suspended, was " + this.enrollmentStatus);
+			throw new BusinessException(StudentErrorCode.STUDENT_STATUS_INVALID,
+					"Only an active student can be suspended, was " + this.enrollmentStatus,
+					Map.of("status", this.enrollmentStatus));
 		}
 		moveTo(EnrollmentStatus.SUSPENDED);
 	}
 
 	public void reinstate() {
 		if (this.enrollmentStatus != EnrollmentStatus.SUSPENDED) {
-			throw new BusinessException("Only a suspended student can be reinstated, was " + this.enrollmentStatus);
+			throw new BusinessException(StudentErrorCode.STUDENT_STATUS_INVALID,
+					"Only a suspended student can be reinstated, was " + this.enrollmentStatus,
+					Map.of("status", this.enrollmentStatus));
 		}
 		moveTo(EnrollmentStatus.ACTIVE);
 	}
 
 	private void requireCurrentlyAttending(String action) {
 		if (this.enrollmentStatus != EnrollmentStatus.ACTIVE && this.enrollmentStatus != EnrollmentStatus.SUSPENDED) {
-			throw new BusinessException("Cannot " + action + " a student who is " + this.enrollmentStatus);
+			throw new BusinessException(StudentErrorCode.STUDENT_STATUS_INVALID,
+					"Cannot " + action + " a student who is " + this.enrollmentStatus,
+					Map.of("status", this.enrollmentStatus));
 		}
 	}
 

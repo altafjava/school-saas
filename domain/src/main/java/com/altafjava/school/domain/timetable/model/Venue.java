@@ -9,7 +9,9 @@ import jakarta.persistence.PreUpdate;
 import jakarta.persistence.Table;
 import org.hibernate.annotations.SQLRestriction;
 import com.altafjava.platform.core.exception.BusinessException;
+import com.altafjava.platform.core.exception.PlatformErrorCode;
 import com.altafjava.platform.core.model.SoftDeletableEntity;
+import com.altafjava.school.domain.error.AcademicErrorCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -46,7 +48,7 @@ public class Venue extends SoftDeletableEntity {
 	@PreUpdate
 	private void assertConsistent() {
 		if (capacity != null && capacity <= 0) {
-			throw new BusinessException("A venue capacity must be positive");
+			throw new BusinessException(PlatformErrorCode.INTERNAL_ERROR, "A venue capacity must be positive");
 		}
 	}
 
@@ -78,7 +80,7 @@ public class Venue extends SoftDeletableEntity {
 
 	private static void requireValidCapacity(Integer capacity) {
 		if (capacity != null && capacity <= 0) {
-			throw new BusinessException("Venue capacity must be positive");
+			throw new BusinessException(AcademicErrorCode.VENUE_CAPACITY_INVALID, "Venue capacity must be positive");
 		}
 	}
 }

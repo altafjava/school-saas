@@ -89,6 +89,21 @@ describe('apiFetch', () => {
     expect(apiError.requestId).toBe('req-1');
     expect(apiError.message).toBe('Validation failed');
     expect(apiError.fieldErrors).toEqual([{ field: 'email', code: 'EMAIL', message: 'must be a valid email' }]);
+    expect(apiError.params).toEqual({});
+  });
+
+  it('exposes the params a business error carries for translation', async () => {
+    fetchMock.mockResolvedValue(
+      json(
+        { success: false, error: { code: 'DATE_RANGE_TOO_LONG', message: 'Too long', params: { maxDays: 31 } } },
+        { status: 400 },
+      ),
+    );
+
+    const error = (await apiFetch('/x').catch((e: unknown) => e)) as ApiError;
+
+    expect(error.code).toBe('DATE_RANGE_TOO_LONG');
+    expect(error.params).toEqual({ maxDays: 31 });
   });
 
   it('keeps the status when the failure body is not JSON', async () => {

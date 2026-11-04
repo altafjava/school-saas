@@ -8,6 +8,7 @@ import jakarta.persistence.Enumerated;
 import jakarta.persistence.Table;
 import org.hibernate.annotations.SQLRestriction;
 import com.altafjava.platform.core.exception.BusinessException;
+import com.altafjava.platform.core.exception.PlatformErrorCode;
 import com.altafjava.platform.core.model.SoftDeletableEntity;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -53,7 +54,8 @@ public class AssetAssignment extends SoftDeletableEntity {
 
 	public void markReturned(LocalDate returnedAt) {
 		if (this.returnedAt != null) {
-			throw new BusinessException("Asset assignment already returned on " + this.returnedAt);
+			throw new BusinessException(PlatformErrorCode.CONFLICT,
+					"Asset assignment already returned on " + this.returnedAt);
 		}
 		this.returnedAt = returnedAt;
 	}

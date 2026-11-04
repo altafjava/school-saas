@@ -16,6 +16,7 @@ import com.altafjava.school.application.library.ReservationAllocator;
 import com.altafjava.school.application.reference.EntityRef;
 import com.altafjava.school.application.reference.PublicIdLookup;
 import com.altafjava.school.application.time.SchoolClock;
+import com.altafjava.school.domain.error.LibraryErrorCode;
 import com.altafjava.school.domain.library.model.BookCopy;
 import com.altafjava.school.domain.library.model.BookCopyStatus;
 import com.altafjava.school.domain.library.model.BookReservation;
@@ -129,7 +130,8 @@ public class CirculationService {
 						() -> new ResourceNotFoundException("Book copy not found: " + circulation.getBookCopyId()));
 		if (bookReservationRepository.existsQueuedForOthers(tenantId, copy.getBookId(),
 				circulation.getStudentId())) {
-			throw new BusinessException("Another member is waiting for this book, so it cannot be renewed");
+			throw new BusinessException(LibraryErrorCode.RENEWAL_BLOCKED_BY_RESERVATION,
+					"Another member is waiting for this book, so it cannot be renewed");
 		}
 		LocalDate today = schoolClock.today(tenantId);
 		LocalDate base = circulation.getDueDate().isAfter(today) ? circulation.getDueDate() : today;
@@ -145,9 +147,11 @@ public class CirculationService {
 		}
 		BookReservation reservation = bookReservationRepository
 				.findByHeldCopyIdAndStatusAndTenantId(copy.getId(), ReservationStatus.READY, tenantId)
-				.orElseThrow(() -> new BusinessException("Book copy " + copy.getCopyCode() + " is on hold"));
+				.orElseThrow(() -> new BusinessException(LibraryErrorCode.BOOK_COPY_ON_HOLD,
+						"Book copy " + copy.getCopyCode() + " is on hold"));
 		if (!reservation.getStudentId().equals(studentId)) {
-			throw new BusinessException("Book copy " + copy.getCopyCode() + " is being held for another member");
+			throw new BusinessException(LibraryErrorCode.BOOK_COPY_ON_HOLD,
+					"Book copy " + copy.getCopyCode() + " is being held for another member");
 		}
 		copy.checkoutHeld();
 		reservation.fulfil();

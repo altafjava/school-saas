@@ -33,6 +33,8 @@ import com.altafjava.school.application.reference.PublicIdLookup;
 import com.altafjava.school.application.security.StudentDataAccessGuard;
 import com.altafjava.school.application.time.SchoolClock;
 import com.altafjava.school.domain.classroom.repository.StudentClassroomLinkRepository;
+import com.altafjava.school.domain.error.FeeErrorCode;
+import com.altafjava.school.domain.error.SchoolErrorCode;
 import com.altafjava.school.domain.fee.model.FeeAssignment;
 import com.altafjava.school.domain.fee.model.FeeBalance;
 import com.altafjava.school.domain.fee.model.FeeCollectionRow;
@@ -92,8 +94,9 @@ public class FeePaymentService {
 	@Transactional(readOnly = true)
 	public List<FeeCollectionRow> collectionReport(LocalDate from, LocalDate to) {
 		if (ChronoUnit.DAYS.between(from, to) > MAX_COLLECTION_REPORT_DAYS) {
-			throw new BusinessException(
-					"A collection report can cover at most " + MAX_COLLECTION_REPORT_DAYS + " days");
+			throw new BusinessException(SchoolErrorCode.DATE_RANGE_TOO_LONG,
+					"A collection report can cover at most " + MAX_COLLECTION_REPORT_DAYS + " days",
+					Map.of("maxDays", MAX_COLLECTION_REPORT_DAYS));
 		}
 		DateWindow window = new DateWindow(from, to);
 		return feePaymentRepository.collectionByDayAndMode(TenantContext.getCurrentTenantId(),
@@ -295,7 +298,8 @@ public class FeePaymentService {
 			LocalDateTime paidAt, String receiptNumber, PaymentInstrument instrument, String invoicePublicId) {
 		// Gateway payments arrive signed through FeeOnlinePaymentService; nobody may type one in.
 		if (instrument.mode() == PaymentMode.GATEWAY) {
-			throw new BusinessException("Gateway payments are recorded by the payment gateway");
+			throw new BusinessException(FeeErrorCode.GATEWAY_PAYMENT_MANUAL,
+					"Gateway payments are recorded by the payment gateway");
 		}
 		Long tenantId = TenantContext.getCurrentTenantId();
 		Long studentId = studentRepository.findByPublicIdAndTenantId(UUID.fromString(studentPublicId), tenantId)
@@ -327,7 +331,8 @@ public class FeePaymentService {
 				.findByPublicIdAndTenantIdForUpdate(UUID.fromString(publicId), tenantId)
 				.orElseThrow(() -> new ResourceNotFoundException("FeePayment not found: " + publicId));
 		if (feeRefundRepository.sumReservedByPayment(tenantId, payment.getId()).signum() > 0) {
-			throw new BusinessException("This payment has refunds against it, so its cheque cannot be marked bounced");
+			throw new BusinessException(FeeErrorCode.PAYMENT_HAS_REFUNDS,
+					"This payment has refunds against it, so its cheque cannot be marked bounced");
 		}
 		payment.bounce(reason, bouncedAt);
 		// The receipt stays on file, but verifying it now shows it was revoked.

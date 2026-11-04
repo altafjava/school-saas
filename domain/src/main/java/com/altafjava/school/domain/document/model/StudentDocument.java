@@ -1,6 +1,7 @@
 package com.altafjava.school.domain.document.model;
 
 import java.time.Instant;
+import java.util.Map;
 import java.util.UUID;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -11,7 +12,9 @@ import jakarta.persistence.PreUpdate;
 import jakarta.persistence.Table;
 import org.hibernate.annotations.SQLRestriction;
 import com.altafjava.platform.core.exception.BusinessException;
+import com.altafjava.platform.core.exception.PlatformErrorCode;
 import com.altafjava.platform.core.model.SoftDeletableEntity;
+import com.altafjava.school.domain.error.StudentErrorCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
@@ -72,20 +75,21 @@ public class StudentDocument extends SoftDeletableEntity {
 	@PreUpdate
 	private void assertConsistent() {
 		if ((studentId == null) == (admissionId == null)) {
-			throw new BusinessException("A document belongs to exactly one student or admission");
+			throw new BusinessException(PlatformErrorCode.INTERNAL_ERROR,
+					"A document belongs to exactly one student or admission");
 		}
 	}
 
 	public static StudentDocument forStudent(Long studentId, String documentType, UUID filePublicId) {
 		if (studentId == null) {
-			throw new BusinessException("studentId is required");
+			throw new BusinessException(PlatformErrorCode.INTERNAL_ERROR, "studentId is required");
 		}
 		return create(studentId, null, documentType, filePublicId);
 	}
 
 	public static StudentDocument forAdmission(Long admissionId, String documentType, UUID filePublicId) {
 		if (admissionId == null) {
-			throw new BusinessException("admissionId is required");
+			throw new BusinessException(PlatformErrorCode.INTERNAL_ERROR, "admissionId is required");
 		}
 		return create(null, admissionId, documentType, filePublicId);
 	}
@@ -112,7 +116,8 @@ public class StudentDocument extends SoftDeletableEntity {
 	public void reject(Long verifiedByUserId, String rejectionReason) {
 		requirePending();
 		if (rejectionReason == null || rejectionReason.isBlank()) {
-			throw new BusinessException("A rejection reason is required");
+			throw new BusinessException(StudentErrorCode.DOCUMENT_REJECTION_REASON_REQUIRED,
+					"A rejection reason is required");
 		}
 		this.verificationStatus = DocumentVerificationStatus.REJECTED;
 		this.verifiedByUserId = verifiedByUserId;
@@ -122,9 +127,10 @@ public class StudentDocument extends SoftDeletableEntity {
 
 	private void requirePending() {
 		if (this.verificationStatus != DocumentVerificationStatus.PENDING) {
-			throw new BusinessException(
+			throw new BusinessException(StudentErrorCode.DOCUMENT_ALREADY_VERIFIED,
 					"Document has already been " + this.verificationStatus.name().toLowerCase()
-							+ " — resubmit a new document instead of re-verifying");
+							+ " — resubmit a new document instead of re-verifying",
+					Map.of("status", this.verificationStatus));
 		}
 	}
 }

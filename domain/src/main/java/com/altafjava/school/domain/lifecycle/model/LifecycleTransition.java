@@ -9,6 +9,7 @@ import jakarta.persistence.PrePersist;
 import jakarta.persistence.PreUpdate;
 import jakarta.persistence.Table;
 import com.altafjava.platform.core.exception.BusinessException;
+import com.altafjava.platform.core.exception.PlatformErrorCode;
 import com.altafjava.platform.core.model.TenantEntity;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -61,20 +62,24 @@ public class LifecycleTransition extends TenantEntity {
 	@PreUpdate
 	private void assertConsistent() {
 		if (admissionId == null && studentId == null) {
-			throw new BusinessException("A lifecycle transition needs an admission or a student");
+			throw new BusinessException(PlatformErrorCode.INTERNAL_ERROR,
+					"A lifecycle transition needs an admission or a student");
 		}
 	}
 
 	public static LifecycleTransition record(Long admissionId, Long studentId, LifecycleStage fromStage,
 			LifecycleStage toStage, String reason, LocalDate effectiveOn, Long recordedByUserId) {
 		if (admissionId == null && studentId == null) {
-			throw new BusinessException("A lifecycle transition needs an admission, a student, or both");
+			throw new BusinessException(PlatformErrorCode.INTERNAL_ERROR,
+					"A lifecycle transition needs an admission, a student, or both");
 		}
 		if (toStage == null || toStage == fromStage) {
-			throw new BusinessException("A lifecycle transition must change the stage");
+			throw new BusinessException(PlatformErrorCode.INTERNAL_ERROR,
+					"A lifecycle transition must change the stage");
 		}
 		if (effectiveOn == null) {
-			throw new BusinessException("A lifecycle transition needs the date it takes effect");
+			throw new BusinessException(PlatformErrorCode.INTERNAL_ERROR,
+					"A lifecycle transition needs the date it takes effect");
 		}
 		return LifecycleTransition.builder()
 				.admissionId(admissionId)

@@ -11,6 +11,7 @@ import com.altafjava.platform.core.search.LikePattern;
 import com.altafjava.platform.core.tenant.TenantContext;
 import com.altafjava.school.application.library.ReservationAllocator;
 import com.altafjava.school.application.time.SchoolClock;
+import com.altafjava.school.domain.error.SchoolErrorCode;
 import com.altafjava.school.domain.library.model.Book;
 import com.altafjava.school.domain.library.model.BookCopy;
 import com.altafjava.school.domain.library.repository.BookCopyRepository;
@@ -74,7 +75,8 @@ public class BookCatalogService {
 		Long tenantId = TenantContext.getCurrentTenantId();
 		Book book = findByPublicId(bookPublicId);
 		if (bookCopyRepository.existsByBookIdAndCopyCodeAndTenantId(book.getId(), copyCode, tenantId)) {
-			throw new BusinessException("Copy code already exists for this book: " + copyCode);
+			throw new BusinessException(SchoolErrorCode.CODE_TAKEN,
+					"Copy code already exists for this book: " + copyCode);
 		}
 		BookCopy copy = bookCopyRepository.save(BookCopy.create(book.getId(), copyCode));
 		reservationAllocator.allocate(tenantId, copy, schoolClock.today(tenantId));

@@ -9,6 +9,7 @@ import com.altafjava.platform.core.audit.annotation.Audited;
 import com.altafjava.platform.core.exception.BusinessException;
 import com.altafjava.platform.core.exception.ResourceNotFoundException;
 import com.altafjava.platform.core.tenant.TenantContext;
+import com.altafjava.school.domain.error.AcademicErrorCode;
 import com.altafjava.school.domain.exam.model.Exam;
 import com.altafjava.school.domain.exam.repository.ExamRepository;
 import com.altafjava.school.domain.grade.repository.GradeRepository;
@@ -31,7 +32,8 @@ public class ExamMarksService {
 		Long tenantId = TenantContext.getCurrentTenantId();
 		Exam exam = require(tenantId, examPublicId);
 		if (!gradeRepository.existsByExamIdAndTenantId(exam.getId(), tenantId)) {
-			throw new BusinessException("An exam with no marks recorded cannot be verified");
+			throw new BusinessException(AcademicErrorCode.EXAM_HAS_NO_MARKS,
+					"An exam with no marks recorded cannot be verified");
 		}
 		if (gradeRepository.existsByExamIdAndGradedByAndTenantId(exam.getId(), verifiedBy, tenantId)) {
 			throw new AccessDeniedException("Marks must be verified by someone who did not enter them");

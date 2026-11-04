@@ -12,6 +12,7 @@ import com.altafjava.platform.core.search.LikePattern;
 import com.altafjava.platform.core.tenant.TenantContext;
 import com.altafjava.school.domain.curriculum.model.Board;
 import com.altafjava.school.domain.curriculum.repository.BoardRepository;
+import com.altafjava.school.domain.error.SchoolErrorCode;
 
 @Service
 public class BoardService {
@@ -39,7 +40,7 @@ public class BoardService {
 	public Board create(String name, String code, String description) {
 		Long tenantId = TenantContext.getCurrentTenantId();
 		if (boardRepository.existsByCodeAndTenantId(code, tenantId)) {
-			throw new BusinessException("Board code already exists: " + code);
+			throw new BusinessException(SchoolErrorCode.CODE_TAKEN, "Board code already exists: " + code);
 		}
 		return boardRepository.save(Board.create(name, code, description));
 	}

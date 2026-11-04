@@ -13,6 +13,7 @@ import com.altafjava.platform.core.exception.ResourceNotFoundException;
 import com.altafjava.platform.core.tenant.TenantContext;
 import com.altafjava.platform.domain.notification.model.NotificationPriority;
 import com.altafjava.school.application.scheduler.support.StudentNotificationRecipientResolver;
+import com.altafjava.school.domain.error.SchoolErrorCode;
 import com.altafjava.school.domain.event.model.Event;
 import com.altafjava.school.domain.event.model.EventRegistration;
 import com.altafjava.school.domain.event.model.EventRegistrationStatus;
@@ -59,13 +60,15 @@ public class EventRegistrationService {
 
 		if (eventRegistrationRepository.existsByEventIdAndStudentIdAndTenantIdAndStatus(event.getId(),
 				student.getId(), tenantId, EventRegistrationStatus.REGISTERED)) {
-			throw new BusinessException("Student " + studentPublicId + " is already registered for this event");
+			throw new BusinessException(SchoolErrorCode.EVENT_ALREADY_REGISTERED,
+					"Student " + studentPublicId + " is already registered for this event");
 		}
 		if (event.getCapacity() != null) {
 			long registeredCount = eventRegistrationRepository.countByEventIdAndTenantIdAndStatus(event.getId(),
 					tenantId, EventRegistrationStatus.REGISTERED);
 			if (registeredCount >= event.getCapacity()) {
-				throw new BusinessException("Event " + eventPublicId + " has reached its registration capacity");
+				throw new BusinessException(SchoolErrorCode.EVENT_FULL,
+						"Event " + eventPublicId + " has reached its registration capacity");
 			}
 		}
 

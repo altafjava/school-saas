@@ -2,6 +2,7 @@ package com.altafjava.school.domain.leave.model;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.Map;
 import java.util.UUID;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -11,6 +12,7 @@ import jakarta.persistence.Table;
 import org.hibernate.annotations.SQLRestriction;
 import com.altafjava.platform.core.exception.BusinessException;
 import com.altafjava.platform.core.model.SoftDeletableEntity;
+import com.altafjava.school.domain.error.StudentErrorCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
@@ -63,7 +65,8 @@ public class StudentLeaveRequest extends SoftDeletableEntity {
 	public static StudentLeaveRequest submit(Long studentId, Long classroomId, Long requestedByUserId,
 			LocalDate startDate, LocalDate endDate, String reason, UUID attachmentFilePublicId) {
 		if (endDate.isBefore(startDate)) {
-			throw new BusinessException("Leave end date cannot be before the start date");
+			throw new BusinessException(StudentErrorCode.STUDENT_LEAVE_DATES_INVALID,
+					"Leave end date cannot be before the start date");
 		}
 		return StudentLeaveRequest.builder()
 				.studentId(studentId)
@@ -99,7 +102,8 @@ public class StudentLeaveRequest extends SoftDeletableEntity {
 
 	private void requirePending(String action) {
 		if (status != LeaveRequestStatus.PENDING) {
-			throw new BusinessException("Cannot " + action + " a leave request that is " + status);
+			throw new BusinessException(StudentErrorCode.STUDENT_LEAVE_STATUS_INVALID,
+					"Cannot " + action + " a leave request that is " + status, Map.of("status", status));
 		}
 	}
 }

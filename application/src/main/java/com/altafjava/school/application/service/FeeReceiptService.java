@@ -26,6 +26,7 @@ import com.altafjava.platform.domain.tenant.repository.TenantRepository;
 import com.altafjava.school.application.document.SchoolDocumentTypes;
 import com.altafjava.school.application.document.StudentPlacementResolver;
 import com.altafjava.school.application.security.StudentDataAccessGuard;
+import com.altafjava.school.domain.error.FeeErrorCode;
 import com.altafjava.school.domain.fee.model.FeePayment;
 import com.altafjava.school.domain.fee.model.FeeStructure;
 import com.altafjava.school.domain.fee.model.PaymentMode;
@@ -76,7 +77,7 @@ public class FeeReceiptService {
 
 	private FeeReceiptPdf pdf(Long tenantId, FeePayment payment, Student student) {
 		if (payment.isBounced()) {
-			throw new BusinessException("A bounced cheque has no receipt");
+			throw new BusinessException(FeeErrorCode.BOUNCED_CHEQUE_HAS_NO_RECEIPT, "A bounced cheque has no receipt");
 		}
 		DocumentIssuance issuance = payment.getReceiptDocumentId() != null ? existing(payment)
 				: issue(tenantId, payment, student);
@@ -110,7 +111,7 @@ public class FeeReceiptService {
 		documentIssuanceService.revoke(issued, "Superseded by another copy of this receipt");
 		log.info("action=fee-receipt-duplicate-revoked tenantId={} paymentId={}", tenantId, current.getId());
 		if (current.isBounced()) {
-			throw new BusinessException("A bounced cheque has no receipt");
+			throw new BusinessException(FeeErrorCode.BOUNCED_CHEQUE_HAS_NO_RECEIPT, "A bounced cheque has no receipt");
 		}
 		return existing(current);
 	}

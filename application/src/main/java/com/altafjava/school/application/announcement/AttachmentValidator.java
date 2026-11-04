@@ -5,6 +5,8 @@ import java.util.List;
 import java.util.UUID;
 import org.springframework.stereotype.Component;
 import com.altafjava.platform.core.exception.BusinessException;
+import com.altafjava.platform.core.exception.PlatformErrorCode;
+import com.altafjava.platform.core.exception.ResourceNotFoundException;
 import com.altafjava.platform.domain.file.repository.FileMetadataRepository;
 import lombok.RequiredArgsConstructor;
 
@@ -19,11 +21,11 @@ public class AttachmentValidator {
 		try {
 			List<UUID> ids = filePublicIds.stream().map(UUID::fromString).toList();
 			if (!ids.stream().allMatch(id -> fileMetadataRepository.findByPublicId(id).isPresent())) {
-				throw new BusinessException("An attachment was not found");
+				throw new ResourceNotFoundException("An attachment was not found");
 			}
 			return ids;
 		} catch (IllegalArgumentException e) {
-			throw new BusinessException("An attachment id is not valid");
+			throw new BusinessException(PlatformErrorCode.INVALID_ARGUMENT, "An attachment id is not valid");
 		}
 	}
 }

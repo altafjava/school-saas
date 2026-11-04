@@ -4,6 +4,7 @@ import java.util.Map;
 import com.altafjava.platform.application.service.approval.ApprovalAction;
 import com.altafjava.platform.application.service.approval.ApprovalHandler;
 import com.altafjava.platform.core.exception.BusinessException;
+import com.altafjava.platform.core.exception.PlatformErrorCode;
 import lombok.RequiredArgsConstructor;
 import tools.jackson.core.type.TypeReference;
 import tools.jackson.databind.ObjectMapper;
@@ -27,7 +28,8 @@ public class AdmissionApprovalHandler implements ApprovalAction {
 		});
 		String studentCode = stringValue(decoded, "studentCode");
 		if (studentCode == null || studentCode.isBlank()) {
-			throw new BusinessException("studentCode missing from approved admission-decision payload");
+			throw new BusinessException(PlatformErrorCode.INTERNAL_ERROR,
+					"studentCode missing from approved admission-decision payload");
 		}
 		admissionService.finalizeApproval(entityId, stringValue(decoded, "decidedBy"), stringValue(decoded, "notes"),
 				studentCode);

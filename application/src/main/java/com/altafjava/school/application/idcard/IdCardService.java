@@ -18,6 +18,7 @@ import com.altafjava.school.domain.department.model.Department;
 import com.altafjava.school.domain.department.repository.DepartmentRepository;
 import com.altafjava.school.domain.employee.model.Employee;
 import com.altafjava.school.domain.employee.repository.EmployeeRepository;
+import com.altafjava.school.domain.error.StaffErrorCode;
 import com.altafjava.school.domain.student.model.Student;
 import com.altafjava.school.domain.student.repository.StudentRepository;
 import lombok.RequiredArgsConstructor;
@@ -64,7 +65,8 @@ public class IdCardService {
 		Long tenantId = TenantContext.getCurrentTenantId();
 		Employee employee = requireEmployee(tenantId, employeePublicId);
 		if (!employee.isActive()) {
-			throw new BusinessException("A staff ID card cannot be issued to someone who has left the school");
+			throw new BusinessException(StaffErrorCode.EMPLOYEE_HAS_LEFT,
+					"A staff ID card cannot be issued to someone who has left the school");
 		}
 
 		Map<String, Object> model = new HashMap<>();

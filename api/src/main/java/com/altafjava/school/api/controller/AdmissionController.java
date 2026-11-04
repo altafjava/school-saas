@@ -36,6 +36,7 @@ import com.altafjava.school.api.support.SpringDataPageableResolver;
 import com.altafjava.school.application.service.AdmissionService;
 import com.altafjava.school.domain.admission.model.AdmissionStatus;
 import com.altafjava.school.domain.admission.model.DecisionOutcome;
+import com.altafjava.school.domain.error.AdmissionErrorCode;
 import com.altafjava.school.domain.security.permission.SchoolPermissions;
 
 /**
@@ -142,7 +143,8 @@ public class AdmissionController implements AdmissionApi {
 					.toResponse(admissionService.reject(publicId, request.decidedBy(), request.notes())));
 		}
 		if (!StringUtils.hasText(request.studentCode())) {
-			throw new BusinessException("studentCode is required when approving an admission");
+			throw new BusinessException(AdmissionErrorCode.STUDENT_CODE_REQUIRED,
+					"studentCode is required when approving an admission");
 		}
 		return ApiResponse.success(admissionMapper.toResponse(admissionService.requestApproval(publicId,
 				request.decidedBy(), request.notes(), request.studentCode())));

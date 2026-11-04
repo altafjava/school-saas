@@ -10,6 +10,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import com.altafjava.platform.core.exception.BusinessException;
+import com.altafjava.platform.core.exception.PlatformErrorCode;
 import com.altafjava.platform.core.exception.ResourceNotFoundException;
 import com.altafjava.platform.core.tenant.TenantContext;
 import com.altafjava.school.domain.employee.model.Employee;
@@ -97,9 +98,11 @@ public class SalaryStructureService {
 				.map(entry -> {
 					PayComponentDefinition definition = payComponentDefinitionRepository
 							.findByCodeAndTenantId(entry.getKey(), tenantId)
-							.orElseThrow(() -> new BusinessException("Unknown pay component: " + entry.getKey()));
+							.orElseThrow(() -> new BusinessException(PlatformErrorCode.INVALID_ARGUMENT,
+									"Unknown pay component: " + entry.getKey()));
 					if (!definition.isActive()) {
-						throw new BusinessException("Pay component is not active: " + entry.getKey());
+						throw new BusinessException(PlatformErrorCode.INVALID_ARGUMENT,
+								"Pay component is not active: " + entry.getKey());
 					}
 					return new PayComponentAmount(definition.getCode(), definition.getName(), definition.getType(),
 							entry.getValue());

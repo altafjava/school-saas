@@ -10,7 +10,9 @@ import jakarta.persistence.PreUpdate;
 import jakarta.persistence.Table;
 import org.hibernate.annotations.SQLRestriction;
 import com.altafjava.platform.core.exception.BusinessException;
+import com.altafjava.platform.core.exception.PlatformErrorCode;
 import com.altafjava.platform.core.model.SoftDeletableEntity;
+import com.altafjava.school.domain.error.StudentErrorCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
@@ -58,7 +60,8 @@ public class StudentGuardianLink extends SoftDeletableEntity {
 	@PreUpdate
 	private void assertConsistent() {
 		if (custodyRestricted && authorizedForPickup) {
-			throw new BusinessException("A custody-restricted guardian cannot be authorized for pickup");
+			throw new BusinessException(PlatformErrorCode.INTERNAL_ERROR,
+					"A custody-restricted guardian cannot be authorized for pickup");
 		}
 	}
 
@@ -90,7 +93,8 @@ public class StudentGuardianLink extends SoftDeletableEntity {
 
 	public void authorizePickup() {
 		if (custodyRestricted) {
-			throw new BusinessException("Cannot authorize pickup while custody is restricted");
+			throw new BusinessException(StudentErrorCode.PICKUP_CUSTODY_RESTRICTED,
+					"Cannot authorize pickup while custody is restricted");
 		}
 		this.authorizedForPickup = true;
 	}

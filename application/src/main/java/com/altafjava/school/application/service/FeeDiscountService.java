@@ -2,6 +2,7 @@ package com.altafjava.school.application.service;
 
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -10,6 +11,7 @@ import com.altafjava.platform.core.audit.annotation.Audited;
 import com.altafjava.platform.core.exception.BusinessException;
 import com.altafjava.platform.core.exception.ResourceNotFoundException;
 import com.altafjava.platform.core.tenant.TenantContext;
+import com.altafjava.school.domain.error.FeeErrorCode;
 import com.altafjava.school.domain.fee.model.DiscountType;
 import com.altafjava.school.domain.fee.model.FeeDiscount;
 import com.altafjava.school.domain.fee.model.FeeStructure;
@@ -48,8 +50,10 @@ public class FeeDiscountService {
 				.map(existing -> existing.amountOn(structure.getAmount()))
 				.reduce(BigDecimal.ZERO, BigDecimal::add);
 		if (alreadyGranted.add(discount.amountOn(structure.getAmount())).compareTo(structure.getAmount()) > 0) {
-			throw new BusinessException("Discounts on " + structure.getName() + " would exceed the fee of "
-					+ structure.getAmount() + " (already granted " + alreadyGranted + ")");
+			throw new BusinessException(FeeErrorCode.DISCOUNT_EXCEEDS_FEE,
+					"Discounts on " + structure.getName() + " would exceed the fee of "
+							+ structure.getAmount() + " (already granted " + alreadyGranted + ")",
+					Map.of("fee", structure.getAmount(), "alreadyGranted", alreadyGranted));
 		}
 		return feeDiscountRepository.save(discount);
 	}

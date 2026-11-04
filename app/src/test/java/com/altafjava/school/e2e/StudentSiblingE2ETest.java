@@ -89,17 +89,17 @@ class StudentSiblingE2ETest extends SchoolIntegrationTestBase {
 	}
 
 	@Test
-	void linking_alreadyLinkedOrSelf_returns400() {
+	void linking_alreadyLinkedOrSelf_isRefused() {
 		String a = support.createStudent(school);
 		String b = support.createStudent(school);
 		link(a, b);
 
 		support.request(school).body("{\"siblingPublicId\":\"" + b + "\"}")
-				.post("/api/v1/students/" + a + "/siblings").then().statusCode(HttpStatus.BAD_REQUEST.value());
+				.post("/api/v1/students/" + a + "/siblings").then().statusCode(HttpStatus.CONFLICT.value());
 		support.request(school).body("{\"siblingPublicId\":\"" + a + "\"}")
 				.post("/api/v1/students/" + a + "/siblings").then().statusCode(HttpStatus.BAD_REQUEST.value());
 		support.request(school).delete("/api/v1/students/" + support.createStudent(school) + "/siblings")
-				.then().statusCode(HttpStatus.BAD_REQUEST.value());
+				.then().statusCode(HttpStatus.CONFLICT.value());
 	}
 
 	@Test

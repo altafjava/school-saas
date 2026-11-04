@@ -32,6 +32,7 @@ import com.altafjava.school.domain.classroom.repository.ClassroomRepository;
 import com.altafjava.school.domain.classroom.repository.StudentClassroomLinkRepository;
 import com.altafjava.school.domain.curriculum.repository.CurriculumRepository;
 import com.altafjava.school.domain.employee.model.EmployeeStatus;
+import com.altafjava.school.domain.error.AcademicErrorCode;
 import com.altafjava.school.domain.student.model.Student;
 import com.altafjava.school.domain.student.repository.StudentRepository;
 import com.altafjava.school.domain.teacher.repository.TeacherRepository;
@@ -162,14 +163,15 @@ public class ClassroomService {
 				.orElseThrow(() -> new ResourceNotFoundException("Academic year not found: " + academicYearPublicId));
 		if (studentClassroomLinkRepository.existsByStudentIdAndAcademicYearIdAndTenantId(student.getId(),
 				academicYear.getId(), tenantId)) {
-			throw new BusinessException(
+			throw new BusinessException(AcademicErrorCode.STUDENT_ALREADY_ENROLLED,
 					"Student " + studentPublicId + " is already enrolled in a classroom for academic year "
 							+ academicYearPublicId);
 		}
 		if (classroom.getCapacity() != null
 				&& studentClassroomLinkRepository.countByClassroomId(tenantId, classroom.getId()) >= classroom
 						.getCapacity()) {
-			throw new BusinessException("Classroom " + classroomPublicId + " is at full capacity");
+			throw new BusinessException(AcademicErrorCode.CLASSROOM_FULL,
+					"Classroom " + classroomPublicId + " is at full capacity");
 		}
 		StudentClassroomLink link = StudentClassroomLink.create(student.getId(), classroom.getId(),
 				academicYear.getId(), schoolClock.today(tenantId));
@@ -181,7 +183,7 @@ public class ClassroomService {
 			// uq_scl_student_active_academic_year DB constraint (051-classroom-link-soft-delete-
 			// unique-fix.xml) is what actually prevents two concurrent enrollments for the same
 			// student/academic year from both passing the check and both inserting a row.
-			throw new BusinessException(
+			throw new BusinessException(AcademicErrorCode.STUDENT_ALREADY_ENROLLED,
 					"Student " + studentPublicId + " is already enrolled in a classroom for academic year "
 							+ academicYearPublicId);
 		}
@@ -225,8 +227,9 @@ public class ClassroomService {
 		} catch (DataIntegrityViolationException e) {
 			// uq_scl_classroom_year_active_roll_number (009-classroom-roster.xml) is the real
 			// guard against two students in the same classroom/academic year sharing a roll number.
-			throw new BusinessException(
-					"Roll number " + rollNumber + " is already assigned in classroom " + classroomPublicId);
+			throw new BusinessException(AcademicErrorCode.ROLL_NUMBER_TAKEN,
+					"Roll number " + rollNumber + " is already assigned in classroom " + classroomPublicId,
+					Map.of("rollNumber", rollNumber));
 		}
 	}
 

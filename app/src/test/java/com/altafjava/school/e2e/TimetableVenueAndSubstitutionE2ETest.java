@@ -117,7 +117,7 @@ class TimetableVenueAndSubstitutionE2ETest extends SchoolIntegrationTestBase {
 		String venuePublicId = createVenue("LAB-CRUD");
 
 		support.request(school).body("{\"code\":\"LAB-CRUD\",\"name\":\"Again\",\"venueType\":\"HALL\"}")
-				.post("/api/v1/venues").then().statusCode(HttpStatus.BAD_REQUEST.value());
+				.post("/api/v1/venues").then().statusCode(HttpStatus.CONFLICT.value());
 		support.request(school).get("/api/v1/venues").then().statusCode(HttpStatus.OK.value())
 				.body("data.content.publicId", hasItem(venuePublicId));
 		support.request(school).patch("/api/v1/venues/" + venuePublicId + "/deactivate")
@@ -136,7 +136,7 @@ class TimetableVenueAndSubstitutionE2ETest extends SchoolIntegrationTestBase {
 						+ "\",\"teacherPublicId\":\"" + publicIds.of(Employee.class, busyTeacher.getId())
 						+ "\",\"venuePublicId\":\"" + venuePublicId + "\"}")
 				.post("/api/v1/timetable-entries")
-				.then().statusCode(HttpStatus.BAD_REQUEST.value());
+				.then().statusCode(HttpStatus.CONFLICT.value());
 
 		support.request(school).body("{\"venuePublicId\":\"" + venuePublicId + "\"}")
 				.patch("/api/v1/timetable-entries/" + firstSlot + "/venue")
@@ -166,12 +166,12 @@ class TimetableVenueAndSubstitutionE2ETest extends SchoolIntegrationTestBase {
 				.body("{\"timetableEntryPublicId\":\"" + entryPublicId + "\",\"date\":\"" + nextMonday
 						+ "\",\"substituteTeacherPublicId\":\"" + freeTeacher.getPublicId() + "\"}")
 				.post("/api/v1/timetable-substitutions")
-				.then().statusCode(HttpStatus.BAD_REQUEST.value());
+				.then().statusCode(HttpStatus.CONFLICT.value());
 		support.request(school)
 				.body("{\"timetableEntryPublicId\":\"" + entryPublicId + "\",\"date\":\"" + nextMonday
 						+ "\",\"substituteTeacherPublicId\":\"" + busyTeacher.getPublicId() + "\"}")
 				.post("/api/v1/timetable-substitutions")
-				.then().statusCode(HttpStatus.BAD_REQUEST.value());
+				.then().statusCode(HttpStatus.CONFLICT.value());
 		support.request(school)
 				.body("{\"timetableEntryPublicId\":\"" + entryPublicId + "\",\"date\":\"" + nextMonday.plusDays(1)
 						+ "\",\"substituteTeacherPublicId\":\"" + freeTeacher.getPublicId() + "\"}")

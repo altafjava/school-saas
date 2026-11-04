@@ -10,6 +10,7 @@ import jakarta.persistence.Table;
 import org.hibernate.annotations.SQLRestriction;
 import com.altafjava.platform.core.exception.BusinessException;
 import com.altafjava.platform.core.model.SoftDeletableEntity;
+import com.altafjava.school.domain.error.AcademicErrorCode;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -70,14 +71,17 @@ public class TimetableSubstitution extends SoftDeletableEntity {
 			Long substituteTeacherId, String reason, Long assignedByUserId, LocalDate today) {
 		DayOfWeek day = entry.getDayOfWeek();
 		if (substitutionDate.isBefore(today)) {
-			throw new BusinessException("A substitute cannot be assigned for a date that has passed");
+			throw new BusinessException(AcademicErrorCode.SUBSTITUTION_DATE_PASSED,
+					"A substitute cannot be assigned for a date that has passed");
 		}
 		if (substitutionDate.getDayOfWeek() != day) {
-			throw new BusinessException("The slot takes place on " + day + ", but " + substitutionDate + " is a "
-					+ substitutionDate.getDayOfWeek());
+			throw new BusinessException(AcademicErrorCode.SUBSTITUTION_WRONG_DAY,
+					"The slot takes place on " + day + ", but " + substitutionDate + " is a "
+							+ substitutionDate.getDayOfWeek());
 		}
 		if (entry.getTeacherId().equals(substituteTeacherId)) {
-			throw new BusinessException("The substitute must be someone other than the regular teacher");
+			throw new BusinessException(AcademicErrorCode.SUBSTITUTE_IS_REGULAR_TEACHER,
+					"The substitute must be someone other than the regular teacher");
 		}
 		return TimetableSubstitution.builder()
 				.timetableEntryId(entry.getId())
@@ -95,10 +99,12 @@ public class TimetableSubstitution extends SoftDeletableEntity {
 
 	public void cancel(String reason, LocalDate today) {
 		if (!isActive()) {
-			throw new BusinessException("The substitution is already cancelled");
+			throw new BusinessException(AcademicErrorCode.SUBSTITUTION_ALREADY_CANCELLED,
+					"The substitution is already cancelled");
 		}
 		if (substitutionDate.isBefore(today)) {
-			throw new BusinessException("A substitution that has already taken place cannot be cancelled");
+			throw new BusinessException(AcademicErrorCode.SUBSTITUTION_IN_PAST,
+					"A substitution that has already taken place cannot be cancelled");
 		}
 		this.cancelledAt = Instant.now();
 		this.cancellationReason = reason;

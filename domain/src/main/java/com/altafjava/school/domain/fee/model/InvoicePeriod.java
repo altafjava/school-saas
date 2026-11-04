@@ -2,16 +2,19 @@ package com.altafjava.school.domain.fee.model;
 
 import java.time.LocalDate;
 import com.altafjava.platform.core.exception.BusinessException;
+import com.altafjava.school.domain.error.FeeErrorCode;
 
 /** The days an invoice covers, inclusive, and when it must be paid. */
 public record InvoicePeriod(LocalDate start, LocalDate end, LocalDate dueDate) {
 
 	public InvoicePeriod {
 		if (start == null || end == null || dueDate == null) {
-			throw new BusinessException("An invoice needs a start, an end and a due date");
+			throw new BusinessException(FeeErrorCode.INVOICE_PERIOD_INVALID,
+					"An invoice needs a start, an end and a due date");
 		}
 		if (end.isBefore(start)) {
-			throw new BusinessException("The invoice period cannot end before it starts");
+			throw new BusinessException(FeeErrorCode.INVOICE_PERIOD_INVALID,
+					"The invoice period cannot end before it starts");
 		}
 	}
 

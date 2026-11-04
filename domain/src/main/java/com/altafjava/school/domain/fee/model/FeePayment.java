@@ -11,6 +11,7 @@ import jakarta.persistence.Table;
 import org.hibernate.annotations.SQLRestriction;
 import com.altafjava.platform.core.exception.BusinessException;
 import com.altafjava.platform.core.model.SoftDeletableEntity;
+import com.altafjava.school.domain.error.FeeErrorCode;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -112,10 +113,11 @@ public class FeePayment extends SoftDeletableEntity {
 	/** Settles part of an invoice; the invoice must bill the fee this payment is for. */
 	public void applyTo(FeeInvoice invoice) {
 		if (invoice.isCancelled()) {
-			throw new BusinessException("A cancelled invoice cannot be paid");
+			throw new BusinessException(FeeErrorCode.INVOICE_ALREADY_CANCELLED, "A cancelled invoice cannot be paid");
 		}
 		if (!invoice.getStudentId().equals(studentId) || !invoice.bills(feeStructureId)) {
-			throw new BusinessException("The invoice does not bill this fee to this student");
+			throw new BusinessException(FeeErrorCode.INVOICE_FEE_MISMATCH,
+					"The invoice does not bill this fee to this student");
 		}
 		this.invoiceId = invoice.getId();
 	}
@@ -123,10 +125,11 @@ public class FeePayment extends SoftDeletableEntity {
 	/** Keeps the row as evidence but takes the money out of every balance and total. */
 	public void bounce(String reason, LocalDateTime bouncedAt) {
 		if (paymentMode != PaymentMode.CHEQUE) {
-			throw new BusinessException("Only a cheque payment can bounce, this one is " + paymentMode);
+			throw new BusinessException(FeeErrorCode.NOT_A_CHEQUE,
+					"Only a cheque payment can bounce, this one is " + paymentMode);
 		}
 		if (status == FeePaymentStatus.BOUNCED) {
-			throw new BusinessException("This cheque has already bounced");
+			throw new BusinessException(FeeErrorCode.CHEQUE_BOUNCED, "This cheque has already bounced");
 		}
 		this.status = FeePaymentStatus.BOUNCED;
 		this.bouncedAt = bouncedAt;
@@ -135,7 +138,7 @@ public class FeePayment extends SoftDeletableEntity {
 
 	public void attachReceipt(Long receiptDocumentId) {
 		if (this.receiptDocumentId != null) {
-			throw new BusinessException("This payment already has a receipt");
+			throw new BusinessException(FeeErrorCode.RECEIPT_EXISTS, "This payment already has a receipt");
 		}
 		this.receiptDocumentId = receiptDocumentId;
 	}

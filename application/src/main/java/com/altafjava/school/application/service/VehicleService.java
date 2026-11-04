@@ -7,6 +7,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import com.altafjava.platform.core.concurrency.ExpectedVersion;
 import com.altafjava.platform.core.exception.BusinessException;
+import com.altafjava.platform.core.exception.PlatformErrorCode;
 import com.altafjava.platform.core.exception.ResourceNotFoundException;
 import com.altafjava.platform.core.search.LikePattern;
 import com.altafjava.platform.core.tenant.TenantContext;
@@ -38,7 +39,8 @@ public class VehicleService {
 	public Vehicle create(String registrationNumber, int capacity, String driverName, String driverContact) {
 		Long tenantId = TenantContext.getCurrentTenantId();
 		if (vehicleRepository.existsByRegistrationNumberAndTenantId(registrationNumber, tenantId)) {
-			throw new BusinessException("Vehicle already registered: " + registrationNumber);
+			throw new BusinessException(PlatformErrorCode.DUPLICATE_RESOURCE,
+					"Vehicle already registered: " + registrationNumber);
 		}
 		return vehicleRepository.save(Vehicle.create(registrationNumber, capacity, driverName, driverContact));
 	}

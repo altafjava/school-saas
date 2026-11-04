@@ -10,6 +10,7 @@ import com.altafjava.platform.core.exception.BusinessException;
 import com.altafjava.platform.core.exception.ResourceNotFoundException;
 import com.altafjava.platform.core.search.LikePattern;
 import com.altafjava.platform.core.tenant.TenantContext;
+import com.altafjava.school.domain.error.SchoolErrorCode;
 import com.altafjava.school.domain.timetable.model.Venue;
 import com.altafjava.school.domain.timetable.model.VenueType;
 import com.altafjava.school.domain.timetable.repository.VenueRepository;
@@ -35,7 +36,7 @@ public class VenueService {
 	@Transactional
 	public Venue create(String code, String name, VenueType venueType, Integer capacity) {
 		if (venueRepository.existsByCodeAndTenantId(code, TenantContext.getCurrentTenantId())) {
-			throw new BusinessException("Venue code already exists: " + code);
+			throw new BusinessException(SchoolErrorCode.CODE_TAKEN, "Venue code already exists: " + code);
 		}
 		return venueRepository.save(Venue.create(code, name, venueType, capacity));
 	}

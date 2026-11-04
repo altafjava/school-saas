@@ -17,6 +17,7 @@ import com.altafjava.school.application.bulk.BulkEntryResult.Outcome;
 import com.altafjava.school.application.bulk.BulkEntryResult.Row;
 import com.altafjava.school.application.security.AcademicAccessGuard;
 import com.altafjava.school.domain.curriculum.model.GradeBand;
+import com.altafjava.school.domain.error.AcademicErrorCode;
 import com.altafjava.school.domain.exam.model.Exam;
 import com.altafjava.school.domain.exam.model.ExamStatus;
 import com.altafjava.school.domain.exam.repository.ExamRepository;
@@ -54,7 +55,8 @@ public class GradeBulkService {
 				.orElseThrow(() -> new ResourceNotFoundException("Exam not found: " + examPublicId));
 		academicAccessGuard.assertCanWriteSubject(tenantId, exam.getClassroomId(), exam.getSubjectId());
 		if (exam.getStatus() == ExamStatus.CANCELLED) {
-			throw new BusinessException("Grades cannot be recorded for a cancelled exam");
+			throw new BusinessException(AcademicErrorCode.EXAM_CANCELLED,
+					"Grades cannot be recorded for a cancelled exam");
 		}
 		exam.requireMarksOpen();
 

@@ -91,7 +91,7 @@ class GuardianSelfRegistrationE2ETest extends SchoolIntegrationTestBase {
 				.when()
 				.post("/api/v1/guardians/self-register")
 				.then()
-				.statusCode(HttpStatus.BAD_REQUEST.value());
+				.statusCode(HttpStatus.CONFLICT.value());
 	}
 
 	@Test
@@ -115,7 +115,7 @@ class GuardianSelfRegistrationE2ETest extends SchoolIntegrationTestBase {
 	}
 
 	@Test
-	void selfRegister_noPendingRecordDefaultMode_returns400() {
+	void selfRegister_noPendingRecordDefaultMode_returns409() {
 		String email = "unmatched-" + UUID.randomUUID() + "@school.test";
 		String bearer = authHelper.tokenWithRole(tenantId, "TEACHER");
 
@@ -128,7 +128,7 @@ class GuardianSelfRegistrationE2ETest extends SchoolIntegrationTestBase {
 				.when()
 				.post("/api/v1/guardians/self-register")
 				.then()
-				.statusCode(HttpStatus.BAD_REQUEST.value());
+				.statusCode(HttpStatus.CONFLICT.value());
 	}
 
 	@Test
@@ -172,6 +172,6 @@ class GuardianSelfRegistrationE2ETest extends SchoolIntegrationTestBase {
 				.when()
 				.post("/api/v1/guardians/self-register")
 				.then()
-				.statusCode(HttpStatus.BAD_REQUEST.value());
+				.statusCode(HttpStatus.CONFLICT.value());
 	}
 }

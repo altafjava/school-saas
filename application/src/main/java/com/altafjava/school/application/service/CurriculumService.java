@@ -15,6 +15,7 @@ import com.altafjava.school.domain.curriculum.model.Curriculum;
 import com.altafjava.school.domain.curriculum.repository.BoardRepository;
 import com.altafjava.school.domain.curriculum.repository.CurriculumRepository;
 import com.altafjava.school.domain.curriculum.repository.GradingScaleRepository;
+import com.altafjava.school.domain.error.SchoolErrorCode;
 
 @Service
 public class CurriculumService {
@@ -49,7 +50,7 @@ public class CurriculumService {
 		var board = boardRepository.findByPublicIdAndTenantId(UUID.fromString(boardPublicId), tenantId)
 				.orElseThrow(() -> new ResourceNotFoundException("Board not found: " + boardPublicId));
 		if (curriculumRepository.existsByCodeAndTenantId(code, tenantId)) {
-			throw new BusinessException("Curriculum code already exists: " + code);
+			throw new BusinessException(SchoolErrorCode.CODE_TAKEN, "Curriculum code already exists: " + code);
 		}
 		return curriculumRepository.save(Curriculum.create(board.getId(), name, code, description));
 	}

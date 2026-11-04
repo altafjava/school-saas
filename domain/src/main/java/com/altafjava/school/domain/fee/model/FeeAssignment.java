@@ -11,7 +11,9 @@ import jakarta.persistence.PreUpdate;
 import jakarta.persistence.Table;
 import org.hibernate.annotations.SQLRestriction;
 import com.altafjava.platform.core.exception.BusinessException;
+import com.altafjava.platform.core.exception.PlatformErrorCode;
 import com.altafjava.platform.core.model.SoftDeletableEntity;
+import com.altafjava.school.domain.error.FeeErrorCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
@@ -77,10 +79,12 @@ public class FeeAssignment extends SoftDeletableEntity {
 	/** Charges this student {@code amount} for the structure instead of the structure's own amount. */
 	public void chargeIndividually(BigDecimal amount) {
 		if (scope != FeeAssignmentScope.STUDENT) {
-			throw new BusinessException("Only a student's own fee can carry an individual amount");
+			throw new BusinessException(FeeErrorCode.INDIVIDUAL_AMOUNT_NOT_ALLOWED,
+					"Only a student's own fee can carry an individual amount");
 		}
 		if (amount == null || amount.signum() <= 0 || amount.scale() > 2) {
-			throw new BusinessException("An individual amount must be positive with at most 2 decimals");
+			throw new BusinessException(FeeErrorCode.AMOUNT_INVALID,
+					"An individual amount must be positive with at most 2 decimals");
 		}
 		this.amount = amount;
 	}
@@ -102,10 +106,12 @@ public class FeeAssignment extends SoftDeletableEntity {
 		boolean hasStudent = studentId != null;
 		boolean hasClassroom = classroomId != null;
 		if (scope == FeeAssignmentScope.STUDENT && (!hasStudent || hasClassroom)) {
-			throw new BusinessException("STUDENT-scoped fee assignment must set studentId and not classroomId");
+			throw new BusinessException(PlatformErrorCode.INTERNAL_ERROR,
+					"STUDENT-scoped fee assignment must set studentId and not classroomId");
 		}
 		if (scope == FeeAssignmentScope.CLASSROOM && (!hasClassroom || hasStudent)) {
-			throw new BusinessException("CLASSROOM-scoped fee assignment must set classroomId and not studentId");
+			throw new BusinessException(PlatformErrorCode.INTERNAL_ERROR,
+					"CLASSROOM-scoped fee assignment must set classroomId and not studentId");
 		}
 	}
 }

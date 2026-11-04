@@ -11,6 +11,7 @@ import com.altafjava.platform.core.audit.AuditAction;
 import com.altafjava.platform.core.audit.annotation.Audited;
 import com.altafjava.platform.core.concurrency.ExpectedVersion;
 import com.altafjava.platform.core.exception.BusinessException;
+import com.altafjava.platform.core.exception.IdentityErrorCode;
 import com.altafjava.platform.core.exception.ResourceNotFoundException;
 import com.altafjava.platform.core.search.LikePattern;
 import com.altafjava.platform.core.tenant.TenantContext;
@@ -28,6 +29,7 @@ import com.altafjava.school.domain.employee.model.EmployeeStatus;
 import com.altafjava.school.domain.employee.model.EmploymentType;
 import com.altafjava.school.domain.employee.model.StaffCategory;
 import com.altafjava.school.domain.employee.repository.EmployeeRepository;
+import com.altafjava.school.domain.error.StaffErrorCode;
 import lombok.RequiredArgsConstructor;
 
 /**
@@ -101,7 +103,7 @@ public class EmployeeService {
 		expectedVersion.verify(employee);
 		String defaultRegion = employee.getAddress() != null ? employee.getAddress().getCountryCode() : null;
 		if (!phoneNumberValidator.isValid(phone, defaultRegion)) {
-			throw new BusinessException("Invalid phone number: " + phone);
+			throw new BusinessException(IdentityErrorCode.PHONE_INVALID, "Invalid phone number: " + phone);
 		}
 		employee.updatePhone(phone);
 		return employeeRepository.save(employee);
@@ -143,7 +145,8 @@ public class EmployeeService {
 	public Employee exit(String publicId, EmployeeStatus status, LocalDate exitDate, String reason) {
 		Employee employee = findByPublicId(publicId);
 		if (classroomRepository.existsByClassTeacherIdAndTenantId(employee.getId(), employee.getTenantId())) {
-			throw new BusinessException("Reassign this teacher's classes before recording their exit");
+			throw new BusinessException(StaffErrorCode.TEACHER_HAS_CLASSES,
+					"Reassign this teacher's classes before recording their exit");
 		}
 		employee.exit(status, exitDate, reason, schoolClock.today(employee.getTenantId()));
 		return employeeRepository.save(employee);
@@ -152,8 +155,9 @@ public class EmployeeService {
 	// A leaver's record is history: it stays readable but is no longer edited.
 	private Employee requireActive(Employee employee) {
 		if (!employee.isActive()) {
-			throw new BusinessException("Employee has left the school and their record can no longer be edited: "
-					+ employee.getStatus());
+			throw new BusinessException(StaffErrorCode.EMPLOYEE_HAS_LEFT,
+					"Employee has left the school and their record can no longer be edited: "
+							+ employee.getStatus());
 		}
 		return employee;
 	}

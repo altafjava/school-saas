@@ -19,8 +19,10 @@ import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.support.TransactionTemplate;
 import com.altafjava.platform.application.security.PermissionAuthorizationService;
 import com.altafjava.platform.core.exception.BusinessException;
+import com.altafjava.platform.core.exception.PlatformErrorCode;
 import com.altafjava.platform.core.exception.ResourceNotFoundException;
 import com.altafjava.platform.core.tenant.TenantContext;
+import com.altafjava.school.domain.error.SchoolErrorCode;
 import com.altafjava.school.domain.importing.model.ImportJob;
 import com.altafjava.school.domain.importing.model.ImportJobError;
 import com.altafjava.school.domain.importing.model.ImportJobStatus;
@@ -76,7 +78,9 @@ public class ImportService {
 	public ImportJobView upload(ImportType type, String fileName, byte[] bytes, Long uploadedByUserId) {
 		RowImporter importer = importerFor(type);
 		if (bytes.length > MAX_FILE_BYTES) {
-			throw new BusinessException("A file can be at most " + MAX_FILE_BYTES / 1024 + " KB");
+			throw new BusinessException(SchoolErrorCode.IMPORT_FILE_TOO_LARGE,
+					"A file can be at most " + MAX_FILE_BYTES / 1024 + " KB",
+					Map.of("maxKilobytes", MAX_FILE_BYTES / 1024));
 		}
 		String content = new String(bytes, StandardCharsets.UTF_8);
 		if (!content.isEmpty() && content.charAt(0) == BYTE_ORDER_MARK) {
@@ -84,7 +88,7 @@ public class ImportService {
 		}
 		CsvFile file = CsvFile.parse(content);
 		if (file.rows().isEmpty()) {
-			throw new BusinessException("The file has a header but no rows");
+			throw new BusinessException(SchoolErrorCode.IMPORT_FILE_EMPTY, "The file has a header but no rows");
 		}
 		Map<String, String> mapping = suggestMapping(importer, file.headers());
 		ImportJob job = importJobRepository.save(ImportJob.upload(type, fileName == null ? "upload.csv" : fileName,
@@ -224,11 +228,13 @@ public class ImportService {
 		List<String> known = importer.fields().stream().map(ImportField::name).toList();
 		mapping.forEach((field, header) -> {
 			if (!known.contains(field)) {
-				throw new BusinessException("Unknown field " + field + "; expected one of " + known);
+				throw new BusinessException(SchoolErrorCode.IMPORT_MAPPING_INVALID,
+						"Unknown field " + field + "; expected one of " + known, Map.of("field", field));
 			}
 			if (header != null && !header.isBlank()) {
 				if (!file.headers().contains(header)) {
-					throw new BusinessException("The file has no column named " + header);
+					throw new BusinessException(SchoolErrorCode.IMPORT_MAPPING_INVALID,
+							"The file has no column named " + header, Map.of("column", header));
 				}
 				cleaned.put(field, header);
 			}
@@ -236,7 +242,8 @@ public class ImportService {
 		List<String> missing = importer.fields().stream().filter(ImportField::required)
 				.map(ImportField::name).filter(field -> !cleaned.containsKey(field)).toList();
 		if (!missing.isEmpty()) {
-			throw new BusinessException("Map a column to every required field; missing " + missing);
+			throw new BusinessException(SchoolErrorCode.IMPORT_MAPPING_INVALID,
+					"Map a column to every required field; missing " + missing, Map.of("missing", missing));
 		}
 		return cleaned;
 	}
@@ -256,7 +263,7 @@ public class ImportService {
 	private RowImporter importerFor(ImportType type) {
 		RowImporter importer = importers.get(type);
 		if (importer == null) {
-			throw new BusinessException("No importer for " + type);
+			throw new BusinessException(PlatformErrorCode.INTERNAL_ERROR, "No importer for " + type);
 		}
 		if (!permissionAuthorizationService.hasPermission(importer.requiredPermission())) {
 			throw new AccessDeniedException("Importing " + type.name().toLowerCase(Locale.ROOT).replace('_', ' ')

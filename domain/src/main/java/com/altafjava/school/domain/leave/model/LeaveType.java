@@ -8,7 +8,9 @@ import jakarta.persistence.PreUpdate;
 import jakarta.persistence.Table;
 import org.hibernate.annotations.SQLRestriction;
 import com.altafjava.platform.core.exception.BusinessException;
+import com.altafjava.platform.core.exception.PlatformErrorCode;
 import com.altafjava.platform.core.model.SoftDeletableEntity;
+import com.altafjava.school.domain.error.StaffErrorCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -69,7 +71,8 @@ public class LeaveType extends SoftDeletableEntity {
 	@PreUpdate
 	private void assertConsistent() {
 		if (approvalLevels < 1 || approvalLevels > 2) {
-			throw new BusinessException("A leave type needs one or two approval levels");
+			throw new BusinessException(PlatformErrorCode.INTERNAL_ERROR,
+					"A leave type needs one or two approval levels");
 		}
 	}
 
@@ -116,7 +119,8 @@ public class LeaveType extends SoftDeletableEntity {
 
 	public void configureApprovalLevels(int approvalLevels) {
 		if (approvalLevels < 1 || approvalLevels > 2) {
-			throw new BusinessException("A leave type needs one or two levels of approval");
+			throw new BusinessException(StaffErrorCode.LEAVE_APPROVAL_LEVELS_INVALID,
+					"A leave type needs one or two levels of approval");
 		}
 		this.approvalLevels = approvalLevels;
 	}

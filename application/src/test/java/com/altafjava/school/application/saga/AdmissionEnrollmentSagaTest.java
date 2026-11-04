@@ -141,6 +141,7 @@ class AdmissionEnrollmentSagaTest {
 		when(admissionRepository.save(any(Admission.class))).thenAnswer(inv -> inv.getArgument(0));
 		when(studentService.enroll(eq("STU-100"), any(), any(), any(), any(), any(), any()))
 				.thenThrow(new com.altafjava.platform.core.exception.BusinessException(
+						com.altafjava.school.domain.error.StudentErrorCode.STUDENT_CODE_TAKEN,
 						"Student code already exists: STU-100"));
 		when(sagaLogRepository.findById(any())).thenReturn(Optional.empty());
 

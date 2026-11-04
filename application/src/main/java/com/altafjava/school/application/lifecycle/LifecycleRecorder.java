@@ -9,6 +9,7 @@ import com.altafjava.platform.core.security.AuthenticatedUser;
 import com.altafjava.platform.core.tenant.TenantContext;
 import com.altafjava.school.application.time.SchoolClock;
 import com.altafjava.school.domain.admission.model.AdmissionStatus;
+import com.altafjava.school.domain.error.StudentErrorCode;
 import com.altafjava.school.domain.lifecycle.model.LifecycleStage;
 import com.altafjava.school.domain.lifecycle.model.LifecycleTransition;
 import com.altafjava.school.domain.lifecycle.repository.LifecycleTransitionRepository;
@@ -72,7 +73,8 @@ public class LifecycleRecorder {
 			return today;
 		}
 		if (change.effectiveOn().isAfter(today)) {
-			throw new BusinessException("A lifecycle change cannot take effect in the future: " + change.effectiveOn());
+			throw new BusinessException(StudentErrorCode.LIFECYCLE_DATE_IN_FUTURE,
+					"A lifecycle change cannot take effect in the future: " + change.effectiveOn());
 		}
 		return change.effectiveOn();
 	}

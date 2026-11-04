@@ -85,7 +85,7 @@ class AttendanceQrScanE2ETest extends SchoolIntegrationTestBase {
 		String lostCard = issueCard(studentPublicId);
 		String replacement = issueCard(studentPublicId);
 
-		scan(lostCard).statusCode(HttpStatus.BAD_REQUEST.value())
+		scan(lostCard).statusCode(HttpStatus.CONFLICT.value())
 				.body("error.message", containsString("revoked"));
 		scan(replacement).statusCode(HttpStatus.OK.value());
 	}

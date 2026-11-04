@@ -3,6 +3,7 @@ package com.altafjava.school.application.service;
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.UUID;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.PlatformTransactionManager;
@@ -15,6 +16,7 @@ import com.altafjava.platform.application.paymentgateway.ResolvedPaymentGatewayC
 import com.altafjava.platform.application.service.NumberSequenceService;
 import com.altafjava.platform.core.audit.AuditAction;
 import com.altafjava.platform.core.audit.annotation.Audited;
+import com.altafjava.platform.core.exception.BillingErrorCode;
 import com.altafjava.platform.core.exception.BusinessException;
 import com.altafjava.platform.core.exception.ResourceNotFoundException;
 import com.altafjava.platform.core.tenant.TenantContext;
@@ -22,6 +24,7 @@ import com.altafjava.platform.domain.numbering.model.ResetPeriod;
 import com.altafjava.platform.domain.paymentgateway.service.PaymentGatewayCredentials;
 import com.altafjava.platform.domain.paymentgateway.service.PaymentGatewayProvider;
 import com.altafjava.platform.domain.paymentgateway.service.RefundResult;
+import com.altafjava.school.domain.error.FeeErrorCode;
 import com.altafjava.school.domain.fee.model.FeePayment;
 import com.altafjava.school.domain.fee.model.FeeRefund;
 import com.altafjava.school.domain.fee.model.PaymentSource;
@@ -116,14 +119,17 @@ public class FeeRefundService {
 			FeePayment payment = feePaymentRepository.findByPublicIdAndTenantIdForUpdate(paymentPublicId, tenantId)
 					.orElseThrow(() -> new ResourceNotFoundException("FeePayment not found: " + paymentPublicId));
 			if (payment.isBounced()) {
-				throw new BusinessException("This cheque bounced, so there is nothing to refund");
+				throw new BusinessException(FeeErrorCode.CHEQUE_BOUNCED,
+						"This cheque bounced, so there is nothing to refund");
 			}
 			BigDecimal alreadyReserved = feeRefundRepository.sumReservedByPayment(tenantId, payment.getId());
 			BigDecimal refundable = payment.getPaidAmount().subtract(alreadyReserved);
 			if (amount == null || amount.compareTo(refundable) > 0) {
-				throw new BusinessException("Refund exceeds the refundable amount of " + refundable
-						+ " for this payment (paid " + payment.getPaidAmount() + ", already refunded "
-						+ alreadyReserved + ")");
+				throw new BusinessException(FeeErrorCode.REFUND_EXCEEDS_REFUNDABLE,
+						"Refund exceeds the refundable amount of " + refundable
+								+ " for this payment (paid " + payment.getPaidAmount() + ", already refunded "
+								+ alreadyReserved + ")",
+						Map.of("refundable", refundable));
 			}
 			String creditNote = numberSequenceService.generateNext(tenantId, CREDIT_NOTE_SEQUENCE, "CN-", 6,
 					ResetPeriod.YEARLY);
@@ -137,7 +143,7 @@ public class FeeRefundService {
 		RefundResult result;
 		try {
 			ResolvedPaymentGatewayConfig config = paymentGatewayResolver.resolve(tenantId)
-					.orElseThrow(() -> new BusinessException(
+					.orElseThrow(() -> new BusinessException(BillingErrorCode.PAYMENT_GATEWAY_NOT_CONFIGURED,
 							"No payment gateway configured for this school — cannot refund an online payment"));
 			PaymentGatewayCredentials credentials = paymentGatewayCredentialsDecryptor.decrypt(config);
 			PaymentGatewayProvider provider = paymentGatewayProviderRegistry.resolve(config.providerType());
@@ -147,7 +153,8 @@ public class FeeRefundService {
 					reserved.getId(), payment.getId(), ex);
 			settle(reserved.getId(), tenantId, null, truncate("Gateway call failed: " + ex.getMessage()));
 			throw ex instanceof BusinessException ? ex
-					: new BusinessException("The payment gateway could not process the refund; nothing was refunded");
+					: new BusinessException(FeeErrorCode.GATEWAY_REFUND_FAILED,
+							"The payment gateway could not process the refund; nothing was refunded");
 		}
 
 		boolean accepted = result.status() != null
@@ -155,7 +162,9 @@ public class FeeRefundService {
 		FeeRefund settled = settle(reserved.getId(), tenantId, accepted ? result.gatewayRefundReference() : null,
 				accepted ? null : "Gateway rejected the refund: " + result.status());
 		if (!accepted) {
-			throw new BusinessException("The payment gateway rejected the refund (" + result.status() + ")");
+			throw new BusinessException(FeeErrorCode.GATEWAY_REFUND_FAILED,
+					"The payment gateway rejected the refund (" + result.status() + ")",
+					Map.of("status", result.status()));
 		}
 		return settled;
 	}

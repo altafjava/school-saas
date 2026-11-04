@@ -178,7 +178,7 @@ class PayslipCrudE2ETest extends SchoolIntegrationTestBase {
 	}
 
 	@Test
-	void disburse_beforeFinalize_returns400() {
+	void disburse_beforeFinalize_returns409() {
 		String accessToken = login();
 		String publicId = seedPayslip(accessToken, "EMP-PAY-3");
 
@@ -189,7 +189,7 @@ class PayslipCrudE2ETest extends SchoolIntegrationTestBase {
 				.when()
 				.patch("/api/v1/payslips/" + publicId + "/disburse")
 				.then()
-				.statusCode(HttpStatus.BAD_REQUEST.value());
+				.statusCode(HttpStatus.CONFLICT.value());
 	}
 
 	@Test

@@ -61,6 +61,7 @@ import com.altafjava.school.domain.academicyear.model.AcademicYear;
 import com.altafjava.school.domain.attendance.model.AttendanceStatus;
 import com.altafjava.school.domain.classroom.model.Classroom;
 import com.altafjava.school.domain.common.model.Gender;
+import com.altafjava.school.domain.employee.model.Employee;
 import com.altafjava.school.domain.employee.model.StaffCategory;
 import com.altafjava.school.domain.exam.model.Exam;
 import com.altafjava.school.domain.exam.model.ExamTypeDefinition;
@@ -150,6 +151,10 @@ public class DemoDataSeeder {
 	private final PasswordEncoder passwordEncoder;
 	private final PlatformTransactionManager transactionManager;
 	private final SchoolClock schoolClock;
+	private final DemoLibrarySeeder librarySeeder;
+	private final DemoAdmissionsSeeder admissionsSeeder;
+	private final DemoStaffLeaveSeeder staffLeaveSeeder;
+	private final DemoCommunicationSeeder communicationSeeder;
 
 	/**
 	 * Seeds in one transaction, so a failure leaves no partial school. The parent login is created
@@ -260,10 +265,11 @@ public class DemoDataSeeder {
 			teachers.add(teacherService.hire(null, GIVEN[i], FAMILY[i], "teacher" + (i + 1) + "@demo.school",
 					genderOf(i), today.minusYears(2 + i)));
 		}
-		employeeService.hire(StaffCategory.ADMINISTRATIVE, null, "Ravi", "Kumar", "clerk@demo.school", Gender.MALE,
-				today.minusYears(3));
-		employeeService.hire(StaffCategory.SUPPORT, null, "Suresh", "Yadav", "driver@demo.school", Gender.MALE,
-				today.minusYears(1));
+		List<Employee> staff = List.of(
+				employeeService.hire(StaffCategory.ADMINISTRATIVE, null, "Ravi", "Kumar", "clerk@demo.school",
+						Gender.MALE, today.minusYears(3)),
+				employeeService.hire(StaffCategory.SUPPORT, null, "Suresh", "Yadav", "driver@demo.school",
+						Gender.MALE, today.minusYears(1)));
 
 		List<Classroom> classrooms = new ArrayList<>();
 		int teacherIndex = 0;
@@ -295,6 +301,14 @@ public class DemoDataSeeder {
 		seedAssignments(classrooms, subjects, teachers, today);
 		seedEvents(today);
 		seedLogins(teachers.get(0), students.get(0), guardians.get(0));
+
+		DemoSchool school = new DemoSchool(TenantContext.getCurrentTenantId(),
+				userRepository.findByEmail(ADMIN_EMAIL).orElseThrow().getId(), today, year, teachers, staff, students,
+				guardians);
+		librarySeeder.seed(school);
+		admissionsSeeder.seed(school);
+		staffLeaveSeeder.seed(school);
+		communicationSeeder.seed(school);
 		return new ReportCardSample(term1, students.subList(0, STUDENTS_PER_CLASS));
 	}
 

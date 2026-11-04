@@ -20,6 +20,7 @@ import com.altafjava.school.application.security.AcademicScopeResolver;
 import com.altafjava.school.application.security.ExamResultVisibilityPolicy;
 import com.altafjava.school.application.security.StudentDataAccessGuard;
 import com.altafjava.school.domain.curriculum.model.GradeBand;
+import com.altafjava.school.domain.error.AcademicErrorCode;
 import com.altafjava.school.domain.exam.model.Exam;
 import com.altafjava.school.domain.exam.model.ExamStatus;
 import com.altafjava.school.domain.exam.repository.ExamRepository;
@@ -140,7 +141,8 @@ public class GradeService {
 		}
 		academicAccessGuard.assertCanWriteSubject(tenantId, exam.getClassroomId(), exam.getSubjectId());
 		if (exam.getStatus() == ExamStatus.CANCELLED) {
-			throw new BusinessException("Grades cannot be recorded for a cancelled exam");
+			throw new BusinessException(AcademicErrorCode.EXAM_CANCELLED,
+					"Grades cannot be recorded for a cancelled exam");
 		}
 		exam.requireMarksOpen();
 		List<GradeBand> thresholds = gradingScaleService.resolveEffectiveThresholds(exam.getClassroomId());

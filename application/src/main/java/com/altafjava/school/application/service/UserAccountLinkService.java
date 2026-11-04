@@ -15,6 +15,8 @@ import com.altafjava.school.application.reference.PublicIdResolver;
 import com.altafjava.school.application.security.SchoolRoles;
 import com.altafjava.school.domain.employee.model.Employee;
 import com.altafjava.school.domain.employee.repository.EmployeeRepository;
+import com.altafjava.school.domain.error.StaffErrorCode;
+import com.altafjava.school.domain.error.StudentErrorCode;
 import com.altafjava.school.domain.student.model.Student;
 import com.altafjava.school.domain.student.repository.StudentRepository;
 import lombok.RequiredArgsConstructor;
@@ -80,14 +82,15 @@ public class UserAccountLinkService {
 
 	private static String requireStaffRole(String role) {
 		if (!STAFF_ROLES.contains(role)) {
-			throw new BusinessException("A staff login needs one of the roles " + STAFF_ROLES);
+			throw new BusinessException(StaffErrorCode.STAFF_ROLE_REQUIRED,
+					"A staff login needs one of the roles " + STAFF_ROLES);
 		}
 		return role;
 	}
 
 	private static void assertNoAccount(Long userId) {
 		if (userId != null) {
-			throw new BusinessException("This record already has a login");
+			throw new BusinessException(StudentErrorCode.ACCOUNT_EXISTS, "This record already has a login");
 		}
 	}
 
@@ -99,7 +102,8 @@ public class UserAccountLinkService {
 		Long userId = publicIdLookup.idOrNull(EntityRef.USER, request.userPublicId());
 		if (studentRepository.findByUserIdAndTenantId(userId, tenantId).isPresent()
 				|| employeeRepository.findByUserIdAndTenantId(userId, tenantId).isPresent()) {
-			throw new BusinessException("This login already belongs to another record");
+			throw new BusinessException(StudentErrorCode.ACCOUNT_LINKED_ELSEWHERE,
+					"This login already belongs to another record");
 		}
 		return userDomainService.findById(userId)
 				.orElseThrow(() -> new ResourceNotFoundException("User not found: " + request.userPublicId()));

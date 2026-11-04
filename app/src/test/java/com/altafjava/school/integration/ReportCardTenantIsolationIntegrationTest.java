@@ -1,5 +1,6 @@
 package com.altafjava.school.integration;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import java.time.LocalDate;
 import java.util.List;
@@ -142,7 +143,29 @@ class ReportCardTenantIsolationIntegrationTest extends SchoolIntegrationTestBase
 
 		activateTenant(tenantB);
 		assertThrows(ResourceNotFoundException.class,
-				() -> reportCardService.findByPublicId(studentPublicId, reportCardPublicId),
+				() -> reportCardService.findForStudent(studentPublicId, reportCardPublicId),
 				"Tenant B must receive ResourceNotFoundException for tenant A's report card");
+	}
+
+	@Test
+	void reportCardOfAnotherStudent_notReachableThroughThisStudentsPath() {
+		activateTenant(tenantA);
+		Student owner = studentService.enroll("STU-" + UUID.randomUUID().toString().substring(0, 6), "Cara",
+				"Lee", "cara@rpc.test", LocalDate.of(2010, 3, 3));
+		Student other = studentService.enroll("STU-" + UUID.randomUUID().toString().substring(0, 6), "Dan",
+				"Moss", "dan@rpc.test", LocalDate.of(2010, 4, 4));
+		AcademicYear year = academicYearService.create("AY-" + UUID.randomUUID().toString().substring(0, 6),
+				LocalDate.now().minusMonths(1), LocalDate.now().plusMonths(5), true);
+		Term term = termService.create("Term 1", LocalDate.now().minusDays(10), LocalDate.now().plusDays(10),
+				year.getPublicId().toString());
+		ReportCard ownersCard = reportCardService.generate(owner.getId(), term.getId(), null, null);
+		ReportCard othersCard = reportCardService.generate(other.getId(), term.getId(), null, null);
+		String ownerPublicId = owner.getPublicId().toString();
+
+		assertEquals(ownersCard.getId(),
+				reportCardService.findForStudent(ownerPublicId, ownersCard.getPublicId().toString()).getId());
+		assertThrows(ResourceNotFoundException.class,
+				() -> reportCardService.findForStudent(ownerPublicId, othersCard.getPublicId().toString()),
+				"A report card must only resolve under the student it belongs to");
 	}
 }

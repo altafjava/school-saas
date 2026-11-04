@@ -4,10 +4,12 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 import org.springframework.data.domain.Sort;
 import com.altafjava.platform.core.exception.BusinessException;
+import com.altafjava.school.domain.error.SchoolErrorCode;
 
 /**
  * Turns {@code sort=field[,asc|desc]} query values into a {@link Sort}, rejecting any attribute not
@@ -28,7 +30,8 @@ public final class SortParser {
 			return Sort.unsorted();
 		}
 		if (requested.size() > MAX_SORT_KEYS) {
-			throw new BusinessException("Sort by at most " + MAX_SORT_KEYS + " fields");
+			throw new BusinessException(SchoolErrorCode.SORT_INVALID, "Sort by at most " + MAX_SORT_KEYS + " fields",
+					Map.of("maxFields", MAX_SORT_KEYS));
 		}
 		Set<String> allowed = new TreeSet<>(AUDIT_ATTRIBUTES);
 		allowed.addAll(endpointAttributes);
@@ -37,7 +40,9 @@ public final class SortParser {
 		for (String value : requested) {
 			Sort.Order order = toOrder(value, allowed);
 			if (!seen.add(order.getProperty())) {
-				throw new BusinessException("Sort field '" + order.getProperty() + "' is given more than once");
+				throw new BusinessException(SchoolErrorCode.SORT_INVALID,
+						"Sort field '" + order.getProperty() + "' is given more than once",
+						Map.of("field", order.getProperty()));
 			}
 			orders.add(order);
 		}
@@ -49,8 +54,9 @@ public final class SortParser {
 		String[] parts = value.split(",", -1);
 		String attribute = parts[0].strip();
 		if (parts.length > 2 || !allowed.contains(attribute)) {
-			throw new BusinessException(
-					"Cannot sort by '" + value + "'. Sortable fields: " + String.join(", ", allowed));
+			throw new BusinessException(SchoolErrorCode.SORT_INVALID,
+					"Cannot sort by '" + value + "'. Sortable fields: " + String.join(", ", allowed),
+					Map.of("field", value, "allowed", allowed));
 		}
 		if (parts.length == 1) {
 			return Sort.Order.asc(attribute);
@@ -58,7 +64,8 @@ public final class SortParser {
 		return switch (parts[1].strip().toLowerCase(Locale.ROOT)) {
 			case "asc" -> Sort.Order.asc(attribute);
 			case "desc" -> Sort.Order.desc(attribute);
-			default -> throw new BusinessException("Sort direction must be asc or desc, was '" + parts[1] + "'");
+			default -> throw new BusinessException(SchoolErrorCode.SORT_INVALID,
+					"Sort direction must be asc or desc, was '" + parts[1] + "'");
 		};
 	}
 }

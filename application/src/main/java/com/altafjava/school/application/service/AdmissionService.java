@@ -5,6 +5,7 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -13,6 +14,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
+import org.springframework.web.util.HtmlUtils;
 import com.altafjava.platform.application.document.DocumentIssuanceService;
 import com.altafjava.platform.application.service.EmailService;
 import com.altafjava.platform.application.service.NumberSequenceService;
@@ -38,6 +40,7 @@ import com.altafjava.school.domain.admission.model.DecisionOutcome;
 import com.altafjava.school.domain.admission.repository.AdmissionDecisionRepository;
 import com.altafjava.school.domain.admission.repository.AdmissionRepository;
 import com.altafjava.school.domain.common.model.Gender;
+import com.altafjava.school.domain.error.AdmissionErrorCode;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
@@ -111,8 +114,9 @@ public class AdmissionService {
 	public Admission markUnderReview(String publicId) {
 		Admission admission = findByPublicId(publicId);
 		if (admission.getStatus() != AdmissionStatus.SUBMITTED) {
-			throw new BusinessException(
-					"Admission " + publicId + " must be SUBMITTED to move under review, was " + admission.getStatus());
+			throw new BusinessException(AdmissionErrorCode.ADMISSION_STATUS_INVALID,
+					"Admission " + publicId + " must be SUBMITTED to move under review, was " + admission.getStatus(),
+					Map.of("status", admission.getStatus()));
 		}
 		admission.markUnderReview();
 		lifecycleRecorder.admission(admission.getId(), AdmissionStatus.SUBMITTED, AdmissionStatus.UNDER_REVIEW,
@@ -161,7 +165,8 @@ public class AdmissionService {
 	@RequiresApproval(operationCode = "ADMISSION_DECISION", entityIdExpression = "#publicId", payloadExpression = "{'studentCode': #studentCode, 'decidedBy': #decidedBy, 'notes': #notes}")
 	public Admission requestApproval(String publicId, String decidedBy, String notes, String studentCode) {
 		if (studentCode == null || studentCode.isBlank()) {
-			throw new BusinessException("studentCode is required when approving an admission");
+			throw new BusinessException(AdmissionErrorCode.STUDENT_CODE_REQUIRED,
+					"studentCode is required when approving an admission");
 		}
 		requireDecidable(findByPublicId(publicId), publicId);
 		return finalizeApproval(publicId, decidedBy, notes, studentCode);
@@ -233,8 +238,10 @@ public class AdmissionService {
 	public Admission issueOfferLetter(String publicId) {
 		Admission admission = findByPublicId(publicId);
 		if (admission.getStatus() != AdmissionStatus.APPROVED && admission.getStatus() != AdmissionStatus.ENROLLED) {
-			throw new BusinessException("An offer letter can only be issued for an approved admission, was "
-					+ admission.getStatus());
+			throw new BusinessException(AdmissionErrorCode.ADMISSION_STATUS_INVALID,
+					"An offer letter can only be issued for an approved admission, was "
+							+ admission.getStatus(),
+					Map.of("status", admission.getStatus()));
 		}
 		return attachOfferLetter(admission);
 	}
@@ -260,8 +267,9 @@ public class AdmissionService {
 	private void requireDecidable(Admission admission, String publicId) {
 		if (admission.getStatus() != AdmissionStatus.SUBMITTED
 				&& admission.getStatus() != AdmissionStatus.UNDER_REVIEW) {
-			throw new BusinessException(
-					"Admission " + publicId + " already has a final decision, status=" + admission.getStatus());
+			throw new BusinessException(AdmissionErrorCode.ADMISSION_STATUS_INVALID,
+					"Admission " + publicId + " already has a final decision, status=" + admission.getStatus(),
+					Map.of("status", admission.getStatus()));
 		}
 	}
 
@@ -335,6 +343,7 @@ public class AdmissionService {
 		if (!StringUtils.hasText(admission.getGuardianEmail())) {
 			return;
 		}
-		emailService.sendEmail(admission.getGuardianEmail(), subject, "<p>" + message + "</p>");
+		// Applicant names come from a public form, so the text is escaped, never trusted as markup.
+		emailService.sendEmail(admission.getGuardianEmail(), subject, "<p>" + HtmlUtils.htmlEscape(message) + "</p>");
 	}
 }
