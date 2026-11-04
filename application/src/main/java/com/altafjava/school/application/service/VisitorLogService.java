@@ -20,6 +20,7 @@ import com.altafjava.school.application.time.SchoolClock;
 import com.altafjava.school.application.visitor.VisitorBadgeIssuer;
 import com.altafjava.school.domain.employee.model.Employee;
 import com.altafjava.school.domain.employee.repository.EmployeeRepository;
+import com.altafjava.school.domain.error.SchoolErrorCode;
 import com.altafjava.school.domain.visitor.model.VisitorLog;
 import com.altafjava.school.domain.visitor.model.VisitorRequest;
 import com.altafjava.school.domain.visitor.repository.VisitorLogRepository;
@@ -133,11 +134,13 @@ public class VisitorLogService {
 		request.requireAdmissibleOn(today);
 		UUID photo = photoFilePublicId != null ? UUID.fromString(photoFilePublicId) : request.getPhotoFilePublicId();
 		if (photo == null) {
-			throw new BusinessException("A photo of the visitor is required to check them in");
+			throw new BusinessException(SchoolErrorCode.VISITOR_PHOTO_REQUIRED,
+					"A photo of the visitor is required to check them in");
 		}
 		Employee host = employeeRepository.findByIdAndTenantId(request.getHostEmployeeId(), tenantId)
 				.filter(Employee::isActive)
-				.orElseThrow(() -> new BusinessException("The host is no longer at the school"));
+				.orElseThrow(() -> new BusinessException(SchoolErrorCode.VISITOR_HOST_LEFT,
+						"The host is no longer at the school"));
 		return new AdmittedVisit(request, host, photo);
 	}
 

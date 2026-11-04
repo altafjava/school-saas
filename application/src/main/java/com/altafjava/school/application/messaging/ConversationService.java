@@ -20,6 +20,7 @@ import com.altafjava.platform.core.tenant.TenantContext;
 import com.altafjava.platform.domain.notification.model.NotificationChannel;
 import com.altafjava.platform.domain.notification.model.NotificationPriority;
 import com.altafjava.school.application.announcement.AttachmentValidator;
+import com.altafjava.school.domain.error.CommunicationErrorCode;
 import com.altafjava.school.domain.guardian.model.Guardian;
 import com.altafjava.school.domain.guardian.repository.GuardianRepository;
 import com.altafjava.school.domain.messaging.model.Conversation;
@@ -77,7 +78,8 @@ public class ConversationService {
 				: teacherRepository.findByUserIdAndTenantId(callerUserId, tenantId)
 						.orElseThrow(() -> new AccessDeniedException("Only guardians and teachers can start one"));
 		if (guardian.getUserId() == null || teacher.getUserId() == null) {
-			throw new BusinessException("The other person has no account yet");
+			throw new BusinessException(CommunicationErrorCode.RECIPIENT_HAS_NO_ACCOUNT,
+					"The other person has no account yet");
 		}
 		relationship.assertAllowed(tenantId, guardian.getId(), teacher.getUserId(), student.getId());
 		Conversation conversation = conversationRepository
@@ -93,7 +95,8 @@ public class ConversationService {
 			return conversationRepository.saveAndFlush(Conversation.open(guardian.getId(), guardian.getUserId(),
 					teacher.getId(), teacher.getUserId(), student.getId()));
 		} catch (DataIntegrityViolationException e) {
-			throw new BusinessException("This conversation was just started; open it and reply");
+			throw new BusinessException(CommunicationErrorCode.CONVERSATION_JUST_STARTED,
+					"This conversation was just started; open it and reply");
 		}
 	}
 
@@ -179,10 +182,12 @@ public class ConversationService {
 				.filter(found -> found.getConversationId().equals(conversation.getId()))
 				.orElseThrow(() -> new ResourceNotFoundException("Message not found: " + messagePublicId));
 		if (message.getSenderUserId().equals(userId)) {
-			throw new BusinessException("You cannot report your own message");
+			throw new BusinessException(CommunicationErrorCode.REPORT_OWN_MESSAGE,
+					"You cannot report your own message");
 		}
 		if (reportRepository.existsByMessageIdAndReportedByUserIdAndTenantId(message.getId(), userId, tenantId)) {
-			throw new BusinessException("You have already reported this message");
+			throw new BusinessException(CommunicationErrorCode.MESSAGE_ALREADY_REPORTED,
+					"You have already reported this message");
 		}
 		return reportRepository.save(MessageReport.file(message, userId, reason));
 	}
@@ -199,7 +204,8 @@ public class ConversationService {
 
 	private Guardian requireGuardian(Long tenantId, String publicId) {
 		if (publicId == null) {
-			throw new BusinessException("Name the guardian to message");
+			throw new BusinessException(CommunicationErrorCode.CONVERSATION_GUARDIAN_REQUIRED,
+					"Name the guardian to message");
 		}
 		return guardianRepository.findByPublicIdAndTenantId(UUID.fromString(publicId), tenantId)
 				.orElseThrow(() -> new ResourceNotFoundException("Guardian not found: " + publicId));
@@ -207,7 +213,8 @@ public class ConversationService {
 
 	private Teacher requireTeacher(Long tenantId, String publicId) {
 		if (publicId == null) {
-			throw new BusinessException("Name the teacher to message");
+			throw new BusinessException(CommunicationErrorCode.CONVERSATION_TEACHER_REQUIRED,
+					"Name the teacher to message");
 		}
 		return teacherRepository.findByPublicIdAndTenantId(UUID.fromString(publicId), tenantId)
 				.orElseThrow(() -> new ResourceNotFoundException("Teacher not found: " + publicId));

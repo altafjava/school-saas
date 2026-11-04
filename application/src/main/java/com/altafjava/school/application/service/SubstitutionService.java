@@ -21,6 +21,8 @@ import com.altafjava.platform.core.tenant.TenantContext;
 import com.altafjava.platform.domain.notification.model.NotificationPriority;
 import com.altafjava.platform.domain.notification.model.NotificationTypes;
 import com.altafjava.school.application.time.SchoolClock;
+import com.altafjava.school.domain.error.AcademicErrorCode;
+import com.altafjava.school.domain.error.AttendanceErrorCode;
 import com.altafjava.school.domain.leave.repository.LeaveRequestRepository;
 import com.altafjava.school.domain.teacher.model.Teacher;
 import com.altafjava.school.domain.teacher.repository.TeacherRepository;
@@ -95,10 +97,11 @@ public class SubstitutionService {
 				assignedByUserId, schoolClock.today(tenantId));
 		requireWorkingDay(tenantId, date);
 		if (substitutionRepository.existsActiveFor(tenantId, entry.getId(), date)) {
-			throw new BusinessException("A substitute is already assigned to this slot on " + date);
+			throw new BusinessException(AcademicErrorCode.SUBSTITUTE_ALREADY_ASSIGNED,
+					"A substitute is already assigned to this slot on " + date);
 		}
 		if (busyTeacherIds(tenantId, entry, date).contains(substitute.getId())) {
-			throw new BusinessException(
+			throw new BusinessException(AcademicErrorCode.SUBSTITUTE_NOT_FREE,
 					substitute.getFirstName() + " " + substitute.getLastName() + " is not free to cover on " + date);
 		}
 		TimetableSubstitution saved = substitutionRepository.save(substitution);
@@ -133,14 +136,15 @@ public class SubstitutionService {
 
 	private void requireSlotFallsOn(TimetableEntry entry, LocalDate date) {
 		if (date.getDayOfWeek() != entry.getDayOfWeek()) {
-			throw new BusinessException("The slot takes place on " + entry.getDayOfWeek() + ", but " + date
-					+ " is a " + date.getDayOfWeek());
+			throw new BusinessException(AcademicErrorCode.SUBSTITUTION_WRONG_DAY,
+					"The slot takes place on " + entry.getDayOfWeek() + ", but " + date
+							+ " is a " + date.getDayOfWeek());
 		}
 	}
 
 	private void requireWorkingDay(Long tenantId, LocalDate date) {
 		if (!holidayService.datesInRange(tenantId, date, date).isEmpty()) {
-			throw new BusinessException(date + " is a school holiday");
+			throw new BusinessException(AttendanceErrorCode.SCHOOL_HOLIDAY, date + " is a school holiday");
 		}
 	}
 

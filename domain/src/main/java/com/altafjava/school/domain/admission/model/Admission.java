@@ -3,6 +3,7 @@ package com.altafjava.school.domain.admission.model;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.LocalDate;
+import java.util.Map;
 import java.util.UUID;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -13,9 +14,11 @@ import jakarta.persistence.PreUpdate;
 import jakarta.persistence.Table;
 import org.hibernate.annotations.SQLRestriction;
 import com.altafjava.platform.core.exception.BusinessException;
+import com.altafjava.platform.core.exception.PlatformErrorCode;
 import com.altafjava.platform.core.model.SoftDeletableEntity;
 import com.altafjava.platform.core.security.annotation.Pii;
 import com.altafjava.school.domain.common.model.Gender;
+import com.altafjava.school.domain.error.AdmissionErrorCode;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -122,7 +125,8 @@ public class Admission extends SoftDeletableEntity {
 	@PreUpdate
 	private void assertConsistent() {
 		if ((applicationFeeStatus == ApplicationFeeStatus.NOT_REQUIRED) != (applicationFeeAmount == null)) {
-			throw new BusinessException("An application fee amount goes with a required fee, and only then");
+			throw new BusinessException(PlatformErrorCode.INTERNAL_ERROR,
+					"An application fee amount goes with a required fee, and only then");
 		}
 	}
 
@@ -165,8 +169,9 @@ public class Admission extends SoftDeletableEntity {
 
 	public void markUnderReview() {
 		if (this.status != AdmissionStatus.SUBMITTED) {
-			throw new BusinessException(
-					"Admission must be SUBMITTED to move under review, was " + this.status);
+			throw new BusinessException(AdmissionErrorCode.ADMISSION_STATUS_INVALID,
+					"Admission must be SUBMITTED to move under review, was " + this.status,
+					Map.of("status", this.status));
 		}
 		requireApplicationFeeCleared();
 		this.status = AdmissionStatus.UNDER_REVIEW;
@@ -197,23 +202,29 @@ public class Admission extends SoftDeletableEntity {
 
 	public void recordOfferLetter(Long issuanceId) {
 		if (this.status != AdmissionStatus.APPROVED && this.status != AdmissionStatus.ENROLLED) {
-			throw new BusinessException("An offer letter can only be issued for an approved admission, was "
-					+ this.status);
+			throw new BusinessException(AdmissionErrorCode.ADMISSION_STATUS_INVALID,
+					"An offer letter can only be issued for an approved admission, was "
+							+ this.status,
+					Map.of("status", this.status));
 		}
 		this.offerLetterIssuanceId = issuanceId;
 	}
 
 	private void requireApplicationFeeCleared() {
 		if (!isApplicationFeeCleared()) {
-			throw new BusinessException("The application fee of " + this.applicationFeeAmount
-					+ " must be paid or waived before this application can proceed");
+			throw new BusinessException(AdmissionErrorCode.APPLICATION_FEE_UNPAID,
+					"The application fee of " + this.applicationFeeAmount
+							+ " must be paid or waived before this application can proceed",
+					Map.of("amount", this.applicationFeeAmount));
 		}
 	}
 
 	private void requireFeePending(String action) {
 		if (this.applicationFeeStatus != ApplicationFeeStatus.PENDING) {
-			throw new BusinessException("Cannot " + action + " an application fee that is "
-					+ this.applicationFeeStatus);
+			throw new BusinessException(AdmissionErrorCode.APPLICATION_FEE_STATUS_INVALID,
+					"Cannot " + action + " an application fee that is "
+							+ this.applicationFeeStatus,
+					Map.of("status", this.applicationFeeStatus));
 		}
 	}
 
@@ -225,7 +236,8 @@ public class Admission extends SoftDeletableEntity {
 	/** SUBMITTED and UNDER_REVIEW are the only states without a final decision recorded yet. */
 	private void requireDecidable() {
 		if (this.status != AdmissionStatus.SUBMITTED && this.status != AdmissionStatus.UNDER_REVIEW) {
-			throw new BusinessException("Admission already has a final decision, status=" + this.status);
+			throw new BusinessException(AdmissionErrorCode.ADMISSION_STATUS_INVALID,
+					"Admission already has a final decision, status=" + this.status, Map.of("status", this.status));
 		}
 	}
 
@@ -243,7 +255,8 @@ public class Admission extends SoftDeletableEntity {
 
 	public void markEnrolled() {
 		if (this.status != AdmissionStatus.APPROVED) {
-			throw new BusinessException("Admission must be APPROVED to enroll, was " + this.status);
+			throw new BusinessException(AdmissionErrorCode.ADMISSION_STATUS_INVALID,
+					"Admission must be APPROVED to enroll, was " + this.status, Map.of("status", this.status));
 		}
 		this.status = AdmissionStatus.ENROLLED;
 	}
@@ -258,8 +271,10 @@ public class Admission extends SoftDeletableEntity {
 
 	public void recordEntranceTestScore(BigDecimal score, BigDecimal maxScore) {
 		if (this.status != AdmissionStatus.UNDER_REVIEW) {
-			throw new BusinessException("Entrance test score can only be recorded while UNDER_REVIEW, was "
-					+ this.status);
+			throw new BusinessException(AdmissionErrorCode.ADMISSION_STATUS_INVALID,
+					"Entrance test score can only be recorded while UNDER_REVIEW, was "
+							+ this.status,
+					Map.of("status", this.status));
 		}
 		this.entranceTestScore = score;
 		this.entranceTestMaxScore = maxScore;
@@ -267,21 +282,26 @@ public class Admission extends SoftDeletableEntity {
 
 	public void assignMeritRank(int rank) {
 		if (rank < 1) {
-			throw new BusinessException("Merit rank must be a positive integer, was " + rank);
+			throw new BusinessException(AdmissionErrorCode.MERIT_RANK_INVALID,
+					"Merit rank must be a positive integer, was " + rank);
 		}
 		this.meritRank = rank;
 	}
 
 	public void waitlist() {
 		if (this.status != AdmissionStatus.UNDER_REVIEW) {
-			throw new BusinessException("Cannot waitlist an admission that is not UNDER_REVIEW, was " + this.status);
+			throw new BusinessException(AdmissionErrorCode.ADMISSION_STATUS_INVALID,
+					"Cannot waitlist an admission that is not UNDER_REVIEW, was " + this.status,
+					Map.of("status", this.status));
 		}
 		this.status = AdmissionStatus.WAITLISTED;
 	}
 
 	public void promoteFromWaitlist() {
 		if (this.status != AdmissionStatus.WAITLISTED) {
-			throw new BusinessException("Cannot promote an admission that is not WAITLISTED, was " + this.status);
+			throw new BusinessException(AdmissionErrorCode.ADMISSION_STATUS_INVALID,
+					"Cannot promote an admission that is not WAITLISTED, was " + this.status,
+					Map.of("status", this.status));
 		}
 		this.status = AdmissionStatus.UNDER_REVIEW;
 	}

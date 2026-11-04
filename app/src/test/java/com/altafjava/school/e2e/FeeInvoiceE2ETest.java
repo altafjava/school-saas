@@ -123,7 +123,7 @@ class FeeInvoiceE2ETest extends SchoolIntegrationTestBase {
 				.body("data.totalAmount", equalTo(1500.0F))
 				.body("data.settlement", equalTo("UNPAID"))
 				.extract().path("data.publicId");
-		issue(student, monthStart).then().statusCode(HttpStatus.BAD_REQUEST.value());
+		issue(student, monthStart).then().statusCode(HttpStatus.CONFLICT.value());
 
 		String december = issue(student, monthStart.plusMonths(1)).then().statusCode(HttpStatus.CREATED.value())
 				.body("data.lines.description", contains("Bus — installment 2"))
@@ -138,7 +138,7 @@ class FeeInvoiceE2ETest extends SchoolIntegrationTestBase {
 				.body("data.settlement", equalTo("PARTIALLY_PAID"));
 
 		admin().body("{\"reason\":\"Issued in error\"}").post("/api/v1/fee-invoices/" + november + "/cancel").then()
-				.statusCode(HttpStatus.BAD_REQUEST.value());
+				.statusCode(HttpStatus.CONFLICT.value());
 		admin().body("{\"reason\":\"Issued in error\"}").post("/api/v1/fee-invoices/" + december + "/cancel").then()
 				.statusCode(HttpStatus.OK.value()).body("data.settlement", equalTo("CANCELLED"));
 		issue(student, monthStart.plusMonths(1)).then().statusCode(HttpStatus.CREATED.value())

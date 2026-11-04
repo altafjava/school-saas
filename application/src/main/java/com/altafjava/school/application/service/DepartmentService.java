@@ -13,6 +13,7 @@ import com.altafjava.platform.core.tenant.TenantContext;
 import com.altafjava.school.domain.department.model.Department;
 import com.altafjava.school.domain.department.repository.DepartmentRepository;
 import com.altafjava.school.domain.employee.repository.EmployeeRepository;
+import com.altafjava.school.domain.error.SchoolErrorCode;
 
 @Service
 public class DepartmentService {
@@ -41,7 +42,7 @@ public class DepartmentService {
 	public Department create(String name, String code, String description) {
 		Long tenantId = TenantContext.getCurrentTenantId();
 		if (departmentRepository.existsByCodeAndTenantId(code, tenantId)) {
-			throw new BusinessException("Department code already exists: " + code);
+			throw new BusinessException(SchoolErrorCode.CODE_TAKEN, "Department code already exists: " + code);
 		}
 		return departmentRepository.save(Department.create(name, code, description));
 	}

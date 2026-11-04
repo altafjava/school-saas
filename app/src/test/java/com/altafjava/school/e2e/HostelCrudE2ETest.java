@@ -201,7 +201,7 @@ class HostelCrudE2ETest extends SchoolIntegrationTestBase {
 	}
 
 	@Test
-	void allocate_beyondCapacity_returns400() {
+	void allocate_beyondCapacity_returns409() {
 		String accessToken = login();
 		String buildingPublicId = createBuilding(accessToken, tenantId, "West Block-" + UUID.randomUUID());
 		String roomPublicId = createRoom(accessToken, tenantId, buildingPublicId, "201", 1);
@@ -232,7 +232,7 @@ class HostelCrudE2ETest extends SchoolIntegrationTestBase {
 				.when()
 				.post("/api/v1/room-allocations")
 				.then()
-				.statusCode(HttpStatus.BAD_REQUEST.value());
+				.statusCode(HttpStatus.CONFLICT.value());
 	}
 
 	@Test

@@ -12,6 +12,7 @@ import org.springframework.transaction.annotation.Transactional;
 import com.altafjava.platform.application.service.NumberSequenceService;
 import com.altafjava.platform.core.concurrency.ExpectedVersion;
 import com.altafjava.platform.core.exception.BusinessException;
+import com.altafjava.platform.core.exception.IdentityErrorCode;
 import com.altafjava.platform.core.exception.ResourceNotFoundException;
 import com.altafjava.platform.core.search.LikePattern;
 import com.altafjava.platform.core.tenant.TenantContext;
@@ -24,6 +25,7 @@ import com.altafjava.school.application.reference.PublicIdLookup;
 import com.altafjava.school.domain.common.model.Address;
 import com.altafjava.school.domain.common.model.Gender;
 import com.altafjava.school.domain.common.service.PhoneNumberValidator;
+import com.altafjava.school.domain.error.StudentErrorCode;
 import com.altafjava.school.domain.student.model.EnrollmentStatus;
 import com.altafjava.school.domain.student.model.Student;
 import com.altafjava.school.domain.student.repository.StudentRepository;
@@ -96,7 +98,8 @@ public class StudentService {
 		Long tenantId = TenantContext.getCurrentTenantId();
 		String resolvedCode = resolveStudentCode(tenantId, studentCode);
 		if (studentRepository.existsByStudentCodeAndTenantId(resolvedCode, tenantId)) {
-			throw new BusinessException("Student code already exists: " + resolvedCode);
+			throw new BusinessException(StudentErrorCode.STUDENT_CODE_TAKEN,
+					"Student code already exists: " + resolvedCode);
 		}
 		Student student = studentRepository
 				.save(Student.create(resolvedCode, firstName, lastName, email, dateOfBirth, gender));
@@ -166,7 +169,7 @@ public class StudentService {
 		expectedVersion.verify(student);
 		String defaultRegion = student.getAddress() != null ? student.getAddress().getCountryCode() : null;
 		if (!phoneNumberValidator.isValid(phone, defaultRegion)) {
-			throw new BusinessException("Invalid phone number: " + phone);
+			throw new BusinessException(IdentityErrorCode.PHONE_INVALID, "Invalid phone number: " + phone);
 		}
 		student.updatePhone(phone);
 		return studentRepository.save(student);

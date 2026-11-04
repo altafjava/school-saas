@@ -35,6 +35,7 @@ import com.altafjava.school.domain.classroom.model.Classroom;
 import com.altafjava.school.domain.classroom.model.StudentClassroomLink;
 import com.altafjava.school.domain.classroom.repository.ClassroomRepository;
 import com.altafjava.school.domain.classroom.repository.StudentClassroomLinkRepository;
+import com.altafjava.school.domain.error.FeeErrorCode;
 import com.altafjava.school.domain.fee.model.FeeInvoice;
 import com.altafjava.school.domain.fee.model.FeeInvoiceLine;
 import com.altafjava.school.domain.fee.model.FeeInvoiceStatus;
@@ -153,7 +154,8 @@ public class FeeInvoiceService {
 		Long tenantId = TenantContext.getCurrentTenantId();
 		FeeInvoice invoice = require(tenantId, invoicePublicId);
 		if (paidOn(tenantId, List.of(invoice.getId())).getOrDefault(invoice.getId(), BigDecimal.ZERO).signum() > 0) {
-			throw new BusinessException("Payments stand against this invoice, so it cannot be cancelled");
+			throw new BusinessException(FeeErrorCode.INVOICE_HAS_PAYMENTS,
+					"Payments stand against this invoice, so it cannot be cancelled");
 		}
 		invoice.cancel(reason);
 		documentIssuanceService.findById(invoice.getDocumentIssuanceId())
@@ -193,7 +195,8 @@ public class FeeInvoiceService {
 	private void requireNoInvoiceForPeriod(Long tenantId, Student student, InvoicePeriod period) {
 		if (feeInvoiceRepository.existsForPeriod(tenantId, student.getId(), FeeInvoiceStatus.ISSUED, period.start(),
 				period.end())) {
-			throw new BusinessException("The student already has an invoice for this period; cancel it to reissue");
+			throw new BusinessException(FeeErrorCode.INVOICE_EXISTS_FOR_PERIOD,
+					"The student already has an invoice for this period; cancel it to reissue");
 		}
 	}
 

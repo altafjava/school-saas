@@ -194,7 +194,7 @@ class TimetableCrudE2ETest extends SchoolIntegrationTestBase {
 	}
 
 	@Test
-	void scheduleTimetableEntry_classroomAlreadyBooked_returns400() {
+	void scheduleTimetableEntry_classroomAlreadyBooked_returns409() {
 		String accessToken = login();
 		Fixture fixture = createFixture(accessToken, "TT2");
 
@@ -216,7 +216,7 @@ class TimetableCrudE2ETest extends SchoolIntegrationTestBase {
 				.when()
 				.post("/api/v1/timetable-entries")
 				.then()
-				.statusCode(HttpStatus.BAD_REQUEST.value());
+				.statusCode(HttpStatus.CONFLICT.value());
 	}
 
 	@Test

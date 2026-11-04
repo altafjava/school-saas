@@ -7,6 +7,7 @@ import jakarta.persistence.Table;
 import org.hibernate.annotations.SQLRestriction;
 import com.altafjava.platform.core.exception.BusinessException;
 import com.altafjava.platform.core.model.SoftDeletableEntity;
+import com.altafjava.school.domain.error.StudentErrorCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
@@ -45,8 +46,9 @@ public class CertificateType extends SoftDeletableEntity {
 
 	public static CertificateType create(String code, String name, String wording) {
 		if (code == null || !CODE.matcher(code).matches()) {
-			throw new BusinessException("Certificate type code must be 2-50 characters of A-Z, 0-9 and _, "
-					+ "starting with a letter: " + code);
+			throw new BusinessException(StudentErrorCode.CERTIFICATE_TYPE_CODE_INVALID,
+					"Certificate type code must be 2-50 characters of A-Z, 0-9 and _, "
+							+ "starting with a letter: " + code);
 		}
 		return CertificateType.builder()
 				.code(code)

@@ -3,10 +3,12 @@ package com.altafjava.school.application.announcement;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 import org.springframework.stereotype.Component;
 import com.altafjava.platform.core.exception.BusinessException;
+import com.altafjava.platform.core.exception.PlatformErrorCode;
 import com.altafjava.platform.domain.user.model.User;
 import com.altafjava.platform.domain.user.model.UserStatus;
 import com.altafjava.platform.domain.user.repository.RoleRepository;
@@ -17,6 +19,8 @@ import com.altafjava.school.domain.announcement.model.Announcement;
 import com.altafjava.school.domain.classroom.model.Classroom;
 import com.altafjava.school.domain.classroom.repository.ClassroomRepository;
 import com.altafjava.school.domain.employee.repository.EmployeeRepository;
+import com.altafjava.school.domain.error.AcademicErrorCode;
+import com.altafjava.school.domain.error.CommunicationErrorCode;
 import com.altafjava.school.domain.guardian.repository.GuardianRepository;
 import com.altafjava.school.domain.student.repository.StudentRepository;
 import lombok.RequiredArgsConstructor;
@@ -58,7 +62,8 @@ public class AudienceResolver {
 				toPublicIds(classroomPublicIds), tenantId);
 		boolean allCurrent = classrooms.stream().allMatch(room -> currentYear.equals(room.getAcademicYearId()));
 		if (classrooms.size() != classroomPublicIds.size() || !allCurrent) {
-			throw new BusinessException("Choose classrooms of the current academic year");
+			throw new BusinessException(CommunicationErrorCode.AUDIENCE_CLASSROOM_NOT_CURRENT,
+					"Choose classrooms of the current academic year");
 		}
 		return classrooms.stream().map(Classroom::getId).toList();
 	}
@@ -92,7 +97,8 @@ public class AudienceResolver {
 		Set<Long> users = new HashSet<>();
 		for (String roleName : roleNames) {
 			var role = roleRepository.findByName(roleName)
-					.orElseThrow(() -> new BusinessException("Unknown role: " + roleName));
+					.orElseThrow(() -> new BusinessException(CommunicationErrorCode.AUDIENCE_ROLE_UNKNOWN,
+							"Unknown role: " + roleName, Map.of("role", roleName)));
 			userRepository.findAllByRoleId(role.getId()).stream()
 					.filter(user -> tenantId.equals(user.getTenantId()) && user.getStatus() == UserStatus.ACTIVE)
 					.map(User::getId)
@@ -104,14 +110,15 @@ public class AudienceResolver {
 	private Long currentYear(Long tenantId) {
 		return academicYearRepository.findFirstByCurrentTrueAndTenantIdOrderByStartDateDesc(tenantId)
 				.map(AcademicYear::getId)
-				.orElseThrow(() -> new BusinessException("The school has no current academic year"));
+				.orElseThrow(() -> new BusinessException(AcademicErrorCode.NO_CURRENT_ACADEMIC_YEAR,
+						"The school has no current academic year"));
 	}
 
 	private List<UUID> toPublicIds(Collection<String> values) {
 		try {
 			return values.stream().map(UUID::fromString).toList();
 		} catch (IllegalArgumentException e) {
-			throw new BusinessException("An audience target is not a valid id");
+			throw new BusinessException(PlatformErrorCode.INVALID_ARGUMENT, "An audience target is not a valid id");
 		}
 	}
 }

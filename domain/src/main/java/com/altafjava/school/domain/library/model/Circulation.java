@@ -2,6 +2,7 @@ package com.altafjava.school.domain.library.model;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.Map;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.PrePersist;
@@ -9,7 +10,9 @@ import jakarta.persistence.PreUpdate;
 import jakarta.persistence.Table;
 import org.hibernate.annotations.SQLRestriction;
 import com.altafjava.platform.core.exception.BusinessException;
+import com.altafjava.platform.core.exception.PlatformErrorCode;
 import com.altafjava.platform.core.model.SoftDeletableEntity;
+import com.altafjava.school.domain.error.LibraryErrorCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -52,7 +55,7 @@ public class Circulation extends SoftDeletableEntity {
 	@PreUpdate
 	private void assertConsistent() {
 		if (renewalCount < 0) {
-			throw new BusinessException("The renewal count cannot be negative");
+			throw new BusinessException(PlatformErrorCode.INTERNAL_ERROR, "The renewal count cannot be negative");
 		}
 	}
 
@@ -68,16 +71,20 @@ public class Circulation extends SoftDeletableEntity {
 	/** A loan can be extended while it is still out and not yet overdue, up to the school's limit. */
 	public void renew(LocalDate today, LocalDate newDueDate, int maxRenewals) {
 		if (this.returnedAt != null) {
-			throw new BusinessException("Cannot renew a book that was returned on " + this.returnedAt);
+			throw new BusinessException(LibraryErrorCode.LOAN_RETURNED,
+					"Cannot renew a book that was returned on " + this.returnedAt);
 		}
 		if (isOverdue(today)) {
-			throw new BusinessException("Cannot renew an overdue book — return it first");
+			throw new BusinessException(LibraryErrorCode.LOAN_OVERDUE,
+					"Cannot renew an overdue book — return it first");
 		}
 		if (this.renewalCount >= maxRenewals) {
-			throw new BusinessException("This loan has already been renewed the maximum " + maxRenewals + " time(s)");
+			throw new BusinessException(LibraryErrorCode.RENEWAL_LIMIT_REACHED,
+					"This loan has already been renewed the maximum " + maxRenewals + " time(s)",
+					Map.of("maxRenewals", maxRenewals));
 		}
 		if (!newDueDate.isAfter(this.dueDate)) {
-			throw new BusinessException("Renewal must extend the due date");
+			throw new BusinessException(LibraryErrorCode.RENEWAL_DATE_INVALID, "Renewal must extend the due date");
 		}
 		this.dueDate = newDueDate;
 		this.renewalCount++;
@@ -86,10 +93,12 @@ public class Circulation extends SoftDeletableEntity {
 
 	public void returnBook(LocalDate returnedAt, BigDecimal fineAmount) {
 		if (this.returnedAt != null) {
-			throw new BusinessException("Circulation already returned on " + this.returnedAt);
+			throw new BusinessException(LibraryErrorCode.LOAN_RETURNED,
+					"Circulation already returned on " + this.returnedAt);
 		}
 		if (returnedAt.isBefore(this.checkedOutAt)) {
-			throw new BusinessException("A book cannot be returned before it was checked out");
+			throw new BusinessException(LibraryErrorCode.RETURN_DATE_INVALID,
+					"A book cannot be returned before it was checked out");
 		}
 		this.returnedAt = returnedAt;
 		this.fineAmount = fineAmount;

@@ -9,6 +9,7 @@ import jakarta.persistence.Table;
 import com.altafjava.platform.core.exception.BusinessException;
 import com.altafjava.platform.core.model.TenantEntity;
 import com.altafjava.platform.core.security.annotation.Pii;
+import com.altafjava.school.domain.error.CommunicationErrorCode;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -60,7 +61,8 @@ public class MessageReport extends TenantEntity {
 
 	public void resolve(Long resolvedByUserId, String note, Instant now) {
 		if (status == MessageReportStatus.RESOLVED) {
-			throw new BusinessException("This report is already resolved");
+			throw new BusinessException(CommunicationErrorCode.REPORT_ALREADY_RESOLVED,
+					"This report is already resolved");
 		}
 		this.status = MessageReportStatus.RESOLVED;
 		this.resolvedByUserId = resolvedByUserId;

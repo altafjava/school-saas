@@ -8,6 +8,7 @@ import com.altafjava.platform.core.concurrency.ExpectedVersion;
 import com.altafjava.platform.core.exception.BusinessException;
 import com.altafjava.platform.core.exception.ResourceNotFoundException;
 import com.altafjava.platform.core.tenant.TenantContext;
+import com.altafjava.school.domain.error.SchoolErrorCode;
 import com.altafjava.school.domain.exam.model.ExamTypeDefinition;
 import com.altafjava.school.domain.exam.repository.ExamTypeDefinitionRepository;
 
@@ -42,7 +43,7 @@ public class ExamTypeDefinitionService {
 	public ExamTypeDefinition create(String code, String name, int displayOrder) {
 		Long tenantId = TenantContext.getCurrentTenantId();
 		if (examTypeDefinitionRepository.existsByCodeAndTenantId(code, tenantId)) {
-			throw new BusinessException("Exam type already exists: " + code);
+			throw new BusinessException(SchoolErrorCode.CODE_TAKEN, "Exam type already exists: " + code);
 		}
 		return examTypeDefinitionRepository.save(ExamTypeDefinition.create(code, name, displayOrder));
 	}

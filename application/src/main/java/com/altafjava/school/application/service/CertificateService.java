@@ -22,6 +22,7 @@ import com.altafjava.school.domain.certificate.model.CertificateType;
 import com.altafjava.school.domain.certificate.repository.CertificateTypeRepository;
 import com.altafjava.school.domain.certificate.service.CertificatePlaceholderResolver;
 import com.altafjava.school.domain.classroom.model.StudentClassroomLink;
+import com.altafjava.school.domain.error.StudentErrorCode;
 import com.altafjava.school.domain.student.model.Student;
 import com.altafjava.school.domain.student.repository.StudentRepository;
 import lombok.RequiredArgsConstructor;
@@ -74,7 +75,8 @@ public class CertificateService {
 				.orElseThrow(() -> new ResourceNotFoundException(
 						"Certificate type not found: " + certificateTypePublicId));
 		if (!type.isActive()) {
-			throw new BusinessException("Certificate type is not active: " + type.getName());
+			throw new BusinessException(StudentErrorCode.CERTIFICATE_TYPE_INACTIVE,
+					"Certificate type is not active: " + type.getName());
 		}
 
 		Map<String, String> values = buildValues(tenantId, student, type);

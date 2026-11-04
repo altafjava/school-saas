@@ -23,6 +23,7 @@ import com.altafjava.school.application.time.SchoolClock;
 import com.altafjava.school.domain.employee.model.Employee;
 import com.altafjava.school.domain.employee.model.EmployeeStatus;
 import com.altafjava.school.domain.employee.repository.EmployeeRepository;
+import com.altafjava.school.domain.error.AttendanceErrorCode;
 import com.altafjava.school.domain.leave.model.LeaveRequest;
 import com.altafjava.school.domain.leave.model.LeaveRequestStatus;
 import com.altafjava.school.domain.leave.repository.LeaveRequestRepository;
@@ -55,7 +56,8 @@ public class StaffAttendanceService {
 		if (staffAttendanceRepository
 				.findByEmployeeIdAndAttendanceDateAndTenantId(employee.getId(), now.toLocalDate(), tenantId)
 				.isPresent()) {
-			throw new BusinessException("Today's attendance is already recorded");
+			throw new BusinessException(AttendanceErrorCode.ATTENDANCE_ALREADY_RECORDED,
+					"Today's attendance is already recorded");
 		}
 		return staffAttendanceRepository
 				.save(StaffAttendance.checkIn(employee.getId(), now, staffWorkdaySettingsService.current()));
@@ -68,7 +70,8 @@ public class StaffAttendanceService {
 		LocalDateTime now = schoolNow(tenantId);
 		StaffAttendance day = staffAttendanceRepository
 				.findByEmployeeIdAndAttendanceDateAndTenantId(employee.getId(), now.toLocalDate(), tenantId)
-				.orElseThrow(() -> new BusinessException("Check in before checking out"));
+				.orElseThrow(() -> new BusinessException(AttendanceErrorCode.CHECK_IN_REQUIRED,
+						"Check in before checking out"));
 		day.checkOut(now, staffWorkdaySettingsService.current());
 		return staffAttendanceRepository.save(day);
 	}
@@ -97,7 +100,8 @@ public class StaffAttendanceService {
 		Employee employee = employeeRepository.findByPublicIdAndTenantId(UUID.fromString(employeePublicId), tenantId)
 				.orElseThrow(() -> new ResourceNotFoundException("Employee not found: " + employeePublicId));
 		if (date.isAfter(schoolNow(tenantId).toLocalDate())) {
-			throw new BusinessException("Attendance cannot be recorded for a day that has not come yet");
+			throw new BusinessException(AttendanceErrorCode.ATTENDANCE_DATE_IN_FUTURE,
+					"Attendance cannot be recorded for a day that has not come yet");
 		}
 		if (record.status() != StaffAttendanceStatus.ABSENT) {
 			requireNotOnLeave(tenantId, employee.getId(), date);
@@ -143,7 +147,8 @@ public class StaffAttendanceService {
 	private void requireNotOnLeave(Long tenantId, Long employeeId, LocalDate date) {
 		if (!leaveRequestRepository.findCovering(tenantId, LeaveRequestStatus.APPROVED, List.of(employeeId), date)
 				.isEmpty()) {
-			throw new BusinessException("Approved leave covers " + date + "; cancel the leave to record attendance");
+			throw new BusinessException(AttendanceErrorCode.ON_APPROVED_LEAVE,
+					"Approved leave covers " + date + "; cancel the leave to record attendance");
 		}
 	}
 

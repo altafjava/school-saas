@@ -144,7 +144,7 @@ class LeaveMultiLevelApprovalE2ETest extends SchoolIntegrationTestBase {
 				.then().statusCode(HttpStatus.OK.value()).body("data.status", equalTo("REJECTED"));
 
 		support.request(school).patch("/api/v1/leave-requests/" + requestPublicId + "/approve")
-				.then().statusCode(HttpStatus.BAD_REQUEST.value());
+				.then().statusCode(HttpStatus.CONFLICT.value());
 	}
 
 	@Test
@@ -172,6 +172,6 @@ class LeaveMultiLevelApprovalE2ETest extends SchoolIntegrationTestBase {
 						+ LocalDate.now().plusDays(121) + "\",\"endDate\":\"" + LocalDate.now().plusDays(123)
 						+ "\"}")
 				.post("/api/v1/leave-requests")
-				.then().statusCode(HttpStatus.BAD_REQUEST.value());
+				.then().statusCode(HttpStatus.CONFLICT.value());
 	}
 }

@@ -12,6 +12,7 @@ import com.altafjava.platform.core.exception.BusinessException;
 import com.altafjava.platform.core.exception.ResourceNotFoundException;
 import com.altafjava.platform.core.tenant.TenantContext;
 import com.altafjava.school.domain.classroom.repository.ClassroomRepository;
+import com.altafjava.school.domain.error.FeeErrorCode;
 import com.altafjava.school.domain.fee.model.FeeAssignment;
 import com.altafjava.school.domain.fee.repository.FeeAssignmentRepository;
 import com.altafjava.school.domain.fee.repository.FeeStructureRepository;
@@ -37,7 +38,8 @@ public class FeeAssignmentService {
 	@Transactional
 	public FeeAssignment assign(String feeStructurePublicId, String studentPublicId, String classroomPublicId) {
 		if ((studentPublicId == null) == (classroomPublicId == null)) {
-			throw new BusinessException("Exactly one of studentPublicId or classroomPublicId must be provided");
+			throw new BusinessException(FeeErrorCode.FEE_ASSIGNMENT_TARGET_INVALID,
+					"Exactly one of studentPublicId or classroomPublicId must be provided");
 		}
 		Long tenantId = TenantContext.getCurrentTenantId();
 		Long feeStructureId = feeStructureRepository
@@ -57,7 +59,8 @@ public class FeeAssignmentService {
 				.getId();
 		if (feeAssignmentRepository.existsByFeeStructureIdAndStudentIdAndTenantId(feeStructureId, studentId,
 				tenantId)) {
-			throw new BusinessException("Fee structure is already assigned to student " + studentPublicId);
+			throw new BusinessException(FeeErrorCode.FEE_ALREADY_ASSIGNED,
+					"Fee structure is already assigned to student " + studentPublicId);
 		}
 		return feeAssignmentRepository.save(FeeAssignment.forStudent(feeStructureId, studentId));
 	}
@@ -69,7 +72,8 @@ public class FeeAssignmentService {
 				.getId();
 		if (feeAssignmentRepository.existsByFeeStructureIdAndClassroomIdAndTenantId(feeStructureId, classroomId,
 				tenantId)) {
-			throw new BusinessException("Fee structure is already assigned to classroom " + classroomPublicId);
+			throw new BusinessException(FeeErrorCode.FEE_ALREADY_ASSIGNED,
+					"Fee structure is already assigned to classroom " + classroomPublicId);
 		}
 		return feeAssignmentRepository.save(FeeAssignment.forClassroom(feeStructureId, classroomId));
 	}

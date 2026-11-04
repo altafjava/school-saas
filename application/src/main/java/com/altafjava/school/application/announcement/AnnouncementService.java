@@ -28,6 +28,7 @@ import com.altafjava.school.domain.announcement.model.AnnouncementStatus;
 import com.altafjava.school.domain.announcement.model.AudienceType;
 import com.altafjava.school.domain.announcement.repository.AnnouncementRecipientRepository;
 import com.altafjava.school.domain.announcement.repository.AnnouncementRepository;
+import com.altafjava.school.domain.error.CommunicationErrorCode;
 import com.altafjava.school.domain.security.permission.SchoolPermissions;
 import lombok.RequiredArgsConstructor;
 
@@ -102,7 +103,8 @@ public class AnnouncementService {
 		Long tenantId = TenantContext.getCurrentTenantId();
 		Announcement announcement = requireEditable(tenantId, publicId, actorUserId);
 		if (announcement.getStatus() != AnnouncementStatus.DRAFT) {
-			throw new BusinessException("Only a draft can be deleted; cancel a scheduled announcement instead");
+			throw new BusinessException(CommunicationErrorCode.ANNOUNCEMENT_NOT_DRAFT,
+					"Only a draft can be deleted; cancel a scheduled announcement instead");
 		}
 		announcement.softDelete(String.valueOf(actorUserId));
 		announcementRepository.save(announcement);
@@ -121,7 +123,8 @@ public class AnnouncementService {
 	private Announcement publishToSomeone(Long tenantId, Announcement announcement) {
 		Announcement published = publisher.publish(tenantId, announcement.getId());
 		if (published.getRecipientCount() == 0) {
-			throw new BusinessException("Nobody in this audience has an account to receive it");
+			throw new BusinessException(CommunicationErrorCode.AUDIENCE_EMPTY,
+					"Nobody in this audience has an account to receive it");
 		}
 		return published;
 	}

@@ -2,6 +2,7 @@ package com.altafjava.school.domain.library.model;
 
 import java.time.Instant;
 import java.time.LocalDate;
+import java.util.Map;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -11,6 +12,7 @@ import jakarta.persistence.Table;
 import org.hibernate.annotations.SQLRestriction;
 import com.altafjava.platform.core.exception.BusinessException;
 import com.altafjava.platform.core.model.SoftDeletableEntity;
+import com.altafjava.school.domain.error.LibraryErrorCode;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -93,7 +95,8 @@ public class BookReservation extends SoftDeletableEntity {
 
 	public void cancel() {
 		if (!isLive()) {
-			throw new BusinessException("Cannot cancel a reservation that is " + status);
+			throw new BusinessException(LibraryErrorCode.RESERVATION_STATUS_INVALID,
+					"Cannot cancel a reservation that is " + status, Map.of("status", status));
 		}
 		close(ReservationStatus.CANCELLED);
 	}
@@ -110,7 +113,8 @@ public class BookReservation extends SoftDeletableEntity {
 
 	private void requireStatus(ReservationStatus required, String action) {
 		if (status != required) {
-			throw new BusinessException("Cannot " + action + " a reservation that is " + status);
+			throw new BusinessException(LibraryErrorCode.RESERVATION_STATUS_INVALID,
+					"Cannot " + action + " a reservation that is " + status, Map.of("status", status));
 		}
 	}
 }

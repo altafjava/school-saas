@@ -71106,6 +71106,14 @@
             "additionalProperties" : {
               "type" : "object"
             }
+          },
+          "params" : {
+            "type" : "object",
+            "additionalProperties" : {
+              "type" : "object",
+              "description" : "Values for translating code, e.g. maxDays or status; absent when the code has none"
+            },
+            "description" : "Values for translating code, e.g. maxDays or status; absent when the code has none"
           }
         }
       },

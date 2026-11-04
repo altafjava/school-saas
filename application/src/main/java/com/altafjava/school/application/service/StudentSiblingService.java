@@ -10,6 +10,7 @@ import com.altafjava.platform.core.audit.annotation.Audited;
 import com.altafjava.platform.core.exception.BusinessException;
 import com.altafjava.platform.core.exception.ResourceNotFoundException;
 import com.altafjava.platform.core.tenant.TenantContext;
+import com.altafjava.school.domain.error.StudentErrorCode;
 import com.altafjava.school.domain.student.model.SiblingGroup;
 import com.altafjava.school.domain.student.model.Student;
 import com.altafjava.school.domain.student.repository.SiblingGroupRepository;
@@ -56,10 +57,10 @@ public class StudentSiblingService {
 		Student student = require(tenantId, studentPublicId);
 		Student sibling = require(tenantId, siblingPublicId);
 		if (student.getId().equals(sibling.getId())) {
-			throw new BusinessException("A student cannot be their own sibling");
+			throw new BusinessException(StudentErrorCode.SIBLING_SELF, "A student cannot be their own sibling");
 		}
 		if (student.isSiblingOf(sibling)) {
-			throw new BusinessException("They are already recorded as siblings");
+			throw new BusinessException(StudentErrorCode.SIBLING_EXISTS, "They are already recorded as siblings");
 		}
 		joinFamilies(tenantId, student, sibling);
 		return siblingsOf(tenantId, student);
@@ -72,7 +73,7 @@ public class StudentSiblingService {
 		Student student = require(tenantId, studentPublicId);
 		Long groupId = student.getSiblingGroupId();
 		if (groupId == null) {
-			throw new BusinessException("The student has no recorded siblings");
+			throw new BusinessException(StudentErrorCode.SIBLING_NONE, "The student has no recorded siblings");
 		}
 		student.leaveSiblingGroup();
 		studentRepository.saveAndFlush(student);

@@ -2,6 +2,7 @@ package com.altafjava.school.domain.visitor.model;
 
 import java.time.Instant;
 import java.time.LocalDate;
+import java.util.Map;
 import java.util.UUID;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -12,6 +13,7 @@ import org.hibernate.annotations.SQLRestriction;
 import com.altafjava.platform.core.exception.BusinessException;
 import com.altafjava.platform.core.model.SoftDeletableEntity;
 import com.altafjava.platform.core.security.annotation.Pii;
+import com.altafjava.school.domain.error.SchoolErrorCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
@@ -74,7 +76,8 @@ public class VisitorRequest extends SoftDeletableEntity {
 	public static VisitorRequest preRegister(String visitorName, String visitorPhone, String purpose,
 			Long hostEmployeeId, LocalDate visitDate, Long requestedByUserId, LocalDate today) {
 		if (visitDate.isBefore(today)) {
-			throw new BusinessException("A visit cannot be pre-registered for a date that has passed");
+			throw new BusinessException(SchoolErrorCode.VISIT_DATE_PASSED,
+					"A visit cannot be pre-registered for a date that has passed");
 		}
 		return request(visitorName, visitorPhone, purpose, hostEmployeeId, visitDate,
 				VisitorRequestSource.PRE_REGISTERED, requestedByUserId);
@@ -103,7 +106,8 @@ public class VisitorRequest extends SoftDeletableEntity {
 	public void attachPhoto(UUID photoFilePublicId) {
 		if (status == VisitorRequestStatus.CHECKED_IN || status == VisitorRequestStatus.REJECTED
 				|| status == VisitorRequestStatus.CANCELLED) {
-			throw new BusinessException("A photo cannot be added to a request that is " + status);
+			throw new BusinessException(SchoolErrorCode.VISITOR_REQUEST_STATUS_INVALID,
+					"A photo cannot be added to a request that is " + status, Map.of("status", status));
 		}
 		this.photoFilePublicId = photoFilePublicId;
 	}
@@ -111,7 +115,8 @@ public class VisitorRequest extends SoftDeletableEntity {
 	public void approve(Long decidedByUserId, LocalDate today) {
 		requireStatus(VisitorRequestStatus.PENDING, "approve");
 		if (visitDate.isBefore(today)) {
-			throw new BusinessException("The visit date " + visitDate + " has passed");
+			throw new BusinessException(SchoolErrorCode.VISIT_DATE_PASSED,
+					"The visit date " + visitDate + " has passed");
 		}
 		decide(VisitorRequestStatus.APPROVED, decidedByUserId, null);
 	}
@@ -123,7 +128,8 @@ public class VisitorRequest extends SoftDeletableEntity {
 
 	public void cancel() {
 		if (status != VisitorRequestStatus.PENDING && status != VisitorRequestStatus.APPROVED) {
-			throw new BusinessException("Cannot cancel a visitor request that is " + status);
+			throw new BusinessException(SchoolErrorCode.VISITOR_REQUEST_STATUS_INVALID,
+					"Cannot cancel a visitor request that is " + status, Map.of("status", status));
 		}
 		this.status = VisitorRequestStatus.CANCELLED;
 	}
@@ -131,10 +137,12 @@ public class VisitorRequest extends SoftDeletableEntity {
 	/** Whether the visitor may be let in now: approved, and for today's date. */
 	public void requireAdmissibleOn(LocalDate today) {
 		if (status != VisitorRequestStatus.APPROVED) {
-			throw new BusinessException("The visit is not approved (status " + status + ")");
+			throw new BusinessException(SchoolErrorCode.VISITOR_REQUEST_STATUS_INVALID,
+					"The visit is not approved (status " + status + ")", Map.of("status", status));
 		}
 		if (!visitDate.equals(today)) {
-			throw new BusinessException("The visit is approved for " + visitDate + ", not " + today);
+			throw new BusinessException(SchoolErrorCode.VISIT_NOT_TODAY,
+					"The visit is approved for " + visitDate + ", not " + today, Map.of("visitDate", visitDate));
 		}
 	}
 
@@ -152,7 +160,8 @@ public class VisitorRequest extends SoftDeletableEntity {
 
 	private void requireStatus(VisitorRequestStatus required, String action) {
 		if (status != required) {
-			throw new BusinessException("Cannot " + action + " a visitor request that is " + status);
+			throw new BusinessException(SchoolErrorCode.VISITOR_REQUEST_STATUS_INVALID,
+					"Cannot " + action + " a visitor request that is " + status, Map.of("status", status));
 		}
 	}
 }

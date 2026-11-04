@@ -129,11 +129,11 @@ class ExamResultPublicationE2ETest extends SchoolIntegrationTestBase {
 				.then().statusCode(HttpStatus.OK.value()).body("data.content", hasSize(1));
 
 		support.request(school).post("/api/v1/exams/" + examPublicId + "/results/publish")
-				.then().statusCode(HttpStatus.BAD_REQUEST.value());
+				.then().statusCode(HttpStatus.CONFLICT.value());
 		support.request(school).patch("/api/v1/exams/" + examPublicId + "/complete")
 				.then().statusCode(HttpStatus.OK.value());
 		support.request(school).post("/api/v1/exams/" + examPublicId + "/results/publish")
-				.then().statusCode(HttpStatus.BAD_REQUEST.value());
+				.then().statusCode(HttpStatus.CONFLICT.value());
 		support.requestWithRole(school.tenantId(), "ACADEMIC").post("/api/v1/exams/" + examPublicId + "/marks/verify")
 				.then().statusCode(HttpStatus.OK.value());
 		support.request(school).post("/api/v1/exams/" + examPublicId + "/marks/lock")

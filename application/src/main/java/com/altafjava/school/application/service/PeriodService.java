@@ -11,6 +11,8 @@ import com.altafjava.platform.core.exception.BusinessException;
 import com.altafjava.platform.core.exception.ResourceNotFoundException;
 import com.altafjava.platform.core.search.LikePattern;
 import com.altafjava.platform.core.tenant.TenantContext;
+import com.altafjava.school.domain.error.AcademicErrorCode;
+import com.altafjava.school.domain.error.SchoolErrorCode;
 import com.altafjava.school.domain.timetable.model.Period;
 import com.altafjava.school.domain.timetable.repository.PeriodRepository;
 
@@ -44,10 +46,11 @@ public class PeriodService {
 	public Period create(String name, LocalTime startTime, LocalTime endTime, int displayOrder) {
 		Long tenantId = TenantContext.getCurrentTenantId();
 		if (!startTime.isBefore(endTime)) {
-			throw new BusinessException("Period startTime must be before endTime");
+			throw new BusinessException(AcademicErrorCode.PERIOD_TIMES_INVALID,
+					"Period startTime must be before endTime");
 		}
 		if (periodRepository.existsByNameAndTenantId(name, tenantId)) {
-			throw new BusinessException("Period already exists: " + name);
+			throw new BusinessException(SchoolErrorCode.CODE_TAKEN, "Period already exists: " + name);
 		}
 		Period period = Period.create(name, startTime, endTime, displayOrder);
 		return periodRepository.save(period);

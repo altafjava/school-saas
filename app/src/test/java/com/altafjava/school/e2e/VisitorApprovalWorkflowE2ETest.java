@@ -81,7 +81,7 @@ class VisitorApprovalWorkflowE2ETest extends SchoolIntegrationTestBase {
 	void walkIn_isApprovedByTheHostThenCheckedInWithAPhotoAndABadgeAndCheckedOut() {
 		String requestPublicId = walkIn("Alex Ray");
 
-		checkIn(requestPublicId, photo()).statusCode(HttpStatus.BAD_REQUEST.value());
+		checkIn(requestPublicId, photo()).statusCode(HttpStatus.CONFLICT.value());
 
 		support.requestAsUser(school.tenantId(), hostUserId, "TEACHER")
 				.get("/api/v1/visitor-requests/hosted-by-me?status=PENDING")
@@ -98,7 +98,7 @@ class VisitorApprovalWorkflowE2ETest extends SchoolIntegrationTestBase {
 				.body("data.checkOutAt", nullValue())
 				.extract().path("data.publicId");
 
-		checkIn(requestPublicId, photo()).statusCode(HttpStatus.BAD_REQUEST.value());
+		checkIn(requestPublicId, photo()).statusCode(HttpStatus.CONFLICT.value());
 		support.request(school).get("/api/v1/visitor-requests/" + requestPublicId)
 				.then().body("data.status", equalTo("CHECKED_IN"));
 		support.request(school).get("/api/v1/visitor-logs/" + logPublicId + "/badge")
@@ -109,7 +109,7 @@ class VisitorApprovalWorkflowE2ETest extends SchoolIntegrationTestBase {
 		support.request(school).patch("/api/v1/visitor-logs/" + logPublicId + "/check-out")
 				.then().statusCode(HttpStatus.OK.value()).body("data.checkOutAt", notNullValue());
 		support.request(school).patch("/api/v1/visitor-logs/" + logPublicId + "/check-out")
-				.then().statusCode(HttpStatus.BAD_REQUEST.value());
+				.then().statusCode(HttpStatus.CONFLICT.value());
 	}
 
 	@Test
@@ -135,7 +135,7 @@ class VisitorApprovalWorkflowE2ETest extends SchoolIntegrationTestBase {
 		support.request(school).patch("/api/v1/visitor-requests/" + requestPublicId + "/approve")
 				.then().statusCode(HttpStatus.OK.value());
 
-		checkIn(requestPublicId, photo()).statusCode(HttpStatus.BAD_REQUEST.value());
+		checkIn(requestPublicId, photo()).statusCode(HttpStatus.CONFLICT.value());
 	}
 
 	@Test
@@ -154,7 +154,7 @@ class VisitorApprovalWorkflowE2ETest extends SchoolIntegrationTestBase {
 				.patch("/api/v1/visitor-requests/" + requestPublicId + "/reject")
 				.then().statusCode(HttpStatus.OK.value()).body("data.status", equalTo("REJECTED"));
 
-		checkIn(requestPublicId, photo()).statusCode(HttpStatus.BAD_REQUEST.value());
+		checkIn(requestPublicId, photo()).statusCode(HttpStatus.CONFLICT.value());
 	}
 
 	@Test

@@ -10,6 +10,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import com.altafjava.platform.core.PlatformConfigurer;
 import com.altafjava.platform.core.cache.CacheRegion;
+import com.altafjava.platform.core.exception.ErrorCode;
 import com.altafjava.platform.core.feature.FeatureDefinition;
 import com.altafjava.platform.core.privacy.DomainPiiHandler;
 import com.altafjava.platform.core.privacy.DomainRetentionHandler;
@@ -21,6 +22,7 @@ import com.altafjava.school.application.security.SchoolFeatures;
 import com.altafjava.school.application.service.GradingScaleService;
 import com.altafjava.school.application.sync.AttendanceOfflineSyncHandler;
 import com.altafjava.school.domain.curriculum.model.GradeBand;
+import com.altafjava.school.domain.error.SchoolErrorCodes;
 import com.altafjava.school.domain.metrics.SchoolMetricTypes;
 import com.altafjava.school.domain.notification.SchoolNotificationTypes;
 import com.altafjava.school.domain.security.permission.SchoolPermissions;
@@ -129,5 +131,10 @@ public class SchoolPlatformConfigurer implements PlatformConfigurer {
 	@Override
 	public Set<PermissionDefinition> domainPermissionCatalog() {
 		return SchoolPermissions.CATALOG;
+	}
+
+	@Override
+	public List<ErrorCode> domainErrorCodes() {
+		return SchoolErrorCodes.CATALOG;
 	}
 }

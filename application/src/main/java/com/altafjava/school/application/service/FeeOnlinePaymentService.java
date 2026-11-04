@@ -12,6 +12,7 @@ import com.altafjava.platform.application.paymentgateway.PaymentGatewayCredentia
 import com.altafjava.platform.application.paymentgateway.PaymentGatewayProviderRegistry;
 import com.altafjava.platform.application.paymentgateway.PaymentGatewayResolver;
 import com.altafjava.platform.application.paymentgateway.ResolvedPaymentGatewayConfig;
+import com.altafjava.platform.core.exception.BillingErrorCode;
 import com.altafjava.platform.core.exception.BusinessException;
 import com.altafjava.platform.core.exception.ResourceNotFoundException;
 import com.altafjava.platform.core.tenant.TenantContext;
@@ -26,6 +27,7 @@ import com.altafjava.platform.domain.tenant.model.Tenant;
 import com.altafjava.platform.domain.tenant.repository.TenantRepository;
 import com.altafjava.school.application.security.StudentDataAccessGuard;
 import com.altafjava.school.application.time.SchoolClock;
+import com.altafjava.school.domain.error.FeeErrorCode;
 import com.altafjava.school.domain.fee.model.FeeBalance;
 import com.altafjava.school.domain.fee.model.FeePayment;
 import com.altafjava.school.domain.fee.model.FeeStructure;
@@ -81,7 +83,8 @@ public class FeeOnlinePaymentService {
 
 		BigDecimal outstandingBalance = resolveOutstandingBalance(tenantId, student, feeStructure.getId());
 		if (outstandingBalance.compareTo(BigDecimal.ZERO) <= 0) {
-			throw new BusinessException("No outstanding balance for this fee structure");
+			throw new BusinessException(FeeErrorCode.NOTHING_OUTSTANDING,
+					"No outstanding balance for this fee structure");
 		}
 
 		ResolvedPaymentGatewayConfig resolvedConfig = resolveGatewayConfig(tenantId);
@@ -126,7 +129,8 @@ public class FeeOnlinePaymentService {
 
 		PaymentChargeStatus status = provider.getChargeStatus(credentials, gatewayChargeReference);
 		if (!isSucceeded(status.status())) {
-			throw new BusinessException("Payment not completed yet: status=" + status.status());
+			throw new BusinessException(FeeErrorCode.ONLINE_PAYMENT_PENDING,
+					"Payment not completed yet: status=" + status.status(), Map.of("status", status.status()));
 		}
 
 		return recordGatewayPayment(student.getId(), feeStructure.getId(), status.amount(),
@@ -213,7 +217,7 @@ public class FeeOnlinePaymentService {
 
 	private ResolvedPaymentGatewayConfig resolveGatewayConfig(Long tenantId) {
 		return paymentGatewayResolver.resolve(tenantId)
-				.orElseThrow(() -> new BusinessException(
+				.orElseThrow(() -> new BusinessException(BillingErrorCode.PAYMENT_GATEWAY_NOT_CONFIGURED,
 						"No payment gateway configured for this school — contact the school office"));
 	}
 
@@ -221,7 +225,8 @@ public class FeeOnlinePaymentService {
 		return tenantRepository.findById(tenantId)
 				.map(Tenant::getCurrencyCode)
 				.filter(code -> code != null && !code.isBlank())
-				.orElseThrow(() -> new BusinessException("This school has no currency configured"));
+				.orElseThrow(() -> new BusinessException(FeeErrorCode.SCHOOL_CURRENCY_MISSING,
+						"This school has no currency configured"));
 	}
 
 	private boolean isSucceeded(String status) {

@@ -7,6 +7,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import com.altafjava.platform.core.concurrency.ExpectedVersion;
 import com.altafjava.platform.core.exception.BusinessException;
+import com.altafjava.platform.core.exception.PlatformErrorCode;
 import com.altafjava.platform.core.exception.ResourceNotFoundException;
 import com.altafjava.platform.core.search.LikePattern;
 import com.altafjava.platform.core.tenant.TenantContext;
@@ -15,6 +16,7 @@ import com.altafjava.school.application.lifecycle.LifecycleChange;
 import com.altafjava.school.application.lifecycle.LifecycleRecorder;
 import com.altafjava.school.domain.alumni.model.AlumniProfile;
 import com.altafjava.school.domain.alumni.repository.AlumniProfileRepository;
+import com.altafjava.school.domain.error.StudentErrorCode;
 import com.altafjava.school.domain.student.model.EnrollmentStatus;
 import com.altafjava.school.domain.student.model.Student;
 import com.altafjava.school.domain.student.repository.StudentRepository;
@@ -53,11 +55,12 @@ public class AlumniProfileService {
 		Student student = studentRepository.findByPublicIdAndTenantId(UUID.fromString(studentPublicId), tenantId)
 				.orElseThrow(() -> new ResourceNotFoundException("Student not found: " + studentPublicId));
 		if (student.getEnrollmentStatus() != EnrollmentStatus.GRADUATED) {
-			throw new BusinessException(
+			throw new BusinessException(StudentErrorCode.ALUMNI_NOT_GRADUATED,
 					"Cannot create an alumni profile for a student who has not graduated: " + studentPublicId);
 		}
 		if (alumniProfileRepository.existsByStudentIdAndTenantId(student.getId(), tenantId)) {
-			throw new BusinessException("Alumni profile already exists for student: " + studentPublicId);
+			throw new BusinessException(PlatformErrorCode.DUPLICATE_RESOURCE,
+					"Alumni profile already exists for student: " + studentPublicId);
 		}
 
 		AlumniProfile profile = AlumniProfile.create(student.getId(), graduationYear, currentOccupation,

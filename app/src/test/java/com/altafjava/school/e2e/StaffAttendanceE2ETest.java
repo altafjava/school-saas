@@ -83,18 +83,18 @@ class StaffAttendanceE2ETest extends SchoolIntegrationTestBase {
 				.body("data.status", equalTo("PRESENT"))
 				.body("data.date", equalTo(today.toString()))
 				.body("data.employee.name", equalTo("Tara Staff"));
-		staff(teacherUser).post(BASE + "/me/check-in").then().statusCode(HttpStatus.BAD_REQUEST.value());
+		staff(teacherUser).post(BASE + "/me/check-in").then().statusCode(HttpStatus.CONFLICT.value());
 
 		staff(teacherUser).post(BASE + "/me/check-out").then().statusCode(HttpStatus.OK.value())
 				.body("data.checkOutAt", notNullValue());
-		staff(teacherUser).post(BASE + "/me/check-out").then().statusCode(HttpStatus.BAD_REQUEST.value());
+		staff(teacherUser).post(BASE + "/me/check-out").then().statusCode(HttpStatus.CONFLICT.value());
 		staff(teacherUser).get(BASE + "/me").then().statusCode(HttpStatus.OK.value())
 				.body("data.content.date", hasItem(today.toString()));
 	}
 
 	@Test
 	void checkIn_onADayOfApprovedLeave_isRefused() {
-		staff(onLeaveUser).post(BASE + "/me/check-in").then().statusCode(HttpStatus.BAD_REQUEST.value());
+		staff(onLeaveUser).post(BASE + "/me/check-in").then().statusCode(HttpStatus.CONFLICT.value());
 	}
 
 	@Test
@@ -130,7 +130,7 @@ class StaffAttendanceE2ETest extends SchoolIntegrationTestBase {
 	@Test
 	void record_aWorkingDayDuringApprovedLeave_isRefused() {
 		admin().body("{\"status\":\"PRESENT\"}").put(BASE + "/employees/" + onLeave + "/days/" + today).then()
-				.statusCode(HttpStatus.BAD_REQUEST.value());
+				.statusCode(HttpStatus.CONFLICT.value());
 	}
 
 	@Test

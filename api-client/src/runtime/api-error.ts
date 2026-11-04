@@ -16,6 +16,8 @@ export interface ApiErrorBody {
     message?: string;
     traceId?: string;
     details?: FieldError[];
+    /** Values for translating `code`, e.g. `{ maxDays: 31 }`; absent when the code has none. */
+    params?: Record<string, unknown>;
   };
 }
 
@@ -39,6 +41,11 @@ export class ApiError<TBody = unknown> extends Error {
 
   get traceId(): string | undefined {
     return asErrorBody(this.body)?.error?.traceId;
+  }
+
+  /** Values to interpolate into the translation of `code`, empty when the code has none. */
+  get params(): Record<string, unknown> {
+    return asErrorBody(this.body)?.error?.params ?? {};
   }
 
   /** Field-level validation failures, empty when the error is not a validation error. */

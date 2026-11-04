@@ -6,6 +6,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 import com.altafjava.platform.application.service.TenantSettingOverrideService;
 import com.altafjava.platform.core.exception.BusinessException;
+import com.altafjava.school.domain.error.AdmissionErrorCode;
 import lombok.RequiredArgsConstructor;
 
 /**
@@ -34,7 +35,8 @@ public class ApplicationFeePolicy {
 			return;
 		}
 		if (fee.signum() < 0 || fee.scale() > 2) {
-			throw new BusinessException("The application fee must be a positive amount with at most 2 decimals");
+			throw new BusinessException(AdmissionErrorCode.APPLICATION_FEE_INVALID,
+					"The application fee must be a positive amount with at most 2 decimals");
 		}
 		tenantSettingOverrideService.set(tenantId, SETTING_KEY, fee.toPlainString());
 	}

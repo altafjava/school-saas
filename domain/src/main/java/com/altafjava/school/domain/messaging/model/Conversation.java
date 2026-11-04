@@ -5,6 +5,7 @@ import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Table;
 import com.altafjava.platform.core.exception.BusinessException;
+import com.altafjava.platform.core.exception.PlatformErrorCode;
 import com.altafjava.platform.core.model.TenantEntity;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -67,7 +68,7 @@ public class Conversation extends TenantEntity {
 		} else if (teacherUserId.equals(userId)) {
 			this.teacherLastReadMessageId = Math.max(teacherLastReadMessageId, messageId);
 		} else {
-			throw new BusinessException("Only a participant has a read position");
+			throw new BusinessException(PlatformErrorCode.FORBIDDEN, "Only a participant has a read position");
 		}
 	}
 

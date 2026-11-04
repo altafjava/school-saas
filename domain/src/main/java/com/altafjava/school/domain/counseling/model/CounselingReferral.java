@@ -8,6 +8,7 @@ import jakarta.persistence.Enumerated;
 import jakarta.persistence.Table;
 import org.hibernate.annotations.SQLRestriction;
 import com.altafjava.platform.core.exception.BusinessException;
+import com.altafjava.platform.core.exception.PlatformErrorCode;
 import com.altafjava.platform.core.model.SoftDeletableEntity;
 import com.altafjava.platform.core.security.annotation.Pii;
 import lombok.Getter;
@@ -78,7 +79,8 @@ public class CounselingReferral extends SoftDeletableEntity {
 
 	private void requireStatus(CounselingReferralStatus required, String action) {
 		if (this.status != required) {
-			throw new BusinessException("Cannot " + action + " a counseling referral in status " + this.status);
+			throw new BusinessException(PlatformErrorCode.CONFLICT,
+					"Cannot " + action + " a counseling referral in status " + this.status);
 		}
 	}
 }

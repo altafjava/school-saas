@@ -4,6 +4,7 @@ import static io.restassured.RestAssured.given;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Stream;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -72,6 +73,8 @@ class RoleAccessMatrixTest extends SchoolInfrastructureTestBase {
 	private StringRedisTemplate redis;
 
 	private Long tenantId;
+	// One sign-in per role: 200 logins would drain the anonymous per-client bucket the whole suite shares.
+	private static final Map<String, String> TOKENS = new ConcurrentHashMap<>();
 
 	@BeforeEach
 	void resolveTenant() {
@@ -88,7 +91,7 @@ class RoleAccessMatrixTest extends SchoolInfrastructureTestBase {
 	@MethodSource("matrix")
 	void role_getsExactlyTheAccessItShould(String email, String path, boolean allowed) {
 		given().baseUri("http://localhost").port(port).header("X-Tenant-ID", tenantId)
-				.header("Authorization", "Bearer " + signIn(email))
+				.header("Authorization", "Bearer " + TOKENS.computeIfAbsent(email, this::signIn))
 				.when().get("/api/v1" + path)
 				.then().statusCode(allowed ? 200 : 403);
 	}

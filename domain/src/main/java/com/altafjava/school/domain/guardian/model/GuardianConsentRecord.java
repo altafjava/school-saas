@@ -1,6 +1,7 @@
 package com.altafjava.school.domain.guardian.model;
 
 import java.time.Instant;
+import java.util.Map;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -8,6 +9,7 @@ import jakarta.persistence.Enumerated;
 import jakarta.persistence.Table;
 import com.altafjava.platform.core.exception.BusinessException;
 import com.altafjava.platform.core.model.TenantEntity;
+import com.altafjava.school.domain.error.StudentErrorCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
@@ -66,7 +68,8 @@ public class GuardianConsentRecord extends TenantEntity {
 
 	public void revoke() {
 		if (!this.granted) {
-			throw new BusinessException("Consent of type " + consentType + " is not currently granted");
+			throw new BusinessException(StudentErrorCode.CONSENT_NOT_GRANTED,
+					"Consent of type " + consentType + " is not currently granted", Map.of("consentType", consentType));
 		}
 		this.granted = false;
 		this.revokedAt = Instant.now();

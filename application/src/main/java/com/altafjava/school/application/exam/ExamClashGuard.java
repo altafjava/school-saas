@@ -1,7 +1,9 @@
 package com.altafjava.school.application.exam;
 
+import java.util.Map;
 import org.springframework.stereotype.Component;
 import com.altafjava.platform.core.exception.BusinessException;
+import com.altafjava.school.domain.error.AcademicErrorCode;
 import com.altafjava.school.domain.exam.model.Exam;
 import com.altafjava.school.domain.exam.model.ExamStatus;
 import com.altafjava.school.domain.exam.repository.ExamRepository;
@@ -23,10 +25,13 @@ public class ExamClashGuard {
 				.filter(candidate::clashesWith)
 				.findFirst()
 				.ifPresent(clash -> {
-					throw new BusinessException("The exam overlaps \"" + clash.getTitle() + "\" ("
-							+ clash.getScheduledAt() + " to " + clash.endsAt().toLocalTime() + ") "
-							+ (clash.getClassroomId().equals(candidate.getClassroomId()) ? "in the same classroom"
-									: "in the same venue"));
+					throw new BusinessException(AcademicErrorCode.EXAM_CLASH,
+							"The exam overlaps \"" + clash.getTitle() + "\" ("
+									+ clash.getScheduledAt() + " to " + clash.endsAt().toLocalTime() + ") "
+									+ (clash.getClassroomId().equals(candidate.getClassroomId())
+											? "in the same classroom"
+											: "in the same venue"),
+							Map.of("exam", clash.getTitle()));
 				});
 	}
 }

@@ -5,6 +5,7 @@ import com.altafjava.platform.application.service.NumberSequenceService;
 import com.altafjava.platform.core.exception.BusinessException;
 import com.altafjava.platform.domain.numbering.model.ResetPeriod;
 import com.altafjava.school.domain.employee.repository.EmployeeRepository;
+import com.altafjava.school.domain.error.StaffErrorCode;
 import lombok.RequiredArgsConstructor;
 
 /**
@@ -25,7 +26,7 @@ public class EmployeeCodeAllocator {
 		String code = requestedCode != null && !requestedCode.isBlank() ? requestedCode
 				: numberSequenceService.generateNext(tenantId, EMPLOYEE_CODE_SEQUENCE, "EMP-", 4, ResetPeriod.NEVER);
 		if (employeeRepository.existsByEmployeeCodeAndTenantId(code, tenantId)) {
-			throw new BusinessException("Employee code already exists: " + code);
+			throw new BusinessException(StaffErrorCode.EMPLOYEE_CODE_TAKEN, "Employee code already exists: " + code);
 		}
 		return code;
 	}

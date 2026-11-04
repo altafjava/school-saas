@@ -220,7 +220,7 @@ class SchoolOperationsE2ETest extends SchoolIntegrationTestBase {
 		LocalDate day = LocalDate.now().plusDays(30);
 		submitLeave(family, day, day.plusDays(2)).then().statusCode(HttpStatus.CREATED.value());
 
-		submitLeave(family, day.plusDays(1), day.plusDays(3)).then().statusCode(HttpStatus.BAD_REQUEST.value());
+		submitLeave(family, day.plusDays(1), day.plusDays(3)).then().statusCode(HttpStatus.CONFLICT.value());
 	}
 
 	@Test
@@ -330,7 +330,7 @@ class SchoolOperationsE2ETest extends SchoolIntegrationTestBase {
 		bounce(cheque).then().statusCode(HttpStatus.OK.value());
 
 		assertEquals(0, before.compareTo(collectedSoFar()));
-		refund(cheque).then().statusCode(HttpStatus.BAD_REQUEST.value());
+		refund(cheque).then().statusCode(HttpStatus.CONFLICT.value());
 	}
 
 	@Test
@@ -341,7 +341,7 @@ class SchoolOperationsE2ETest extends SchoolIntegrationTestBase {
 		String cheque = payByCheque(student, fee, "250.00");
 		refund(cheque).then().statusCode(HttpStatus.CREATED.value());
 
-		bounce(cheque).then().statusCode(HttpStatus.BAD_REQUEST.value());
+		bounce(cheque).then().statusCode(HttpStatus.CONFLICT.value());
 	}
 
 	@Test

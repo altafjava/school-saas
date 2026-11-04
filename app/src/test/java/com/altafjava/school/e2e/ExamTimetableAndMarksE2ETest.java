@@ -87,7 +87,7 @@ class ExamTimetableAndMarksE2ETest extends SchoolIntegrationTestBase {
 		String day = nextDay();
 		schedule(classroomA, day + "T09:00:00", 120, null).then().statusCode(HttpStatus.CREATED.value());
 
-		schedule(classroomA, day + "T10:00:00", 60, null).then().statusCode(HttpStatus.BAD_REQUEST.value())
+		schedule(classroomA, day + "T10:00:00", 60, null).then().statusCode(HttpStatus.CONFLICT.value())
 				.body("error.message", containsString("same classroom"));
 		schedule(classroomA, day + "T11:00:00", 60, null).then().statusCode(HttpStatus.CREATED.value());
 	}
@@ -99,7 +99,7 @@ class ExamTimetableAndMarksE2ETest extends SchoolIntegrationTestBase {
 				.body("data.venue.name", equalTo("Main hall"))
 				.body("data.endsAt", equalTo(day + "T10:30:00"));
 
-		schedule(classroomB, day + "T10:00:00", 60, hall).then().statusCode(HttpStatus.BAD_REQUEST.value())
+		schedule(classroomB, day + "T10:00:00", 60, hall).then().statusCode(HttpStatus.CONFLICT.value())
 				.body("error.message", containsString("same venue"));
 		schedule(classroomB, day + "T10:00:00", 60, null).then().statusCode(HttpStatus.CREATED.value());
 	}
@@ -111,7 +111,7 @@ class ExamTimetableAndMarksE2ETest extends SchoolIntegrationTestBase {
 		String later = schedule(classroomA, day + "T12:00:00", 60, null).then().extract().path("data.publicId");
 
 		admin().body("{\"scheduledAt\":\"" + day + "T09:30:00\",\"durationMinutes\":60,\"version\":0}")
-				.patch("/api/v1/exams/" + later + "/schedule").then().statusCode(HttpStatus.BAD_REQUEST.value());
+				.patch("/api/v1/exams/" + later + "/schedule").then().statusCode(HttpStatus.CONFLICT.value());
 		admin().body("{\"scheduledAt\":\"" + day + "T14:00:00\",\"durationMinutes\":45,\"version\":0}")
 				.patch("/api/v1/exams/" + later + "/schedule").then().statusCode(HttpStatus.OK.value())
 				.body("data.durationMinutes", equalTo(45));
@@ -136,7 +136,7 @@ class ExamTimetableAndMarksE2ETest extends SchoolIntegrationTestBase {
 		parent().get("/api/v1/exams/" + exam).then().statusCode(HttpStatus.OK.value())
 				.body("data.schedulePublished", equalTo(true));
 		admin().post("/api/v1/classrooms/" + classroomA + "/exam-timetable/publish").then()
-				.statusCode(HttpStatus.BAD_REQUEST.value());
+				.statusCode(HttpStatus.CONFLICT.value());
 	}
 
 	@Test
@@ -173,16 +173,16 @@ class ExamTimetableAndMarksE2ETest extends SchoolIntegrationTestBase {
 	void marks_enteredThenVerifiedThenLocked_beforeResultsArePublished() {
 		String exam = completedExamWithAMark();
 
-		admin().post("/api/v1/exams/" + exam + "/results/publish").then().statusCode(HttpStatus.BAD_REQUEST.value());
+		admin().post("/api/v1/exams/" + exam + "/results/publish").then().statusCode(HttpStatus.CONFLICT.value());
 		verifier().post("/api/v1/exams/" + exam + "/marks/verify").then().statusCode(HttpStatus.OK.value())
 				.body("data.marksStage", equalTo("VERIFIED"));
 		markEntry(exam, 70).then().statusCode(HttpStatus.BAD_REQUEST.value());
-		admin().post("/api/v1/exams/" + exam + "/results/publish").then().statusCode(HttpStatus.BAD_REQUEST.value());
+		admin().post("/api/v1/exams/" + exam + "/results/publish").then().statusCode(HttpStatus.CONFLICT.value());
 		admin().post("/api/v1/exams/" + exam + "/marks/lock").then().statusCode(HttpStatus.OK.value())
 				.body("data.marksStage", equalTo("LOCKED"));
 		admin().post("/api/v1/exams/" + exam + "/results/publish").then().statusCode(HttpStatus.OK.value());
 
-		admin().post("/api/v1/exams/" + exam + "/marks/unlock").then().statusCode(HttpStatus.BAD_REQUEST.value());
+		admin().post("/api/v1/exams/" + exam + "/marks/unlock").then().statusCode(HttpStatus.CONFLICT.value());
 	}
 
 	@Test

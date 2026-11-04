@@ -9,6 +9,7 @@ import jakarta.persistence.Enumerated;
 import jakarta.persistence.Table;
 import org.hibernate.annotations.SQLRestriction;
 import com.altafjava.platform.core.exception.BusinessException;
+import com.altafjava.platform.core.exception.PlatformErrorCode;
 import com.altafjava.platform.core.model.SoftDeletableEntity;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -72,14 +73,15 @@ public class Asset extends SoftDeletableEntity {
 
 	public void markAvailable() {
 		if (this.status == AssetStatus.DISPOSED) {
-			throw new BusinessException("Cannot return a disposed asset to available status");
+			throw new BusinessException(PlatformErrorCode.CONFLICT,
+					"Cannot return a disposed asset to available status");
 		}
 		this.status = AssetStatus.AVAILABLE;
 	}
 
 	public void markUnderMaintenance() {
 		if (this.status == AssetStatus.DISPOSED) {
-			throw new BusinessException("Cannot send a disposed asset for maintenance");
+			throw new BusinessException(PlatformErrorCode.CONFLICT, "Cannot send a disposed asset for maintenance");
 		}
 		this.status = AssetStatus.UNDER_MAINTENANCE;
 	}
@@ -90,7 +92,8 @@ public class Asset extends SoftDeletableEntity {
 
 	private void requireStatus(AssetStatus required) {
 		if (this.status != required) {
-			throw new BusinessException("Asset must be " + required + " but is " + this.status);
+			throw new BusinessException(PlatformErrorCode.CONFLICT,
+					"Asset must be " + required + " but is " + this.status);
 		}
 	}
 }

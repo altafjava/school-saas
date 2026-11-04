@@ -2,6 +2,7 @@ package com.altafjava.school.domain.enquiry.model;
 
 import java.time.Instant;
 import java.time.LocalDate;
+import java.util.Map;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -11,6 +12,7 @@ import org.hibernate.annotations.SQLRestriction;
 import com.altafjava.platform.core.exception.BusinessException;
 import com.altafjava.platform.core.model.SoftDeletableEntity;
 import com.altafjava.platform.core.security.annotation.Pii;
+import com.altafjava.school.domain.error.AdmissionErrorCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
@@ -89,7 +91,8 @@ public class Enquiry extends SoftDeletableEntity {
 
 	public static Enquiry receive(EnquiryDetails details, EnquirySource source, String notes) {
 		if (details.guardianEmail() == null && details.guardianPhone() == null) {
-			throw new BusinessException("An enquiry needs a phone number or an email address to follow up");
+			throw new BusinessException(AdmissionErrorCode.ENQUIRY_CONTACT_REQUIRED,
+					"An enquiry needs a phone number or an email address to follow up");
 		}
 		return Enquiry.builder()
 				.childFirstName(details.childFirstName())
@@ -153,15 +156,19 @@ public class Enquiry extends SoftDeletableEntity {
 
 	private void moveTo(EnquiryStatus next) {
 		if (!status.canMoveTo(next)) {
-			throw new BusinessException("An enquiry that is " + status.name().toLowerCase().replace('_', ' ')
-					+ " cannot become " + next.name().toLowerCase().replace('_', ' '));
+			throw new BusinessException(AdmissionErrorCode.ENQUIRY_STATUS_INVALID,
+					"An enquiry that is " + status.name().toLowerCase().replace('_', ' ')
+							+ " cannot become " + next.name().toLowerCase().replace('_', ' '),
+					Map.of("status", status, "next", next));
 		}
 		this.status = next;
 	}
 
 	private void requireOpen(String action) {
 		if (!status.isOpen()) {
-			throw new BusinessException("Cannot " + action + " an enquiry that is " + status.name().toLowerCase());
+			throw new BusinessException(AdmissionErrorCode.ENQUIRY_STATUS_INVALID,
+					"Cannot " + action + " an enquiry that is " + status.name().toLowerCase(),
+					Map.of("status", status));
 		}
 	}
 }

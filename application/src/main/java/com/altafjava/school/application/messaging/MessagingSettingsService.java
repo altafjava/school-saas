@@ -2,6 +2,7 @@ package com.altafjava.school.application.messaging;
 
 import java.time.LocalTime;
 import java.time.format.DateTimeParseException;
+import java.util.Map;
 import java.util.Optional;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -9,6 +10,7 @@ import com.altafjava.platform.application.service.TenantSettingOverrideService;
 import com.altafjava.platform.core.exception.BusinessException;
 import com.altafjava.platform.core.tenant.TenantContext;
 import com.altafjava.school.application.time.SchoolClock;
+import com.altafjava.school.domain.error.CommunicationErrorCode;
 import lombok.RequiredArgsConstructor;
 
 /** Each school decides whether messaging is on and when, stored as tenant setting overrides. */
@@ -34,7 +36,8 @@ public class MessagingSettingsService {
 	@Transactional
 	public MessagingSettings update(MessagingSettings settings) {
 		if ((settings.hoursStart() == null) != (settings.hoursEnd() == null)) {
-			throw new BusinessException("Set both messaging hours or neither");
+			throw new BusinessException(CommunicationErrorCode.MESSAGING_HOURS_INCOMPLETE,
+					"Set both messaging hours or neither");
 		}
 		Long tenantId = TenantContext.getCurrentTenantId();
 		tenantSettingOverrideService.set(tenantId, ENABLED_KEY, String.valueOf(settings.enabled()));
@@ -48,11 +51,13 @@ public class MessagingSettingsService {
 	public void assertOpenNow() {
 		MessagingSettings settings = get();
 		if (!settings.enabled()) {
-			throw new BusinessException("Messaging is switched off at this school");
+			throw new BusinessException(CommunicationErrorCode.MESSAGING_DISABLED,
+					"Messaging is switched off at this school");
 		}
 		if (!settings.isOpenAt(schoolClock.now().toLocalTime())) {
-			throw new BusinessException(
-					"Messaging is open from " + settings.hoursStart() + " to " + settings.hoursEnd());
+			throw new BusinessException(CommunicationErrorCode.MESSAGING_CLOSED,
+					"Messaging is open from " + settings.hoursStart() + " to " + settings.hoursEnd(),
+					Map.of("from", settings.hoursStart(), "to", settings.hoursEnd()));
 		}
 	}
 

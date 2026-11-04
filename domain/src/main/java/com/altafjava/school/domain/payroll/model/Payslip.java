@@ -11,6 +11,7 @@ import jakarta.persistence.Enumerated;
 import jakarta.persistence.Table;
 import org.hibernate.annotations.SQLRestriction;
 import com.altafjava.platform.core.exception.BusinessException;
+import com.altafjava.platform.core.exception.PlatformErrorCode;
 import com.altafjava.platform.core.model.SoftDeletableEntity;
 import com.altafjava.school.domain.payroll.converter.PayComponentAmountListConverter;
 import lombok.Getter;
@@ -98,7 +99,8 @@ public class Payslip extends SoftDeletableEntity {
 
 	private void requireStatus(PayslipStatus required, String action) {
 		if (this.status != required) {
-			throw new BusinessException("Cannot " + action + " a payslip in status " + this.status);
+			throw new BusinessException(PlatformErrorCode.CONFLICT,
+					"Cannot " + action + " a payslip in status " + this.status);
 		}
 	}
 }

@@ -8,7 +8,9 @@ import jakarta.persistence.PreUpdate;
 import jakarta.persistence.Table;
 import org.hibernate.annotations.SQLRestriction;
 import com.altafjava.platform.core.exception.BusinessException;
+import com.altafjava.platform.core.exception.PlatformErrorCode;
 import com.altafjava.platform.core.model.SoftDeletableEntity;
+import com.altafjava.school.domain.error.FeeErrorCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
@@ -50,14 +52,16 @@ public class FeeInstallment extends SoftDeletableEntity {
 	@PreUpdate
 	private void assertConsistent() {
 		if (shareBasisPoints < 1 || shareBasisPoints > 10_000) {
-			throw new BusinessException("An installment share must be 1 to 10000 basis points");
+			throw new BusinessException(PlatformErrorCode.INTERNAL_ERROR,
+					"An installment share must be 1 to 10000 basis points");
 		}
 	}
 
 	public static FeeInstallment of(Long studentId, Long feeStructureId, int sequenceNumber, LocalDate dueDate,
 			int shareBasisPoints) {
 		if (shareBasisPoints < 1 || shareBasisPoints > TOTAL_BASIS_POINTS) {
-			throw new BusinessException("Installment share must be between 0.01% and 100%");
+			throw new BusinessException(FeeErrorCode.INSTALLMENT_SHARE_INVALID,
+					"Installment share must be between 0.01% and 100%");
 		}
 		return FeeInstallment.builder()
 				.studentId(studentId)

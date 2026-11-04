@@ -144,7 +144,7 @@ class AlumniProfileCrudE2ETest extends SchoolIntegrationTestBase {
 	}
 
 	@Test
-	void createAlumniProfile_forNonGraduatedStudent_returns400() {
+	void createAlumniProfile_forNonGraduatedStudent_returns409() {
 		String accessToken = login();
 		String studentPublicId = given()
 				.header("X-Tenant-ID", tenantId)
@@ -170,7 +170,7 @@ class AlumniProfileCrudE2ETest extends SchoolIntegrationTestBase {
 				.when()
 				.post("/api/v1/alumni-profiles")
 				.then()
-				.statusCode(HttpStatus.BAD_REQUEST.value());
+				.statusCode(HttpStatus.CONFLICT.value());
 	}
 
 	@Test

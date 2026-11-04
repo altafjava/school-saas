@@ -2,6 +2,7 @@ package com.altafjava.school.domain.staffattendance.model;
 
 import java.time.LocalTime;
 import com.altafjava.platform.core.exception.BusinessException;
+import com.altafjava.school.domain.error.AttendanceErrorCode;
 
 /**
  * A school's working day for staff: arriving after {@code start} plus the grace is late, leaving
@@ -13,10 +14,11 @@ public record StaffWorkday(LocalTime start, LocalTime end, int lateGraceMinutes,
 
 	public StaffWorkday {
 		if (start == null || end == null || !start.isBefore(end)) {
-			throw new BusinessException("The workday must start before it ends");
+			throw new BusinessException(AttendanceErrorCode.WORKDAY_INVALID, "The workday must start before it ends");
 		}
 		if (lateGraceMinutes < 0 || halfDayMinutes < 1) {
-			throw new BusinessException("Grace minutes cannot be negative and a half day needs at least a minute");
+			throw new BusinessException(AttendanceErrorCode.WORKDAY_INVALID,
+					"Grace minutes cannot be negative and a half day needs at least a minute");
 		}
 	}
 

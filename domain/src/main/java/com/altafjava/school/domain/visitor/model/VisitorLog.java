@@ -9,6 +9,7 @@ import org.hibernate.annotations.SQLRestriction;
 import com.altafjava.platform.core.exception.BusinessException;
 import com.altafjava.platform.core.model.SoftDeletableEntity;
 import com.altafjava.platform.core.security.annotation.Pii;
+import com.altafjava.school.domain.error.SchoolErrorCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -79,10 +80,12 @@ public class VisitorLog extends SoftDeletableEntity {
 
 	public void checkOut(LocalDateTime checkOutAt) {
 		if (this.checkOutAt != null) {
-			throw new BusinessException("Visitor already checked out at " + this.checkOutAt);
+			throw new BusinessException(SchoolErrorCode.VISITOR_ALREADY_CHECKED_OUT,
+					"Visitor already checked out at " + this.checkOutAt);
 		}
 		if (checkOutAt.isBefore(this.checkInAt)) {
-			throw new BusinessException("Check-out time cannot be before check-in time");
+			throw new BusinessException(SchoolErrorCode.VISITOR_CHECK_OUT_INVALID,
+					"Check-out time cannot be before check-in time");
 		}
 		this.checkOutAt = checkOutAt;
 	}

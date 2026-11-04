@@ -20,6 +20,7 @@ import org.hibernate.annotations.BatchSize;
 import org.hibernate.annotations.SQLRestriction;
 import com.altafjava.platform.core.exception.BusinessException;
 import com.altafjava.platform.core.model.SoftDeletableEntity;
+import com.altafjava.school.domain.error.FeeErrorCode;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -94,10 +95,11 @@ public class FeeInvoice extends SoftDeletableEntity {
 	public static FeeInvoice issue(Long studentId, String invoiceNumber, InvoicePeriod period, LocalDate issueDate,
 			List<FeeInvoiceLine> lines) {
 		if (lines.isEmpty()) {
-			throw new BusinessException("Nothing is due from this student in the period");
+			throw new BusinessException(FeeErrorCode.NOTHING_DUE, "Nothing is due from this student in the period");
 		}
 		if (period.dueDate().isBefore(issueDate)) {
-			throw new BusinessException("An invoice cannot fall due before it is issued");
+			throw new BusinessException(FeeErrorCode.INVOICE_DUE_BEFORE_ISSUE,
+					"An invoice cannot fall due before it is issued");
 		}
 		return FeeInvoice.builder()
 				.studentId(studentId)
@@ -127,7 +129,7 @@ public class FeeInvoice extends SoftDeletableEntity {
 	/** The caller makes sure no payment stands against it; a paid invoice is evidence and stays. */
 	public void cancel(String reason) {
 		if (isCancelled()) {
-			throw new BusinessException("The invoice is already cancelled");
+			throw new BusinessException(FeeErrorCode.INVOICE_ALREADY_CANCELLED, "The invoice is already cancelled");
 		}
 		this.status = FeeInvoiceStatus.CANCELLED;
 		this.cancelledAt = Instant.now();

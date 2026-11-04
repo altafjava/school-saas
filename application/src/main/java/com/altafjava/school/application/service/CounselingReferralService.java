@@ -10,6 +10,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import com.altafjava.platform.application.service.ActivityLogService;
 import com.altafjava.platform.core.exception.BusinessException;
+import com.altafjava.platform.core.exception.PlatformErrorCode;
 import com.altafjava.platform.core.exception.ResourceNotFoundException;
 import com.altafjava.platform.core.security.AuthenticatedUser;
 import com.altafjava.platform.core.tenant.TenantContext;
@@ -95,7 +96,8 @@ public class CounselingReferralService {
 				.orElseThrow(() -> new ResourceNotFoundException(
 						"Counseling session not found: " + counselingSessionPublicId));
 		if (!session.getStudentId().equals(referral.getStudentId())) {
-			throw new BusinessException("Counseling session must belong to the same student as the referral");
+			throw new BusinessException(PlatformErrorCode.INVALID_ARGUMENT,
+					"Counseling session must belong to the same student as the referral");
 		}
 
 		referral.scheduleWithSession(session.getId());

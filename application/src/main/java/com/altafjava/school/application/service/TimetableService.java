@@ -18,6 +18,7 @@ import com.altafjava.school.application.security.AcademicAccessGuard;
 import com.altafjava.school.application.security.CourseworkReach;
 import com.altafjava.school.domain.classroom.repository.ClassroomRepository;
 import com.altafjava.school.domain.employee.model.EmployeeStatus;
+import com.altafjava.school.domain.error.AcademicErrorCode;
 import com.altafjava.school.domain.subject.repository.SubjectRepository;
 import com.altafjava.school.domain.teacher.repository.TeacherRepository;
 import com.altafjava.school.domain.timetable.model.TimetableEntry;
@@ -101,12 +102,14 @@ public class TimetableService {
 				.getId();
 		if (timetableEntryRepository.existsByTenantIdAndDayOfWeekAndPeriodIdAndClassroomId(tenantId, dayOfWeek,
 				periodId, classroomId)) {
-			throw new BusinessException("The classroom already has a timetable entry for " + dayOfWeek
-					+ " in this period");
+			throw new BusinessException(AcademicErrorCode.TIMETABLE_CLASSROOM_BUSY,
+					"The classroom already has a timetable entry for " + dayOfWeek
+							+ " in this period");
 		}
 		if (timetableEntryRepository.existsByTenantIdAndDayOfWeekAndPeriodIdAndTeacherId(tenantId, dayOfWeek,
 				periodId, teacherId)) {
-			throw new BusinessException("The teacher is already scheduled for " + dayOfWeek + " in this period");
+			throw new BusinessException(AcademicErrorCode.TIMETABLE_TEACHER_BUSY,
+					"The teacher is already scheduled for " + dayOfWeek + " in this period");
 		}
 		Long venueId = venuePublicId == null ? null : requireFreeVenue(tenantId, venuePublicId, dayOfWeek, periodId);
 		TimetableEntry entry = TimetableEntry.create(dayOfWeek, periodId, classroomId, subjectId, teacherId, venueId);
@@ -133,13 +136,14 @@ public class TimetableService {
 		Venue venue = venueRepository.findByPublicIdAndTenantId(UUID.fromString(venuePublicId), tenantId)
 				.orElseThrow(() -> new ResourceNotFoundException("Venue not found: " + venuePublicId));
 		if (!venue.isActive()) {
-			throw new BusinessException("Venue " + venue.getName() + " is not in use");
+			throw new BusinessException(AcademicErrorCode.VENUE_INACTIVE,
+					"Venue " + venue.getName() + " is not in use");
 		}
 		boolean bookedByAnotherSlot = timetableEntryRepository
 				.findAllByTenantIdAndDayOfWeekAndPeriodId(tenantId, dayOfWeek, periodId).stream()
 				.anyMatch(slot -> venue.getId().equals(slot.getVenueId()) && !slot.getId().equals(movingEntryId));
 		if (bookedByAnotherSlot) {
-			throw new BusinessException(
+			throw new BusinessException(AcademicErrorCode.TIMETABLE_VENUE_BUSY,
 					"Venue " + venue.getName() + " is already booked on " + dayOfWeek + " period " + periodId);
 		}
 		return venue.getId();

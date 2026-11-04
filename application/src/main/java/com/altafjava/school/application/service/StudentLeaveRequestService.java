@@ -30,6 +30,8 @@ import com.altafjava.school.domain.classroom.model.Classroom;
 import com.altafjava.school.domain.classroom.model.StudentClassroomLink;
 import com.altafjava.school.domain.classroom.repository.ClassroomRepository;
 import com.altafjava.school.domain.classroom.repository.StudentClassroomLinkRepository;
+import com.altafjava.school.domain.error.AttendanceErrorCode;
+import com.altafjava.school.domain.error.StudentErrorCode;
 import com.altafjava.school.domain.holiday.service.SchoolWeek;
 import com.altafjava.school.domain.leave.model.LeaveRequestStatus;
 import com.altafjava.school.domain.leave.model.StudentLeaveRequest;
@@ -74,7 +76,8 @@ public class StudentLeaveRequestService {
 				.orElseThrow(() -> new ResourceNotFoundException("Student not found: " + studentPublicId));
 		studentDataAccessGuard.assertCanView(tenantId, studentPublicId);
 		if (studentLeaveRequestRepository.existsOverlapping(tenantId, student.getId(), BLOCKING, startDate, endDate)) {
-			throw new BusinessException("This student already has a leave request covering these dates");
+			throw new BusinessException(StudentErrorCode.STUDENT_LEAVE_OVERLAPS,
+					"This student already has a leave request covering these dates");
 		}
 		UUID attachment = attachmentFilePublicId == null ? null : UUID.fromString(attachmentFilePublicId);
 		StudentLeaveRequest request = StudentLeaveRequest.submit(student.getId(), currentClassroomId(tenantId, student),
@@ -87,7 +90,8 @@ public class StudentLeaveRequestService {
 				.flatMap(year -> studentClassroomLinkRepository.findByStudentIdAndAcademicYearId(tenantId,
 						student.getId(), year.getId()))
 				.map(StudentClassroomLink::getClassroomId)
-				.orElseThrow(() -> new BusinessException("This student has no classroom in the current academic year"));
+				.orElseThrow(() -> new BusinessException(AttendanceErrorCode.STUDENT_NOT_ENROLLED,
+						"This student has no classroom in the current academic year"));
 	}
 
 	@Transactional(readOnly = true)

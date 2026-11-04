@@ -9,6 +9,7 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.Table;
 import org.hibernate.annotations.SQLRestriction;
 import com.altafjava.platform.core.exception.BusinessException;
+import com.altafjava.platform.core.exception.PlatformErrorCode;
 import com.altafjava.platform.core.model.SoftDeletableEntity;
 import com.altafjava.school.domain.payroll.converter.PayComponentAmountListConverter;
 import lombok.Getter;
@@ -50,11 +51,12 @@ public class SalaryStructure extends SoftDeletableEntity {
 	public static SalaryStructure create(Long employeeId, List<PayComponentAmount> components,
 			LocalDate effectiveFrom) {
 		if (components == null || components.isEmpty()) {
-			throw new BusinessException("At least one pay component is required");
+			throw new BusinessException(PlatformErrorCode.INVALID_ARGUMENT, "At least one pay component is required");
 		}
 		SalarySnapshot snapshot = new SalarySnapshot(components);
 		if (snapshot.grossPay().signum() <= 0) {
-			throw new BusinessException("Total earning components must be greater than zero");
+			throw new BusinessException(PlatformErrorCode.INVALID_ARGUMENT,
+					"Total earning components must be greater than zero");
 		}
 		return SalaryStructure.builder()
 				.employeeId(employeeId)

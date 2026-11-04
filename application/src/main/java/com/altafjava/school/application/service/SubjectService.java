@@ -11,6 +11,7 @@ import com.altafjava.platform.core.exception.ResourceNotFoundException;
 import com.altafjava.platform.core.search.LikePattern;
 import com.altafjava.platform.core.tenant.TenantContext;
 import com.altafjava.school.domain.curriculum.repository.CurriculumRepository;
+import com.altafjava.school.domain.error.SchoolErrorCode;
 import com.altafjava.school.domain.subject.model.Subject;
 import com.altafjava.school.domain.subject.repository.SubjectRepository;
 
@@ -47,7 +48,7 @@ public class SubjectService {
 	public Subject create(String code, String name, String description) {
 		Long tenantId = TenantContext.getCurrentTenantId();
 		if (subjectRepository.existsByCodeAndTenantId(code, tenantId)) {
-			throw new BusinessException("Subject code already exists: " + code);
+			throw new BusinessException(SchoolErrorCode.CODE_TAKEN, "Subject code already exists: " + code);
 		}
 		Subject subject = Subject.create(code, name, description);
 		return subjectRepository.save(subject);

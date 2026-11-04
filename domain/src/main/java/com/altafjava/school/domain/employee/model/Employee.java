@@ -14,10 +14,12 @@ import jakarta.persistence.PreUpdate;
 import jakarta.persistence.Table;
 import org.hibernate.annotations.SQLRestriction;
 import com.altafjava.platform.core.exception.BusinessException;
+import com.altafjava.platform.core.exception.PlatformErrorCode;
 import com.altafjava.platform.core.model.SoftDeletableEntity;
 import com.altafjava.platform.core.security.annotation.Pii;
 import com.altafjava.school.domain.common.model.Address;
 import com.altafjava.school.domain.common.model.Gender;
+import com.altafjava.school.domain.error.StaffErrorCode;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -118,7 +120,8 @@ public class Employee extends SoftDeletableEntity {
 	@PreUpdate
 	private void assertConsistent() {
 		if ((status == EmployeeStatus.ACTIVE) != (exitDate == null)) {
-			throw new BusinessException("An exit date goes with a former employee, and only then");
+			throw new BusinessException(PlatformErrorCode.INTERNAL_ERROR,
+					"An exit date goes with a former employee, and only then");
 		}
 	}
 
@@ -130,7 +133,8 @@ public class Employee extends SoftDeletableEntity {
 	public static Employee create(StaffCategory staffCategory, String employeeCode, String firstName,
 			String lastName, String email, Gender gender, LocalDate joinDate) {
 		if (staffCategory == null || staffCategory == StaffCategory.TEACHING) {
-			throw new BusinessException("Teaching staff are hired as teachers; use a non-teaching category here");
+			throw new BusinessException(StaffErrorCode.TEACHER_CATEGORY_NOT_ALLOWED,
+					"Teaching staff are hired as teachers; use a non-teaching category here");
 		}
 		return Employee.builder()
 				.staffCategory(staffCategory)
@@ -154,16 +158,19 @@ public class Employee extends SoftDeletableEntity {
 	 */
 	public void exit(EmployeeStatus exitStatus, LocalDate exitDate, String reason, LocalDate today) {
 		if (exitStatus == null || !exitStatus.isExit()) {
-			throw new BusinessException("An exit must be RESIGNED, TERMINATED or RETIRED");
+			throw new BusinessException(StaffErrorCode.EXIT_REASON_INVALID,
+					"An exit must be RESIGNED, TERMINATED or RETIRED");
 		}
 		if (!isActive()) {
-			throw new BusinessException("Employee has already left the school: " + this.status);
+			throw new BusinessException(StaffErrorCode.EMPLOYEE_HAS_LEFT,
+					"Employee has already left the school: " + this.status);
 		}
 		if (exitDate == null || exitDate.isAfter(today)) {
-			throw new BusinessException("The exit date must be today or earlier");
+			throw new BusinessException(StaffErrorCode.EXIT_DATE_INVALID, "The exit date must be today or earlier");
 		}
 		if (joinDate != null && exitDate.isBefore(joinDate)) {
-			throw new BusinessException("The exit date cannot be before the join date");
+			throw new BusinessException(StaffErrorCode.EXIT_DATE_INVALID,
+					"The exit date cannot be before the join date");
 		}
 		this.status = exitStatus;
 		this.exitDate = exitDate;

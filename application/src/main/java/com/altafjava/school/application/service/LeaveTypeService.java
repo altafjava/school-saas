@@ -12,6 +12,7 @@ import com.altafjava.platform.core.exception.BusinessException;
 import com.altafjava.platform.core.exception.ResourceNotFoundException;
 import com.altafjava.platform.core.search.LikePattern;
 import com.altafjava.platform.core.tenant.TenantContext;
+import com.altafjava.school.domain.error.SchoolErrorCode;
 import com.altafjava.school.domain.leave.model.LeaveType;
 import com.altafjava.school.domain.leave.repository.LeaveTypeRepository;
 
@@ -45,7 +46,7 @@ public class LeaveTypeService {
 	public LeaveType create(String name, BigDecimal defaultAnnualDays) {
 		Long tenantId = TenantContext.getCurrentTenantId();
 		if (leaveTypeRepository.existsByNameAndTenantId(name, tenantId)) {
-			throw new BusinessException("Leave type already exists: " + name);
+			throw new BusinessException(SchoolErrorCode.CODE_TAKEN, "Leave type already exists: " + name);
 		}
 		return leaveTypeRepository.save(LeaveType.create(name, defaultAnnualDays));
 	}

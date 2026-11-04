@@ -80,7 +80,7 @@ class BulkImportE2ETest extends SchoolIntegrationTestBase {
 				.body("data.importedRows", equalTo(1))
 				.body("data.failedRows", equalTo(3));
 		admin().get("/api/v1/students?q=" + code + "&size=50").then().body("data.content", hasSize(1));
-		admin().post(BASE + "/" + job + "/execute").then().statusCode(HttpStatus.BAD_REQUEST.value());
+		admin().post(BASE + "/" + job + "/execute").then().statusCode(HttpStatus.CONFLICT.value());
 
 		Response report = admin().get(BASE + "/" + job + "/error-report");
 		report.then().statusCode(HttpStatus.OK.value()).contentType(containsString("text/csv"));

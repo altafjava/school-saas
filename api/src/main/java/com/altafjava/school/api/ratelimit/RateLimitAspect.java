@@ -1,11 +1,13 @@
 package com.altafjava.school.api.ratelimit;
 
 import java.time.Duration;
+import java.util.Map;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
 import org.springframework.stereotype.Component;
 import com.altafjava.platform.core.exception.BusinessException;
+import com.altafjava.platform.core.exception.PlatformErrorCode;
 import com.altafjava.platform.core.tenant.TenantContext;
 import io.github.bucket4j.Bandwidth;
 import io.github.bucket4j.Bucket;
@@ -42,8 +44,10 @@ public class RateLimitAspect {
 		ConsumptionProbe probe = bucket.tryConsumeAndReturnRemaining(1);
 		if (!probe.isConsumed()) {
 			long waitSeconds = probe.getNanosToWaitForRefill() / 1_000_000_000;
-			throw new BusinessException("Rate limit exceeded for this operation — try again in "
-					+ waitSeconds + " seconds");
+			throw new BusinessException(PlatformErrorCode.RATE_LIMIT_EXCEEDED,
+					"Rate limit exceeded for this operation — try again in "
+							+ waitSeconds + " seconds",
+					Map.of("retryAfterSeconds", waitSeconds));
 		}
 
 		return joinPoint.proceed();

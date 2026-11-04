@@ -33,6 +33,8 @@ import com.altafjava.school.domain.department.model.Department;
 import com.altafjava.school.domain.department.repository.DepartmentRepository;
 import com.altafjava.school.domain.employee.model.Employee;
 import com.altafjava.school.domain.employee.repository.EmployeeRepository;
+import com.altafjava.school.domain.error.AcademicErrorCode;
+import com.altafjava.school.domain.error.StaffErrorCode;
 import com.altafjava.school.domain.leave.model.LeaveApproval;
 import com.altafjava.school.domain.leave.model.LeaveApprovalStage;
 import com.altafjava.school.domain.leave.model.LeaveBalance;
@@ -140,16 +142,21 @@ public class LeaveRequestService {
 		Employee employee = resolveCurrentEmployee(tenantId);
 		LeaveType leaveType = findLeaveType(tenantId, leaveTypePublicId);
 		AcademicYear academicYear = academicYearRepository.findByCurrentTrueAndTenantId(tenantId)
-				.orElseThrow(() -> new BusinessException("No current academic year configured for this tenant"));
+				.orElseThrow(() -> new BusinessException(AcademicErrorCode.NO_CURRENT_ACADEMIC_YEAR,
+						"No current academic year configured for this tenant"));
 		if (!leaveType.isActive()) {
-			throw new BusinessException("Leave type '" + leaveType.getName() + "' is no longer available");
+			throw new BusinessException(StaffErrorCode.LEAVE_TYPE_UNAVAILABLE,
+					"Leave type '" + leaveType.getName() + "' is no longer available",
+					Map.of("leaveType", leaveType.getName()));
 		}
 		if (employee.isOnProbation(schoolClock.today(tenantId)) && !leaveType.isAvailableDuringProbation()) {
-			throw new BusinessException(
-					"Leave type '" + leaveType.getName() + "' is not available during probation");
+			throw new BusinessException(StaffErrorCode.LEAVE_TYPE_UNAVAILABLE,
+					"Leave type '" + leaveType.getName() + "' is not available during probation",
+					Map.of("leaveType", leaveType.getName()));
 		}
 		if (leaveRequestRepository.existsOverlapping(tenantId, employee.getId(), startDate, endDate)) {
-			throw new BusinessException("You already have a leave request covering some of these days");
+			throw new BusinessException(StaffErrorCode.LEAVE_OVERLAPS,
+					"You already have a leave request covering some of these days");
 		}
 
 		Set<LocalDate> holidayDates = holidayService.datesInRange(tenantId, startDate, endDate);
@@ -180,17 +187,19 @@ public class LeaveRequestService {
 		LeaveApprovalStage stage = authorizeDecision(tenantId, request, actorUserId, "approve");
 		if (leaveApprovalRepository.existsByLeaveRequestIdAndDecidedByUserIdAndTenantId(request.getId(), actorUserId,
 				tenantId)) {
-			throw new BusinessException("Each level of approval must come from a different person");
+			throw new BusinessException(StaffErrorCode.LEAVE_APPROVER_REPEATED,
+					"Each level of approval must come from a different person");
 		}
 		LeaveBalance balance = leaveBalanceRepository
 				.findByEmployeeIdAndLeaveTypeIdAndAcademicYearIdAndTenantId(request.getEmployeeId(),
 						request.getLeaveTypeId(), request.getAcademicYearId(), tenantId)
-				.orElseThrow(() -> new BusinessException(
+				.orElseThrow(() -> new BusinessException(StaffErrorCode.LEAVE_BALANCE_MISSING,
 						"No leave balance allocated for employee " + request.getEmployeeId()));
 		if (stage == LeaveApprovalStage.ADMINISTRATOR && staffAttendanceRepository.existsWorkedBetween(tenantId,
 				request.getEmployeeId(), StaffAttendanceStatus.ABSENT, request.getStartDate(), request.getEndDate())) {
-			throw new BusinessException("The employee was at work on a day this leave covers; correct the attendance "
-					+ "or the dates first");
+			throw new BusinessException(StaffErrorCode.LEAVE_OVERLAPS_ATTENDANCE,
+					"The employee was at work on a day this leave covers; correct the attendance "
+							+ "or the dates first");
 		}
 		leaveApprovalRepository.save(LeaveApproval.approved(request.getId(), stage, actorUserId));
 		request.approve(actorUserId, schoolClock.now(tenantId));
@@ -225,7 +234,9 @@ public class LeaveRequestService {
 	private LeaveApprovalStage authorizeDecision(Long tenantId, LeaveRequest request, Long actorUserId,
 			String action) {
 		LeaveApprovalStage stage = request.awaitingStage().orElseThrow(
-				() -> new BusinessException("Cannot " + action + " a leave request in status " + request.getStatus()));
+				() -> new BusinessException(StaffErrorCode.LEAVE_REQUEST_STATUS_INVALID,
+						"Cannot " + action + " a leave request in status " + request.getStatus(),
+						Map.of("status", request.getStatus())));
 		leaveApprovalAuthorizer.assertMayDecide(tenantId, request, stage, actorUserId);
 		return stage;
 	}
@@ -267,9 +278,10 @@ public class LeaveRequestService {
 
 	private void validateSufficientBalance(LeaveBalance balance, BigDecimal daysRequested) {
 		if (daysRequested.compareTo(balance.remainingDays()) > 0) {
-			throw new BusinessException(
+			throw new BusinessException(StaffErrorCode.LEAVE_BALANCE_INSUFFICIENT,
 					"Insufficient leave balance: requested " + daysRequested + ", remaining "
-							+ balance.remainingDays());
+							+ balance.remainingDays(),
+					Map.of("requested", daysRequested, "remaining", balance.remainingDays()));
 		}
 	}
 

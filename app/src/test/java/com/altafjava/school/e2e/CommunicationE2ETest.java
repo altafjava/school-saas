@@ -257,7 +257,7 @@ class CommunicationE2ETest extends SchoolIntegrationTestBase {
 	void publish_refusesAnAudienceWithNobodyInIt() {
 		String empty = created(classroomDraft(classroom(), "IN_APP"));
 
-		admin().patch(ANNOUNCEMENTS + "/" + empty + "/publish").then().statusCode(400);
+		admin().patch(ANNOUNCEMENTS + "/" + empty + "/publish").then().statusCode(409);
 		admin().get(ANNOUNCEMENTS + "/" + empty).then().body("data.status", equalTo("DRAFT"));
 	}
 
@@ -386,7 +386,7 @@ class CommunicationE2ETest extends SchoolIntegrationTestBase {
 				.body("data.status", equalTo("OPEN"))
 				.extract().path("data.publicId");
 		teacher(roomB).body("{\"reason\":\"Again\"}")
-				.post(CONVERSATIONS + "/" + conversation + "/messages/" + message + "/report").then().statusCode(400);
+				.post(CONVERSATIONS + "/" + conversation + "/messages/" + message + "/report").then().statusCode(409);
 
 		admin().get(CONVERSATIONS + "/review/reports?status=OPEN").then().statusCode(200)
 				.body("data.content.publicId", hasItem(report));
@@ -403,14 +403,14 @@ class CommunicationE2ETest extends SchoolIntegrationTestBase {
 				.body("data.enabled", equalTo(false))
 				.body("data.hoursStart", nullValue());
 		parent(roomA).body("{\"body\":\"Hi\"}").post(CONVERSATIONS + "/" + conversation + "/messages").then()
-				.statusCode(400);
+				.statusCode(403);
 
 		String closed = """
 				{"enabled":true,"hoursStart":"%s","hoursEnd":"%s"}
 				""".formatted(now.plusHours(2).withNano(0), now.plusHours(3).withNano(0));
 		admin().body(closed).put("/api/v1/messaging-settings").then().statusCode(200);
 		parent(roomA).body("{\"body\":\"Hi\"}").post(CONVERSATIONS + "/" + conversation + "/messages").then()
-				.statusCode(400);
+				.statusCode(403);
 
 		admin().body("{\"enabled\":true}").put("/api/v1/messaging-settings").then().statusCode(200);
 		parent(roomA).body("{\"body\":\"Hi\"}").post(CONVERSATIONS + "/" + conversation + "/messages").then()

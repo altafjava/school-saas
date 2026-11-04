@@ -8,7 +8,9 @@ import jakarta.persistence.Enumerated;
 import jakarta.persistence.Table;
 import org.hibernate.annotations.SQLRestriction;
 import com.altafjava.platform.core.exception.BusinessException;
+import com.altafjava.platform.core.exception.PlatformErrorCode;
 import com.altafjava.platform.core.model.SoftDeletableEntity;
+import com.altafjava.school.domain.error.SchoolErrorCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
@@ -108,7 +110,7 @@ public class ImportJob extends SoftDeletableEntity {
 
 	public void recordImport(int imported, int failed) {
 		if (status != ImportJobStatus.IMPORTING) {
-			throw new BusinessException("The import was not started");
+			throw new BusinessException(PlatformErrorCode.INTERNAL_ERROR, "The import was not started");
 		}
 		this.importedRows = imported;
 		this.failedRows = failed;
@@ -118,7 +120,8 @@ public class ImportJob extends SoftDeletableEntity {
 
 	public void requireNotCompleted() {
 		if (status == ImportJobStatus.COMPLETED || status == ImportJobStatus.IMPORTING) {
-			throw new BusinessException("This file has already been imported; upload it again to import more");
+			throw new BusinessException(SchoolErrorCode.IMPORT_ALREADY_COMPLETED,
+					"This file has already been imported; upload it again to import more");
 		}
 	}
 }

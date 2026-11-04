@@ -7,6 +7,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import com.altafjava.platform.core.exception.BusinessException;
+import com.altafjava.platform.core.exception.PlatformErrorCode;
 import com.altafjava.platform.core.exception.ResourceNotFoundException;
 import com.altafjava.platform.core.tenant.TenantContext;
 import com.altafjava.school.domain.student.repository.StudentRepository;
@@ -59,12 +60,13 @@ public class TransportAssignmentService {
 		RouteStop stop = routeStopRepository.findByPublicIdAndTenantId(UUID.fromString(routeStopPublicId), tenantId)
 				.orElseThrow(() -> new ResourceNotFoundException("Route stop not found: " + routeStopPublicId));
 		if (!stop.getRouteId().equals(route.getId())) {
-			throw new BusinessException("Route stop " + routeStopPublicId + " does not belong to route "
+			throw new ResourceNotFoundException("Route stop " + routeStopPublicId + " does not belong to route "
 					+ routePublicId);
 		}
 		if (transportAssignmentRepository.existsByStudentIdAndTenantIdAndEffectiveToIsNull(student.getId(),
 				tenantId)) {
-			throw new BusinessException("Student " + studentPublicId + " already has an active transport assignment");
+			throw new BusinessException(PlatformErrorCode.CONFLICT,
+					"Student " + studentPublicId + " already has an active transport assignment");
 		}
 		TransportAssignment assignment = TransportAssignment.create(student.getId(), route.getId(), vehicle.getId(),
 				stop.getId(), effectiveFrom);

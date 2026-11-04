@@ -278,7 +278,7 @@ class AcademicScopeE2ETest extends SchoolIntegrationTestBase {
 				.statusCode(HttpStatus.OK.value())
 				.body("data.accessToken", notNullValue());
 		admin().body(account).post("/api/v1/teachers/" + teacher + "/account").then()
-				.statusCode(HttpStatus.BAD_REQUEST.value());
+				.statusCode(HttpStatus.CONFLICT.value());
 	}
 
 	@Test

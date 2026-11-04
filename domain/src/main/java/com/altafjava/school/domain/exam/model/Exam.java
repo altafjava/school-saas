@@ -3,6 +3,7 @@ package com.altafjava.school.domain.exam.model;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.LocalDateTime;
+import java.util.Map;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -12,7 +13,9 @@ import jakarta.persistence.PreUpdate;
 import jakarta.persistence.Table;
 import org.hibernate.annotations.SQLRestriction;
 import com.altafjava.platform.core.exception.BusinessException;
+import com.altafjava.platform.core.exception.PlatformErrorCode;
 import com.altafjava.platform.core.model.SoftDeletableEntity;
+import com.altafjava.school.domain.error.AcademicErrorCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -31,7 +34,8 @@ public class Exam extends SoftDeletableEntity {
 	@PreUpdate
 	private void assertConsistent() {
 		if (weightage != null && (weightage.signum() <= 0 || weightage.compareTo(BigDecimal.valueOf(100)) > 0)) {
-			throw new BusinessException("Exam weightage must be above 0 and at most 100");
+			throw new BusinessException(PlatformErrorCode.INTERNAL_ERROR,
+					"Exam weightage must be above 0 and at most 100");
 		}
 		requireValidDuration(durationMinutes);
 	}
@@ -132,8 +136,10 @@ public class Exam extends SoftDeletableEntity {
 
 	private static void requireValidDuration(int durationMinutes) {
 		if (durationMinutes < MIN_DURATION_MINUTES || durationMinutes > MAX_DURATION_MINUTES) {
-			throw new BusinessException("An exam must last between " + MIN_DURATION_MINUTES + " and "
-					+ MAX_DURATION_MINUTES + " minutes");
+			throw new BusinessException(AcademicErrorCode.EXAM_DURATION_INVALID,
+					"An exam must last between " + MIN_DURATION_MINUTES + " and "
+							+ MAX_DURATION_MINUTES + " minutes",
+					Map.of("min", MIN_DURATION_MINUTES, "max", MAX_DURATION_MINUTES));
 		}
 	}
 
@@ -161,10 +167,12 @@ public class Exam extends SoftDeletableEntity {
 
 	public void publishSchedule() {
 		if (status != ExamStatus.SCHEDULED) {
-			throw new BusinessException("Only a scheduled exam can be published to families");
+			throw new BusinessException(AcademicErrorCode.EXAM_STATUS_INVALID,
+					"Only a scheduled exam can be published to families");
 		}
 		if (isSchedulePublished()) {
-			throw new BusinessException("The exam's schedule is already published");
+			throw new BusinessException(AcademicErrorCode.EXAM_SCHEDULE_ALREADY_PUBLISHED,
+					"The exam's schedule is already published");
 		}
 		this.schedulePublishedAt = Instant.now();
 	}
@@ -172,14 +180,17 @@ public class Exam extends SoftDeletableEntity {
 	/** Recording or correcting a mark is allowed only while the marks are still being entered. */
 	public void requireMarksOpen() {
 		if (marksStage != MarksStage.ENTERED) {
-			throw new BusinessException("The marks of this exam are " + marksStage.name().toLowerCase()
-					+ " and can no longer change");
+			throw new BusinessException(AcademicErrorCode.EXAM_MARKS_LOCKED,
+					"The marks of this exam are " + marksStage.name().toLowerCase()
+							+ " and can no longer change",
+					Map.of("stage", marksStage));
 		}
 	}
 
 	public void verifyMarks(String verifiedBy) {
 		if (status != ExamStatus.COMPLETED) {
-			throw new BusinessException("Marks can be verified only once the exam is completed");
+			throw new BusinessException(AcademicErrorCode.EXAM_STATUS_INVALID,
+					"Marks can be verified only once the exam is completed");
 		}
 		requireMarksStage(MarksStage.ENTERED, "verify");
 		this.marksStage = MarksStage.VERIFIED;
@@ -202,7 +213,8 @@ public class Exam extends SoftDeletableEntity {
 	public void unlockMarks() {
 		requireMarksStage(MarksStage.LOCKED, "unlock");
 		if (isResultsPublished()) {
-			throw new BusinessException("Withdraw the published results before unlocking the marks");
+			throw new BusinessException(AcademicErrorCode.RESULTS_PUBLISHED,
+					"Withdraw the published results before unlocking the marks");
 		}
 		reopenMarks();
 	}
@@ -217,19 +229,22 @@ public class Exam extends SoftDeletableEntity {
 
 	private void requireMarksStage(MarksStage required, String action) {
 		if (marksStage != required) {
-			throw new BusinessException("Cannot " + action + " marks that are " + marksStage.name().toLowerCase());
+			throw new BusinessException(AcademicErrorCode.EXAM_MARKS_LOCKED,
+					"Cannot " + action + " marks that are " + marksStage.name().toLowerCase(),
+					Map.of("stage", marksStage));
 		}
 	}
 
 	private static void requireValidWeightage(BigDecimal weightage) {
 		if (weightage == null || weightage.signum() <= 0 || weightage.compareTo(FULL_WEIGHTAGE) > 0) {
-			throw new BusinessException("Exam weightage must be above 0 and at most 100");
+			throw new BusinessException(AcademicErrorCode.EXAM_WEIGHTAGE_INVALID,
+					"Exam weightage must be above 0 and at most 100");
 		}
 	}
 
 	public void reschedule(ExamSlot slot) {
 		if (status != ExamStatus.SCHEDULED) {
-			throw new BusinessException("Only a scheduled exam can be moved");
+			throw new BusinessException(AcademicErrorCode.EXAM_STATUS_INVALID, "Only a scheduled exam can be moved");
 		}
 		requireValidDuration(slot.durationMinutes());
 		this.scheduledAt = slot.startsAt();
@@ -243,7 +258,8 @@ public class Exam extends SoftDeletableEntity {
 
 	public void reweight(BigDecimal weightage) {
 		if (isResultsPublished()) {
-			throw new BusinessException("Weightage cannot change after results are published");
+			throw new BusinessException(AcademicErrorCode.RESULTS_PUBLISHED,
+					"Weightage cannot change after results are published");
 		}
 		requireValidWeightage(weightage);
 		this.weightage = weightage;
@@ -255,13 +271,15 @@ public class Exam extends SoftDeletableEntity {
 
 	public void publishResults(String publishedBy) {
 		if (this.status != ExamStatus.COMPLETED) {
-			throw new BusinessException("Results can only be published for a completed exam");
+			throw new BusinessException(AcademicErrorCode.EXAM_STATUS_INVALID,
+					"Results can only be published for a completed exam");
 		}
 		if (marksStage != MarksStage.LOCKED) {
-			throw new BusinessException("Results can only be published once the marks are verified and locked");
+			throw new BusinessException(AcademicErrorCode.MARKS_NOT_VERIFIED,
+					"Results can only be published once the marks are verified and locked");
 		}
 		if (isResultsPublished()) {
-			throw new BusinessException("Results are already published");
+			throw new BusinessException(AcademicErrorCode.RESULTS_PUBLISHED, "Results are already published");
 		}
 		this.resultsPublishedAt = Instant.now();
 		this.resultsPublishedBy = publishedBy;
@@ -269,7 +287,7 @@ public class Exam extends SoftDeletableEntity {
 
 	public void withdrawResults() {
 		if (!isResultsPublished()) {
-			throw new BusinessException("Results are not published");
+			throw new BusinessException(AcademicErrorCode.RESULTS_NOT_PUBLISHED, "Results are not published");
 		}
 		this.resultsPublishedAt = null;
 		this.resultsPublishedBy = null;
@@ -277,20 +295,20 @@ public class Exam extends SoftDeletableEntity {
 
 	public void complete() {
 		if (this.status == ExamStatus.CANCELLED) {
-			throw new BusinessException("Cannot complete a cancelled exam");
+			throw new BusinessException(AcademicErrorCode.EXAM_STATUS_INVALID, "Cannot complete a cancelled exam");
 		}
 		if (this.status == ExamStatus.COMPLETED) {
-			throw new BusinessException("Exam is already completed");
+			throw new BusinessException(AcademicErrorCode.EXAM_STATUS_INVALID, "Exam is already completed");
 		}
 		this.status = ExamStatus.COMPLETED;
 	}
 
 	public void cancel() {
 		if (this.status == ExamStatus.COMPLETED) {
-			throw new BusinessException("Cannot cancel a completed exam");
+			throw new BusinessException(AcademicErrorCode.EXAM_STATUS_INVALID, "Cannot cancel a completed exam");
 		}
 		if (this.status == ExamStatus.CANCELLED) {
-			throw new BusinessException("Exam is already cancelled");
+			throw new BusinessException(AcademicErrorCode.EXAM_STATUS_INVALID, "Exam is already cancelled");
 		}
 		this.status = ExamStatus.CANCELLED;
 	}

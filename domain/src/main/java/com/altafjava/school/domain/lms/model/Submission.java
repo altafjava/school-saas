@@ -10,6 +10,7 @@ import jakarta.persistence.Table;
 import org.hibernate.annotations.SQLRestriction;
 import com.altafjava.platform.core.exception.BusinessException;
 import com.altafjava.platform.core.model.SoftDeletableEntity;
+import com.altafjava.school.domain.error.AcademicErrorCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -73,7 +74,7 @@ public class Submission extends SoftDeletableEntity {
 
 	public void grade(BigDecimal marks, String feedback, Long gradedByTeacherId, LocalDateTime gradedAt) {
 		if (this.status == SubmissionStatus.GRADED) {
-			throw new BusinessException("Submission is already graded");
+			throw new BusinessException(AcademicErrorCode.SUBMISSION_ALREADY_GRADED, "Submission is already graded");
 		}
 		this.marksObtained = marks;
 		this.feedback = feedback;

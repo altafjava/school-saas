@@ -10,6 +10,7 @@ import com.altafjava.platform.core.exception.BusinessException;
 import com.altafjava.platform.core.model.SoftDeletableEntity;
 import com.altafjava.platform.core.security.annotation.Pii;
 import com.altafjava.school.domain.common.model.Address;
+import com.altafjava.school.domain.error.StudentErrorCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -65,7 +66,8 @@ public class Guardian extends SoftDeletableEntity {
 
 	public void linkUserAccount(Long userId) {
 		if (this.userId != null) {
-			throw new BusinessException("Guardian is already linked to a user account");
+			throw new BusinessException(StudentErrorCode.ACCOUNT_EXISTS,
+					"Guardian is already linked to a user account");
 		}
 		this.userId = userId;
 	}

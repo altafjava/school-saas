@@ -9,6 +9,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import com.altafjava.platform.core.concurrency.ExpectedVersion;
 import com.altafjava.platform.core.exception.BusinessException;
+import com.altafjava.platform.core.exception.PlatformErrorCode;
 import com.altafjava.platform.core.exception.ResourceNotFoundException;
 import com.altafjava.platform.core.search.LikePattern;
 import com.altafjava.platform.core.tenant.TenantContext;
@@ -43,7 +44,8 @@ public class AssetService {
 			BigDecimal purchaseCost, String location) {
 		Long tenantId = TenantContext.getCurrentTenantId();
 		if (assetRepository.existsByAssetCodeAndTenantId(assetCode, tenantId)) {
-			throw new BusinessException("Asset code already exists: " + assetCode);
+			throw new BusinessException(PlatformErrorCode.DUPLICATE_RESOURCE,
+					"Asset code already exists: " + assetCode);
 		}
 		return assetRepository.save(Asset.create(assetCode, name, category, purchaseDate, purchaseCost, location));
 	}

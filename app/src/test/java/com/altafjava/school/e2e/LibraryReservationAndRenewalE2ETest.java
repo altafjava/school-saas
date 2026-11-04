@@ -91,9 +91,9 @@ class LibraryReservationAndRenewalE2ETest extends SchoolIntegrationTestBase {
 		support.request(school)
 				.body("{\"bookPublicId\":\"" + bookPublicId + "\",\"studentPublicId\":\"" + studentB + "\"}")
 				.post("/api/v1/book-reservations")
-				.then().statusCode(HttpStatus.BAD_REQUEST.value());
+				.then().statusCode(HttpStatus.CONFLICT.value());
 		mutating().patch("/api/v1/circulations/" + loanA + "/renew")
-				.then().statusCode(HttpStatus.BAD_REQUEST.value());
+				.then().statusCode(HttpStatus.CONFLICT.value());
 
 		returnLoan(loanA);
 		support.request(school).get("/api/v1/book-reservations?bookPublicId=" + bookPublicId)
@@ -106,13 +106,13 @@ class LibraryReservationAndRenewalE2ETest extends SchoolIntegrationTestBase {
 
 		mutating().body("{\"bookCopyPublicId\":\"" + copyPublicId + "\",\"studentPublicId\":\"" + studentC + "\"}")
 				.post("/api/v1/circulations/checkout")
-				.then().statusCode(HttpStatus.BAD_REQUEST.value());
+				.then().statusCode(HttpStatus.CONFLICT.value());
 		String loanB = checkout(studentB);
 
 		support.request(school).get("/api/v1/book-reservations?bookPublicId=" + bookPublicId)
 				.then().body("data.content.status", contains("FULFILLED", "QUEUED"));
 		mutating().patch("/api/v1/circulations/" + loanB + "/renew")
-				.then().statusCode(HttpStatus.BAD_REQUEST.value());
+				.then().statusCode(HttpStatus.CONFLICT.value());
 
 		support.request(school).patch("/api/v1/book-reservations/" + reservationC + "/cancel")
 				.then().statusCode(HttpStatus.OK.value()).body("data.status", equalTo("CANCELLED"));
@@ -152,11 +152,11 @@ class LibraryReservationAndRenewalE2ETest extends SchoolIntegrationTestBase {
 	}
 
 	@Test
-	void reserve_whileACopyIsOnTheShelf_returns400() {
+	void reserve_whileACopyIsOnTheShelf_returns409() {
 		support.request(school)
 				.body("{\"bookPublicId\":\"" + bookPublicId + "\",\"studentPublicId\":\"" + studentA + "\"}")
 				.post("/api/v1/book-reservations")
-				.then().statusCode(HttpStatus.BAD_REQUEST.value());
+				.then().statusCode(HttpStatus.CONFLICT.value());
 	}
 
 	@Test
@@ -168,7 +168,7 @@ class LibraryReservationAndRenewalE2ETest extends SchoolIntegrationTestBase {
 		mutating().patch("/api/v1/circulations/" + loan + "/renew")
 				.then().statusCode(HttpStatus.OK.value()).body("data.renewalCount", equalTo(2));
 		mutating().patch("/api/v1/circulations/" + loan + "/renew")
-				.then().statusCode(HttpStatus.BAD_REQUEST.value());
+				.then().statusCode(HttpStatus.CONFLICT.value());
 	}
 
 	@Test
